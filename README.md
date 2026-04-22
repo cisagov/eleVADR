@@ -1,284 +1,563 @@
-# skeleton-docker 💀🐳 #
+**MAIN PROJECT README AT [elevadr-orchestration](https://github.com/cisa-vulnerability-management/elevadr-orchestration) -- START HERE FOR DEVELOPMENT**
 
-[![GitHub Build Status](https://github.com/cisagov/skeleton-docker/workflows/build/badge.svg)](https://github.com/cisagov/skeleton-docker/actions/workflows/build.yml)
-[![License](https://img.shields.io/github/license/cisagov/skeleton-docker)](https://spdx.org/licenses/)
-[![CodeQL](https://github.com/cisagov/skeleton-docker/workflows/CodeQL/badge.svg)](https://github.com/cisagov/skeleton-docker/actions/workflows/codeql-analysis.yml)
+# eleVADR - OT Network Security Analysis Tool
 
-## Docker Image ##
+A network security analysis tool developed for the Cybersecurity and Infrastructure Security Agency (CISA) to assess operational technology (OT) systems through PCAP analysis. eleVADR processes network traffic captures using Zeek and conducts backend analysis with pandas to identify assets, services, security risks, and provide actionable remediation guidance.
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/cisagov/example)](https://hub.docker.com/r/cisagov/example)
-[![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/cisagov/example)](https://hub.docker.com/r/cisagov/example)
-[![Platforms](https://img.shields.io/badge/platforms-386%20%7C%20amd64%20%7C%20arm%2Fv6%20%7C%20arm%2Fv7%20%7C%20arm64%20%7C%20ppc64le%20%7C%20riscv64%20%7C%20s390x-blue)](https://hub.docker.com/r/cisagov/example/tags)
+## Overview
 
-This is a Docker skeleton project that can be used to quickly get a
-new [cisagov](https://github.com/cisagov) GitHub Docker project
-started.  This skeleton project contains [licensing
-information](LICENSE), as well as [pre-commit hooks](https://pre-commit.com)
-and [GitHub Actions](https://github.com/features/actions) configurations
-appropriate for Docker containers and the major languages that we use.
+eleVADR analyzes OT network traffic to provide comprehensive security assessments including:
 
-## Running ##
+- **Asset Discovery**: Identification of network devices, IP addresses, MAC addresses, and manufacturers
+- **Service Detection**: Recognition of network services including industrial protocols (Modbus, DNP3, etc.)
+- **Risk Assessment**: Classification of services by security risk categories
+- **Network Segmentation Analysis**: Detection of cross-segment communications
+- **Security Findings**: Identification of insecure protocols, suspicious outbound connections, and risky services
+- **Detailed Reporting**: JSON-formatted reports with executive summaries and detailed module data
+- **Interactive Drilldown APIs**: Report-scoped endpoints for filtering connections, devices, and services after analysis
 
-### Running with Docker ###
+## Key Features
 
-To run the `cisagov/example` image via Docker:
+### Analysis Capabilities
 
-```console
-docker run cisagov/example:0.2.2+build.1
+- **Traffic Analysis**: Processes network flows to classify connection types (unicast, multicast, broadcast), directions (inbound, outbound, lateral), and protocols
+- **Endpoint Profiling**: Identifies and profiles devices including manufacturer information, IP assignments, service usage, and OT classification
+- **Service Classification**: Maps ports to services and categorizes by information type and risk level
+- **OT Device Detection**: Identifies devices using industrial protocols or communicating with OT hosts
+- **Cross-Segment Detection**: Flags OT devices communicating across network segments (a common security concern)
+
+### Report Modules
+
+The tool generates comprehensive reports with the following modules:
+
+1. **Device Panel**: Total hosts, OT hosts, cross-segment OT communications
+2. **Service Panel**: Known services, OT-specific protocols, risky services, unknown services
+3. **Service Risk Breakdown**: Categorization and counts of services by risk category
+4. **Service Count Panel**: Connection frequency analysis per service
+5. **Suspicious Outbound Connections**: External communications from OT devices
+6. **OT Manufacturers**: Distribution of OT device manufacturers
+7. **OT Services**: Detailed list of industrial protocols detected
+8. **Connection Success Panel**: Successful vs unsuccessful Zeek connection-state summary and sample detail rows
+
+## Prerequisites
+
+### Required Software
+
+- **Python 3.10+**
+- **Zeek Network Security Monitor** (formerly Bro)
+- **pip** (Python package manager)
+
+### System Requirements
+
+- macOS, Linux, or Windows (with WSL recommended)
+- Sufficient disk space for PCAP files and Zeek logs
+- Minimum 4GB RAM recommended for processing large PCAP files
+
+## Installation
+
+### 1. Install Zeek
+
+#### macOS (using Homebrew)
+```bash
+brew install zeek
 ```
 
-### Running with Docker Compose ###
-
-1. Create a `compose.yml` file similar to the one below to use [Docker Compose](https://docs.docker.com/compose/).
-
-    ```yaml
-    ---
-    name: skeleton-docker
-
-    services:
-      example:
-        environment:
-          - ECHO_MESSAGE="Hello from Docker Compose"
-        image: cisagov/example:0.2.2+build.1
-        ports:
-          - protocol: tcp
-            published: "8080"
-            target: 8080
-        volumes:
-          - source: <your_log_dir>
-            target: /var/log
-            type: bind
-    ```
-
-1. Start the container and detach:
-
-    ```console
-    docker compose up --detach
-    ```
-
-## Using secrets with your container ##
-
-This container also supports passing sensitive values via [Docker
-secrets](https://docs.docker.com/engine/swarm/secrets/).  Passing sensitive
-values like your credentials can be more secure using secrets than using
-environment variables.  See the
-[secrets](#secrets) section below for a table of all supported secret files.
-
-1. To use secrets, create a `quote.txt` file containing the values you want set:
-
-    ```text
-    Better lock it in your pocket.
-    ```
-
-1. Then add the secret to your `compose.yml` file:
-
-    ```yaml
-    ---
-    name: skeleton-docker
-
-    secrets:
-      quote_txt:
-        file: quote.txt
-
-    services:
-      example:
-        environment:
-          - ECHO_MESSAGE="Hello from Docker Compose"
-        image: cisagov/example:0.2.2+build.1
-        ports:
-          - protocol: tcp
-            published: "8080"
-            target: 8080
-        secrets:
-          - source: quote_txt
-            target: quote.txt
-        volumes:
-          - source: <your_log_dir>
-            target: /var/log
-            type: bind
-    ```
-
-## Updating your container ##
-
-### Docker Compose ###
-
-1. Pull the new image from Docker Hub:
-
-    ```console
-    docker compose pull
-    ```
-
-1. Recreate the running container by following the [previous instructions](#running-with-docker-compose):
-
-    ```console
-    docker compose up --detach
-    ```
-
-### Docker ###
-
-1. Stop the running container:
-
-    ```console
-    docker stop <container_id>
-    ```
-
-1. Pull the new image:
-
-    ```console
-    docker pull cisagov/example:0.2.2+build.1
-    ```
-
-1. Recreate and run the container by following the [previous instructions](#running-with-docker).
-
-## Updating Python dependencies ##
-
-This image uses [Pipenv] to manage Python dependencies using a [Pipfile](https://github.com/pypa/pipfile).
-Both updating dependencies and changing the [Pipenv] configuration in `src/Pipfile`
-will result in a modified `src/Pipfile.lock` file that should be committed to the
-repository.
-
-### Updating dependencies ###
-
-If you want to update existing dependencies you would run the following command
-in the `src/` subdirectory:
-
-```console
-pipenv lock
+#### Ubuntu/Debian
+```bash
+sudo apt-get update
+sudo apt-get install zeek
 ```
 
-### Modifying dependencies ###
-
-If you want to add or remove dependencies you would update the `src/Pipfile` file
-and then update dependencies as you would above.
-
-> [!NOTE]
-> You should only specify packages that are direct requirements of
-> your Docker configuration. Allow [Pipenv] to manage the dependencies
-> of the specified packages.
-
-## Image tags ##
-
-The images of this container are tagged with [semantic
-versions](https://semver.org) of the underlying example project that they
-containerize.  It is recommended that most users use a version tag (e.g.
-`:0.2.2+build.1`).
-
-| Image:tag | Description |
-| --------- | ----------- |
-| `cisagov/example:0.2.2+build.1` | An exact release version. |
-| `cisagov/example:0.2` | The most recent release matching the major and minor version numbers. |
-| `cisagov/example:0` | The most recent release matching the major version number. |
-| `cisagov/example:edge` | The most recent image built from a merge into the `develop` branch of this repository. |
-| `cisagov/example:nightly` | A nightly build of the `develop` branch of this repository. |
-| `cisagov/example:latest` | The most recent release image pushed to a container registry.  Pulling an image using the `:latest` tag [should be avoided.](https://vsupalov.com/docker-latest-tag/) |
-
-See the [tags tab](https://hub.docker.com/r/cisagov/example/tags) on Docker
-Hub for a list of all the supported tags.
-
-## Volumes ##
-
-| Mount point | Purpose        |
-| ----------- | -------------- |
-| `/var/log`  |  Log storage   |
-
-## Ports ##
-
-The following ports are exposed by this container:
-
-| Port | Purpose |
-| ---- | ------- |
-| 8080 | Example only; nothing is actually listening on the port |
-
-The sample [Docker composition](compose.yml) publishes the
-exposed port at 8080.
-
-## Environment variables ##
-
-### Required ###
-
-There are no required environment variables.
-
-<!--
-| Name  | Purpose | Default |
-| ----- | ------- | ------- |
-| `REQUIRED_VARIABLE` | Describe its purpose. | `null` |
--->
-
-### Optional ###
-
-| Name | Purpose | Default |
-| ---- | ------- | ------- |
-| `ECHO_MESSAGE` | Sets the message echoed by this container. | `Hello World from Dockerfile` |
-
-## Secrets ##
-
-| Filename | Purpose |
-| -------- | ------- |
-| `quote.txt` | Replaces the secret stored in the example library's package data. |
-
-## Building from source ##
-
-Build the image locally using this git repository as the [build context](https://docs.docker.com/engine/reference/commandline/build/#git-repositories):
-
-```console
-docker build \
-  --tag cisagov/example:0.2.2+build.1 \
-  https://github.com/cisagov/example.git#develop
+#### CentOS/RHEL
+```bash
+sudo yum install zeek
 ```
 
-## Cross-platform builds ##
+#### From Source
+Visit [https://zeek.org/get-zeek/](https://zeek.org/get-zeek/) for detailed installation instructions.
 
-To create images that are compatible with other platforms, you can use the
-[`buildx`](https://docs.docker.com/buildx/working-with-buildx/) feature of
-Docker:
+### 2. Clone the Repository
 
-1. Copy the project to your machine using the `Code` button above
-   or the command line:
+```bash
+git clone <repository-url>
+cd eleVADR
+```
 
-    ```console
-    git clone https://github.com/cisagov/example.git
-    cd example
-    ```
+### 3. Set Up Python Environment
 
-1. Create the `Dockerfile-x` file with `buildx` platform support:
+Create and activate a virtual environment:
 
-    ```console
-    ./buildx-dockerfile.sh
-    ```
+```bash
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+```
 
-1. Build the image using `buildx`:
+Install required Python packages:
 
-    ```console
-    docker buildx build \
-      --file Dockerfile-x \
-      --platform linux/amd64 \
-      --output type=docker \
-      --tag cisagov/example:0.2.2+build.1 .
-    ```
+```bash
+pip install -r requirements.txt
+```
 
-## New repositories from a skeleton ##
+### 4. Verify Installation
 
-Please see our [Project Setup guide](https://github.com/cisagov/development-guide/tree/develop/project_setup)
-for step-by-step instructions on how to start a new repository from
-a skeleton. This will save you time and effort when configuring a
-new repository!
+Check that Zeek is properly installed:
 
-## Contributing ##
+```bash
+zeek --version
+```
 
-We welcome contributions!  Please see [`CONTRIBUTING.md`](CONTRIBUTING.md) for
-details.
+## Configuration
 
-## License ##
+### Directory Structure
 
-This project is in the worldwide [public domain](LICENSE).
+The application expects the following directory structure (created automatically if missing):
 
-This project is in the public domain within the United States, and
-copyright and related rights in the work worldwide are waived through
-the [CC0 1.0 Universal public domain
-dedication](https://creativecommons.org/publicdomain/zero/1.0/).
+```
+eleVADR/src
+├── app/
+│   ├── data/
+│   │   ├── assessor_data/      # Reference data (ports, risks, manufacturers)
+│   │   ├── uploads/            # PCAP files to analyze
+│   │   ├── zeek_scripts/       # Custom Zeek scripts
+│   │   └── zeeks/              # Zeek output logs
+│   ├── utils/
+│   │   ├── analysis.py         # Core analysis logic
+│   │   ├── report.py           # Report generation
+│   │   └── utils.py            # Utility functions
+│   └── main.py                 # Main entry point
+```
 
-All contributions to this project will be released under the CC0
-dedication. By submitting a pull request, you are agreeing to comply
-with this waiver of copyright interest.
+### Reference Data Files
 
-[Pipenv]: https://pypi.org/project/pipenv/
+The following JSON files in `app/data/assessor_data/` provide enrichment data:
+
+- **ports.json**: Port-to-service mappings
+- **port_risk.json**: Service risk categorizations (converts to parquet)
+- **latest_oui_lookup.json**: MAC address OUI to manufacturer mappings
+- **CONST.yml**: ICS manufacturer keywords and insecure protocol definitions
+
+These files must be present for the tool to function. Generate the OUI lookup file using:
+
+```bash
+python app/utils/download_and_parse_oui.py
+```
+
+## Usage
+
+### Docker Usage (Recommended)
+
+The easiest way to use eleVADR is with Docker, which bundles all dependencies including Zeek.
+
+#### Quick Start with Docker
+
+1. **Build the Docker image:**
+
+```bash
+docker build -t elevadr:latest .
+```
+
+2. **Run analysis on a PCAP file:**
+
+```bash
+# Create directories for input/output
+mkdir -p pcaps reports
+
+# Copy your PCAP file
+cp /path/to/your/capture.pcap pcaps/capture.pcap
+
+# Run the analysis
+docker run --rm \
+  -v $(pwd)/pcaps:/input:ro \
+  -v $(pwd)/reports:/output \
+  elevadr:latest
+```
+
+3. **View the report:**
+
+```bash
+cat reports/report.json
+```
+
+#### Using Docker Compose
+
+For easier management, use docker-compose:
+
+```bash
+# Place your PCAP in ./pcaps/capture.pcap
+cp /path/to/your/capture.pcap pcaps/capture.pcap
+
+# Run analysis
+docker-compose up elevadr
+
+# Optional: Start web server to browse reports
+docker-compose --profile web-server up -d report-server
+# Access reports at http://localhost:8080
+```
+
+#### Custom Configuration
+
+You can override default paths using environment variables:
+
+```bash
+docker run --rm \
+  -v $(pwd)/pcaps:/input:ro \
+  -v $(pwd)/reports:/output \
+  -e PCAP_INPUT=/input/my-capture.pcap \
+  -e REPORT_OUTPUT=/output/my-report.json \
+  elevadr:latest
+```
+
+### Kubernetes Deployment
+
+For scalable, production deployments, use Kubernetes to process multiple PCAPs in parallel.
+
+#### Prerequisites
+
+- Kubernetes cluster (local with minikube/kind, or cloud-based)
+- kubectl configured
+- Container registry (Docker Hub, GCR, ECR, etc.)
+
+#### Deployment Steps
+
+1. **Build and push the image:**
+
+```bash
+# Build image
+docker build -t your-registry/elevadr:latest .
+
+# Push to registry
+docker push your-registry/elevadr:latest
+```
+
+2. **Update image reference in k8s/kustomization.yaml:**
+
+```yaml
+images:
+  - name: elevadr
+    newName: your-registry/elevadr
+    newTag: latest
+```
+
+3. **Deploy to Kubernetes:**
+
+```bash
+# Apply all manifests
+kubectl apply -k k8s/
+
+# Verify deployment
+kubectl get all -n elevadr
+```
+
+4. **Upload PCAP for analysis:**
+
+```bash
+# Copy PCAP to the input PVC
+kubectl cp /path/to/capture.pcap elevadr/elevadr-analysis-xxxxx:/input/capture.pcap
+
+# Or create a pod to upload files
+kubectl run -n elevadr pcap-uploader --image=busybox --rm -it --restart=Never -- sh
+# Then use kubectl cp to transfer files
+```
+
+5. **Monitor job progress:**
+
+```bash
+# Watch job status
+kubectl get jobs -n elevadr -w
+
+# View logs
+kubectl logs -n elevadr job/elevadr-analysis -f
+
+# Get report
+kubectl cp elevadr/elevadr-analysis-xxxxx:/output/report.json ./report.json
+```
+
+#### Scaling with Kubernetes
+
+**Process Multiple PCAPs in Parallel:**
+
+```bash
+# Create multiple jobs from template
+for pcap in *.pcap; do
+  kubectl create job -n elevadr "analysis-${pcap%.pcap}" \
+    --from=cronjob/elevadr-scheduled-analysis
+done
+```
+
+**Horizontal Scaling:**
+
+Modify k8s/job.yaml to use `parallelism` and `completions`:
+
+```yaml
+spec:
+  parallelism: 5      # Run 5 pods in parallel
+  completions: 10     # Process 10 total jobs
+```
+
+**Scheduled Analysis with CronJob:**
+
+Enable the CronJob in k8s/kustomization.yaml:
+
+```yaml
+resources:
+  - cronjob.yaml  # Uncomment this line
+```
+
+**Resource Optimization:**
+
+Adjust CPU/memory in k8s/job.yaml based on PCAP size:
+
+```yaml
+resources:
+  requests:
+    memory: "2Gi"   # Minimum needed
+    cpu: "1000m"
+  limits:
+    memory: "8Gi"   # Maximum allowed
+    cpu: "4000m"
+```
+
+#### Storage Options for Kubernetes
+
+**Option 1: Persistent Volume Claims (Default)**
+- Uses PVCs defined in k8s/pvc.yaml
+- Suitable for shared storage across multiple jobs
+- Requires a StorageClass that supports ReadWriteMany
+
+**Option 2: ConfigMaps (Small PCAPs)**
+
+```bash
+# Create ConfigMap from PCAP
+kubectl create configmap -n elevadr pcap-data \
+  --from-file=capture.pcap=/path/to/capture.pcap
+
+# Update job.yaml to mount ConfigMap
+```
+
+**Option 3: Object Storage (S3, GCS)**
+- Modify entrypoint script to download from cloud storage
+- Add cloud provider credentials as Kubernetes Secrets
+
+### Local Installation (Without Docker)
+
+If you prefer to run eleVADR natively:
+
+1. Place your PCAP file in `app/data/uploads/`
+
+2. Update the PCAP path in `app/main.py:25`:
+
+```python
+file_path_info = FilePathInfo(
+    path_to_pcap=str(Path(PROJECT_ROOT, "data/uploads/YOUR_PCAP_FILE.pcap")),
+    path_to_zeek=str(Path(PROJECT_ROOT, "data/zeeks")),
+    path_to_zeek_scripts=str(Path(PROJECT_ROOT, "data/zeek_scripts")),
+    path_to_assessor_data=str(Path(PROJECT_ROOT, "data/assessor_data"))
+)
+```
+
+3. Run the analysis:
+
+```bash
+cd app
+python main.py
+```
+
+4. The analysis will:
+   - Process the PCAP with Zeek (creates logs in `data/zeeks/<pcap_filename>/`)
+   - Parse connection logs into dataframes
+   - Enrich data with service, risk, and manufacturer information
+   - Generate a comprehensive JSON report (printed to stdout)
+
+### API Drilldowns
+
+When the FastAPI application is running, analyzed reports are kept in an in-memory report registry and can be queried through report-scoped APIs.
+
+#### Existing drilldown endpoints
+
+- `GET /reports/{report_id}/drilldown/service/{service_name}`
+- `GET /reports/{report_id}/drilldown/connection-state/{state}`
+- `GET /reports/{report_id}/drilldown/suspicious-outbound`
+- `GET /reports/{report_id}/drilldown/cross-segment`
+
+#### Filter endpoints
+
+- `GET /reports/{report_id}/connections`
+- `GET /reports/{report_id}/devices`
+- `GET /reports/{report_id}/services`
+
+Example connection filters:
+
+- `ip`
+- `src_ip`
+- `dst_ip`
+- `subnet`
+- `src_subnet`
+- `dst_subnet`
+- `manufacturer`
+- `service_name`
+- `connection_state`
+- `direction`
+- `success`
+- `is_ot`
+- `limit`
+
+Example device filters:
+
+- `manufacturer`
+- `subnet`
+- `service_name`
+- `is_ot`
+- `is_edge`
+
+Example service filters:
+
+- `subnet`
+- `manufacturer`
+- `device_ip`
+- `risk_category`
+- `service_name`
+
+These APIs support frontend workflows such as clicking a service, risk category, Zeek state, suspicious outbound row, or subnet pair and retrieving the underlying matching records.
+
+### Understanding the Output
+
+The tool outputs a JSON report with the following structure:
+
+```json
+{
+    "executive_summary": {},
+    "modules": {
+        "device_panel": {
+            "hosts": <total_devices>,
+            "ot_hosts": <ot_devices>,
+            "ot_cross_segment": <cross_segment_count>
+        },
+        "service_panel": {
+            "num_known_services": <count>,
+            "num_ot_services": <count>,
+            "num_risky_services": <count>,
+            "num_unknown_services": <count>
+        },
+        "service_risk_breakdown_panel": {...},
+        "service_count_panel": {...},
+        "suspicious_outbound_connections_panel": [...],
+        "ot_manufacturers": {...},
+        "ot_services": [...]
+    },
+    "arch_insights": {}
+}
+```
+
+### Zeek Processing
+
+The tool runs two Zeek analysis passes:
+
+1. **Default Zeek Processing**: Generates standard conn.log with connection metadata
+2. **MAC Logging Script**: Adds link-layer (MAC) addresses to connection logs using `mac_logging.zeek`
+
+Zeek logs are stored in `app/data/zeeks/<pcap_filename>/` and can be analyzed independently if needed.
+
+## Key Security Insights
+
+### What eleVADR Detects
+
+1. **Insecure Protocols**: Identifies use of FTP, Telnet, unencrypted LDAP
+2. **Industrial Protocols**: Detects Modbus, DNP3, BACnet, and other OT-specific protocols
+3. **Cross-Segment Communication**: Flags OT devices communicating across network boundaries
+4. **Suspicious External Connections**: Identifies OT devices with outbound internet connections
+5. **Risky Services**: Categorizes services by security risk (cleartext credentials, known vulnerabilities, etc.)
+6. **Unknown Services**: Highlights unrecognized services requiring investigation
+
+### Risk Categories
+
+Services are classified with risk categories including:
+
+- Cleartext credentials
+- Known vulnerabilities
+- Weak authentication
+- Legacy protocols
+- Unnecessary services in OT environments
+
+## Development
+
+### Project Structure
+
+- **app/main.py**: Entry point, orchestrates analysis workflow
+- **app/utils/analysis.py**: Core classes (`PcapParser`, `Analyzer`)
+- **app/utils/report.py**: Report generation logic and modules
+- **app/utils/utils.py**: Helper functions for IP processing, service mapping, etc.
+
+### Key Classes
+
+- **`FilePathInfo`**: Configuration container for file paths
+- **`PcapParser`**: Processes PCAP files using Zeek, creates traffic dataframe
+- **`Analyzer`**: Enriches traffic data, generates endpoint and service dataframes
+- **`Report`**: Aggregates analysis results into structured report modules
+
+### Extending the Tool
+
+To add new analysis modules:
+
+1. Add analysis method to the `Analyzer` class in `app/utils/analysis.py`
+2. Create corresponding report module in `Report` class in `app/utils/report.py`
+3. Call the new module in `Report.build_report()` method
+
+## Troubleshooting
+
+### Common Issues
+
+**Zeek not found**
+- Ensure Zeek is installed and in your PATH
+- Test with `zeek --version`
+
+**Missing reference data files**
+- Run `python app/utils/download_and_parse_oui.py` to generate OUI lookup
+- Ensure ports.json and port_risk.json exist in `app/data/assessor_data/`
+
+**Out of memory errors**
+- Process smaller PCAP files
+- Increase available system memory
+- Consider chunking large PCAPs
+
+**No devices classified as OT**
+- Verify PCAP contains OT protocol traffic
+- Check that industrial protocol port mappings are in ports.json
+- Review CONST.yml for manufacturer keywords
+
+## Security Considerations
+
+This tool is designed for **defensive security purposes only**:
+
+- Network assessment and security auditing
+- Vulnerability identification and remediation
+- Compliance validation
+- Incident response and forensics
+
+**Do not use for**:
+- Unauthorized network scanning
+- Offensive security operations without proper authorization
+- Any malicious purposes
+
+## License
+
+[Specify license here]
+
+## Contributing
+
+[Specify contribution guidelines]
+
+## Contact
+
+For questions or support regarding this tool, please contact [appropriate CISA contact or team].
+
+## Acknowledgments
+
+This tool utilizes:
+- **Zeek**: Network security monitoring platform
+- **ZAT (Zeek Analysis Tools)**: Python library for Zeek log processing
+- **pandas**: Data analysis and manipulation
+- OUI database from IEEE for manufacturer identification
+
+---
+
+**Developed for the Cybersecurity and Infrastructure Security Agency (CISA)**

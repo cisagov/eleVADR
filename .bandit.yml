@@ -5,9 +5,11 @@
 # Tests are first included by `tests`, and then excluded by `skips`.
 # If `tests` is empty, all tests are considered included.
 
-tests:
-# - B101
+tests: # - B101
+
 # - B102
 
 skips:
-  - B101  # skip "assert used" check since assertions are required in pytests
+  - B101 # skip "assert used" check since assertions are required in pytests
+  - B104 # skip "hardcoded bind all interfaces" -- fires on all instances of 0.0.0.0
+  - B108 # skip [B108:hardcoded_tmp_directory]

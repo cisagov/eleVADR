@@ -41,8 +41,8 @@ jobs:
           gha_outputs: list[GhaOutput] = [
               {
                   "description": "The name of the Docker image.",
-                  "name": "image-name",
-                  "value": "cisagov/example",
+                  "name": "elevadr-web-backend",
+                  "value": "cisagov/elevadr-web-backend",
               },
               {
                   "description": "The supported platforms for the Docker image.",

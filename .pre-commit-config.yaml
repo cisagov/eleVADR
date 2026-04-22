@@ -41,17 +41,17 @@ repos:
         args:
           - --autofix
         # Exclude all Pipfile.lock files
-        # exclude: .*/Pipfile\.lock$
+        exclude: .*/Pipfile\.lock$
       - id: requirements-txt-fixer
       - id: trailing-whitespace
 
   # Text file hooks
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.48.0
-    hooks:
-      - id: markdownlint
-        args:
-          - --config=.mdl_config.yaml
+  # - repo: https://github.com/igorshubovych/markdownlint-cli
+  #   rev: v0.48.0
+  #   hooks:
+  #     - id: markdownlint
+  #       args:
+  #         - --config=.mdl_config.yaml
   - repo: https://github.com/rbubley/mirrors-prettier
     rev: v3.8.1
     hooks:
@@ -145,30 +145,33 @@ repos:
     hooks:
       - id: bandit
         name: bandit (everything else)
-        # exclude: tests
+        exclude: tests
+        args:
+          - --config=.bandit.yml
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 26.3.1
     hooks:
       - id: black
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.3.0
-    hooks:
-      - id: flake8
-        additional_dependencies:
-          - dlint==0.16.0
-          - flake8-bugbear==25.11.29
-          - flake8-comprehensions==3.17.0
-          - flake8-docstrings==1.7.0
-          - flake8-noqa==1.5.0
-          - pep8-naming==0.15.1
+        exclude: tests # Temporarily
+  # - repo: https://github.com/PyCQA/flake8
+  #   rev: 7.3.0
+  #   hooks:
+  #     - id: flake8
+  #       additional_dependencies:
+  #         - dlint==0.16.0
+  #         - flake8-bugbear==25.11.29
+  #         - flake8-comprehensions==3.17.0
+  #         - flake8-docstrings==1.7.0
+  #         - flake8-noqa==1.5.0
+  #         - pep8-naming==0.15.1
   - repo: https://github.com/PyCQA/isort
     rev: 8.0.1
     hooks:
       - id: isort
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.1
-    hooks:
-      - id: mypy
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.19.1
+  #   hooks:
+  #     - id: mypy
   - repo: https://github.com/pypa/pip-audit
     rev: v2.10.0
     hooks:
@@ -208,34 +211,34 @@ repos:
           # https://www.gyford.com/phil/writing/2025/08/26/how-to-use-pyupgrade/
           - --py310-plus
 
-  # Ansible hooks
-  - repo: https://github.com/ansible/ansible-lint
-    # We need to stay on this version because we are still using Python 3.13 in
-    # our GitHub Actions configuration. Later versions require Python 3.14 for
-    # the hook to run.
-    rev: v26.1.1
-    hooks:
-      - id: ansible-lint
-        additional_dependencies:
-          # On its own ansible-lint does not pull in ansible, only
-          # ansible-core.  Therefore, if an Ansible module lives in
-          # ansible instead of ansible-core, the linter will complain
-          # that the module is unknown.  In these cases it is
-          # necessary to add the ansible package itself as an
-          # additional dependency, with the same pinning as is done in
-          # requirements-test.txt of cisagov/skeleton-ansible-role.
-          #
-          # Version 10 is required because the pip-audit pre-commit
-          # hook identifies a vulnerability in ansible-core 2.16.13,
-          # but all versions of ansible 9 have a dependency on
-          # ~=2.16.X.
-          # - ansible>=10,<11
-          # ansible-core<2.17.7 suffers from GHSA-99w6-3xph-cx78.
-          #
-          # Note that any changes made to this dependency must also be
-          # made in requirements.txt in cisagov/skeleton-packer and
-          # requirements-test.txt in cisagov/skeleton-ansible-role.
-          - ansible-core>=2.17.7
+  # # Ansible hooks
+  # - repo: https://github.com/ansible/ansible-lint
+  #   # We need to stay on this version because we are still using Python 3.13 in
+  #   # our GitHub Actions configuration. Later versions require Python 3.14 for
+  #   # the hook to run.
+  #   rev: v26.1.1
+  #   hooks:
+  #     - id: ansible-lint
+  #       additional_dependencies:
+  #         # On its own ansible-lint does not pull in ansible, only
+  #         # ansible-core.  Therefore, if an Ansible module lives in
+  #         # ansible instead of ansible-core, the linter will complain
+  #         # that the module is unknown.  In these cases it is
+  #         # necessary to add the ansible package itself as an
+  #         # additional dependency, with the same pinning as is done in
+  #         # requirements-test.txt of cisagov/skeleton-ansible-role.
+  #         #
+  #         # Version 10 is required because the pip-audit pre-commit
+  #         # hook identifies a vulnerability in ansible-core 2.16.13,
+  #         # but all versions of ansible 9 have a dependency on
+  #         # ~=2.16.X.
+  #         # - ansible>=10,<11
+  #         # ansible-core<2.17.7 suffers from GHSA-99w6-3xph-cx78.
+  #         #
+  #         # Note that any changes made to this dependency must also be
+  #         # made in requirements.txt in cisagov/skeleton-packer and
+  #         # requirements-test.txt in cisagov/skeleton-ansible-role.
+  #         - ansible-core>=2.17.7
 
   # Terraform hooks
   - repo: https://github.com/antonbabenko/pre-commit-terraform

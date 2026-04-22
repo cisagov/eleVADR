@@ -1,0 +1,58 @@
+---
+version: "3.8"
+
+services:
+  elevadr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: elevadr-web-backend:latest
+    container_name: elevadr-analysis
+    cap_drop:
+      - ALL
+
+    # Environment variables
+    environment:
+      - PCAP_INPUT=${PCAP_INPUT:-/input/capture.pcap}
+      - REPORT_OUTPUT=${REPORT_OUTPUT:-/output/report.json}
+      - PYTHONUNBUFFERED=1
+
+    # Volume mounts
+    volumes:
+      # Mount your PCAP file(s)
+      - ./pcaps:/input:ro
+      # Mount output directory for reports
+      - ./reports:/output
+      # Optional: mount custom reference data
+      # - ./custom-data:/app/app/data/assessor_data:ro
+
+      # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 4GB # Hard limit of 4GB
+        reservations:
+          memory: 512MB # Soft limit (reservation) of 512MB
+
+    # Automatically remove container after completion
+    # Remove this if you want to inspect logs afterward
+    # rm: true
+
+    # Restart policy
+    restart: "no"
+    security_opt:
+      - no-new-privileges:true
+
+  # Optional: Add a service to serve reports via HTTP
+  report-server:
+    image: nginx:alpine
+    container_name: elevadr-reports
+    ports:
+      - 127.0.0.1:8080:80
+    volumes:
+      - ./reports:/usr/share/nginx/html:ro
+    restart: unless-stopped
+    profiles:
+      - web-server
+    security_opt:
+      - no-new-privileges:true
