@@ -7,7 +7,7 @@ ci:
 
 default_language_version:
   # force all unspecified python hooks to run python3
-  python: python3
+  python: python
 
 repos:
   # Check the pre-commit configuration
@@ -41,7 +41,7 @@ repos:
         args:
           - --autofix
         # Exclude all Pipfile.lock files
-        exclude: .*/Pipfile\.lock$
+        # exclude: .*/Pipfile\.lock$
       - id: requirements-txt-fixer
       - id: trailing-whitespace
 
@@ -145,7 +145,7 @@ repos:
     hooks:
       - id: bandit
         name: bandit (everything else)
-        exclude: tests
+        # exclude: tests
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 26.3.1
     hooks:
