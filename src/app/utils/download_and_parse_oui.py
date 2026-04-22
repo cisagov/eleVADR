@@ -11,9 +11,9 @@ MAC_TO_COMPANY_RE = re.compile(r"([0-9A-F-]+)\s+\(hex\)\s+(.+?)\n", re.VERBOSE)
 
 def download_ieee_data() -> str | None:
     """Download MAC OUI data from IEEE site"""
-    req = urllib.request.Request(IEEE_URL, method="GET")  # nosec B310
-    with urllib.request.urlopen(req) as response:  # nosec B310
-        return response.read().decode("utf-8")  # nosec B310
+    req = urllib.request.Request(IEEE_URL, method="GET")
+    with urllib.request.urlopen(req) as response:
+        return response.read().decode("utf-8")
 
 
 def parse(text_str: str) -> dict:

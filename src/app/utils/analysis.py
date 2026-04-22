@@ -6,7 +6,7 @@ from functools import lru_cache
 import ipaddress
 import os
 from pathlib import Path
-import subprocess  # nosec B404
+import subprocess
 
 # Third-Party Libraries
 import numpy as np
@@ -145,7 +145,7 @@ class PcapParser:
                 self.file_path_info.path_to_pcap,
                 f"Log::default_logdir={self.upload_output_zeek_dir}",
             ]
-        )  # nosec
+        )
 
         # Run mac_logging Zeek script
         mac_script = Path(self.file_path_info.path_to_zeek_scripts) / "mac_logging.zeek"
@@ -157,7 +157,7 @@ class PcapParser:
                 str(mac_script),
                 f"Log::default_logdir={self.upload_output_zeek_dir}",
             ]
-        )  # nosec B607 B603
+        )
 
 
 class Analyzer:
@@ -247,10 +247,10 @@ class Analyzer:
         # Create a unified list of all observed IP-MAC-Subnet relationships
 
         def _is_unspecified_ip(ip: str) -> bool:
-            return ip in ("0.0.0.0", "::")  # nosec B104
+            return ip in ("0.0.0.0", "::")
 
         def _filter_specified_ips(df: pd.DataFrame, ip_col: str) -> pd.DataFrame:
-            return df[~df[ip_col].isin(["0.0.0.0", "::"])]  # nosec B104
+            return df[~df[ip_col].isin(["0.0.0.0", "::"])]
 
         unicast_traffic = self.traffic_df[
             self.traffic_df["connection_info.type_name"] == "unicast"
@@ -279,7 +279,7 @@ class Analyzer:
         dst = _filter_specified_ips(dst, "ip")
 
         ip_map = pd.concat([src, dst]).dropna(subset=["ip", "mac"]).drop_duplicates()
-        ip_map = ip_map[~ip_map["ip"].isin(["0.0.0.0", "::"])]  # nosec B104
+        ip_map = ip_map[~ip_map["ip"].isin(["0.0.0.0", "::"])]
 
         # Aggregate services per IP
         incoming_services = unicast_traffic.groupby("dst_endpoint.ip").agg(
@@ -309,9 +309,7 @@ class Analyzer:
         def agg_by_mac(group):
             res = {}
             all_ips = group["ip"].dropna().unique()
-            all_ips = [
-                ip for ip in all_ips if ip not in ("0.0.0.0", "::")
-            ]  # nosec B104
+            all_ips = [ip for ip in all_ips if ip not in ("0.0.0.0", "::")]
             res["device.ipv4_ips"] = [
                 ip for ip in all_ips if check_ip_version(ip) == 4
             ] or np.nan
@@ -323,7 +321,7 @@ class Analyzer:
                 group[
                     group["ip"].apply(
                         lambda x: check_ip_version(x) == 4
-                        and x not in ("0.0.0.0", "::")  # nosec B104
+                        and x not in ("0.0.0.0", "::")
                     )
                 ]["subnet"]
                 .dropna()
@@ -334,7 +332,7 @@ class Analyzer:
                 group[
                     group["ip"].apply(
                         lambda x: check_ip_version(x) == 6
-                        and x not in ("0.0.0.0", "::")  # nosec B104
+                        and x not in ("0.0.0.0", "::")
                     )
                 ]["subnet"]
                 .dropna()

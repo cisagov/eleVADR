@@ -161,13 +161,13 @@ def subnet_membership(row: pd.Series, known_subnets: list = None) -> pd.Series:
         if row["connection_info.protocol_ver_id"] == 4:
             try:
                 src_ip = ipaddress.IPv4Address(src_ip_str)
-                if src_ip == ipaddress.IPv4Address("0.0.0.0"):  # nosec B104
+                if src_ip == ipaddress.IPv4Address("0.0.0.0"):
                     src_subnet = None
                 else:
                     src_network = ipaddress.IPv4Network(f"{src_ip}/24", strict=False)
                     src_subnet = str(src_network)
 
-                if dst_ip_str in {"255.255.255.255", "0.0.0.0"}:  # nosec B104
+                if dst_ip_str in {"255.255.255.255", "0.0.0.0"}:
                     dst_subnet = src_subnet if dst_ip_str == "255.255.255.255" else None
                 else:
                     dst_ip = ipaddress.IPv4Address(dst_ip_str)
