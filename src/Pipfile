@@ -8,7 +8,7 @@ zat = "==0.4.7"
 pandas = "==2.2.3"
 pyyaml = "==6.0.3"
 fastapi = "*"
-python-multipart = "==0.0.26"
+python-multipart = "*"
 pyarrow = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 
