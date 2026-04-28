@@ -408,7 +408,9 @@ jobs:
         with:
           name: image.tar.gz
       - name: Load Docker image
-        run: docker load < image.tar.gz
+        run: |
+          gunzip image.tar.gz
+          docker load < image.tar
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.35.0
         with:
@@ -471,7 +473,7 @@ jobs:
           restore-keys: |
             ${{ env.BASE_CACHE_KEY }}
       - name: Install dependencies
-        run:
+        run: |
           python -m pip install --upgrade pip setuptools
           pip install --upgrade --requirement requirements-test.txt
       - name: Download Docker image artifact
@@ -479,7 +481,9 @@ jobs:
         with:
           name: image.tar.gz
       - name: Load Docker image
-        run: docker load < image.tar.gz
+        run: |
+          gunzip image.tar.gz
+          docker load < image.tar
       - name: Run tests
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
