@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 
 # cisagov Libraries
-from src.app.utils.utils import (
+from app.utils.utils import (
     FilePathInfo,
     PortType,
     _normalize_categories,
@@ -49,8 +49,8 @@ def test_normalize_categories(input_categories, expected_output):
 
 # --- Test FilePathInfo ---
 
-@patch('src.app.utils.utils.os.mkdir')
-@patch('src.app.utils.utils.Path.exists', return_value=False)
+@patch('app.utils.utils.os.mkdir')
+@patch('app.utils.utils.Path.exists', return_value=False)
 def test_filepath_info_creates_directories(mock_exists, mock_mkdir):
     pcap_dir = "/tmp/pcap_dir"
     zeek_dir = "/tmp/zeek_output"
@@ -58,7 +58,7 @@ def test_filepath_info_creates_directories(mock_exists, mock_mkdir):
     assessor_data_dir = "/tmp/assessor_data"
 
     # Mock Path.parent.exists for pcap_dir
-    with patch('src.app.utils.utils.Path.parent', new_callable=MagicMock) as mock_path_parent:
+    with patch('app.utils.utils.Path.parent', new_callable=MagicMock) as mock_path_parent:
         mock_path_parent.exists.return_value = False
 
         FilePathInfo(

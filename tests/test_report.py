@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 # cisagov Libraries
-from src.app.utils.report import (
+from app.utils.report import (
     ConnectionSuccessModule,
     DevicePanelModule,
     DevicesModule,
@@ -25,7 +25,7 @@ from src.app.utils.report import (
     SuspiciousOutboundConnectionsDetection,
     SuspiciousOutboundConnectionsModule,
 )
-from src.app.utils.utils import FilePathInfo, PortType
+from app.utils.utils import FilePathInfo, PortType
 
 # --- Fixtures for Analyzer and DataFrames ---
 
@@ -92,20 +92,20 @@ def mock_file_path_info():
 
 # --- Test Report Class ---
 
-@patch('src.app.utils.report.ServicePanelModule')
-@patch('src.app.utils.report.DevicePanelModule')
-@patch('src.app.utils.report.ServiceRiskBreakdownModule')
-@patch('src.app.utils.report.ServiceCountModule')
-@patch('src.app.utils.report.RiskBasisBreakdownModule')
-@patch('src.app.utils.report.ExposureBreakdownModule')
-@patch('src.app.utils.report.ProtocolPostureModule')
-@patch('src.app.utils.report.ConnectionSuccessModule')
-@patch('src.app.utils.report.SuspiciousOutboundConnectionsModule')
-@patch('src.app.utils.report.OTcrossSegmentLinesModule')
-@patch('src.app.utils.report.DevicesModule')
-@patch('src.app.utils.report.OTServicesModule')
-@patch('src.app.utils.report.OTcrossSegmentDetection')
-@patch('src.app.utils.report.SuspiciousOutboundConnectionsDetection')
+@patch('app.utils.report.ServicePanelModule')
+@patch('app.utils.report.DevicePanelModule')
+@patch('app.utils.report.ServiceRiskBreakdownModule')
+@patch('app.utils.report.ServiceCountModule')
+@patch('app.utils.report.RiskBasisBreakdownModule')
+@patch('app.utils.report.ExposureBreakdownModule')
+@patch('app.utils.report.ProtocolPostureModule')
+@patch('app.utils.report.ConnectionSuccessModule')
+@patch('app.utils.report.SuspiciousOutboundConnectionsModule')
+@patch('app.utils.report.OTcrossSegmentLinesModule')
+@patch('app.utils.report.DevicesModule')
+@patch('app.utils.report.OTServicesModule')
+@patch('app.utils.report.OTcrossSegmentDetection')
+@patch('app.utils.report.SuspiciousOutboundConnectionsDetection')
 def test_report_init(
     MockSuspiciousOutboundConnectionsDetection,
     MockOTcrossSegmentDetection,
@@ -260,7 +260,7 @@ class TestServicePanelModule:
 class TestServiceRiskBreakdownModule:
     def test_generate_data(self, mock_analyzer):
         # Mock the utility function and analyzer method
-        with patch('src.app.utils.report.count_values_in_list_column', return_value={'High': 1, 'Low': 2}):
+        with patch('app.utils.report.count_values_in_list_column', return_value={'High': 1, 'Low': 2}):
             mock_analyzer.service_category_map.return_value = {'High': ['SSH'], 'Low': ['HTTP', 'DNS']}
 
             module = ServiceRiskBreakdownModule(mock_analyzer)
@@ -318,7 +318,7 @@ class TestSuspiciousOutboundConnectionsModule:
         assert data == expected_data
 
 class TestOTcrossSegmentLinesModule:
-    @patch('src.app.utils.report.ipaddress.ip_address')
+    @patch('app.utils.report.ipaddress.ip_address')
     def test_is_excluded_cross_segment_ip(self, mock_ip_address):
         # Test cases for _is_excluded_cross_segment_ip
         mock_ip_address.return_value.is_link_local = False

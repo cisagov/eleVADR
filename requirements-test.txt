@@ -1,4 +1,5 @@
 --requirement requirements.txt
+httpx
 pre-commit
 pytest
 python-on-whales

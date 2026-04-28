@@ -9,8 +9,8 @@ import pandas as pd
 import pytest
 
 # cisagov Libraries
-from src.app.utils.analysis import Analyzer, PcapParser
-from src.app.utils.utils import FilePathInfo, PortType
+from app.utils.analysis import Analyzer, PcapParser
+from app.utils.utils import FilePathInfo, PortType
 
 
 # Fixture for FilePathInfo

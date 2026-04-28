@@ -17,7 +17,7 @@ import pytest
 # For now, let's assume it can be imported directly if tests are run from the project root
 # or if the src/app directory is added to PYTHONPATH.
 # If not, we might need to adjust sys.path or use a different import strategy.
-from src.app.main import (
+from app.main import (
     PCAP_CHUNK_SIZE,
     _emit,
     _progress_queues,
@@ -76,10 +76,10 @@ async def test_emit_queue_full():
     event = await _progress_queues[session_id].get()
     assert event == {"stage": "initial", "progress": 0, "message": "Initial message"}
 
-@patch('src.app.main.PcapParser')
-@patch('src.app.main.Analyzer')
-@patch('src.app.main.Report')
-@patch('src.app.main._emit')
+@patch('app.main.PcapParser')
+@patch('app.main.Analyzer')
+@patch('app.main.Report')
+@patch('app.main._emit')
 def test_run_analysis_success(mock_emit, MockReport, MockAnalyzer, MockPcapParser):
     mock_pcap_parser_instance = MockPcapParser.return_value
     mock_pcap_parser_instance.traffic_df = MagicMock(spec=pd.DataFrame)
@@ -126,8 +126,8 @@ def test_run_analysis_success(mock_emit, MockReport, MockAnalyzer, MockPcapParse
         if Path(output_path).exists():
             os.remove(output_path)
 
-@patch('src.app.main.PcapParser', side_effect=Exception("PcapParser error"))
-@patch('src.app.main._emit')
+@patch('app.main.PcapParser', side_effect=Exception("PcapParser error"))
+@patch('app.main._emit')
 def test_run_analysis_pcap_parser_failure(mock_emit, MockPcapParser):
     with tempfile.NamedTemporaryFile(suffix=".pcap", delete=False) as tmp_pcap:
         tmp_pcap.write(b"dummy pcap content")
@@ -147,7 +147,7 @@ def test_run_analysis_pcap_parser_failure(mock_emit, MockPcapParser):
 
 # @pytest.mark.asyncio
 # async def test_analyze_endpoint_success():
-#     with patch('src.app.main.run_analysis', new_callable=AsyncMock) as mock_run_analysis:
+#     with patch('app.main.run_analysis', new_callable=AsyncMock) as mock_run_analysis:
 #         mock_run_analysis.return_value = {"status": "success"}
 
 #         with tempfile.NamedTemporaryFile(suffix=".pcap", delete=False) as tmp_pcap:
@@ -193,7 +193,7 @@ async def test_analyze_endpoint_invalid_file_type():
 
 # @pytest.mark.asyncio
 # async def test_analyze_endpoint_analysis_failure():
-#     with patch('src.app.main.run_analysis', new_callable=AsyncMock) as mock_run_analysis:
+#     with patch('app.main.run_analysis', new_callable=AsyncMock) as mock_run_analysis:
 #         mock_run_analysis.side_effect = Exception("Internal analysis error")
 
 #         with tempfile.NamedTemporaryFile(suffix=".pcap", delete=False) as tmp_pcap:
