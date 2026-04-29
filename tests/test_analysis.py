@@ -90,8 +90,8 @@ def dummy_services_df():
     return pd.DataFrame(data)
 
 class TestPcapParser:
-    @patch('src.app.utils.analysis.subprocess.check_output')
-    @patch('src.app.utils.analysis.Path.mkdir')
+    @patch('app.utils.analysis.subprocess.check_output')
+    @patch('app.utils.analysis.Path.mkdir')
     def test_zeekify(self, mock_mkdir, mock_check_output, mock_file_path_info):
         parser = PcapParser(mock_file_path_info)
         parser.zeekify()
@@ -113,9 +113,9 @@ class TestPcapParser:
         ])
         assert mock_check_output.call_count == 2
 
-    @patch('src.app.utils.analysis.LogToDataFrame')
-    @patch('src.app.utils.analysis.PcapParser.zeekify')
-    @patch('src.app.utils.analysis.Path.exists', return_value=True)
+    @patch('app.utils.analysis.LogToDataFrame')
+    @patch('app.utils.analysis.PcapParser.zeekify')
+    @patch('app.utils.analysis.Path.exists', return_value=True)
     def test_pcap_parser_init(self, mock_path_exists, mock_zeekify, MockLogToDataFrame, mock_file_path_info):
         # Mock LogToDataFrame to return a dummy DataFrame for conn.log
         mock_log_to_df_instance = MockLogToDataFrame.return_value
@@ -160,19 +160,19 @@ class TestAnalyzer:
     ])
     def test_is_excluded_cross_segment_ip(self, ip_value, expected):
         # Analyzer constructor calls other methods, mock them to isolate _is_excluded_cross_segment_ip
-        with patch('src.app.utils.analysis.Analyzer.get_assessor_data'), \
-             patch('src.app.utils.analysis.Analyzer.traffic_df_processing'), \
-             patch('src.app.utils.analysis.Analyzer.endpoints_df_processing'), \
-             patch('src.app.utils.analysis.Analyzer.services_df_processing'):
+        with patch('app.utils.analysis.Analyzer.get_assessor_data'), \
+             patch('app.utils.analysis.Analyzer.traffic_df_processing'), \
+             patch('app.utils.analysis.Analyzer.endpoints_df_processing'), \
+             patch('app.utils.analysis.Analyzer.services_df_processing'):
             analyzer = Analyzer(pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), MagicMock())
             assert analyzer._is_excluded_cross_segment_ip(ip_value) == expected
 
-    @patch('src.app.utils.analysis.pd.read_parquet')
+    @patch('app.utils.analysis.pd.read_parquet')
     @patch('builtins.open', new_callable=MagicMock)
     @patch('json.load')
-    @patch('src.app.utils.analysis.Analyzer.traffic_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.endpoints_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.services_df_processing')
+    @patch('app.utils.analysis.Analyzer.traffic_df_processing')
+    @patch('app.utils.analysis.Analyzer.endpoints_df_processing')
+    @patch('app.utils.analysis.Analyzer.services_df_processing')
     def test_get_assessor_data(self, mock_services_df_processing, mock_endpoints_df_processing,
                                mock_traffic_df_processing, mock_json_load, mock_open, mock_read_parquet, mock_file_path_info):
         # Mock return values for parquet and json files
@@ -203,14 +203,14 @@ class TestAnalyzer:
         assert analyzer.manufacturers_df.index.name == "oui"
         assert "manufacturer" in analyzer.manufacturers_df.columns
 
-    @patch('src.app.utils.analysis.check_ip_version', side_effect=lambda ip: 4 if ip.startswith('192') else 6)
-    @patch('src.app.utils.analysis.connection_type_processing', return_value='unicast')
-    @patch('src.app.utils.analysis.traffic_direction', return_value='inbound')
-    @patch('src.app.utils.analysis.subnet_membership', side_effect=lambda row: row)
-    @patch('src.app.utils.analysis.service_processing', side_effect=lambda row, ports_df, port_risk_df: row)
-    @patch('src.app.utils.analysis.Analyzer.get_assessor_data')
-    @patch('src.app.utils.analysis.Analyzer.endpoints_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.services_df_processing')
+    @patch('app.utils.analysis.check_ip_version', side_effect=lambda ip: 4 if ip.startswith('192') else 6)
+    @patch('app.utils.analysis.connection_type_processing', return_value='unicast')
+    @patch('app.utils.analysis.traffic_direction', return_value='inbound')
+    @patch('app.utils.analysis.subnet_membership', side_effect=lambda row: row)
+    @patch('app.utils.analysis.service_processing', side_effect=lambda row, ports_df, port_risk_df: row)
+    @patch('app.utils.analysis.Analyzer.get_assessor_data')
+    @patch('app.utils.analysis.Analyzer.endpoints_df_processing')
+    @patch('app.utils.analysis.Analyzer.services_df_processing')
     def test_traffic_df_processing(self, mock_services_df_processing, mock_endpoints_df_processing,
                                    mock_get_assessor_data, mock_service_processing, mock_subnet_membership,
                                    mock_traffic_direction, mock_connection_type_processing, mock_check_ip_version,
@@ -231,10 +231,10 @@ class TestAnalyzer:
         assert 'connection_info.type_name' in analyzer.traffic_df.columns
         assert 'connection_info.direction_name' in analyzer.traffic_df.columns
 
-    @patch('src.app.utils.analysis.Analyzer.get_assessor_data')
-    @patch('src.app.utils.analysis.Analyzer.traffic_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.endpoints_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.services_df_processing')
+    @patch('app.utils.analysis.Analyzer.get_assessor_data')
+    @patch('app.utils.analysis.Analyzer.traffic_df_processing')
+    @patch('app.utils.analysis.Analyzer.endpoints_df_processing')
+    @patch('app.utils.analysis.Analyzer.services_df_processing')
     def test_service_counts_in_traffic(self, mock_services_df_processing, mock_endpoints_df_processing,
                                        mock_traffic_df_processing, mock_get_assessor_data):
         # Create a dummy traffic_df for service counting
@@ -261,10 +261,10 @@ class TestAnalyzer:
             'UNKNOWN_SERVICE_54321': 1
         }
 
-    @patch('src.app.utils.analysis.Analyzer.get_assessor_data')
-    @patch('src.app.utils.analysis.Analyzer.traffic_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.endpoints_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.services_df_processing')
+    @patch('app.utils.analysis.Analyzer.get_assessor_data')
+    @patch('app.utils.analysis.Analyzer.traffic_df_processing')
+    @patch('app.utils.analysis.Analyzer.endpoints_df_processing')
+    @patch('app.utils.analysis.Analyzer.services_df_processing')
     def test_service_category_map(self, mock_services_df_processing, mock_endpoints_df_processing,
                                   mock_traffic_df_processing, mock_get_assessor_data):
         # Create a dummy services_df for category mapping
@@ -303,14 +303,14 @@ class TestAnalyzer:
         info_map_empty = analyzer_empty_cat.service_category_map("service.information_categories")
         assert info_map_empty == {}
 
-    @patch('src.app.utils.analysis.set_manufacturers', side_effect=lambda row, df: row)
-    @patch('src.app.utils.analysis.is_using_ot_services', return_value=False)
-    @patch('src.app.utils.analysis.is_communicating_with_ot_hosts', side_effect=lambda row, traffic_df, ot_ips: row)
-    @patch('src.app.utils.analysis.is_public_ip', return_value=False)
-    @patch('src.app.utils.analysis.check_ip_version', side_effect=lambda ip: 4 if ip.startswith('192') else 6)
-    @patch('src.app.utils.analysis.Analyzer.get_assessor_data')
-    @patch('src.app.utils.analysis.Analyzer.traffic_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.services_df_processing')
+    @patch('app.utils.analysis.set_manufacturers', side_effect=lambda row, df: row)
+    @patch('app.utils.analysis.is_using_ot_services', return_value=False)
+    @patch('app.utils.analysis.is_communicating_with_ot_hosts', side_effect=lambda row, traffic_df, ot_ips: row)
+    @patch('app.utils.analysis.is_public_ip', return_value=False)
+    @patch('app.utils.analysis.check_ip_version', side_effect=lambda ip: 4 if ip.startswith('192') else 6)
+    @patch('app.utils.analysis.Analyzer.get_assessor_data')
+    @patch('app.utils.analysis.Analyzer.traffic_df_processing')
+    @patch('app.utils.analysis.Analyzer.services_df_processing')
     def test_endpoints_df_processing(self, mock_services_df_processing, mock_traffic_df_processing,
                                      mock_get_assessor_data, mock_check_ip_version, mock_is_public_ip,
                                      mock_is_communicating_with_ot_hosts, mock_is_using_ot_services,
@@ -383,10 +383,10 @@ class TestAnalyzer:
         mock_is_communicating_with_ot_hosts.assert_called()
         mock_is_public_ip.assert_called()
 
-    @patch('src.app.utils.analysis.Analyzer.get_assessor_data')
-    @patch('src.app.utils.analysis.Analyzer.traffic_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.endpoints_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.services_df_processing')
+    @patch('app.utils.analysis.Analyzer.get_assessor_data')
+    @patch('app.utils.analysis.Analyzer.traffic_df_processing')
+    @patch('app.utils.analysis.Analyzer.endpoints_df_processing')
+    @patch('app.utils.analysis.Analyzer.services_df_processing')
     def test_ot_cross_segment_communication_count(self, mock_services_df_processing, mock_endpoints_df_processing,
                                                   mock_traffic_df_processing, mock_get_assessor_data, mock_file_path_info):
         # Setup traffic_df with cross-segment communication
@@ -508,10 +508,10 @@ class TestAnalyzer:
 
 
 class TestConnectionSuccess:
-    @patch('src.app.utils.analysis.Analyzer.get_assessor_data')
-    @patch('src.app.utils.analysis.Analyzer.traffic_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.endpoints_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.services_df_processing')
+    @patch('app.utils.analysis.Analyzer.get_assessor_data')
+    @patch('app.utils.analysis.Analyzer.traffic_df_processing')
+    @patch('app.utils.analysis.Analyzer.endpoints_df_processing')
+    @patch('app.utils.analysis.Analyzer.services_df_processing')
     def test_connection_success_summary_sf_only(self, *_mocks, mock_file_path_info):
         traffic_df = pd.DataFrame({
             'src_endpoint.ip': ['1.1.1.1', '2.2.2.2', '3.3.3.3', '4.4.4.4'],
@@ -528,10 +528,10 @@ class TestConnectionSuccess:
         assert summary['unsuccessful_count'] == 2
         assert summary['by_state']['SF'] == 2
 
-    @patch('src.app.utils.analysis.Analyzer.get_assessor_data')
-    @patch('src.app.utils.analysis.Analyzer.traffic_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.endpoints_df_processing')
-    @patch('src.app.utils.analysis.Analyzer.services_df_processing')
+    @patch('app.utils.analysis.Analyzer.get_assessor_data')
+    @patch('app.utils.analysis.Analyzer.traffic_df_processing')
+    @patch('app.utils.analysis.Analyzer.endpoints_df_processing')
+    @patch('app.utils.analysis.Analyzer.services_df_processing')
     def test_connection_success_lines_success_flag(self, *_mocks, mock_file_path_info):
         traffic_df = pd.DataFrame({
             'src_endpoint.ip': ['1.1.1.1', '2.2.2.2'],
