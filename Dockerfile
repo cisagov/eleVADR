@@ -1,5 +1,5 @@
 # Multi-stage build for optimized image size
-FROM ubuntu:24.04 AS builder
+FROM ubuntu:22.04 AS builder
 
 # Avoid interactive prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
@@ -54,8 +54,8 @@ ENV PATH="/opt/zeek/bin:${PATH}"
 # Set working directory
 WORKDIR /app
 
-# Copy requirements first for better layer caching
-COPY requirements.txt .
+# Copy project metadata and requirements first for better layer caching
+COPY pyproject.toml README.md requirements.txt ./
 
 # Install Python dependencies
 # Mount the cert secret again for pip's SSL verification
@@ -68,6 +68,9 @@ RUN --mount=type=secret,id=ssl_cert,required=false \
 
 # Copy application code
 COPY src/app/ ./app
+
+# Install app as a package
+RUN pip3 install .
 
 # Convert JSON reference data to Parquet for reduced disk footprint,
 # then remove the JSON source files to keep the image lean
