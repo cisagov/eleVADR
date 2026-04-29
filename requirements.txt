@@ -4,4 +4,4 @@ pyarrow
 python-multipart
 pyyaml==6.0.3
 uvicorn[standard]
-zat==0.4.7
+zat==0.4.9
