@@ -1,5 +1,5 @@
 # Multi-stage build for optimized image size
-FROM ubuntu:22.04 AS builder
+FROM ubuntu:24.04 AS builder
 
 # Avoid interactive prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
@@ -26,7 +26,7 @@ RUN --mount=type=secret,id=ssl_cert,required=false \
     && rm -rf /var/lib/apt/lists/*
 
 # Final stage
-FROM python:3.10-slim
+FROM python:3.13-slim
 
 # Avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
@@ -67,7 +67,7 @@ RUN --mount=type=secret,id=ssl_cert,required=false \
     fi
 
 # Copy application code
-COPY src/app/ .
+COPY src/app/ ./app
 
 # Convert JSON reference data to Parquet for reduced disk footprint,
 # then remove the JSON source files to keep the image lean
