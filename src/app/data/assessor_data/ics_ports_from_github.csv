@@ -1,0 +1,229 @@
+Port Number,Service Name,Transport Protocol,Description,Source
+1089,Foundation Fieldbus HSE,"tcp, udp",Foundation Fieldbus HSE,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+1090,Foundation Fieldbus HSE,"tcp, udp",Foundation Fieldbus HSE,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+1091,Foundation Fieldbus HSE,"tcp, udp",Foundation Fieldbus HSE,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+1541,Foxboro/Invensys Foxboro DCS Informix,"tcp, udp",Foxboro/Invensys Foxboro DCS Informix,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+2222,EtherNet/IP,udp,EtherNet/IP,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+3480,OPC UA Discovery Server,tcp,OPC UA Discovery Server,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+4000,Emerson/Fisher ROC Plus,"tcp, udp",Emerson/Fisher ROC Plus,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+5050,Telvent OASyS DNA,udp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+5051,Telvent OASyS DNA,udp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+5052,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+5065,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+5450,OSIsoft PI Server,tcp,OSIsoft PI Server,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+9600,OMRON FINS protocol,"tcp, udp",OMRON FINS protocol,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10307,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10311,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10364,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10365,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10407,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10409,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10410,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10412,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10414,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10415,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10428,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10431,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10432,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10447,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10449,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+10450,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+11001,Johnson Controls Metasys N1,"tcp, udp",Johnson Controls Metasys N1,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+12135,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+12136,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+12137,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+12316,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+12645,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+12647,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+12648,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+13722,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+13724,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+13782,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+13783,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+18000,Iconic Genesis32 GenBroker (TCP),tcp,Iconic Genesis32 GenBroker (TCP),https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+20000,DNP3,"tcp, udp",DNP3,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+34962,PROFINET,"tcp, udp",PROFINET,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+34963,PROFINET,"tcp, udp",PROFINET,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+34964,PROFINET,"tcp, udp",PROFINET,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+34980,EtherCAT,udp,EtherCAT,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38000,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38001,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38011,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38012,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38014,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38015,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38200,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38210,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38301,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38400,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38589,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38593,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38600,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38700,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+38971,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+39129,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+39278,ABB Ranger 2003,tcp,ABB Ranger 2003,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+44818,EtherNet/IP,"tcp, udp",EtherNet/IP,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+45678,Foxboro/Invensys Foxboro DCS AIMAPI,"tcp, udp",Foxboro/Invensys Foxboro DCS AIMAPI,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+47808,BACnet/IP,udp,BACnet/IP,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50001,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50002,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50003,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50004,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50005,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50006,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50007,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50008,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50009,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50010,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50011,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50012,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50013,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50014,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50015,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50016,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50018,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50019,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50020,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50020,Siemens Spectrum Power TG,udp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50021,Siemens Spectrum Power TG,udp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50025,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50026,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50027,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50028,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50110,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+50111,Siemens Spectrum Power TG,tcp,Siemens Spectrum Power TG,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+55000,FL-net Reception,udp,FL-net Reception,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+55001,FL-net Reception,udp,FL-net Reception,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+55002,FL-net Reception,udp,FL-net Reception,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+55003,FL-net Transmission,udp,FL-net Transmission,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+55555,Foxboor/Invensys Foxboro DCS FoxAPI,"tcp, udp",Foxboor/Invensys Foxboro DCS FoxAPI,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56001,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56002,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56003,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56004,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56005,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56006,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56007,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56008,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56009,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56010,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56011,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56012,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56013,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56014,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56015,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56016,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56017,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56018,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56019,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56020,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56021,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56022,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56023,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56024,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56025,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56026,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56027,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56028,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56029,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56030,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56031,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56032,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56033,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56034,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56035,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56036,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56037,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56038,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56039,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56040,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56041,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56042,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56043,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56044,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56045,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56046,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56047,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56048,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56049,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56050,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56051,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56052,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56053,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56054,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56055,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56056,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56057,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56058,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56059,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56060,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56061,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56062,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56063,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56064,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56065,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56066,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56067,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56068,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56069,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56070,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56071,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56072,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56073,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56074,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56075,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56076,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56077,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56078,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56079,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56080,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56081,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56082,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56083,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56084,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56085,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56086,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56087,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56088,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56089,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56090,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56091,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56092,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56093,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56094,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56095,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56096,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56097,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56098,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+56099,Telvent OASyS DNA,tcp,Telvent OASyS DNA,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+62900,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+62911,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+62924,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+62930,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+62938,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+62956,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+62957,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+62963,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+62981,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+62982,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+62985,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+62992,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63012,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63027,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63028,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63029,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63030,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63031,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63032,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63033,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63034,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63035,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63036,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63041,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63075,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63079,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63082,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63088,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+63094,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols
+65443,SNC GENe,tcp,SNC GENe,https://github.com/ITI/ICS-Security-Tools/tree/master/protocols

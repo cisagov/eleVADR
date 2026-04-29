@@ -1,0 +1,7 @@
+fastapi
+pandas==2.2.3
+pyarrow
+python-multipart
+pyyaml==6.0.3
+uvicorn[standard]
+zat==0.4.7

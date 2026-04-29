@@ -1,0 +1,137 @@
+---
+ICS_manufacturer_search_words:
+  - siemens
+  - abb
+  - yokogawa
+  - abb
+  - schneider electric
+  - emerson
+  - honeywell
+  - general electric
+  - schweitzer engineering
+  - alstom
+  - unitronics
+  - rockwell
+  - omron
+  - beckhoff
+  - mitsubishi
+  - hitachi
+  - delta electronics
+  - red lion controls
+  - bosch rexroth
+  - texas instruments
+  - scada
+  - idec
+  - phoenix contact
+  - eaton
+  - automation
+  - seedsware
+  - intelligent platform
+
+# ICS_ports:
+#   502: Modbus
+#   10307: Ranger 2003
+#   10311: Ranger 2003
+#   10364: Ranger 2003
+#   10365: Ranger 2003
+#   10407: Ranger 2003
+#   10409: Ranger 2003
+#   10410: Ranger 2003
+#   10412: Ranger 2003
+#   10414: Ranger 2003
+#   10415: Ranger 2003
+#   10428: Ranger 2003
+#   10431: Ranger 2003
+#   10432: Ranger 2003
+#   10447: Ranger 2003
+#   10449: Ranger 2003
+#   10450: Ranger 2003
+#   12316: Ranger 2003
+#   12645: Ranger 2003
+#   12647: Ranger 2003
+#   12648: Ranger 2003
+#   13722: Ranger 2003
+#   13724: Ranger 2003
+#   13782: Ranger 2003
+#   13783: Ranger 2003
+#   38589: Ranger 2003
+#   38593: Ranger 2003
+#   38600: Ranger 2003
+#   38971: Ranger 2003
+#   39129: Ranger 2003
+#   39278: Ranger 2003
+#   4000: ROC Plus
+#   55555: Foxboro DCS FoxApi
+#   45678: Foxboro DCS AIMAPI
+#   1541: Foxboro DCS Informix
+#   18000: Genesis32 GenBroker (TCP)
+#   11001: Metasys N1
+#   47808: Metasys BACNet
+#   5450: PI Server
+#   50001: Spectrum Power TG
+#   50016: Spectrum Power TG
+#   50018: Spectrum Power TG
+#   50020: Spectrum Power TG
+#   50021: Spectrum Power TG
+#   50025: Spectrum Power TG
+#   50028: Spectrum Power TG
+#   50110: Spectrum Power TG
+#   50111: Spectrum Power TG
+#   38000: GENe
+#   38001: GENe
+#   38011: GENe
+#   38012: GENe
+#   38014: GENe
+#   38015: GENe
+#   38200: GENe
+#   38210: GENe
+#   38301: GENe
+#   38400: GENe
+#   38700: GENe
+#   62900: GENe
+#   62911: GENe
+#   62924: GENe
+#   62930: GENe
+#   62938: GENe
+#   62956: GENe
+#   62957: GENe
+#   62963: GENe
+#   62981: GENe
+#   62982: GENe
+#   62985: GENe
+#   62992: GENe
+#   63012: GENe
+#   63027: GENe
+#   63028: GENe
+#   63029: GENe
+#   63030: GENe
+#   63031: GENe
+#   63032: GENe
+#   63033: GENe
+#   63034: GENe
+#   63035: GENe
+#   63036: GENe
+#   63041: GENe
+#   63075: GENe
+#   63079: GENe
+#   63082: GENe
+#   63088: GENe
+#   63094: GENe
+#   65443: GENe
+#   5050: OASyS DNA
+#   5051: OASyS DNA
+#   5052: OASyS DNA
+#   5065: OASyS DNA
+#   12135: OASyS DNA
+#   12136: OASyS DNA
+#   12137: OASyS DNA
+#   56001: OASyS DNA
+#   56099: OASyS DNA
+#   9600: FINS communication protocol
+#   44818: Rockwell
+Insecure_Protocols:
+  20: FTP
+  21: FTP
+  22: Telnet
+  23: Telnet
+  381: LDAP

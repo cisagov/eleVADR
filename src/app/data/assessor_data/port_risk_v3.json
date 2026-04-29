@@ -1,0 +1,2329 @@
+{
+  "0": {
+    "description": "Excess multicast saturates deterministic control loops and hides discovery scans. Filter 224.0.0.0/4,\ndisable unused L2 protocols (CDP, LLDP), and rate-limit IGMP.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Anomalous Traffic Detection",
+      "Multicast"
+    ],
+    "protocol_posture": null,
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "Generic Multicast / Broadcast (mDNS, SSDP, EIGRP, IGMP floods)"
+  },
+  "1025-1028": {
+    "description": "Dynamic RPC endpoints that slide through poorly written ACLs; many ICS malware families (Industroyer,\nLockerGoga) keep beacons here.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows DCOM High"
+  },
+  "10307": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "10311": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "10364-10365": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "10407": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "10409-10410": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "10412": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "10414-10415": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "10428": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "10431-10432": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "10447": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "10449-10450": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "1089": {
+    "description": "Foundation Fieldbus HSE",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ff-annunc"
+  },
+  "1090": {
+    "description": "Foundation Fieldbus HSE",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ff-fms"
+  },
+  "1091": {
+    "description": "Foundation Fieldbus HSE",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ff-sm"
+  },
+  "110": {
+    "description": "Old maintenance accounts still pull backups via POP3. Clear-text credentials harvested here often unlock\nVPN or jump-host access.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Messaging Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Messaging Protocol",
+      "Unencrypted Protocol"
+    ],
+    "service": "POP3"
+  },
+  "11001": {
+    "description": "Johnson Controls Metasys N1",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "metasys"
+  },
+  "111": {
+    "description": "Enumerates NFS/lockd services; widely exploited for recon or UDP reflection DDoS.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Network Discovery"
+    ],
+    "protocol_posture": null,
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Network Discovery"
+    ],
+    "service": "RPCbind / Portmapper"
+  },
+  "12135-12137": {
+    "description": "Telvent OASyS DNA",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "Telvent OASyS DNA"
+  },
+  "123": {
+    "description": "Open NTP daemons aid DDoS and encode covert data in extension fields. Time skew disrupts alarm correlation\nand event forensics.\n",
+    "environment_exposure": "External",
+    "information_categories": [
+      "Infrastructure Service"
+    ],
+    "protocol_posture": null,
+    "risk_basis": "Observed",
+    "risk_categories": [
+      "Amplification/Reflection"
+    ],
+    "service": "NTP"
+  },
+  "12316": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "12345": {
+    "description": "\u201cnc -l -p 12345 -e /bin/sh\u201d is still copy-pasted by red-teamers. Block and monitor for outbound 12345/udp\npayloads in DPI engines.\n",
+    "environment_exposure": "External",
+    "information_categories": [],
+    "protocol_posture": "Inherently Risky",
+    "risk_basis": "Observed",
+    "risk_categories": [
+      "C2 Channel",
+      "Lateral Movement"
+    ],
+    "service": "Netcat / Back-orifice common alt"
+  },
+  "12645": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "12647-12648": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "135": {
+    "description": "Core to OPC Classic. EternalBlue-style exploits jump zones, inject shellcode, and create service backdoors.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "MS-RPC / DCOM"
+  },
+  "137": {
+    "description": "NBNS spoofing yields hostname hijack and credential capture with ease.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Network Discovery"
+    ],
+    "protocol_posture": "Inherently Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Network Discovery",
+      "Unencrypted Protocol"
+    ],
+    "service": "NetBIOS-NS"
+  },
+  "13722": {
+    "description": "BP Java MSVC Protocol, ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "bpjava-msvc, ABB Ranger 2003"
+  },
+  "13724": {
+    "description": "Veritas Network Utility, ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "vnetd, ABB Ranger 2003"
+  },
+  "13782": {
+    "description": "VERITAS NetBackup, ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "bpcd, ABB Ranger 2003"
+  },
+  "13783": {
+    "description": "VOPIED Protocol, ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "vopied, ABB Ranger 2003"
+  },
+  "138": {
+    "description": "Connection-less broadcasts leak asset inventory; datagram spoofing can DoS antiquated HMI nodes.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Network Discovery"
+    ],
+    "protocol_posture": "Inherently Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Network Discovery",
+      "Unencrypted Protocol"
+    ],
+    "service": "NetBIOS-Datagram"
+  },
+  "139": {
+    "description": "Grants unauthenticated share enumeration; attackers copy recipe files or drop ransomware loaders.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "File Sharing"
+    ],
+    "protocol_posture": "Inherently Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "File Sharing",
+      "Legacy Protocol",
+      "Unencrypted Protocol"
+    ],
+    "service": "NetBIOS-Session"
+  },
+  "143": {
+    "description": "Clear-text email retrieval\u2014the harvested creds often unlock VPN or Windows domain accounts used by OT staff.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Messaging Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Messaging Protocol",
+      "Unencrypted Protocol"
+    ],
+    "service": "IMAP"
+  },
+  "1433": {
+    "description": "OT historians often run as \u2018sa\u2019. SQL injection or credential reuse exposes years of batch records and\nrecipe logs.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Database Services",
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access"
+    ],
+    "service": "MS-SQL"
+  },
+  "1434": {
+    "description": "UDP pings return instance names, ports, and versions\u2014ideal for automated exploit kits.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Database Services",
+      "Network Discovery"
+    ],
+    "protocol_posture": null,
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Network Discovery"
+    ],
+    "service": "MS-SQL Browser"
+  },
+  "1521": {
+    "description": "Oracle DBs underpin MES/ERP links; SID brute-force plus default \u2018SCOTT/TIGER\u2019 still lands shells in older\nplants.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Database Services",
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access"
+    ],
+    "service": "Oracle TNS"
+  },
+  "1541": {
+    "description": "rds2, Foxboro/Invensys Foxboro DCS Informix",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "rds2, Foxboro/Invensys Foxboro DCS Informix"
+  },
+  "161": {
+    "description": "\u201cpublic/private\u201d communities expose switch configs, VLAN IDs, and process P&IDs. Write access flips\nnetwork-gear ACLs in seconds.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Management & Monitoring"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Unencrypted Protocol"
+    ],
+    "service": "SNMP"
+  },
+  "162": {
+    "description": "Spoofed traps suppress real alarms or trigger disruptive fail-open states in safety logic.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Management & Monitoring"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Unencrypted Protocol"
+    ],
+    "service": "SNMP Trap"
+  },
+  "1701": {
+    "description": "Frequently deployed without IPsec. Gives adversaries an easy intra-plant tunnel if pre-shared keys leak.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "VPN"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access"
+    ],
+    "service": "L2TP"
+  },
+  "18000": {
+    "description": "Beckman Instruments, Inc., Iconic Genesis32 GenBroker (TCP)",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "biimenu, Iconic Genesis32 GenBroker (TCP)"
+  },
+  "2049": {
+    "description": "UID/GID spoofing mounts controller backups, batch files, or recipe libraries. OT often lacks Kerberos/AES\nfor secure NFSv4.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "File Sharing"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "File Sharing",
+      "Unencrypted Protocol"
+    ],
+    "service": "NFS"
+  },
+  "21": {
+    "description": "Plain-text credentials and data; brute-force and directory-traversal exploits let adversaries exfil PLC\nprograms or drop rogue firmware.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "File Transfer"
+    ],
+    "protocol_posture": "Inherently Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "File Transfer",
+      "Unencrypted Protocol"
+    ],
+    "service": "FTP"
+  },
+  "22": {
+    "description": "Safe when hardened, but weak keys, SSHv1 fall-back, or unmanaged key sprawl enable covert tunnelling,\nlateral movement, and persistent access. \n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Secure Protocol (if SSHv2)"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access"
+    ],
+    "service": "SSH"
+  },
+  "2221": {
+    "description": "EtherNet/IP over DTLS, EtherNet/IP over TLS",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ethernet-ip-s"
+  },
+  "2222": {
+    "description": "EtherNet/IP",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "EtherNet/IP"
+  },
+  "23": {
+    "description": "Zero confidentiality or integrity. Sniffing yields clear-text passwords, allowing live writes to controller CLIs.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Inherently Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access",
+      "Unencrypted Protocol"
+    ],
+    "service": "Telnet"
+  },
+  "2375": {
+    "description": "Exposes root-level container control; \u2018docker run --privileged\u2019 gives instant host escape. Seen on edge\ngateways where devs enabled remote build.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Container / DevOps"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Unencrypted Protocol"
+    ],
+    "service": "Docker Remote API"
+  },
+  "2376": {
+    "description": "Security collapses if the TLS CA is public or if daemon runs with `--tlsverify` disabled.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Container / DevOps",
+      "Secure Protocol (if client certs)"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "Docker TLS API"
+  },
+  "2483-2484": {
+    "description": "2483 = clear-text; 2484 = TLS. Mismatched configuration silently falls back to insecure 2483.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Database Services"
+    ],
+    "protocol_posture": null,
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "Oracle Secure TNS"
+  },
+  "25": {
+    "description": "Phishing, relay abuse, and data-exfil tunnels via encoded attachments or header fields. OT alarms sent\nby PLCs reveal topology and operator emails.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Messaging Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Messaging Protocol",
+      "Unencrypted Protocol"
+    ],
+    "service": "SMTP"
+  },
+  "2525": {
+    "description": "Cloud relays default here when 25/587 blocked. Apply same SPF/DKIM/MTA-STS controls to prevent spoofing.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Messaging Protocol"
+    ],
+    "protocol_posture": null,
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Messaging Protocol"
+    ],
+    "service": "Alternative SMTP"
+  },
+  "27017": {
+    "description": "Default \u201cbindIp 0.0.0.0\u201d + no auth: ransomware wipes historian data, then sells copies of production\nmetrics.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Database Services"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Unencrypted Protocol"
+    ],
+    "service": "MongoDB"
+  },
+  "27018-27019": {
+    "description": "Sharded clusters often exposed internally with no TLS; compromise lets attackers rewrite process data.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Database Services"
+    ],
+    "protocol_posture": null,
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "MongoDB Shard/Config"
+  },
+  "3000": {
+    "description": "By default no TLS and admin:admin. Compromise provides query access to OPC UA back-ends and process KPIs.\n",
+    "environment_exposure": "External",
+    "information_categories": [
+      "Monitoring & Visualization",
+      "Web Communication"
+    ],
+    "protocol_posture": null,
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Web Communication"
+    ],
+    "service": "Grafana"
+  },
+  "3306": {
+    "description": "Hard-coded creds in SCADA apps still common. SQL map and MySQL-dump exfil entire historian schemas.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Database Services",
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access"
+    ],
+    "service": "MySQL"
+  },
+  "3389": {
+    "description": "Brute-force, BlueKeep (CVE-2019-0708), clipboard exfil, and drive-redirection all threaten integrity of\nLevel-1 & Level-2 assets.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access"
+    ],
+    "service": "RDP"
+  },
+  "3480": {
+    "description": "Secure Virtual Workspace, OPC UA Discovery Server",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "plethora, OPC UA Discovery Server"
+  },
+  "38000": {
+    "description": "InfoVista Server Database, SNC GENe",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ivs-database, SNC GENe"
+  },
+  "38001": {
+    "description": "InfoVista Server Insertion, SNC GENe",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ivs-insertion, SNC GENe"
+  },
+  "38011-38012": {
+    "description": "SNC GENe",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "SNC GENe"
+  },
+  "38014-38015": {
+    "description": "SNC GENe",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "SNC GENe"
+  },
+  "38200": {
+    "description": "SNC GENe",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "SNC GENe"
+  },
+  "38210": {
+    "description": "SNC GENe",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "SNC GENe"
+  },
+  "38301": {
+    "description": "SNC GENe",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "SNC GENe"
+  },
+  "38400": {
+    "description": "SNC GENe",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "SNC GENe"
+  },
+  "38589": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "38593": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "38600": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "38700": {
+    "description": "SNC GENe",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "SNC GENe"
+  },
+  "389": {
+    "description": "Active Directory queries in clear-text expose usernames, group membership, and password-policy info.\nLDAP-signing & channel binding are rarely enabled in mixed-vendor OT domains.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Directory Service"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Unencrypted Protocol"
+    ],
+    "service": "LDAP"
+  },
+  "38971": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "39129": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "39278": {
+    "description": "ABB Ranger 2003",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ABB Ranger 2003"
+  },
+  "4000": {
+    "description": "Terabase, Emerson/Fisher ROC Plus",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "terabase, Emerson/Fisher ROC Plus"
+  },
+  "4011": {
+    "description": "Rogue PXE server pushes attacker-controlled boot images to HMI thin clients during power-up.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Infrastructure Service"
+    ],
+    "protocol_posture": null,
+    "risk_basis": "Observed",
+    "risk_categories": [
+      "Rogue Services"
+    ],
+    "service": "PXE-TFTP"
+  },
+  "4022": {
+    "description": "Message queues carry batch instructions; intercepted traffic allows injection of bogus work orders.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Database Services",
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access"
+    ],
+    "service": "MS-SQL Service Broker"
+  },
+  "443": {
+    "description": "Safe only with valid certs, strict-TLS, and HSTS. Self-signed or expired\u2010cert devices downgrade to\nSSL 3.0 / TLS 1.0\u2014easy prey for downgrade or BEAST attacks.\n",
+    "environment_exposure": "External",
+    "information_categories": [
+      "Secure Protocol (if configured)",
+      "Web Communication"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Web Communication"
+    ],
+    "service": "HTTPS"
+  },
+  "4444": {
+    "description": "Unexpected listeners here are textbook post-exploitation. Block outbound 4444/4443 and monitor for new\nLISTEN sockets.\n",
+    "environment_exposure": "External",
+    "information_categories": [],
+    "protocol_posture": "Inherently Risky",
+    "risk_basis": "Observed",
+    "risk_categories": [
+      "C2 Channel",
+      "Lateral Movement"
+    ],
+    "service": "Netcat / Meterpreter default"
+  },
+  "445": {
+    "description": "EternalBlue, NotPetya, Ryuk, and countless worm families pivot here. Disable SMBv1, require SMB signing,\nand isolate engineering shares.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "File Sharing",
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "File Sharing",
+      "Remote Access",
+      "Unencrypted Protocol"
+    ],
+    "service": "SMB"
+  },
+  "44818": {
+    "description": "EtherNet/IP",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "EtherNet/IP"
+  },
+  "45678": {
+    "description": "EBA PRISE, Foxboro/Invensys Foxboro DCS AIMAPI",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "eba, Foxboro/Invensys Foxboro DCS AIMAPI"
+  },
+  "464": {
+    "description": "Password-change channel; malicious password-spray generates noisy kpasswd traffic\u2014good IOC for brute\nforcing.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Authentication Service"
+    ],
+    "protocol_posture": null,
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "Kerberos kpasswd"
+  },
+  "47808": {
+    "description": "Building Automation and Control Networks",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "bacnet"
+  },
+  "49152-50000": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "500": {
+    "description": "Weak pre-shared keys or aggressive-mode IKE v1 leak hash material; compromises site-to-site tunnels that\nbridge OT to corp IT.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Infrastructure Service",
+      "VPN"
+    ],
+    "protocol_posture": null,
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "IKE / IPsec"
+  },
+  "5000": {
+    "description": "Engineers prototype quick dashboards but forget to add auth; attackers trigger flow uploads that run\nshell commands on the OT gateway.\n",
+    "environment_exposure": "External",
+    "information_categories": [
+      "IoT Framework",
+      "Web Communication"
+    ],
+    "protocol_posture": null,
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Web Communication"
+    ],
+    "service": "Node-RED / REST"
+  },
+  "50001-50016": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "50017": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "50018-50021": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "50022-50024": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "50025-50028": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "50029-50109": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "50110-50111": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "50112-54999": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "502": {
+    "description": "Modbus Application Protocol",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "mbap"
+  },
+  "5022": {
+    "description": "Clear-text mirrors reveal live financial/production data; unauthorized mirrors siphon continuous replicas\noff-site.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Database Services",
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access"
+    ],
+    "service": "MS-SQL Mirroring"
+  },
+  "5050": {
+    "description": "multimedia conference control tool, Telvent OASyS DNA",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "mmcc, Telvent OASyS DNA"
+  },
+  "5051": {
+    "description": "ITA Agent, Telvent OASyS DNA",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ita-agent, Telvent OASyS DNA"
+  },
+  "5052": {
+    "description": "ITA Manager, Telvent OASyS DNA",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ita-manager, Telvent OASyS DNA"
+  },
+  "5065": {
+    "description": "Channel Access 2, Telvent OASyS DNA",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "ca-2, Telvent OASyS DNA"
+  },
+  "514": {
+    "description": "Plain-text logs can be spoofed or suppressed; attackers erase forensic evidence by flooding with fake\n\u201cnormal-operation\u201d messages.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Management & Monitoring"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Unencrypted Protocol"
+    ],
+    "service": "Syslog (UDP)"
+  },
+  "515": {
+    "description": "Printer firmware in OT corridors is rarely patched; buffer-overflow exploits grant foothold behind firewalls.\n",
+    "environment_exposure": null,
+    "information_categories": [],
+    "protocol_posture": "Inherently Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Unencrypted Protocol"
+    ],
+    "service": "LPD / Print"
+  },
+  "53": {
+    "description": "Critical but unencrypted. DNS-tunnel malware (iodine, dnscat2) slips payloads in TXT/resource records.\nCache-poisoning can reroute HMI update URLs to attacker infrastructure.\n",
+    "environment_exposure": "External",
+    "information_categories": [
+      "Infrastructure Service",
+      "Network Discovery"
+    ],
+    "protocol_posture": "Inherently Risky",
+    "risk_basis": "Observed",
+    "risk_categories": [
+      "Data Exfiltration",
+      "Network Discovery"
+    ],
+    "service": "DNS"
+  },
+  "5432": {
+    "description": "Default \u2018postgres\u2019 superuser and password reuse plague open-source MES adapters; COPY TO PROGRAM lets\nattackers execute OS commands.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Database Services",
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access"
+    ],
+    "service": "PostgreSQL"
+  },
+  "5450": {
+    "description": "TiePie engineering data acquisition, TiePie engineering data acquisition (discovery), OSIsoft PI Server",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "tiepie-disc, tiepie, OSIsoft PI Server"
+  },
+  "55000-55003": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "55004-55554": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "5555": {
+    "description": "Smart-HMI tablets ship with ADB over TCP enabled; attackers install rogue APKs or capture screen video of\noperator panels.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "IoT Protocol",
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access"
+    ],
+    "service": "Android Debug Bridge (ADB)"
+  },
+  "55555": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "55556-56000": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "56001-56099": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "56100-62899": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "5672": {
+    "description": "Clear-text message bus feeds order IDs and set-points to PLC gateways; hijack injects falsified production\ncommands.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Messaging Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Messaging Protocol",
+      "Unencrypted Protocol"
+    ],
+    "service": "AMQP / RabbitMQ"
+  },
+  "587": {
+    "description": "STARTTLS downgrades or invalid certs revert to clear-text. Enforce TLS 1.2+ and DANE/DMARC for integrity.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Messaging Protocol",
+      "Secure Protocol (if STARTTLS)"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Messaging Protocol"
+    ],
+    "service": "SMTP Submission"
+  },
+  "5900": {
+    "description": "Weak DES password hash, no channel encryption. Grants full mouse/keyboard to safety PLC consoles if left\nopen.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access",
+      "Unencrypted Protocol"
+    ],
+    "service": "VNC"
+  },
+  "593": {
+    "description": "Often overlooked in firewall rules; NTLM relaying here skips SMB signing defenses, aiding hash relay from\ncorp IT into the plant.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "RPC over HTTP / Outlook Anywhere"
+  },
+  "5938": {
+    "description": "Cloud broker circumvents inbound firewall checks; stolen creds + \u201cEasy Access\u201d expose HMIs to the internet.\nEnforce MFA and on-demand enablement only.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Third-Party Remote Support"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access",
+      "Third-Party Remote Support"
+    ],
+    "service": "TeamViewer"
+  },
+  "6000": {
+    "description": "Legacy UNIX HMIs still export X sessions; keystrokes and screen data flow in clear-text\u2014an attacker can fully\nremote-control the display manager.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access",
+      "Unencrypted Protocol"
+    ],
+    "service": "X11"
+  },
+  "623": {
+    "description": "Default \u201cADMIN/ADMIN\u201d creds grant KVM, power-cycle, and virtual media insert. In OT, an attacker can shut\ndown safety PLCs through remote BMCs.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Management & Monitoring"
+    ],
+    "protocol_posture": null,
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Out-of-Band Access"
+    ],
+    "service": "IPMI"
+  },
+  "62900": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62901-62910": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62911": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62912-62923": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62924": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62925-62929": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62930": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62931-62937": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62938": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62939-62955": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62956-62957": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62958-62962": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62963": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62964-62980": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62981-62982": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62983-62984": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62985": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62986-62991": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62992": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "62993-63011": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63012": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63013-63026": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63027-63036": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63037-63040": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63041": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63042-63074": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63075": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63076-63078": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63079": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63080-63081": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63082": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63083-63087": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63088": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63089-63093": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63094": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "63095-65442": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "631": {
+    "description": "Printer job uploads can smuggle data out or deploy malicious firmware updates into trusted OT zones.\n",
+    "environment_exposure": null,
+    "information_categories": [],
+    "protocol_posture": "Inherently Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Unencrypted Protocol"
+    ],
+    "service": "IPP / CUPS"
+  },
+  "636": {
+    "description": "Secure binding fails if OT devices trust any cert\u2014man-in-the-middle with rogue LDAPs proxies harvest or\ninject group membership.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Directory Service",
+      "Secure Protocol (if validated)"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "LDAPS"
+  },
+  "6379": {
+    "description": "No auth by default. Writing an SSH key to `/root/.ssh/authorized_keys` via Redis \u201cCONFIG SET dir \u2026\u201d gives\nroot shell on many edge gateways.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Database Services"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Unencrypted Protocol"
+    ],
+    "service": "Redis"
+  },
+  "65443": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "65444-65535": {
+    "description": "DCOM/SMB dynamic-ports bypass static ACLs if \u201cAllow all high ports\u201d is configured. Segment and firewall\nthese ranges to stop lateral movement.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Legacy Protocol",
+      "Remote Access"
+    ],
+    "service": "Windows Ephemeral RPC"
+  },
+  "6667": {
+    "description": "Outbound IRC from operators\u2019 workstations is a red-flag; modern malware still uses IRC for botnet C2.\n",
+    "environment_exposure": "External",
+    "information_categories": [],
+    "protocol_posture": "Inherently Risky",
+    "risk_basis": "Observed",
+    "risk_categories": [
+      "C2 Channel",
+      "Legacy Protocol"
+    ],
+    "service": "IRC"
+  },
+  "67-68": {
+    "description": "Rogue DHCP servers can push malicious default gateways or DNS servers, steering Layer-3 traffic through\nattacker-controlled relays.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Infrastructure Service"
+    ],
+    "protocol_posture": null,
+    "risk_basis": "Observed",
+    "risk_categories": [
+      "Rogue Services"
+    ],
+    "service": "DHCP"
+  },
+  "69": {
+    "description": "Firmware images move in clear-text and without authentication. Attackers overwrite device boot-code or\npull configs for offline recon.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "File Transfer"
+    ],
+    "protocol_posture": "Inherently Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "File Transfer",
+      "Unencrypted Protocol"
+    ],
+    "service": "TFTP"
+  },
+  "7070": {
+    "description": "AnyDesk tunnels outbound on 80/443 if 7070 blocked. Whitelist trusted IDs and force session recording; rogue\nAnyDesk installs give silent desktop control.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Third-Party Remote Support"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access",
+      "Third-Party Remote Support"
+    ],
+    "service": "AnyDesk"
+  },
+  "80": {
+    "description": "Historian dashboards or IIoT APIs exposed over clear-text leak session cookies and allow JavaScript\ninjection that tampers with process values.\n",
+    "environment_exposure": "External",
+    "information_categories": [
+      "Web Communication"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Unencrypted Protocol",
+      "Web Communication"
+    ],
+    "service": "HTTP"
+  },
+  "8080": {
+    "description": "Proxy & Tomcat consoles often forgotten in security scans. Attackers slip PHP web-shells or proxy C2 over\nwhitelisted 8080.\n",
+    "environment_exposure": "External",
+    "information_categories": [
+      "Web Communication"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Unencrypted Protocol",
+      "Web Communication"
+    ],
+    "service": "Alternate HTTP"
+  },
+  "8081": {
+    "description": "Jenkins, Nexus, and other CI servers default here\u2014prime targets for supply-chain implant of PLC firmware\ntoolchains.\n",
+    "environment_exposure": "External",
+    "information_categories": [
+      "Web Communication"
+    ],
+    "protocol_posture": null,
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Web Communication"
+    ],
+    "service": "Alternate HTTP (secure or dev)"
+  },
+  "8443": {
+    "description": "Self-signed certs and deprecated ciphers still rampant; MITM strips TLS then injects malicious Java applets\ninto legacy engineering suites.\n",
+    "environment_exposure": "External",
+    "information_categories": [
+      "Web Communication"
+    ],
+    "protocol_posture": null,
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Web Communication"
+    ],
+    "service": "Alternate HTTPS"
+  },
+  "873": {
+    "description": "Plain-text deltas transmit sensitive PLC source. Weak module auth enables overwrite of startup scripts on\nengineering HMI hosts.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "File Transfer"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "File Transfer",
+      "Unencrypted Protocol"
+    ],
+    "service": "rsync"
+  },
+  "88": {
+    "description": "Ticket Granting Tickets (TGTs) are gold to attackers. Pass-the-Ticket and Kerberoasting pivot attacks\ncompromise engineering-domain admin accounts.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Authentication Service"
+    ],
+    "protocol_posture": null,
+    "risk_basis": "Observed",
+    "risk_categories": [
+      "Lateral Movement"
+    ],
+    "service": "Kerberos"
+  },
+  "9000-9001": {
+    "description": "OPC UA Discovery on 4840 by default, but 9000/9001 appear in bespoke builds; unauthenticated browse exposes\ntag lists and node attributes useful for attack planning.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol",
+      "Monitoring & Visualization"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "OPC UA Discovery / Splunkd alt"
+  },
+  "902": {
+    "description": "Attackers copy full HMI VMDKs or inject rogue snapshots that auto-start C2 implants when the VM boots.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Virtualization Management"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access"
+    ],
+    "service": "VMware ESXi Data"
+  },
+  "912": {
+    "description": "Often left open to entire plant LAN; any hijack yields keyboard/mouse to SCADA VMs.\n",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Remote Access",
+      "Virtualization Management"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Remote Access"
+    ],
+    "service": "VMware Remote Console"
+  },
+  "9200-9300": {
+    "description": "OT log aggregators often leave ES open with no auth. Querying `/_cat/indices` leaks operator passwords in\nclear-text logs; cluster port 9300 enables remote-code via deserialization exploits.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "Database Services"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "Unencrypted Protocol"
+    ],
+    "service": "Elasticsearch REST / Cluster"
+  },
+  "9600": {
+    "description": "MICROMUSE-NCPW, OMRON FINS protocol",
+    "environment_exposure": "Cross-Zone",
+    "information_categories": [
+      "Industrial Protocol"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": null,
+    "risk_categories": [],
+    "service": "micromuse-ncpw"
+  },
+  "989-990": {
+    "description": "Misconfigured implicit vs explicit TLS causes downgrade; legacy engineering tools revert to clear-text FTP.\n",
+    "environment_exposure": null,
+    "information_categories": [
+      "File Transfer",
+      "Secure Protocol (if enforced)"
+    ],
+    "protocol_posture": "Conditionally Risky",
+    "risk_basis": "Credible",
+    "risk_categories": [
+      "File Transfer"
+    ],
+    "service": "FTPS (Control/Data)"
+  },
+  "9997": {
+    "description": null,
+    "environment_exposure": null,
+    "information_categories": null,
+    "protocol_posture": null,
+    "risk_basis": null,
+    "risk_categories": null,
+    "service": "Splunk Receiver"
+  }
+}

@@ -1,0 +1,19 @@
+---
+# Configuration file for the Bandit python security scanner
+# https://bandit.readthedocs.io/en/latest/config.html
+
+# Tests are first included by `tests`, and then excluded by `skips`.
+# If `tests` is empty, all tests are considered included.
+
+tests: # - B101
+
+# - B102
+
+skips:
+  - B101 # skip "assert used" check since assertions are required in pytests
+  - B104 # skip "hardcoded bind all interfaces" -- fires on all instances of 0.0.0.0
+  - B108 # skip [B108:hardcoded_tmp_directory]
+  - B404 # skip "subprocess module" implications
+  - B603 # skip "subprocess whithout shell equals true" known use of subprocess
+  - B607 # skip "start_process_with_partial_path" subprocess with binary
+  - B310 # skip "Audit url open for permitted schemes."
