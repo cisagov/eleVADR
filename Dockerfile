@@ -67,12 +67,13 @@ RUN --mount=type=secret,id=ssl_cert,required=false \
     fi
 
 # Copy application code
-COPY src/app/ .
+# COPY src/app/ .
+COPY src/ .
 
 # Convert JSON reference data to Parquet for reduced disk footprint,
 # then remove the JSON source files to keep the image lean
-RUN python data/assessor_data/convert_to_parquet.py \
-    && rm data/assessor_data/port_risk_v2.json
+RUN python app/data/assessor_data/convert_to_parquet.py \
+    && rm app/data/assessor_data/port_risk_v2.json
 
 # Create non-privileged user and group
 RUN groupadd --system --gid 1000 appgroup \
