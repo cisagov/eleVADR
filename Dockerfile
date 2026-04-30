@@ -26,7 +26,7 @@ RUN --mount=type=secret,id=ssl_cert,required=false \
     && rm -rf /var/lib/apt/lists/*
 
 # Final stage
-FROM python:3.13-slim
+FROM python:3.10-slim
 
 # Avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
@@ -54,8 +54,8 @@ ENV PATH="/opt/zeek/bin:${PATH}"
 # Set working directory
 WORKDIR /app
 
-# Copy project metadata and requirements first for better layer caching
-COPY pyproject.toml README.md requirements.txt ./
+# Copy requirements first for better layer caching
+COPY requirements.txt .
 
 # Install Python dependencies
 # Mount the cert secret again for pip's SSL verification
@@ -67,15 +67,13 @@ RUN --mount=type=secret,id=ssl_cert,required=false \
     fi
 
 # Copy application code
-COPY src/app/ ./app
-
-# Install app as a package
-RUN pip3 install .
+# COPY src/app/ .
+COPY src/ .
 
 # Convert JSON reference data to Parquet for reduced disk footprint,
 # then remove the JSON source files to keep the image lean
-RUN python data/assessor_data/convert_to_parquet.py \
-    && rm data/assessor_data/port_risk_v2.json
+RUN python app/data/assessor_data/convert_to_parquet.py \
+    && rm app/data/assessor_data/port_risk_v2.json
 
 # Create non-privileged user and group
 RUN groupadd --system --gid 1000 appgroup \
