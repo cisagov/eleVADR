@@ -48,14 +48,9 @@ jobs:
                   "description": "The supported platforms for the Docker image.",
                   "name": "image-platforms",
                   "value": [
-                      "linux/386",
                       "linux/amd64",
-                      "linux/arm/v6",
-                      "linux/arm/v7",
-                      "linux/arm64",
-                      "linux/ppc64le",
+                      "linux/arm64v8",
                       "linux/riscv64",
-                      "linux/s390x",
                   ],
               },
           ]
