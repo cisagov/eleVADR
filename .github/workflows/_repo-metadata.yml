@@ -49,8 +49,7 @@ jobs:
                   "name": "image-platforms",
                   "value": [
                       "linux/amd64",
-                      "linux/arm64v8",
-                      "linux/riscv64",
+                      "linux/arm64"
                   ],
               },
           ]
