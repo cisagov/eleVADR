@@ -26,7 +26,7 @@ RUN --mount=type=secret,id=ssl_cert,required=false \
     && rm -rf /var/lib/apt/lists/*
 
 # Final stage
-FROM python:3.10-slim
+FROM python:3.14-slim
 
 # Avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
