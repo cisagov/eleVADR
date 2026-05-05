@@ -1,5 +1,5 @@
 # Multi-stage build for optimized image size
-FROM ubuntu:22.04 AS builder
+FROM ubuntu:26.04 AS builder
 
 # Avoid interactive prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
