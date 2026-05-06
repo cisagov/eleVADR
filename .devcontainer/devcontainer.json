@@ -26,7 +26,7 @@
     "source=${localWorkspaceFolder}/.devcontainer/certs,target=/usr/local/share/ca-certificates/host,type=bind,consistency=cached"
   ],
   "name": "Elevadr Backend",
-  "postCreateCommand": "pre-commit install && pre-commit install-hooks",
+  "postCreateCommand": "git config core.fileMode false && pre-commit install && pre-commit install-hooks",
   "remoteUser": "appuser",
   "workspaceFolder": "/workspace"
 }
