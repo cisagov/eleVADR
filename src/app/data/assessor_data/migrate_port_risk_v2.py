@@ -1,5 +1,4 @@
-"""
-Migration script: port_risk.json -> port_risk_v2.json
+"""Migrate port_risk.json into port_risk_v2.json.
 
 Adds three new fields to each entry:
   - risk_basis:           "Observed" | "Credible" | null
@@ -14,7 +13,6 @@ inference can be made - these should be reviewed and populated from VM reports.
 # Standard Python Libraries
 import json
 from pathlib import Path
-from typing import Optional
 
 # ---------------------------------------------------------------------------
 # Inference helpers
@@ -248,10 +246,12 @@ def migrate(input_path: Path, output_path: Path) -> None:
     print(f"Migrated {total} entries to {output_path}")
     print(f"  risk_basis       - inferred: {total - basis_null:>4}, null: {basis_null}")
     print(
-        f"  environment_exposure - inferred: {total - exposure_null:>4}, null: {exposure_null}"
+        f"  environment_exposure - inferred: {total - exposure_null:>4}, "
+        f"null: {exposure_null}"
     )
     print(
-        f"  protocol_posture - inferred: {total - posture_null:>4}, null: {posture_null}"
+        f"  protocol_posture - inferred: {total - posture_null:>4}, "
+        f"null: {posture_null}"
     )
     print("Review null entries and populate from VM reports.")
 

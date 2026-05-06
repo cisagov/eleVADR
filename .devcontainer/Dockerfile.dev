@@ -1,0 +1,61 @@
+
+FROM cisagov/elevadr-web-backend:develop
+
+USER root
+
+# Copy certs (expect the PEM file(s) in .devcontainer/certs/)
+COPY .devcontainer/certs/ /tmp/certs/
+
+# If you have multiple files, we concatenate into one bundle for apk.
+RUN set -eu && \
+    if [ -n "$(ls -A /tmp/certs 2>/dev/null)" ]; then \
+      cat /tmp/certs/* > /etc/ssl/certs/custom-bundle.pem && \
+      pip3 config set global.cert /etc/ssl/certs/custom-bundle.pem; \
+    fi
+
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+
+# Ensure apk uses the bundle for TLS verification during the bootstrap phase
+ENV SSL_CERT_FILE=/etc/ssl/certs/custom-bundle.pem
+
+# Install development essentials
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    vim \
+    sudo \
+    gpg \
+    build-essential \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | \
+    gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+RUN echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/debian bookworm stable" \
+  > /etc/apt/sources.list.d/docker.list
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        docker-compose-plugin && \
+    rm -rf /var/lib/apt/lists/*
+
+
+# Give the appuser sudo access so you can install things while developing
+RUN echo "appuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Switch back to your non-privileged user
+USER appuser
+
+RUN echo "export PATH=\$HOME/.local/bin:\$PATH" >> ~/.bashrc
+
+RUN set -eu && \
+    if [ -n "$(ls -A /tmp/certs 2>/dev/null)" ]; then \
+      pip3 config set global.cert /etc/ssl/certs/custom-bundle.pem; \
+    fi
+
+COPY requirements*.txt .
+
+RUN pip3 install --upgrade -r requirements.txt && pip3 install -r requirements-dev.txt && pip3 install -r requirements-test.txt

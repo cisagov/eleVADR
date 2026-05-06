@@ -23,7 +23,6 @@ updates:
           - actions/download-artifact
           - actions/upload-artifact
     ignore:
-      # Managed by cisagov/skeleton-generic
       - dependency-name: actions/cache
       - dependency-name: actions/checkout
       - dependency-name: actions/dependency-review-action
@@ -37,16 +36,7 @@ updates:
       - dependency-name: hashicorp/setup-packer
       - dependency-name: hashicorp/setup-terraform
       - dependency-name: mxschmitt/action-tmate
-      # Managed by cisagov/skeleton-docker
-      # - dependency-name: actions/download-artifact
-      # - dependency-name: actions/upload-artifact
-      # - dependency-name: aquasecurity/trivy-action
-      # - dependency-name: docker/build-push-action
-      # - dependency-name: docker/login-action
-      # - dependency-name: docker/metadata-action
-      # - dependency-name: docker/setup-buildx-action
-      # - dependency-name: docker/setup-qemu-action
-      # - dependency-name: peter-evans/dockerhub-description
+
     labels:
       # dependabot default we need to replicate
       - dependencies
@@ -62,8 +52,4 @@ updates:
     schedule:
       interval: weekly
 
-  - directory: /
-    package-ecosystem: terraform
-    schedule:
-      interval: weekly
 version: 2

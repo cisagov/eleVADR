@@ -1,3 +1,5 @@
+"""Consolidate expanded port definitions into contiguous ranges."""
+
 # Standard Python Libraries
 import json
 from pathlib import Path
@@ -5,18 +7,18 @@ import sys
 
 
 def consolidate_port_ranges(input_json_path: Path, output_json_path: Path) -> None:
-    """
-    Reads a port-keyed JSON file, expands all port ranges, allowing later definitions
-    to overwrite earlier ones for the same port. Then consolidates consecutive ports
-    with identical service definitions back into ranges, and writes the result
-    to a new JSON file.
+    """Consolidate matching per-port definitions back into ranges.
+
+    Read a port-keyed JSON file, expand ranges while allowing later definitions
+    to overwrite earlier ones, then merge consecutive ports with identical
+    service definitions and write the result to a new JSON file.
     """
     print(f"Processing {input_json_path.name}...")
 
     with open(input_json_path) as f:
         raw_data = json.load(f)
 
-    # Step 1: Expand all port ranges. Later definitions for the same port will overwrite earlier ones.
+    # Step 1: Expand all port ranges. Later definitions overwrite earlier ones.
     # Key: port_num (int), Value: service_data (dict)
     expanded_ports_data = {}
 
@@ -37,14 +39,16 @@ def consolidate_port_ranges(input_json_path: Path, output_json_path: Path) -> No
                 expanded_ports_data[port_num] = value
         except ValueError as e:
             print(
-                f"Warning: Skipping invalid port key '{key}' in {input_json_path.name} due to: {e}",
+                f"Warning: Skipping invalid port key '{key}' in "
+                f"{input_json_path.name} due to: {e}",
                 file=sys.stderr,
             )
             # Do not exit, just skip this malformed entry
             continue
         except Exception as e:
             print(
-                f"Unexpected error processing key '{key}' in {input_json_path.name}: {e}",
+                f"Unexpected error processing key '{key}' in "
+                f"{input_json_path.name}: {e}",
                 file=sys.stderr,
             )
             sys.exit(1)  # Still exit on unexpected errors
@@ -67,7 +71,7 @@ def consolidate_port_ranges(input_json_path: Path, output_json_path: Path) -> No
         port = sorted_ports[i]
         service_def = expanded_ports_data[port]
 
-        # Check if the current port is consecutive and has the same service definition
+        # Check whether this port continues the current equivalent range.
         # Note: json.dumps is used to compare dictionaries as strings for deep equality
         if (
             i + 1 < len(sorted_ports)

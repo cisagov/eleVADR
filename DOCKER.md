@@ -1,8 +1,9 @@
-# eleVADR Docker & Kubernetes Guide
+# eleVADR Docker & Kubernetes Guide #
 
-This guide provides detailed instructions for containerizing and deploying eleVADR using Docker and Kubernetes.
+This guide provides detailed instructions for containerizing and
+ deploying eleVADR using Docker and Kubernetes.
 
-## Table of Contents
+## Table of Contents ##
 
 - [Architecture Overview](#architecture-overview)
 - [Docker Setup](#docker-setup)
@@ -11,20 +12,21 @@ This guide provides detailed instructions for containerizing and deploying eleVA
 - [Production Considerations](#production-considerations)
 - [Troubleshooting](#troubleshooting)
 
-## Architecture Overview
+## Architecture Overview ##
 
-### Container Structure
+### Container Structure ###
 
 The eleVADR container includes:
+
 - **Ubuntu 22.04** base image
-- **Zeek Network Security Monitor** (compiled and installed)
+- **Zeek Network Security Monitor** compiled and installed
 - **Python 3.10** with all required dependencies
-- **Analysis engine** (eleVADR application code)
+- **Analysis engine** containing the eleVADR application code
 - **Entrypoint script** for automated PCAP processing
 
-### Data Flow
+### Data Flow ###
 
-```
+```text
 PCAP Input (mounted volume)
     ↓
 Container starts → Entrypoint script
@@ -40,9 +42,9 @@ Generate security report
 Output JSON report (mounted volume)
 ```
 
-## Docker Setup
+## Docker Setup ##
 
-### Building the Image
+### Building the Image ###
 
 The Dockerfile uses a multi-stage build for optimization:
 
@@ -57,9 +59,9 @@ docker build -t elevadr:v1.0.0 .
 docker build --build-arg ZEEK_VERSION=5.0 -t elevadr:latest .
 ```
 
-### Running Containers
+### Running Containers ###
 
-#### Basic Usage
+#### Basic Usage ####
 
 ```bash
 # Single PCAP analysis
@@ -69,7 +71,7 @@ docker run --rm \
   elevadr:latest
 ```
 
-#### Advanced Options
+#### Advanced Options ####
 
 ```bash
 # Custom PCAP filename
@@ -96,12 +98,12 @@ docker run --rm \
   elevadr:latest
 ```
 
-### Docker Compose
+### Docker Compose ###
 
 The included `docker-compose.yml` provides two services:
 
 1. **elevadr**: Main analysis service
-2. **report-server**: Optional Nginx server for viewing reports
+1. **report-server**: Optional Nginx server for viewing reports
 
 ```bash
 # Run analysis only
@@ -120,51 +122,56 @@ docker-compose logs -f elevadr
 docker-compose down -v
 ```
 
-### Volume Management
+### Volume Management ###
 
-#### Input Volume (`/input`)
+#### Input Volume (`/input`) ####
+
 - Mount as **read-only** (`:ro`)
 - Contains PCAP files to analyze
 - Default expects `capture.pcap`
 
-#### Output Volume (`/output`)
+#### Output Volume (`/output`) ####
+
 - Mount as **read-write**
 - Receives JSON reports
 - Persists analysis results
 
-#### Custom Data Volume (optional)
+#### Custom Data Volume (optional) ####
+
 - Mount custom reference data
 - Path: `/app/app/data/assessor_data`
 - Include: `ports.json`, `port_risk.json`, `latest_oui_lookup.json`, `CONST.yml`
 
-## Kubernetes Deployment
+## Kubernetes Deployment ##
 
-### Architecture
+### Architecture ###
 
 The Kubernetes deployment includes:
 
-- **Namespace**: `elevadr` (isolated environment)
+- **Namespace**: `elevadr` for an isolated environment
 - **ConfigMap**: Environment configuration
 - **PersistentVolumeClaims**: Storage for PCAPs and reports
 - **Jobs**: One-time PCAP analysis tasks
 - **CronJobs**: Scheduled recurring analysis
 
-### Prerequisites
+### Prerequisites ###
 
 1. **Kubernetes Cluster**
-   - Local: minikube, kind, Docker Desktop
-   - Cloud: GKE, EKS, AKS
 
-2. **kubectl** installed and configured
+   - Local: minikube, kind, or Docker Desktop
+   - Cloud: GKE, EKS, or AKS
 
-3. **Container Registry** access
+1. **kubectl** installed and configured
+
+1. **Container Registry** access
+
    - Docker Hub: `docker.io/username`
    - Google Container Registry: `gcr.io/project`
    - Amazon ECR: `account.dkr.ecr.region.amazonaws.com`
 
-### Initial Deployment
+### Initial Deployment ###
 
-#### Step 1: Prepare the Image
+#### Step 1: Prepare the Image ####
 
 ```bash
 # Build
@@ -177,7 +184,7 @@ docker tag elevadr:latest your-registry/elevadr:latest
 docker push your-registry/elevadr:latest
 ```
 
-#### Step 2: Update Configuration
+#### Step 2: Update Configuration ####
 
 Edit `k8s/kustomization.yaml`:
 
@@ -188,7 +195,7 @@ images:
     newTag: latest                   # Update this
 ```
 
-#### Step 3: Deploy
+#### Step 3: Deploy ####
 
 ```bash
 # Deploy all resources
@@ -205,9 +212,9 @@ kubectl get all -n elevadr
 # - job/elevadr-analysis
 ```
 
-### Working with Jobs
+### Working with Jobs ###
 
-#### Manual Job Execution
+#### Manual Job Execution ####
 
 ```bash
 # Create a job
@@ -225,9 +232,9 @@ kubectl logs -n elevadr job/manual-analysis-1 -f
 kubectl delete job -n elevadr manual-analysis-1
 ```
 
-#### Uploading PCAPs
+#### Uploading PCAPs ####
 
-**Method 1: Direct Copy to PVC**
+##### Method 1: Direct Copy to PVC #####
 
 ```bash
 # Find a running pod (or create temporary one)
@@ -240,7 +247,7 @@ kubectl cp /local/path/capture.pcap elevadr/uploader:/input/
 kubectl delete pod -n elevadr uploader
 ```
 
-**Method 2: Using a Helper Pod**
+##### Method 2: Using a Helper Pod #####
 
 ```yaml
 apiVersion: v1
@@ -267,7 +274,7 @@ kubectl apply -f loader-pod.yaml
 kubectl cp capture.pcap elevadr/pcap-loader:/input/
 ```
 
-**Method 3: ConfigMap (Small PCAPs)**
+##### Method 3: ConfigMap (Small PCAPs) #####
 
 ```bash
 kubectl create configmap -n elevadr my-pcap \
@@ -276,11 +283,12 @@ kubectl create configmap -n elevadr my-pcap \
 
 Then modify the job to mount the ConfigMap instead of PVC.
 
-#### Retrieving Reports
+#### Retrieving Reports ####
 
 ```bash
 # Find the job pod
-POD=$(kubectl get pods -n elevadr -l job-name=elevadr-analysis -o jsonpath='{.items[0].metadata.name}')
+POD=$(kubectl get pods -n elevadr -l job-name=elevadr-analysis \
+  -o jsonpath='{.items[0].metadata.name}')
 
 # Copy report locally
 kubectl cp elevadr/$POD:/output/report.json ./report.json
@@ -289,7 +297,7 @@ kubectl cp elevadr/$POD:/output/report.json ./report.json
 kubectl exec -n elevadr $POD -- cat /output/report.json
 ```
 
-### Scheduled Analysis (CronJob)
+### Scheduled Analysis (CronJob) ###
 
 Enable scheduled analysis by uncommenting in `k8s/kustomization.yaml`:
 
@@ -298,7 +306,8 @@ resources:
   - cronjob.yaml
 ```
 
-The CronJob runs daily at 2 AM by default. Modify the schedule in `k8s/cronjob.yaml`:
+The CronJob runs daily at 2 AM by default. Modify the schedule in
+`k8s/cronjob.yaml`:
 
 ```yaml
 spec:
@@ -306,16 +315,17 @@ spec:
 ```
 
 Examples:
+
 - Every hour: `"0 * * * *"`
 - Every 6 hours: `"0 */6 * * *"`
 - Weekly on Sunday: `"0 2 * * 0"`
 - Monthly on 1st: `"0 2 1 * *"`
 
-## Scaling Strategies
+## Scaling Strategies ##
 
-### Horizontal Scaling (Multiple Jobs in Parallel)
+### Horizontal Scaling (Multiple Jobs in Parallel) ###
 
-#### Option 1: Job Parallelism
+#### Option 1: Job Parallelism ####
 
 Modify `k8s/job.yaml`:
 
@@ -327,7 +337,7 @@ spec:
 
 This creates 10 jobs, running 5 at a time.
 
-#### Option 2: Multiple Independent Jobs
+#### Option 2: Multiple Independent Jobs ####
 
 Process multiple PCAPs by creating individual jobs:
 
@@ -373,16 +383,16 @@ EOF
 done
 ```
 
-### Vertical Scaling (Resource Allocation)
+### Vertical Scaling (Resource Allocation) ###
 
 Adjust resources based on PCAP size:
 
 | PCAP Size | Memory Request | Memory Limit | CPU Request | CPU Limit |
-|-----------|----------------|--------------|-------------|-----------|
-| < 100MB   | 1Gi            | 2Gi          | 500m        | 1000m     |
-| 100MB-1GB | 2Gi            | 4Gi          | 1000m       | 2000m     |
-| 1GB-5GB   | 4Gi            | 8Gi          | 2000m       | 4000m     |
-| > 5GB     | 8Gi            | 16Gi         | 4000m       | 8000m     |
+| --------- | -------------- | ------------ | ----------- | --------- |
+| < 100MB | 1Gi | 2Gi | 500m | 1000m |
+| 100MB-1GB | 2Gi | 4Gi | 1000m | 2000m |
+| 1GB-5GB | 4Gi | 8Gi | 2000m | 4000m |
+| > 5GB | 8Gi | 16Gi | 4000m | 8000m |
 
 Update in `k8s/job.yaml`:
 
@@ -396,7 +406,7 @@ resources:
     cpu: "4000m"
 ```
 
-### Auto-Scaling with HPA (Advanced)
+### Auto-Scaling with HPA (Advanced) ###
 
 For API-based deployments, use Horizontal Pod Autoscaler:
 
@@ -422,9 +432,9 @@ spec:
         averageUtilization: 70
 ```
 
-## Production Considerations
+## Production Considerations ##
 
-### Security
+### Security ###
 
 1. **Run as non-root user**
 
@@ -435,7 +445,7 @@ RUN useradd -m -u 1000 elevadr
 USER elevadr
 ```
 
-2. **Security Context in Kubernetes**
+1. **Security Context in Kubernetes**
 
 ```yaml
 securityContext:
@@ -447,7 +457,7 @@ securityContext:
     - ALL
 ```
 
-3. **Network Policies**
+1. **Network Policies**
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -467,9 +477,9 @@ spec:
     - namespaceSelector: {}
 ```
 
-### Monitoring
+### Monitoring ###
 
-#### Prometheus Metrics
+#### Prometheus Metrics ####
 
 Add annotations to jobs:
 
@@ -480,7 +490,7 @@ metadata:
     prometheus.io/port: "8080"
 ```
 
-#### Logging
+#### Logging ####
 
 View logs with labels:
 
@@ -495,7 +505,7 @@ kubectl logs -n elevadr -l app=elevadr -f
 kubectl logs -n elevadr job/elevadr-analysis > analysis.log
 ```
 
-### Storage Optimization
+### Storage Optimization ###
 
 1. **Use Storage Classes**
 
@@ -513,7 +523,7 @@ spec:
       storage: 100Gi
 ```
 
-2. **Lifecycle Policies**
+1. **Lifecycle Policies**
 
 Automatically clean old reports:
 
@@ -544,11 +554,11 @@ spec:
               claimName: elevadr-report-output
 ```
 
-### High Availability
+### High Availability ###
 
-1. **Multiple Replicas** (for API deployments)
-2. **Pod Disruption Budgets**
-3. **Node Affinity** for resource-intensive nodes
+1. **Multiple Replicas** for API deployments
+1. **Pod Disruption Budgets**
+1. **Node Affinity** for resource-intensive nodes
 
 ```yaml
 affinity:
@@ -563,25 +573,28 @@ affinity:
           - analysis
 ```
 
-## Troubleshooting
+## Troubleshooting ##
 
-### Common Issues
+### Common Issues ###
 
-#### 1. PCAP Not Found
+#### 1. PCAP Not Found ####
 
 **Symptom**: Error: PCAP file not found at /input/capture.pcap
 
 **Solution**:
+
 - Verify volume mount: `kubectl describe pod -n elevadr <pod-name>`
 - Check PVC status: `kubectl get pvc -n elevadr`
 - Ensure PCAP was uploaded correctly
 
-#### 2. Out of Memory
+#### 2. Out of Memory ####
 
 **Symptom**: Pod killed with OOMKilled status
 
 **Solution**:
+
 ```bash
+
 # Check pod status
 kubectl get pods -n elevadr
 
@@ -591,32 +604,36 @@ resources:
     memory: "8Gi"  # Increase this
 ```
 
-#### 3. Zeek Not Found
+#### 3. Zeek Not Found ####
 
 **Symptom**: Error: Zeek is not installed or not in PATH
 
 **Solution**:
+
 - Rebuild Docker image
 - Verify Zeek installation in Dockerfile
 - Check PATH environment variable
 
-#### 4. Permission Denied
+#### 4. Permission Denied ####
 
 **Symptom**: Cannot write to /output
 
 **Solution**:
+
 ```yaml
 # Add securityContext
 securityContext:
   fsGroup: 1000
 ```
 
-#### 5. Job Not Starting
+#### 5. Job Not Starting ####
 
 **Symptom**: Job remains in pending state
 
 **Solution**:
+
 ```bash
+
 # Check job status
 kubectl describe job -n elevadr elevadr-analysis
 
@@ -629,7 +646,7 @@ kubectl describe job -n elevadr elevadr-analysis
 kubectl get events -n elevadr --sort-by='.lastTimestamp'
 ```
 
-### Debug Commands
+### Debug Commands ###
 
 ```bash
 # Get detailed pod information
@@ -651,22 +668,25 @@ kubectl get job -n elevadr elevadr-analysis -o yaml
 kubectl exec -n elevadr <pod-name> -- cat /usr/local/bin/docker-entrypoint.sh
 ```
 
-### Performance Tuning
+### Performance Tuning ###
 
 1. **Optimize Zeek Processing**
+
    - Reduce packet capture filters
    - Disable unnecessary Zeek scripts
 
-2. **Pandas Optimization**
+1. **Pandas Optimization**
+
    - Use chunking for large datasets
    - Enable parallel processing
 
-3. **Storage I/O**
+1. **Storage I/O**
+
    - Use SSD-backed storage
    - Enable caching
    - Use local volumes for temporary data
 
-## Additional Resources
+## Additional Resources ##
 
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
 - [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices/)

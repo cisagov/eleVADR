@@ -1,3 +1,5 @@
+"""Serve the eleVADR API and CLI entrypoints."""
+
 # Standard Python Libraries
 import argparse
 import asyncio
@@ -9,6 +11,7 @@ from pathlib import Path
 import sys
 import tempfile
 import traceback
+from typing import Annotated
 from urllib.parse import unquote
 import uuid
 import warnings
@@ -24,7 +27,6 @@ from fastapi import (
     WebSocketDisconnect,
 )
 from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
 
 # cisagov Libraries
 from app.utils.analysis import Analyzer, FilePathInfo, PcapParser
@@ -59,7 +61,8 @@ def _emit(session_id: str | None, stage: str, progress: int, message: str) -> No
         )
     except asyncio.QueueFull:
         logger.warning(
-            f"Progress queue for session {session_id} is full. Dropping event: {message}"
+            f"Progress queue for session {session_id} is full. "
+            f"Dropping event: {message}"
         )
     except Exception as e:
         logger.error(f"Error emitting progress for session {session_id}: {e}")
@@ -72,7 +75,7 @@ def run_analysis(
     session_id: str | None = None,
 ) -> dict:
     """
-    Runs the eleVADR analysis on a given PCAP file.
+    Run the eleVADR analysis on a given PCAP file.
 
     Args:
         pcap_path: Path to the PCAP file.
@@ -101,6 +104,7 @@ def run_analysis(
 
         _emit(session_id, "zeek", 10, "Running Zeek on PCAP...")
         pcap_parser = PcapParser(file_path_info)
+        pcap_parser.parse()
 
         _emit(session_id, "traffic", 35, "Processing traffic data...")
         analyzer = Analyzer(
@@ -151,56 +155,134 @@ app.add_middleware(
 DEFAULT_PROJECT_ROOT = Path(
     os.environ.get("PROJECT_ROOT", Path(__file__).resolve().parent)
 )
+OptionalSessionId = Annotated[str | None, Query()]
+OptionalQueryStr = Annotated[str | None, Query()]
+OptionalQueryBool = Annotated[bool | None, Query()]
+RequiredFile = Annotated[UploadFile, File()]
+ConnectionLimit = Annotated[int, Query(ge=1, le=5000)]
 
 
 @app.websocket("/ws/progress/{session_id}")
 async def progress_ws(websocket: WebSocket, session_id: str):
-    """
-    WebSocket endpoint that streams analysis progress events to the client.
-
-    The client connects before POSTing to /analyze, then listens for JSON
-    progress messages until the 'done' stage is received.
-    """
+    """Stream analysis progress events over a WebSocket."""
     await websocket.accept()
 
-    # Register a queue for this session
+    # Register a bounded queue for this session.
     queue: asyncio.Queue = asyncio.Queue(maxsize=32)
     _progress_queues[session_id] = queue
-    try:
+
+    async def _send(event: dict) -> bool:
+        """Send a JSON event; return True if this is a terminal stage."""
+        await websocket.send_json(event)
+        return event.get("stage") in ("done", "error")
+
+    async def _consumer() -> None:
+        """
+        Pull events from the queue and forward them to the client.
+
+        Uses an explicit inner Task for queue.get() so that cancellation
+        never leaves a coroutine in an unawaited state.
+        """
         while True:
+            get_task: asyncio.Task | None = None
             try:
-                # Wait for a progress event with a timeout to detect dead connections
-                event = await asyncio.wait_for(queue.get(), timeout=300)
-                await websocket.send_json(event)
-                if event.get("stage") in ["done", "error"]:
+                # Wrap queue.get() as a Task — the event loop owns the coroutine.
+                get_task = asyncio.ensure_future(queue.get())
+
+                # asyncio.shield prevents wait_for from cancelling get_task
+                # directly; we handle its cancellation ourselves below.
+                event = await asyncio.wait_for(asyncio.shield(get_task), timeout=300)
+
+                if await _send(event):
                     break
+
             except asyncio.TimeoutError:
-                # No progress in 5 minutes - something went wrong, close the socket
-                logger.warning(
-                    f"WebSocket progress for session {session_id} timed out."
-                )
-                await websocket.send_json(
-                    {"stage": "error", "progress": 0, "message": "Analysis timed out."}
+                # Timed out waiting — cancel the dangling get_task cleanly.
+                if get_task and not get_task.done():
+                    get_task.cancel()
+                    try:
+                        await get_task
+                    except (asyncio.CancelledError, Exception):
+                        pass
+
+                await _send(
+                    {
+                        "stage": "error",
+                        "progress": 0,
+                        "message": "Analysis timed out.",
+                    }
                 )
                 break
+
+            except asyncio.CancelledError:
+                # Consumer was cancelled (client disconnected or finally block).
+                # Must clean up the inner get_task before propagating.
+                if get_task and not get_task.done():
+                    get_task.cancel()
+                    try:
+                        await get_task
+                    except (asyncio.CancelledError, Exception):
+                        pass
+                raise  # re-raise so the Task is marked cancelled
+
+    # Create both tasks with explicit references — no anonymous task leaks.
+    consumer_task = asyncio.create_task(_consumer())
+    receive_task = asyncio.create_task(websocket.receive())
+
+    try:
+        done, pending = await asyncio.wait(
+            {consumer_task, receive_task},
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+
+        # Cancel whichever task did not win the race.
+        for t in pending:
+            t.cancel()
+            try:
+                await t
+            except (asyncio.CancelledError, Exception):
+                pass
+
+        # Re-raise any unexpected exception from the consumer.
+        for t in done:
+            if t is consumer_task and not t.cancelled():
+                t.result()
+
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected for session {session_id}.")
-    except Exception as e:
-        logger.error(f"Unhandled error in WebSocket for session {session_id}: {e}")
+    except Exception as exc:  # pragma: no cover
+        logger.error(f"Unhandled error in WebSocket for session {session_id}: {exc}")
         await websocket.send_json(
-            {"stage": "error", "progress": 0, "message": f"WebSocket error: {e}"}
+            {"stage": "error", "progress": 0, "message": f"WebSocket error: {exc}"}
         )
     finally:
+        # Ensure both tasks are cancelled and awaited before cleanup.
+        for t in (consumer_task, receive_task):
+            if not t.done():
+                t.cancel()
+                try:
+                    await t
+                except (asyncio.CancelledError, Exception):
+                    pass
+
+        # Deregister the queue so _emit() stops routing to this session.
         _progress_queues.pop(session_id, None)
-        await websocket.close()
+
+        # Close socket — safe even if already closed.
+        try:
+            await websocket.close()
+        except Exception:
+            pass
 
 
 @app.get("/health")
 async def health():
+    """Return service health status."""
     return {"status": "ok"}
 
 
 def _require_analyzer(report_id: str) -> Analyzer:
+    """Return the analyzer for a report id or raise 404."""
     analyzer = _report_registry.get(report_id)
     if analyzer is None:
         raise HTTPException(status_code=404, detail=f"Report not found: {report_id}")
@@ -211,7 +293,7 @@ def _require_analyzer(report_id: str) -> Analyzer:
 async def drilldown_service(
     report_id: str,
     service_name: str,
-    limit: int = Query(default=500, ge=1, le=5000),
+    limit: ConnectionLimit = 500,
 ):
     """Return detailed connection rows for a specific service name within a report."""
     try:
@@ -237,9 +319,9 @@ async def drilldown_service(
 async def drilldown_connection_state(
     report_id: str,
     state: str,
-    limit: int = Query(default=500, ge=1, le=5000),
+    limit: ConnectionLimit = 500,
 ):
-    """Return detailed connection rows for a specific Zeek connection state within a report."""
+    """Return detailed connection rows for a Zeek connection state within a report."""
     try:
         decoded_state = unquote(state)
         analyzer = _require_analyzer(report_id)
@@ -262,13 +344,13 @@ async def drilldown_connection_state(
 @app.get("/reports/{report_id}/drilldown/suspicious-outbound")
 async def drilldown_suspicious_outbound(
     report_id: str,
-    src_ip: str = Query(...),
-    dst_ip: str = Query(...),
-    dst_port: int = Query(...),
-    service_name: str = Query(...),
-    limit: int = Query(default=500, ge=1, le=5000),
+    src_ip: str,
+    dst_ip: str,
+    dst_port: int,
+    service_name: str,
+    limit: ConnectionLimit = 500,
 ):
-    """Return detailed connection rows for a suspicious outbound grouping within a report."""
+    """Return detailed rows for a suspicious outbound group in a report."""
     try:
         analyzer = _require_analyzer(report_id)
 
@@ -299,11 +381,11 @@ async def drilldown_suspicious_outbound(
 @app.get("/reports/{report_id}/drilldown/cross-segment")
 async def drilldown_cross_segment(
     report_id: str,
-    src_subnet: str = Query(...),
-    dst_subnet: str = Query(...),
-    limit: int = Query(default=500, ge=1, le=5000),
+    src_subnet: str,
+    dst_subnet: str,
+    limit: ConnectionLimit = 500,
 ):
-    """Return detailed cross-segment connection rows for a source/destination subnet pair within a report."""
+    """Return cross‑segment rows for a source‑destination subnet pair in a report."""
     try:
         analyzer = _require_analyzer(report_id)
 
@@ -330,19 +412,19 @@ async def drilldown_cross_segment(
 @app.get("/reports/{report_id}/connections")
 async def filtered_connections(
     report_id: str,
-    ip: str | None = Query(default=None),
-    src_ip: str | None = Query(default=None),
-    dst_ip: str | None = Query(default=None),
-    subnet: str | None = Query(default=None),
-    src_subnet: str | None = Query(default=None),
-    dst_subnet: str | None = Query(default=None),
-    manufacturer: str | None = Query(default=None),
-    service_name: str | None = Query(default=None),
-    connection_state: str | None = Query(default=None),
-    direction: str | None = Query(default=None),
-    success: bool | None = Query(default=None),
-    is_ot: bool | None = Query(default=None),
-    limit: int = Query(default=500, ge=1, le=5000),
+    ip: OptionalQueryStr = None,
+    src_ip: OptionalQueryStr = None,
+    dst_ip: OptionalQueryStr = None,
+    subnet: OptionalQueryStr = None,
+    src_subnet: OptionalQueryStr = None,
+    dst_subnet: OptionalQueryStr = None,
+    manufacturer: OptionalQueryStr = None,
+    service_name: OptionalQueryStr = None,
+    connection_state: OptionalQueryStr = None,
+    direction: OptionalQueryStr = None,
+    success: OptionalQueryBool = None,
+    is_ot: OptionalQueryBool = None,
+    limit: ConnectionLimit = 500,
 ):
     """Return filtered connection detail rows for a report."""
     try:
@@ -392,11 +474,11 @@ async def filtered_connections(
 @app.get("/reports/{report_id}/devices")
 async def filtered_devices(
     report_id: str,
-    manufacturer: str | None = Query(default=None),
-    subnet: str | None = Query(default=None),
-    service_name: str | None = Query(default=None),
-    is_ot: bool | None = Query(default=None),
-    is_edge: bool | None = Query(default=None),
+    manufacturer: OptionalQueryStr = None,
+    subnet: OptionalQueryStr = None,
+    service_name: OptionalQueryStr = None,
+    is_ot: OptionalQueryBool = None,
+    is_edge: OptionalQueryBool = None,
 ):
     """Return filtered device rows for a report."""
     try:
@@ -431,13 +513,13 @@ async def filtered_devices(
 @app.get("/reports/{report_id}/services")
 async def filtered_services(
     report_id: str,
-    subnet: str | None = Query(default=None),
-    manufacturer: str | None = Query(default=None),
-    device_ip: str | None = Query(default=None),
-    risk_category: str | None = Query(default=None),
-    service_name: str | None = Query(default=None),
+    subnet: OptionalQueryStr = None,
+    manufacturer: OptionalQueryStr = None,
+    device_ip: OptionalQueryStr = None,
+    risk_category: OptionalQueryStr = None,
+    service_name: OptionalQueryStr = None,
 ):
-    """Return filtered service rows for a report."""
+    """Return filtered service rows matching the provided filters."""
     try:
         analyzer = _require_analyzer(report_id)
         return {
@@ -469,15 +551,10 @@ async def filtered_services(
 
 @app.post("/analyze")
 async def analyze(
-    file: UploadFile = File(...),
-    session_id: str | None = Query(default=None),
+    file: RequiredFile,
+    session_id: OptionalSessionId = None,
 ):
-    """
-    Upload a PCAP, run eleVADR analysis, and return the JSON report.
-
-    Optionally accepts a session_id query param to stream progress over
-    the /ws/progress/{session_id} WebSocket endpoint.
-    """
+    """Upload a PCAP, run analysis, and return the JSON report."""
     filename = file.filename or ""
     if not filename.lower().endswith(".pcap"):
         raise HTTPException(status_code=400, detail="Only .pcap files are supported")
@@ -523,7 +600,11 @@ async def analyze(
             try:
                 os.remove(tmp_path)
             except OSError as e:
-                logger.error(f"Error removing temporary file {tmp_path}: {e}")
+                logger.error(
+                    "Error removing temporary file %s: %s",
+                    tmp_path,
+                    e,
+                )
 
 
 # CLI entrypoint stays as-is
@@ -545,7 +626,10 @@ if __name__ == "__main__":
         "--output",
         type=str,
         default=os.environ.get("REPORT_OUTPUT"),
-        help="Output path for JSON report (can also use REPORT_OUTPUT env var, default: stdout)",
+        help=(
+            "Output path for JSON report "
+            "(can also use REPORT_OUTPUT env var, default: stdout)"
+        ),
     )
 
     argument_parser.add_argument(

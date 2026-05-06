@@ -14,10 +14,26 @@ import sys  # Import sys for stderr warnings
 import pandas as pd
 
 
+def _port_sources(raw_data: dict[str, object], port_num: int) -> list[str]:
+    """Return source keys that define a given port."""
+    exact_matches = [key for key in raw_data if key == str(port_num)]
+    range_matches: list[str] = []
+    for key in raw_data:
+        if "-" not in key:
+            continue
+        start_str, end_str = key.split("-", maxsplit=1)
+        start_port = int(start_str)
+        end_port = int(end_str)
+        if port_num in range(start_port, end_port + 1):
+            range_matches.append(key)
+    return range_matches or exact_matches
+
+
 def convert(json_path: Path, parquet_path: Path) -> None:
-    """
-    Read a port-keyed JSON file, expand port ranges if present,
-    check for duplicate port mappings, and write it as a Parquet file.
+    """Convert a port-keyed JSON file into a Parquet dataset.
+
+    Expand any port ranges, validate that each port is defined only once,
+    and write the normalized result to Parquet.
     """
     with open(json_path) as f:
         raw_data = json.load(f)
@@ -37,8 +53,9 @@ def convert(json_path: Path, parquet_path: Path) -> None:
                 for port_num in range(start_port, end_port + 1):
                     if port_num in processed_ports_data:
                         raise ValueError(
-                            f"Duplicate port mapping found for port {port_num} in {json_path.name}. "
-                            f"Previously defined by '{[k for k, v in raw_data.items() if port_num in range(int(k.split('-')[0]), int(k.split('-')[1]) + 1) if '-' in k] or [k for k, v in raw_data.items() if str(port_num) == k]}', "
+                            f"Duplicate port mapping found for port "
+                            f"{port_num} in {json_path.name}. Previously "
+                            f"defined by '{_port_sources(raw_data, port_num)}', "
                             f"now by '{key}'."
                         )
                     processed_ports_data[port_num] = value
@@ -47,23 +64,27 @@ def convert(json_path: Path, parquet_path: Path) -> None:
                 port_num = int(key)  # Attempt to convert key to int
                 if port_num in processed_ports_data:
                     raise ValueError(
-                        f"Duplicate port mapping found for port {port_num} in {json_path.name}. "
-                        f"Previously defined, now by '{key}'."
+                        f"Duplicate port mapping found for port {port_num} in "
+                        f"{json_path.name}. Previously defined, now by '{key}'."
                     )
                 processed_ports_data[port_num] = value
         except ValueError as e:
-            # If key is not a valid integer or range, or a duplicate is found, raise an error
-            # For invalid keys, print a warning and skip, for duplicates, re-raise the error
+            # If key is not a valid integer or range,
+            # or a duplicate is found, raise an error
+            # For invalid keys, print a warning and skip,
+            # for duplicates, re-raise the error
             if "Duplicate port mapping" in str(e):
                 raise e  # Re-raise the specific duplicate error
             else:
                 print(
-                    f"Warning: Skipping invalid port key '{key}' in {json_path.name} due to: {e}",
+                    f"Warning: Skipping invalid port key '{key}' in "
+                    f"{json_path.name} due to: {e}",
                     file=sys.stderr,
                 )
                 continue  # Skip this entry if it's just an invalid key format
 
-    # Convert the processed_ports_data dictionary into a list of records for DataFrame creation
+    # Convert the processed_ports_data dictionary
+    # into a list of records for DataFrame creation
     records = []
     for port_num, data in processed_ports_data.items():
         record = {"port": port_num}
@@ -73,7 +94,8 @@ def convert(json_path: Path, parquet_path: Path) -> None:
     # Create DataFrame from the list of records
     df = pd.DataFrame(records)
 
-    # Ensure 'port' column is integer type (should already be from above, but good for safety)
+    # Ensure 'port' column is integer type
+    # (should already be from above, but good for safety)
     df["port"] = df["port"].astype(int)
 
     df.to_parquet(parquet_path, engine="pyarrow", compression="snappy")
@@ -84,7 +106,8 @@ def convert(json_path: Path, parquet_path: Path) -> None:
 
     print(f"{json_path.name} -> {parquet_path.name}")
     print(
-        f"  {json_size / 1024:.1f} KB -> {parquet_size / 1024:.1f} KB ({reduction:.1f}% reduction)"
+        f"  {json_size / 1024:.1f} KB -> {parquet_size / 1024:.1f} KB "
+        f"({reduction:.1f}% reduction)"
     )
 
 

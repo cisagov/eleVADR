@@ -1,0 +1,32 @@
+{
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile.dev"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "ms-toolsai.jupyter",
+        "m-p-p.zeek",
+        "mechatroner.rainbow-csv",
+        "emilast.LogFileHighlighter"
+      ],
+      "settings": {
+        "python.analysis.typeCheckingMode": "basic",
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder}/.devcontainer/certs,target=/usr/local/share/ca-certificates/host,type=bind,consistency=cached"
+  ],
+  "name": "Elevadr Backend",
+  "postCreateCommand": "pre-commit install && pre-commit install-hooks",
+  "remoteUser": "appuser",
+  "workspaceFolder": "/workspace"
+}

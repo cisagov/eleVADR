@@ -1,8 +1,9 @@
+"""Download and parse IEEE OUI data into a local lookup file."""
+
 # Standard Python Libraries
 import json
 from pathlib import Path
 import re
-from typing import Dict, List, Optional
 import urllib.request
 
 IEEE_URL = "https://standards-oui.ieee.org/"
@@ -10,14 +11,14 @@ MAC_TO_COMPANY_RE = re.compile(r"([0-9A-F-]+)\s+\(hex\)\s+(.+?)\n", re.VERBOSE)
 
 
 def download_ieee_data() -> str | None:
-    """Download MAC OUI data from IEEE site"""
+    """Download MAC OUI data from the IEEE site."""
     req = urllib.request.Request(IEEE_URL, method="GET")
     with urllib.request.urlopen(req) as response:
         return response.read().decode("utf-8")
 
 
-def parse(text_str: str) -> dict:
-    """Parse text data from IEEE"""
+def parse(text_str: str) -> dict[str, str]:
+    """Parse IEEE text data into an OUI-to-company mapping."""
     matches = MAC_TO_COMPANY_RE.findall(text_str)
     result = {}
     for match in matches:

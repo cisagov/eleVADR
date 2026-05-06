@@ -195,3 +195,6 @@ zeeks/
 
 # AI
 claude.md
+
+.devcontainer/certs/*
+!.devcontainer/certs/.gitkeep

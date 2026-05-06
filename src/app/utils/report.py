@@ -1,8 +1,9 @@
+"""Report assembly and module definitions for eleVADR output."""
+
 # Standard Python Libraries
 from abc import ABC, abstractmethod
 import ipaddress
-import json
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 # Third-Party Libraries
 import numpy as np
@@ -16,12 +17,14 @@ class Report:
     """
     Main report orchestrator class.
 
-    Instantiates module classes and aggregates their data into a unified report structure.
+    Instantiates module classes and aggregates
+    their data into a unified report structure.
     """
 
     REPORT_VERSION = "2.0"
 
     def __init__(self, analyzer: Analyzer, report_id: str | None = None):
+        """Initialize report modules and assemble the top-level payload."""
         self.analyzer = analyzer
         self.report_id = report_id
 
@@ -45,8 +48,9 @@ class Report:
             DevicesModule(
                 analyzer,
                 name="it_devices",
-                device_filter=lambda df: (~df["device.is_ot"])
-                & (~df["device.is_edge"]),
+                device_filter=lambda df: (
+                    (~df["device.is_ot"]) & (~df["device.is_edge"])
+                ),
             ),
             DevicesModule(
                 analyzer,
@@ -89,9 +93,10 @@ class Report:
 
 
 class ReportModule(ABC):
-    """Abstract base class for report modules"""
+    """Abstract base class for report modules."""
 
     def __init__(self, analyzer: Analyzer):
+        """Store common dataframe references for concrete modules."""
         self.analyzer = analyzer
         self.traffic_df = analyzer.traffic_df
         self.endpoints_df = analyzer.endpoints_df
@@ -101,17 +106,17 @@ class ReportModule(ABC):
     @property
     @abstractmethod
     def name(self) -> str:
-        """Module identifier - must be implemented by subclasses"""
+        """Return the identifier."""
         pass
 
     @abstractmethod
     def generate_data(self):
-        """Generate module-specific data - must be implemented by subclasses"""
+        """Generate module-specific data."""
         pass
 
     @property
     def data(self):
-        """Lazy-load and cache data"""
+        """Lazy-load and cache data."""
         if self._data is None:
             self._data = self.generate_data()
         return self._data
@@ -125,13 +130,28 @@ class ReportModule(ABC):
 
 
 class DevicePanelModule(ReportModule):
-    """Device statistics module"""
+    """Device statistics module."""
 
     @property
     def name(self) -> str:
+        """Return `device_panel`."""
         return "device_panel"
 
     def generate_data(self) -> dict:
+        """
+        Summarize endpoint counts and OT cross‑segment communication.
+
+        Returns
+        -------
+        dict
+            {
+                "hosts": total endpoint count,
+                "ot_hosts": OT‑marked endpoint count,
+                "it_hosts": IT‑only endpoint count,
+                "edge_hosts": edge‑marked endpoint count,
+                "ot_cross_segment": count of OT cross‑segment communications
+            }
+        """
         ot_hosts = self.endpoints_df[self.endpoints_df["device.is_ot"]]
         edge_hosts = self.endpoints_df[self.endpoints_df["device.is_edge"]]
         it_hosts = self.endpoints_df[
@@ -142,20 +162,27 @@ class DevicePanelModule(ReportModule):
         return {
             "hosts": len(self.endpoints_df),
             "ot_hosts": len(ot_hosts),
-            "it_hosts": len(it_hosts),
+            "it_hosts": max(len(it_hosts) - len(edge_hosts), 0),
             "edge_hosts": len(edge_hosts),
             "ot_cross_segment": self.analyzer.ot_cross_segment_communication_count(),
         }
 
 
 class ServicePanelModule(ReportModule):
-    """Service overview statistics module"""
+    """Service overview statistics module."""
 
     @property
     def name(self) -> str:
+        """Return `service_panel`."""
         return "service_panel"
 
     def generate_data(self) -> dict:
+        """
+        Return a summary of service statistics.
+
+        - known, unknown and OT services counts
+        - risky services count
+        """
         unknown_services = self.traffic_df[
             self.traffic_df["service.port_type"].isin(
                 [
@@ -193,13 +220,25 @@ class ServicePanelModule(ReportModule):
 
 
 class ServiceRiskBreakdownModule(ReportModule):
-    """Service risk categorization module"""
+    """Service risk categorization module."""
 
     @property
     def name(self) -> str:
+        """Return `service_risk_breakdown_panel`."""
         return "service_risk_breakdown_panel"
 
     def generate_data(self) -> dict:
+        """
+        Summarize service risk information.
+
+        Returns
+        -------
+        dict
+        {
+        "risk_category_counts":  dict mapping risk category → occurrence count,
+        "risk_category_services": dict mapping risk category → list of service names
+        }
+        """
         risk_category_counts = count_values_in_list_column(
             self.services_df, "service.risk_categories"
         )
@@ -214,13 +253,36 @@ class ServiceRiskBreakdownModule(ReportModule):
 
 
 class ServiceCountModule(ReportModule):
-    """Service connection counts module"""
+    """Service connection counts module."""
 
     @property
     def name(self) -> str:
+        """Return `service_count_panel`."""
         return "service_count_panel"
 
     def generate_data(self) -> dict:
+        """
+        Return the total number of distinct services observed in the traffic data.
+
+        The method:
+        * Splits the traffic frame into *known* and *unknown* services based on
+        ``service.port_type`` (known, ephem‑eral, unknown, unknown‑priv).
+        * Counts the unique, non‑null ``service.name`` values in each group.
+        * Sums the two counts and returns the result.
+
+        Returns
+        -------
+        dict
+            {
+                "service_count": int  # total unique services (known + unknown)
+            }
+
+        Note
+        ----
+        This routine depends on the ServicePanelModule data that the analyzer
+        populates; the ``self.traffic_df`` must already contain the ``service.*``
+        columns.
+        """
         # Note: This module depends on ServicePanelModule data
         # We'll need to access the analyzer's services for counting
         unknown_services = self.traffic_df[
@@ -257,9 +319,11 @@ class RiskBasisBreakdownModule(ReportModule):
 
     @property
     def name(self) -> str:
+        """Return `risk_basis_breakdown_panel`."""
         return "risk_basis_breakdown_panel"
 
     def generate_data(self) -> dict:
+        """Return risk-basis counts and associated service names."""
         known_services = self.services_df[
             self.services_df["service.port_type"] == "KNOWN"
         ]
@@ -293,9 +357,11 @@ class ExposureBreakdownModule(ReportModule):
 
     @property
     def name(self) -> str:
+        """Return `exposure_breakdown_panel`."""
         return "exposure_breakdown_panel"
 
     def generate_data(self) -> dict:
+        """Return exposure counts and associated service names."""
         known_services = self.services_df[
             self.services_df["service.port_type"] == "KNOWN"
         ]
@@ -326,9 +392,11 @@ class ConnectionSuccessModule(ReportModule):
 
     @property
     def name(self) -> str:
+        """Return `connection_success_panel`."""
         return "connection_success_panel"
 
     def generate_data(self) -> dict:
+        """Return connection success summary data and representative lines."""
         return {
             "summary": self.analyzer.connection_success_summary(),
             "connections": self.analyzer.connection_success_lines(limit=200),
@@ -345,9 +413,11 @@ class ProtocolPostureModule(ReportModule):
 
     @property
     def name(self) -> str:
+        """Return `protocol_posture_panel`."""
         return "protocol_posture_panel"
 
     def generate_data(self) -> dict:
+        """Return protocol-posture counts and associated service names."""
         known_services = self.services_df[
             self.services_df["service.port_type"] == "KNOWN"
         ]
@@ -376,20 +446,27 @@ class ProtocolPostureModule(ReportModule):
 
 
 class SuspiciousOutboundConnectionsModule(ReportModule):
-    """Suspicious outbound connections from OT devices module"""
+    """Suspicious outbound connections from OT devices module."""
 
     @property
     def name(self) -> str:
+        """Return `suspicious_outbound_connections_panel`."""
         return "suspicious_outbound_connections_panel"
 
     def generate_data(self) -> list:
+        """Return grouped outbound OT connection records for reporting."""
         outbound_traffic = self.traffic_df[
             self.traffic_df["connection_info.direction_name"] == "outbound"
         ]
 
+        ot_join_col = (
+            "src_endpoint.mac"
+            if "src_endpoint.mac" in outbound_traffic.columns
+            else "dst_endpoint.mac"
+        )
         outbound_traffic_w_ot = outbound_traffic.merge(
             self.endpoints_df["device.is_ot"],
-            left_on="dst_endpoint.mac",
+            left_on=ot_join_col,
             right_index=True,
             how="left",
         )
@@ -401,11 +478,12 @@ class SuspiciousOutboundConnectionsModule(ReportModule):
             "service.name",
         ]
         outbound_traffic_ot = outbound_traffic_w_ot[
-            outbound_traffic_w_ot["device.is_ot"] == True
+            outbound_traffic_w_ot["device.is_ot"].fillna(False)
         ][display_cols]
         outbound_traffic_ot_counts = (
-            pd.DataFrame(outbound_traffic_ot.value_counts())
-            .reset_index()
+            outbound_traffic_ot.groupby(display_cols, sort=False)
+            .size()
+            .reset_index(name="count")
             .to_dict(orient="records")
         )
 
@@ -416,15 +494,18 @@ class DevicesModule(ReportModule):
     """Generic devices module to list devices based on a filter."""
 
     def __init__(self, analyzer: Analyzer, name: str, device_filter):
+        """Initialize the module with a report name and dataframe filter."""
         super().__init__(analyzer)
         self._name = name
         self.device_filter = device_filter
 
     @property
     def name(self) -> str:
+        """Return the configured module name."""
         return self._name
 
     def generate_data(self) -> list[dict[str, Any]]:
+        """Return filtered device records prepared for JSON serialization."""
         devices_df = self.endpoints_df[self.device_filter(self.endpoints_df)]
 
         device_columns = {
@@ -440,7 +521,10 @@ class DevicesModule(ReportModule):
         return self._prep_df_for_json(devices_df, device_columns)
 
     def _prep_df_for_json(self, df: pd.DataFrame, columns: dict) -> list:
-        """Prepare a dataframe for JSON serialization, selecting and renaming columns."""
+        """Prepare a dataframe for JSON serialization.
+
+        Selects and renames columns before converting rows to records.
+        """
         if df.empty:
             return []
 
@@ -448,7 +532,14 @@ class DevicesModule(ReportModule):
 
         report_df = df[list(existing_cols.keys())].rename(columns=existing_cols)
 
-        return report_df.replace({np.nan: None}).to_dict("records")
+        report_df = report_df.replace({np.nan: None})
+
+        for column in report_df.columns:
+            report_df[column] = report_df[column].apply(
+                lambda value: sorted(value) if isinstance(value, set) else value
+            )
+
+        return report_df.astype(object).to_dict("records")
 
 
 # Removed OTManufacturersModule as it's being replaced
@@ -468,13 +559,15 @@ class DevicesModule(ReportModule):
 
 
 class OTServicesModule(ReportModule):
-    """OT services/protocols module"""
+    """OT services/protocols module."""
 
     @property
     def name(self) -> str:
+        """Return `ot_services`."""
         return "ot_services"
 
     def generate_data(self) -> list:
+        """Return service records tagged as industrial protocols."""
         return self.services_df[
             self.services_df["service.information_categories"].apply(
                 lambda x: "Industrial Protocol" in x if isinstance(x, str) else False
@@ -490,32 +583,33 @@ class OTServicesModule(ReportModule):
 
 
 class DetectionModule(ABC):
-    """Abstract base class for detections based on Report Modules"""
+    """Abstract base class for detections based on report modules."""
 
     def __init__(self, report_modules: list[ReportModule]):
+        """Store module dependencies used by a detection."""
         self.report_modules = report_modules
         self._data = None
 
     @property
     @abstractmethod
     def name(self) -> str:
-        """Module identifier - must be implemented by subclasses"""
+        """Return the identifier."""
         pass
 
     @property
     @abstractmethod
     def executive_summary(self) -> str:
-        """Description of the finding with data, and remediation guidance - must be implemented by subclasses"""
+        """Return the human-readable finding summary."""
         pass
 
     @abstractmethod
     def run_detection(self):
-        """Evaluate the rule given the report modules - must be implemented by subclasses"""
+        """Evaluate the detection against the available module data."""
         pass
 
     @property
     def data(self):
-        """Lazy-load and cache data"""
+        """Lazy-load and cache data."""
         if self._data is None:
             self._data = self.generate_data()
         return self._data
@@ -530,6 +624,8 @@ class OTcrossSegmentLinesModule(ReportModule):
             return None
 
         endpoint = endpoints_df.loc[mac]
+        if isinstance(endpoint, pd.DataFrame):
+            endpoint = endpoint.iloc[0]
         ipv4_ips = (
             endpoint.get("device.ipv4_ips") if isinstance(endpoint, pd.Series) else None
         )
@@ -546,6 +642,7 @@ class OTcrossSegmentLinesModule(ReportModule):
 
     @property
     def name(self) -> str:
+        """Return `ot_cross_segment_lines_panel`."""
         return "ot_cross_segment_lines_panel"
 
     @staticmethod
@@ -561,6 +658,9 @@ class OTcrossSegmentLinesModule(ReportModule):
         if ip_obj.is_link_local or ip_obj.is_multicast:
             return True
 
+        if ip_value == "255.255.255.255":
+            return True
+
         if isinstance(
             ip_obj, ipaddress.IPv4Address
         ) and ip_obj == ipaddress.IPv4Address("255.255.255.255"):
@@ -569,6 +669,7 @@ class OTcrossSegmentLinesModule(ReportModule):
         return False
 
     def generate_data(self) -> dict[str, object]:
+        """Return OT cross-segment line items and supporting breakdowns."""
         df = self.traffic_df.copy()
         excluded_ip_mask = df["src_endpoint.ip"].apply(
             self._is_excluded_cross_segment_ip
@@ -656,7 +757,8 @@ class OTcrossSegmentLinesModule(ReportModule):
             orient="records"
         )
 
-        # Breakdown 3: per-OT-device flow counts using IP display values instead of MAC addresses.
+        # Breakdown 3: per-OT-device flow counts using IP display values
+        # instead of MAC addresses.
         ot_src_cross_segment = cross_segment[
             cross_segment["src_endpoint.mac"].isin(ot_macs)
         ].copy()
@@ -691,15 +793,18 @@ class OTcrossSegmentDetection(DetectionModule):
 
     @property
     def name(self) -> str:
+        """Return `ot_cross_segment_alert`."""
         return "ot_cross_segment_alert"
 
     def run_detection(self) -> bool:
+        """Return whether OT cross-segment communication was detected."""
         payload = self.report_modules[0].data
         lines = payload.get("lines", []) if isinstance(payload, dict) else []
         return len(lines) > 0
 
     @property
     def executive_summary(self) -> str:
+        """Return a human-readable summary of the detection findings."""
         payload = self.report_modules[0].data
         lines = payload.get("lines", []) if isinstance(payload, dict) else []
         if len(lines) == 0:
@@ -709,9 +814,10 @@ class OTcrossSegmentDetection(DetectionModule):
 
         summary = (
             "**FINDING: OT Cross-Segment Communications Detected**\n\n"
-            f"{num_examples} cross-segment communication example(s) involving OT assets were identified. "
-            "Traffic traversing different Subnet/VLAN boundaries can indicate missing segmentation controls or "
-            "unauthorized lateral movement.\n\n"
+            f"{num_examples} cross-segment communication example(s) "
+            "involving OT assets were identified. "
+            "Traffic traversing different Subnet/VLAN boundaries can indicate "
+            "missing segmentation controls or unauthorized lateral movement.\n\n"
             "**Example Communications:**\n"
         )
 
@@ -729,30 +835,34 @@ class OTcrossSegmentDetection(DetectionModule):
         summary += (
             "\n**Recommended Actions:**\n"
             "- Validate approved OT-to-other-segment flows using firewall/ACL rules\n"
-            "- Review segmentation policy (Subnet/VLAN boundaries) and verify enforcement on boundary devices\n"
-            "- Investigate whether any OT assets should be isolated or forced through controlled jump points\n"
-            "- Implement monitoring/alerting for anomalous cross-segment lateral traffic\n"
+            "- Review segmentation policy (Subnet/VLAN boundaries) and verify "
+            "enforcement on boundary devices\n"
+            "- Investigate whether any OT assets should be isolated or forced "
+            "through controlled jump points\n"
+            "- Implement monitoring/alerting for anomalous "
+            "cross-segment lateral traffic\n"
         )
 
         return summary
 
 
 class SuspiciousOutboundConnectionsDetection(DetectionModule):
-    """Detection module that identifies suspicious outbound connections from OT devices"""
+    """Flag suspicious outbound connections initiated by OT devices."""
 
     @property
     def name(self) -> str:
+        """Return `suspicious_outbound_connections_detection`."""
         return "suspicious_outbound_connections_detection"
 
     def run_detection(self) -> bool:
-        """Check if there are any suspicious outbound connections"""
+        """Return whether suspicious outbound OT connections exist."""
         # Access the SuspiciousOutboundConnectionsModule directly
         connections = self.report_modules[0].data
         return len(connections) > 0
 
     @property
     def executive_summary(self) -> str:
-        """Generate executive summary with findings and remediation guidance"""
+        """Generate an executive summary with findings and guidance."""
         if not self.run_detection():
             return ""
 
@@ -767,7 +877,9 @@ class SuspiciousOutboundConnectionsDetection(DetectionModule):
         # Build the executive summary
         summary = f"""**FINDING: Suspicious Outbound Connections Detected**
 
-{num_connections} suspicious outbound connection(s) from OT devices were identified. OT devices typically should not initiate outbound connections, which may indicate unauthorized access, data exfiltration, or compromised devices.
+{num_connections} suspicious outbound connection(s) from OT devices were identified.
+OT devices typically should not initiate outbound connections, which may
+indicate unauthorized access, data exfiltration, or compromised devices.
 
 **Affected Connections:**
 """

@@ -1,3 +1,5 @@
+"""Set the OT System Type flag based on legacy ICS classifications."""
+
 # Standard Python Libraries
 import json
 
@@ -7,19 +9,25 @@ if __name__ == "__main__":
     with open("app/data/assessor_data/ports.json") as pf:
         ports = json.load(pf)
 
-    for service in ports:
-        it_or_ics = ports[service]["System Type"]
+    for service_name in ports:
+        it_or_ics = ports[service_name]["System Type"]
         if it_or_ics == "ICS":
-            ports[service]["OT System Type"] = True
+            ports[service_name]["OT System Type"] = True
         else:
-            ports[service]["OT System Type"] = False
+            ports[service_name]["OT System Type"] = False
 
-        #     if service in port_risk and "Industrial Protocol" not in port_risk[service]["information_categories"]:
-        #         port_risk[service]["information_categories"].append("Industrial Protocol")
+        #     if (
+        #         service_name in port_risk
+        #         and "Industrial Protocol"
+        #         not in port_risk[service_name]["information_categories"]
+        #     ):
+        #         port_risk[service_name]["information_categories"].append(
+        #             "Industrial Protocol"
+        #         )
         #     else:
-        #         port_risk[service] = {
-        #             "service": ports[service]["Service Name"],
-        #             "description": ports[service]["Description"],
+        #         port_risk[service_name] = {
+        #             "service": ports[service_name]["Service Name"],
+        #             "description": ports[service_name]["Description"],
         #             "information_categories": [
         #                 "Industrial Protocol"
         #             ],

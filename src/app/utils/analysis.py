@@ -1,10 +1,8 @@
 """Core PCAP analysis logic for eleVADR."""
 
 # Standard Python Libraries
-from collections import Counter
-from functools import lru_cache
 import ipaddress
-import os
+import json
 from pathlib import Path
 import subprocess
 
@@ -18,7 +16,6 @@ from .utils import (
     PortType,
     check_ip_version,
     connection_type_processing,
-    convert_list_col_to_str,
     is_communicating_with_ot_hosts,
     is_public_ip,
     is_using_ot_services,
@@ -33,7 +30,12 @@ class PcapParser:
     """Process PCAP files using Zeek and create traffic dataframe."""
 
     def __init__(self, file_path_info: FilePathInfo):
+        """Initialize parser state and build empty analysis dataframes."""
         self.file_path_info = file_path_info
+        if file_path_info.path_to_pcap is None:
+            raise ValueError("path_to_pcap must be provided.")
+        if file_path_info.path_to_zeek is None:
+            raise ValueError("path_to_zeek must be provided.")
         self.pcap_filename = Path(file_path_info.path_to_pcap).stem
         self.upload_output_zeek_dir = (
             Path(file_path_info.path_to_zeek) / self.pcap_filename
@@ -41,10 +43,14 @@ class PcapParser:
 
         # Define traffic dataframe schema
         traffic_df_schema = {
-            "connection_info.protocol_ver_id": int,  # 0 - UNK, 4 - IPv4, 6 - IPv6, 99 - other
-            "connection_info.type_name": str,  # CUSTOM: unicast, multicast, broadcast
-            "connection_info.direction_name": str,  # None, inbound, outbound, lateral, other
-            "connection_info.protocol_name": str,  # tcp, udp, other IANA assigned L4 protocol
+            # 0 - UNK, 4 - IPv4, 6 - IPv6, 99 - other
+            "connection_info.protocol_ver_id": int,
+            # CUSTOM: unicast, multicast, broadcast
+            "connection_info.type_name": str,
+            # None, inbound, outbound, lateral, other
+            "connection_info.direction_name": str,
+            # tcp, udp, other IANA assigned L4 protocol
+            "connection_info.protocol_name": str,
             "connection_info.activity_name": str,
             "connection_info.history": str,
             "dst_endpoint.ip": str,
@@ -59,24 +65,35 @@ class PcapParser:
             "service.port_type": str,  # CUSTOM - see utils.PortTypes
             "service.description": str,  # CUSTOM
             "service.information_categories": str,  # CUSTOM
-            "service.risk_categories": str,  # CUSTOM
-            "service.risk_basis": str,  # CUSTOM - Observed | Credible
-            "service.environment_exposure": str,  # CUSTOM - External | Cross-Zone | Internal
-            "service.protocol_posture": str,  # CUSTOM - Inherently Risky | Conditionally Risky
+            # CUSTOM
+            "service.risk_categories": str,
+            # CUSTOM - Observed | Credible
+            "service.risk_basis": str,
+            # CUSTOM - External | Cross-Zone | Internal
+            "service.environment_exposure": str,
+            # CUSTOM - Inherently Risky | Conditionally Risky
+            "service.protocol_posture": str,
             "service.is_ot": bool,  # CUSTOM
         }
         self.traffic_df = pd.DataFrame(columns=traffic_df_schema.keys()).astype(
             traffic_df_schema
         )
 
+    def parse(self):
+        """Execute Zeek processing and load results into dataframes."""
         # Process PCAP using Zeek
         self.zeekify()
 
         # Convert Zeek conn.log to pandas DataFrame
+        conn_log_path = self.upload_output_zeek_dir / "conn.log"
+
         log_to_df = LogToDataFrame()
-        conn_df = log_to_df.create_dataframe(
-            str(self.upload_output_zeek_dir / "conn.log")
-        )
+        try:
+            conn_df = log_to_df.create_dataframe(str(conn_log_path))
+        except Exception as exc:
+            raise OSError(
+                f"Could not read/access zeek log file: {conn_log_path}"
+            ) from exc
 
         # Map Zeek columns to traffic_df schema
         conn_df_mappings = {
@@ -91,9 +108,14 @@ class PcapParser:
             "history": "connection_info.history",
         }
         mapped_conn_df = conn_df.rename(columns=conn_df_mappings)
-        self.traffic_df = pd.concat(
-            [self.traffic_df, mapped_conn_df[conn_df_mappings.values()]]
-        )
+        available_columns = [
+            column for column in conn_df_mappings.values() if column in mapped_conn_df
+        ]
+        if available_columns:
+            self.traffic_df = pd.concat(
+                [self.traffic_df, mapped_conn_df[available_columns]],
+                ignore_index=True,
+            )
 
         # Initialize endpoint and services dataframes
         endpoints_df_schema = {
@@ -106,7 +128,8 @@ class PcapParser:
             "device.ip_scope": str,  # CUSTOM: private or global
             "device.ipv4_subnets": str,
             "device.ipv6_subnets": str,  # will we ever use this?
-            "device.protocol_ver_id": int,  # CUSTOM: 0 - UNK, 4 - IPv4, 6 - IPv6, 46 - IPv4 and IPv6, 99 - other
+            # CUSTOM: 0 - UNK, 4 - IPv4, 6 - IPv6, 46 - IPv4 and IPv6, 99 - other
+            "device.protocol_ver_id": int,
             "device.sent_services": object,
             "device.incoming_services": object,
             "device.sent_ports": object,
@@ -123,8 +146,10 @@ class PcapParser:
             "service.information_categories": str,  # CUSTOM
             "service.risk_categories": str,  # CUSTOM
             "service.risk_basis": str,  # CUSTOM - Observed | Credible
-            "service.environment_exposure": str,  # CUSTOM - External | Cross-Zone | Internal
-            "service.protocol_posture": str,  # CUSTOM - Inherently Risky | Conditionally Risky
+            # CUSTOM - External | Cross-Zone | Internal
+            "service.environment_exposure": str,
+            # CUSTOM - Inherently Risky | Conditionally Risky
+            "service.protocol_posture": str,
             "service.is_ot": bool,  # CUSTOM
         }
         self.services_df = pd.DataFrame(columns=services_df_schema.keys()).astype(
@@ -148,6 +173,8 @@ class PcapParser:
         )
 
         # Run mac_logging Zeek script
+        if self.file_path_info.path_to_zeek_scripts is None:
+            raise ValueError("path_to_zeek_scripts must be provided.")
         mac_script = Path(self.file_path_info.path_to_zeek_scripts) / "mac_logging.zeek"
         subprocess.check_output(
             [
@@ -205,6 +232,7 @@ class Analyzer:
         services_df: pd.DataFrame,
         file_path_info: FilePathInfo,
     ):
+        """Initialize analyzer state and derive all report-facing dataframes."""
         self.traffic_df = traffic_df
         self.endpoints_df = endpoints_df
         self.services_df = services_df
@@ -216,8 +244,23 @@ class Analyzer:
         self.services_df_processing()
 
     def traffic_df_processing(self):
-        """Enrich traffic data with IP, connection type, direction, subnet, and service info."""
-        # IP version
+        """Add IP, conn type, direction, subnet, service info to traffic."""
+        if self.traffic_df.empty:
+            return
+
+        required_cols = {
+            "src_endpoint.ip",
+            "dst_endpoint.ip",
+            "dst_endpoint.port",
+        }
+        missing = required_cols - set(self.traffic_df.columns)
+        if missing:
+            # If the caller supplied a traffic dataframe without the expected
+            # schema we bail out silently – the Analyzer will still be usable
+            # for modules that only need endpoint/service data.
+            return
+
+        # IP version (4, 6 or 99 for invalid)
         self.traffic_df["connection_info.protocol_ver_id"] = self.traffic_df[
             "src_endpoint.ip"
         ].apply(check_ip_version)
@@ -227,23 +270,30 @@ class Analyzer:
             "dst_endpoint.ip"
         ].apply(connection_type_processing)
 
-        # Traffic direction (inbound, outbound, lateral)
+        # Traffic direction (inbound, outbound, lateral, external, or other)
         self.traffic_df["connection_info.direction_name"] = self.traffic_df.apply(
             traffic_direction, axis=1
         )
 
-        # Subnet membership
+        # If the dataframe became empty after the above transformations
+        # (e.g., all rows were filtered out by a custom ``traffic_direction``)
+        # we stop further processing.
+        if self.traffic_df.empty:
+            return
+
+        # Subnet membership – adds ``src_endpoint.subnet`` and ``dst_endpoint.subnet``
         self.traffic_df = self.traffic_df.apply(subnet_membership, axis=1)
 
-        # Service mapping and risk categorization
+        # Service mapping and risk categorisation.
+        # ``service_processing`` expects the ports and risk dataframes to be
+        # present – they are populated in ``get_assessor_data``.
         self.traffic_df = self.traffic_df.apply(
             lambda row: service_processing(row, self.ports_df, self.port_risk_df),
             axis=1,
         )
 
     def endpoints_df_processing(self):
-        """Generate endpoint dataframe with device info, IPs, services, and OT classification."""
-
+        """Create endpoint DataFrame with device info, IPs, services, OT label."""
         # Create a unified list of all observed IP-MAC-Subnet relationships
 
         def _is_unspecified_ip(ip: str) -> bool:
@@ -281,12 +331,24 @@ class Analyzer:
         ip_map = pd.concat([src, dst]).dropna(subset=["ip", "mac"]).drop_duplicates()
         ip_map = ip_map[~ip_map["ip"].isin(["0.0.0.0", "::"])]
 
-        # Aggregate services per IP
-        incoming_services = unicast_traffic.groupby("dst_endpoint.ip").agg(
+        if ip_map.empty:
+            self.endpoints_df = pd.DataFrame().set_index(
+                pd.Index([], name="device.mac")
+            )
+            return
+
+        # Filter traffic to exclude unspecified IPs
+        # before grouping to avoid count inflation
+        filtered_traffic = unicast_traffic[
+            ~unicast_traffic["src_endpoint.ip"].isin(["0.0.0.0", "::"])
+            & ~unicast_traffic["dst_endpoint.ip"].isin(["0.0.0.0", "::"])
+        ]
+
+        incoming_services = filtered_traffic.groupby("dst_endpoint.ip").agg(
             incoming_services=("service.name", lambda x: set(x.dropna())),
             incoming_ports=("dst_endpoint.port", lambda x: set(x.dropna())),
         )
-        sent_services = unicast_traffic.groupby("src_endpoint.ip").agg(
+        sent_services = filtered_traffic.groupby("src_endpoint.ip").agg(
             sent_services=("service.name", lambda x: set(x.dropna())),
             sent_ports=("dst_endpoint.port", lambda x: set(x.dropna())),
         )
@@ -303,7 +365,7 @@ class Analyzer:
                     items.update(item)
                 else:
                     items.add(item)
-            return list(items) if items else np.nan
+            return sorted(items) if items else np.nan
 
         # Aggregation function to apply to each MAC address group
         def agg_by_mac(group):
@@ -320,8 +382,9 @@ class Analyzer:
             ipv4_subnets = (
                 group[
                     group["ip"].apply(
-                        lambda x: check_ip_version(x) == 4
-                        and x not in ("0.0.0.0", "::")
+                        lambda x: (
+                            check_ip_version(x) == 4 and x not in ("0.0.0.0", "::")
+                        )
                     )
                 ]["subnet"]
                 .dropna()
@@ -331,8 +394,9 @@ class Analyzer:
             ipv6_subnets = (
                 group[
                     group["ip"].apply(
-                        lambda x: check_ip_version(x) == 6
-                        and x not in ("0.0.0.0", "::")
+                        lambda x: (
+                            check_ip_version(x) == 6 and x not in ("0.0.0.0", "::")
+                        )
                     )
                 ]["subnet"]
                 .dropna()
@@ -355,16 +419,26 @@ class Analyzer:
 
             return pd.Series(res)
 
+        grouped_ip_details = ip_details.groupby("mac", group_keys=False)
         endpoints_df = (
-            ip_details.groupby("mac")
-            .apply(agg_by_mac)
+            grouped_ip_details.apply(agg_by_mac, include_groups=False)
             .reset_index()
             .rename(columns={"mac": "device.mac"})
         )
 
+        endpoints_df = endpoints_df[
+            endpoints_df["device.ipv4_ips"].notna()
+            | endpoints_df["device.ipv6_ips"].notna()
+        ]
+
         # Add manufacturer information
+        manufacturers_df = getattr(
+            self,
+            "manufacturers_df",
+            pd.DataFrame(columns=["manufacturer"]),
+        )
         endpoints_df = endpoints_df.apply(
-            lambda row: set_manufacturers(row, self.manufacturers_df), axis=1
+            lambda row: set_manufacturers(row, manufacturers_df), axis=1
         )
 
         self.endpoints_df = endpoints_df.set_index("device.mac")
@@ -404,6 +478,17 @@ class Analyzer:
         )
 
     def services_df_processing(self):
+        """
+        Prepare ``self.services_df`` from ``self.traffic_df``.
+
+        - copy only the service‑related columns,
+        - convert category fields to comma‑separated strings,
+        - deduplicate by ``service.name`` keeping the row with the most populated
+        ``service.risk_categories``.
+        """
+        if self.traffic_df.empty:
+            self.services_df = pd.DataFrame(columns=self.services_df.columns)
+            return
 
         self.services_df = self.traffic_df[self.services_df.columns].copy()
 
@@ -423,7 +508,8 @@ class Analyzer:
             )
 
         # Deduplicate by service name, preferring rows with the most populated fields.
-        # Sort so that rows with risk_categories populated sort before nulls, then keep first.
+        # Sort so that rows with risk_categories
+        # populated sort before nulls, then keep first.
         self.services_df = self.services_df.sort_values(
             "service.risk_categories", na_position="last"
         ).drop_duplicates(subset=["service.name"], keep="first")
@@ -439,6 +525,8 @@ class Analyzer:
         }
 
         for attr_name, filename in parquet_files.items():
+            if self.file_path_info.path_to_assessor_data is None:
+                raise ValueError("path_to_assessor_data must be provided.")
             file_path = Path(self.file_path_info.path_to_assessor_data) / filename
             try:
                 setattr(self, attr_name, pd.read_parquet(file_path, engine="pyarrow"))
@@ -446,22 +534,34 @@ class Analyzer:
                 raise ValueError(f"Error loading {filename}: {e}") from e
 
         for attr_name, filename in json_files.items():
+            if self.file_path_info.path_to_assessor_data is None:
+                raise ValueError("path_to_assessor_data must be provided.")
             file_path = Path(self.file_path_info.path_to_assessor_data) / filename
             try:
                 with open(file_path) as f:
-                    setattr(self, attr_name, pd.read_json(f, orient="index"))
+                    json_payload = json.load(f)
+                setattr(
+                    self,
+                    attr_name,
+                    pd.DataFrame.from_dict(json_payload, orient="index"),
+                )
             except Exception as e:
                 raise ValueError(f"Error loading {filename}: {e}") from e
 
         # Special handling for manufacturers dataframe
         self.manufacturers_df.index = self.manufacturers_df.index.rename("oui")
-        self.manufacturers_df = self.manufacturers_df.rename(
-            columns={0: "manufacturer"}
-        )
+        if 0 in self.manufacturers_df.columns:
+            self.manufacturers_df = self.manufacturers_df.rename(
+                columns={0: "manufacturer"}
+            )
+        elif "manufacturer" not in self.manufacturers_df.columns:
+            first_column = self.manufacturers_df.columns[0]
+            self.manufacturers_df = self.manufacturers_df.rename(
+                columns={first_column: "manufacturer"}
+            )
 
     # Report Analysis Methods
 
-    @lru_cache
     def ot_cross_segment_communication_count(self) -> int:
         """Count OT devices communicating across network segments."""
         ot_macs = set(self.endpoints_df[self.endpoints_df["device.is_ot"]].index)
@@ -507,7 +607,8 @@ class Analyzer:
         else:
             named_service_counts = []
 
-        # For unknown services, the name already includes the port, so value_counts is fine
+        # For unknown services, the name already
+        # includes the port, so value_counts is fine
         unnamed_service_counts = (
             unknown_services["service.name"].value_counts().to_dict()
         )
@@ -518,15 +619,18 @@ class Analyzer:
 
     def service_category_map(self, category: str) -> dict:
         """Map service categories to service names."""
-        category_map = {}
+        category_map: dict[str, list[str]] = {}
         for _, row in self.services_df.iterrows():
             categories = row[category]
-            service_name = row["service.name"]
-            if (
-                isinstance(categories, str) and categories != ""
-            ):  # prevent blank categories from being counted
-                for cat in categories.split(", "):
-                    category_map.setdefault(cat, []).append(row["service.name"])
+            if isinstance(categories, str) and categories.strip():
+                split_categories = [
+                    cat.strip() for cat in categories.split(",") if cat.strip()
+                ]
+                for cat in split_categories:
+                    service_names = category_map.setdefault(cat, [])
+                    service_name = row["service.name"]
+                    if service_name and service_name not in service_names:
+                        service_names.append(service_name)
         return category_map
 
     @staticmethod
@@ -701,7 +805,7 @@ class Analyzer:
         return pd.DataFrame(rows).drop_duplicates(subset=["ip"], keep="first")
 
     def _connection_detail_base_df(self) -> pd.DataFrame:
-        """Return a standardized per-connection detail dataframe used by drill-down endpoints."""
+        """Return per-connection detail DataFrame for drill‑down endpoints."""
         required_cols = {
             "src_endpoint.ip",
             "src_endpoint.port",
@@ -796,6 +900,7 @@ class Analyzer:
     def _finalize_connection_detail_df(
         df: pd.DataFrame, limit: int
     ) -> list[dict[str, object]]:
+        """Sort, cap, and serialize connection detail rows."""
         if limit <= 0 or df.empty:
             return []
 
@@ -865,7 +970,7 @@ class Analyzer:
         dst_subnet: str,
         limit: int = 500,
     ) -> list[dict[str, object]]:
-        """Return detailed cross-segment rows for a specific source/destination subnet pair."""
+        """Return cross‑segment rows for a source‑dest subnet pair."""
         if limit <= 0 or self.traffic_df.empty:
             return []
 
@@ -896,6 +1001,7 @@ class Analyzer:
         is_ot: bool | None = None,
         limit: int = 500,
     ) -> list[dict[str, object]]:
+        """Return connection rows matching the provided filter set."""
         if limit <= 0 or self.traffic_df.empty:
             return []
 
@@ -966,6 +1072,7 @@ class Analyzer:
         is_ot: bool | None = None,
         is_edge: bool | None = None,
     ) -> list[dict[str, object]]:
+        """Return device rows matching the provided filters."""
         if self.endpoints_df.empty:
             return []
 
@@ -1042,6 +1149,7 @@ class Analyzer:
         risk_category: str | None = None,
         service_name: str | None = None,
     ) -> list[dict[str, object]]:
+        """Return service rows matching the provided filters."""
         if self.services_df.empty:
             return []
 
