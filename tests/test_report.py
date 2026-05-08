@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 # cisagov Libraries
+from app.utils.analysis import Analyzer
 from app.utils.report import (
     DevicePanelModule,
     DevicesModule,
@@ -882,6 +883,67 @@ class TestDevicesModule:
 
 
 class TestOTServicesModule:
+    def test_services_df_processing_removes_nans(self, mock_file_path_info):
+        """
+        Verify that services_df_processing converts np.nan to None
+        to ensure JSON compatibility.
+        """
+        with (
+            patch("app.utils.analysis.Analyzer.get_assessor_data"),
+            patch("app.utils.analysis.Analyzer.traffic_df_processing"),
+            patch("app.utils.analysis.Analyzer.endpoints_df_processing"),
+            patch("app.utils.analysis.Analyzer.services_df_processing"),
+        ):
+            analyzer = Analyzer(
+                pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), mock_file_path_info
+            )
+
+        analyzer.traffic_df = pd.DataFrame(
+            {
+                "src_endpoint.ip": ["192.168.1.1"],
+                "dst_endpoint.ip": ["192.168.1.10"],
+                "dst_endpoint.port": [80],
+                "service.name": ["HTTP"],
+                "service.port_type": [PortType.KNOWN.name],
+                "service.description": ["Web"],
+                "service.information_categories": ["Web"],
+                "service.risk_categories": [np.nan],  # The poison value
+                "service.risk_basis": ["Observed"],
+                "service.environment_exposure": ["Internal"],
+                "service.protocol_posture": ["Conditionally Risky"],
+                "service.is_ot": [False],
+            }
+        )
+
+        # Initialize services_df schema (as the real init would)
+        analyzer.services_df = pd.DataFrame(
+            columns=[
+                "service.name",
+                "service.port_type",
+                "service.description",
+                "service.information_categories",
+                "service.risk_categories",
+                "service.risk_basis",
+                "service.environment_exposure",
+                "service.protocol_posture",
+                "service.is_ot",
+            ]
+        )
+
+        analyzer.services_df_processing()
+
+        val = analyzer.services_df.iloc[0]["service.risk_categories"]
+        assert val is None
+        assert pd.isna(val) is not False  # Ensure it's not NaN
+
+        # Standard Python Libraries
+        import json
+
+        try:
+            json.dumps(analyzer.services_df.to_dict(orient="records"))
+        except ValueError as e:
+            pytest.fail(f"services_df still contains non-JSON compliant values: {e}")
+
     def test_generate_data(self, mock_analyzer):
         # Setup services_df with OT and non-OT services
         mock_analyzer.services_df = pd.DataFrame(

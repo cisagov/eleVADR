@@ -514,6 +514,8 @@ class Analyzer:
             "service.risk_categories", na_position="last"
         ).drop_duplicates(subset=["service.name"], keep="first")
 
+        self.services_df = self.services_df.replace({np.nan: None})
+
     def get_assessor_data(self):
         """Load reference data: ports, port risks, and manufacturers."""
         parquet_files = {

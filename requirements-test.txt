@@ -1,9 +1,0 @@
---requirement requirements.txt
-httpx
-pre-commit
-pytest
-pytest-asyncio
-pytest-mock
-python-on-whales
-# The bump-version script requires at least version 3 of semver.
-semver>=3

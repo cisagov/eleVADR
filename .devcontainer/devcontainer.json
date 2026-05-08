@@ -12,7 +12,8 @@
         "ms-toolsai.jupyter",
         "m-p-p.zeek",
         "mechatroner.rainbow-csv",
-        "emilast.LogFileHighlighter"
+        "emilast.LogFileHighlighter",
+        "github.vscode-github-actions"
       ],
       "settings": {
         "python.analysis.typeCheckingMode": "basic",
@@ -30,7 +31,7 @@
     "source=${localWorkspaceFolder}/.devcontainer/certs,target=/usr/local/share/ca-certificates/host,type=bind,consistency=cached"
   ],
   "name": "Elevadr Backend",
-  "postCreateCommand": "git config core.fileMode false && pre-commit install && pre-commit install-hooks",
+  "postCreateCommand": "git config core.fileMode false && uv run pre-commit install && uv run pre-commit install-hooks",
   "remoteUser": "appuser",
   "workspaceFolder": "/workspace"
 }

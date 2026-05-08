@@ -27,7 +27,7 @@ if [ "$ELEVADR_MODE" = "api" ]; then
   fi
 
   cd /app
-  exec uvicorn app.main:app --host 0.0.0.0 --port "${API_PORT}" --log-level info
+  exec uv run uvicorn app.main:app --host 0.0.0.0 --port "${API_PORT}" --log-level info
 fi
 
 # --------------------------------------------------------------------
@@ -67,7 +67,7 @@ cp "$PCAP_INPUT" /app/data/uploads/
 echo -e "${YELLOW}Starting analysis...${NC}"
 cd /app
 
-python3 main.py \
+uv run python main.py \
   --pcap "data/uploads/${PCAP_FILENAME}" \
   --output "$REPORT_OUTPUT" 2>&1 | while IFS= read -r line; do
   echo -e "${YELLOW}${line}${NC}"

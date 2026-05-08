@@ -39,7 +39,7 @@ defaults:
     shell: bash -Eueo pipefail -x {0}
 
 env:
-  PIP_CACHE_DIR: ~/.cache/pip
+  UV_CACHE_DIR: ~/.cache/uv
   PRE_COMMIT_CACHE_DIR: ~/.cache/pre-commit
   RUN_TMATE: ${{ secrets.RUN_TMATE }}
 
@@ -120,10 +120,16 @@ jobs:
       - id: setup-env
         uses: cisagov/setup-env-github-action@v1
       - uses: actions/checkout@v6
+
       - id: setup-python
         uses: actions/setup-python@v6
         with:
-          python-version: ${{ steps.setup-env.outputs.python-version }}
+          python-version-file: pyproject.toml
+
+      - id: setup-uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        with:
+          version: 0.11.11
 
       - uses: actions/cache@v5
         env:
@@ -132,19 +138,17 @@ jobs:
             steps.setup-python.outputs.python-version }}-
         with:
           key: >-
-            ${{ env.BASE_CACHE_KEY }}${{ hashFiles('**/requirements-test.txt')
-            }}-${{ hashFiles('**/requirements.txt') }}-${{
+            ${{ env.BASE_CACHE_KEY }}${{ hashFiles('**/pyproject.toml')
+            }}-${{ hashFiles('**/uv.lock') }}-${{
             hashFiles('**/.pre-commit-config.yaml') }}
 
           path: |
-            ${{ env.PIP_CACHE_DIR }}
+            ${{ env.UV_CACHE_DIR }}
             ${{ env.PRE_COMMIT_CACHE_DIR }}
           restore-keys: |
             ${{ env.BASE_CACHE_KEY }}
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools
-          python -m pip install --upgrade --requirement requirements-test.txt
+        run: uv sync
       - name: Set up pre-commit hook environments
         run: pre-commit install-hooks
       - name: Run pre-commit on all files
@@ -385,10 +389,17 @@ jobs:
       - id: setup-env
         uses: cisagov/setup-env-github-action@v1
       - uses: actions/checkout@v6
+
       - id: setup-python
         uses: actions/setup-python@v6
         with:
-          python-version: ${{ steps.setup-env.outputs.python-version }}
+          python-version-file: pyproject.toml
+
+      - id: setup-uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        with:
+          version: 0.11.11
+
       - name: Cache testing environments
         uses: actions/cache@v5
         env:
@@ -397,15 +408,13 @@ jobs:
             steps.setup-python.outputs.python-version }}-
         with:
           key: >-
-            ${{ env.BASE_CACHE_KEY }}${{ hashFiles('**/requirements-test.txt')
-            }}-${{ hashFiles('**/requirements.txt') }}
-          path: ${{ env.PIP_CACHE_DIR }}
+            ${{ env.BASE_CACHE_KEY }}${{ hashFiles('**/pyproject.toml')
+            }}-${{ hashFiles('**/uv.lock') }}
+          path: ${{ env.UV_CACHE_DIR }}
           restore-keys: |
             ${{ env.BASE_CACHE_KEY }}
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools
-          pip install --upgrade --requirement requirements-test.txt
+        run: uv sync
       - name: Download Docker image artifact
         uses: actions/download-artifact@v8
         with:
@@ -418,8 +427,8 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          pip install -e .
-          pytest
+          uv pip install -e .
+          uv pytest
       - name: Setup tmate debug session
         uses: mxschmitt/action-tmate@v3
         if: env.RUN_TMATE
