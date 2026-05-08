@@ -9,14 +9,14 @@ COPY .devcontainer/certs/ /tmp/certs/
 # If you have multiple files, we concatenate into one bundle for apk.
 RUN set -eu && \
     if [ -n "$(ls -A /tmp/certs 2>/dev/null)" ]; then \
-      cat /tmp/certs/* > /etc/ssl/certs/custom-bundle.pem && \
-      pip3 config set global.cert /etc/ssl/certs/custom-bundle.pem; \
+      mkdir -p /usr/local/share/ca-certificates/ && \
+      cat /tmp/certs/* > /usr/local/share/ca-certificates/custom-bundle.crt && \
+      apt-get update && \
+      apt-get install -y --no-install-recommends \
+        ca-certificates && update-ca-certificates; \
     fi
 
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
-
-# Ensure apk uses the bundle for TLS verification during the bootstrap phase
-ENV SSL_CERT_FILE=/etc/ssl/certs/custom-bundle.pem
 
 # Install development essentials
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -53,7 +53,7 @@ RUN echo "export PATH=\$HOME/.local/bin:\$PATH" >> ~/.bashrc
 
 RUN set -eu && \
     if [ -n "$(ls -A /tmp/certs 2>/dev/null)" ]; then \
-      pip3 config set global.cert /etc/ssl/certs/custom-bundle.pem; \
+      pip3 config set global.cert /usr/local/share/ca-certificates/custom-bundle.crt; \
     fi
 
 COPY requirements*.txt .
