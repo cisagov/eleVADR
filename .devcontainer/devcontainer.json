@@ -21,6 +21,10 @@
       }
     }
   },
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
   "mounts": [
     "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
     "source=${localWorkspaceFolder}/.devcontainer/certs,target=/usr/local/share/ca-certificates/host,type=bind,consistency=cached"
