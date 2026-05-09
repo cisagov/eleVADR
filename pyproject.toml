@@ -28,3 +28,10 @@ dev = [
 [tool.deptry.per_rule_ignores]
 DEP001 = ["app"]
 DEP002 = ["uvicorn"]
+
+[tool.elevadr]
+image_name = "cisagov/elevadr-web-backend"
+platforms = [
+    "linux/amd64",
+    "linux/arm64",
+]

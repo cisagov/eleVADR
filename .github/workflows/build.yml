@@ -150,9 +150,9 @@ jobs:
       - name: Install dependencies
         run: uv sync
       - name: Set up pre-commit hook environments
-        run: pre-commit install-hooks
+        run: uv run pre-commit install-hooks
       - name: Run pre-commit on all files
-        run: pre-commit run --all-files
+        run: uv run pre-commit run --all-files
       - name: Setup tmate debug session
         uses: mxschmitt/action-tmate@v3
         if: env.RUN_TMATE
@@ -428,7 +428,7 @@ jobs:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           uv pip install -e .
-          uv pytest
+          uv run pytest
       - name: Setup tmate debug session
         uses: mxschmitt/action-tmate@v3
         if: env.RUN_TMATE
@@ -447,7 +447,6 @@ jobs:
       - repo-metadata
       - prepare
       - scan
-      # - test # Since we're in the development and testing phase,
     permissions:
       # actions/checkout needs this to fetch code
       contents: read

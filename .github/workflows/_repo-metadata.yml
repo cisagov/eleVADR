@@ -23,47 +23,31 @@ jobs:
       - name: Set outputs for repository metadata
         id: set-outputs
         run: |
-          # Standard Python Libraries
           import json
           import os
           import sys
-          from typing import Any, TypedDict
+          # Python 3.11+ for tomllib, otherwise use 'pip install tomli'
+          try:
+              import tomllib
+          except ImportError:
+              import tomli as tomllib
 
-
-          class GhaOutput(TypedDict):
-
-              description: str
-              name: str
-              value: Any
-
-
-          # Every output in this list must be configured as an output for the workflow.
-          gha_outputs: list[GhaOutput] = [
-              {
-                  "description": "The name of the Docker image.",
-                  "name": "image-name",
-                  "value": "cisagov/elevadr-web-backend",
-              },
-              {
-                  "description": "The supported platforms for the Docker image.",
-                  "name": "image-platforms",
-                  "value": [
-                      "linux/amd64",
-                      "linux/arm64"
-                  ],
-              },
-          ]
-
-          if os.getenv("GITHUB_OUTPUT") is None:
-              print(
-                  "GITHUB_OUTPUT is not set. "
-                  "This script is intended to be run in a GitHub Actions environment."
-              )
+          # Ensure the script runs from the repo root
+          # (In Actions, this is the default)
+          config_path = "pyproject.toml"
+          if not os.path.exists(config_path):
+              print(f"Error: {config_path} not found.")
               sys.exit(1)
 
+          with open(config_path, "rb") as f:
+              config = tomllib.load(f)
+
+          # Read from the config file
+          image_name = config["tool"]["elevadr"]["image_name"]
+          image_platforms = config["tool"]["elevadr"]["platforms"]
+
+          # Write to GitHub Outputs
           with open(os.environ["GITHUB_OUTPUT"], "a") as gh_output:
-              for output in gha_outputs:
-                  if any(isinstance(output["value"], t) for t in [list, dict]):
-                      output["value"] = json.dumps(output["value"])
-                  gh_output.write(f"{output['name']}={output['value']}\n")
+              gh_output.write(f"image-name={image_name}\n")
+              gh_output.write(f"image-platforms={json.dumps(image_platforms)}\n")
         shell: python3 {0}
