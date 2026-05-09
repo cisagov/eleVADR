@@ -411,7 +411,9 @@ jobs:
             ${{ env.BASE_CACHE_KEY }}${{ hashFiles('**/pyproject.toml')
             }}-${{ hashFiles('**/uv.lock') }}-${{
             hashFiles('**/.pre-commit-config.yaml') }}
-          path: ${{ env.UV_CACHE_DIR }}
+          path: |
+            ${{ env.UV_CACHE_DIR }}
+            ${{ env.PRE_COMMIT_CACHE_DIR }}
           restore-keys: |
             ${{ env.BASE_CACHE_KEY }}
       - name: Install dependencies
