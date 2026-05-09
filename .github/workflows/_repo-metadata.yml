@@ -20,6 +20,8 @@ jobs:
     permissions: {}
     runs-on: ubuntu-latest
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
       - name: Set outputs for repository metadata
         id: set-outputs
         run: |
