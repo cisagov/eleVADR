@@ -130,6 +130,7 @@ jobs:
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
           version: 0.11.11
+          prune: false
 
       - uses: actions/cache@v5
         env:
@@ -399,6 +400,7 @@ jobs:
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
         with:
           version: 0.11.11
+          prune: false
 
       - name: Cache testing environments
         uses: actions/cache@v5
