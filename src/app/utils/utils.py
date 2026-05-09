@@ -85,7 +85,7 @@ def is_public_ip(ip: str) -> bool:
     try:
         ip_obj = ipaddress.ip_address(ip)
         return ip_obj.is_global
-    except (ValueError, AttributeError):
+    except ValueError, AttributeError:
         return False
 
 
@@ -113,7 +113,7 @@ def connection_type_processing(ip: str) -> str | None:
             return "broadcast"
         else:
             return "unicast"
-    except (ValueError, AttributeError):
+    except ValueError, AttributeError:
         return None
 
 
@@ -122,7 +122,7 @@ def traffic_direction(row: pd.Series) -> str | None:
     try:
         src_ip = ipaddress.ip_address(row["src_endpoint.ip"])
         dst_ip = ipaddress.ip_address(row["dst_endpoint.ip"])
-    except (ValueError, KeyError):
+    except ValueError, KeyError:
         return None
 
     def _is_internal(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
@@ -177,7 +177,7 @@ def subnet_membership(
                         f"{src_ip_v4}/24", strict=False
                     )
                     src_subnet = str(src_network_v4)
-            except (ValueError, ipaddress.AddressValueError):
+            except ValueError, ipaddress.AddressValueError:
                 pass
 
             try:
@@ -189,7 +189,7 @@ def subnet_membership(
                         f"{dst_ip_v4}/24", strict=False
                     )
                     dst_subnet = str(dst_network_v4)
-            except (ValueError, ipaddress.AddressValueError):
+            except ValueError, ipaddress.AddressValueError:
                 pass
         elif row["connection_info.protocol_ver_id"] == 6:
             try:
@@ -206,7 +206,7 @@ def subnet_membership(
                         f"{dst_ip_v6}/64", strict=False
                     )
                     dst_subnet = str(dst_network_v6)
-            except (ValueError, ipaddress.AddressValueError):
+            except ValueError, ipaddress.AddressValueError:
                 pass
 
     row["src_endpoint.subnet"] = src_subnet

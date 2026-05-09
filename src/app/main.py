@@ -196,13 +196,13 @@ async def progress_ws(websocket: WebSocket, session_id: str):
                 if await _send(event):
                     break
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 # Timed out waiting — cancel the dangling get_task cleanly.
                 if get_task and not get_task.done():
                     get_task.cancel()
                     try:
                         await get_task
-                    except (asyncio.CancelledError, Exception):
+                    except asyncio.CancelledError, Exception:
                         pass
 
                 await _send(
@@ -221,7 +221,7 @@ async def progress_ws(websocket: WebSocket, session_id: str):
                     get_task.cancel()
                     try:
                         await get_task
-                    except (asyncio.CancelledError, Exception):
+                    except asyncio.CancelledError, Exception:
                         pass
                 raise  # re-raise so the Task is marked cancelled
 
@@ -240,7 +240,7 @@ async def progress_ws(websocket: WebSocket, session_id: str):
             t.cancel()
             try:
                 await t
-            except (asyncio.CancelledError, Exception):
+            except asyncio.CancelledError, Exception:
                 pass
 
         # Re-raise any unexpected exception from the consumer.
@@ -262,7 +262,7 @@ async def progress_ws(websocket: WebSocket, session_id: str):
                 t.cancel()
                 try:
                     await t
-                except (asyncio.CancelledError, Exception):
+                except asyncio.CancelledError, Exception:
                     pass
 
         # Deregister the queue so _emit() stops routing to this session.
