@@ -409,7 +409,8 @@ jobs:
         with:
           key: >-
             ${{ env.BASE_CACHE_KEY }}${{ hashFiles('**/pyproject.toml')
-            }}-${{ hashFiles('**/uv.lock') }}
+            }}-${{ hashFiles('**/uv.lock') }}-${{
+            hashFiles('**/.pre-commit-config.yaml') }}
           path: ${{ env.UV_CACHE_DIR }}
           restore-keys: |
             ${{ env.BASE_CACHE_KEY }}
