@@ -1,6 +1,5 @@
 
-# FROM cisagov/elevadr-web-backend:develop
-FROM elevadr-backend:latest
+FROM cisagov/elevadr-web-backend:develop
 
 USER root
 
@@ -29,7 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8
+RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8
 
 RUN mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | \
@@ -55,7 +55,7 @@ USER appuser
 RUN echo "export PATH=\$HOME/.local/bin:\$PATH" >> ~/.bashrc
 RUN echo "export PATH=/usr/libexec/docker/cli-plugins:\$PATH" >> ~/.bashrc
 
-COPY pyproject.toml uv.lock .
+COPY pyproject.toml uv.lock ./
 
 RUN set -eu && \
     if [ -n "$(ls -A /tmp/certs 2>/dev/null)" ]; then \
