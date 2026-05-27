@@ -6,12 +6,13 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import json
 import logging
+import math
 import os
 from pathlib import Path
 import sys
 import tempfile
 import traceback
-from typing import Annotated
+from typing import Annotated, TypeAlias, Union
 from urllib.parse import unquote
 import uuid
 import warnings
@@ -32,6 +33,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.utils.analysis import Analyzer, FilePathInfo, PcapParser
 from app.utils.report import Report
 
+JSONValue: TypeAlias = Union[
+    dict[str, "JSONValue"], list["JSONValue"], str, int, float, bool, None
+]
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -45,6 +50,19 @@ _executor = ThreadPoolExecutor(max_workers=4)
 
 # Constants
 PCAP_CHUNK_SIZE = 1024 * 1024  # 1MB
+
+
+def sanitize_for_json(obj: JSONValue) -> JSONValue:
+    """Recursively replace NaN/Inf values with None for JSON compatibility."""
+    if isinstance(obj, dict):
+        return {k: sanitize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [sanitize_for_json(i) for i in obj]
+    elif isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    return obj
 
 
 def _emit(session_id: str | None, stage: str, progress: int, message: str) -> None:
@@ -586,7 +604,7 @@ async def analyze(
             ),
         )
 
-        return report_data
+        return sanitize_for_json(report_data)
 
     except HTTPException:
         raise
