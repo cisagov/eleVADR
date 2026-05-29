@@ -31,7 +31,7 @@ if [ "$ELEVADR_MODE" = "api" ]; then
 fi
 
 # --------------------------------------------------------------------
-# CLI MODE (existing behavior): run analysis once on PCAP_INPUT
+# CLI MODE: run analysis once on PCAP_INPUT
 # --------------------------------------------------------------------
 
 # Default paths - can be overridden by environment variables

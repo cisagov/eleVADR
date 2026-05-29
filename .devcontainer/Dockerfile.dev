@@ -42,7 +42,7 @@ RUN echo \
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        docker-compose-plugin && \
+        docker-ce docker-ce-cli containerd.io docker-compose-plugin && \
     rm -rf /var/lib/apt/lists/*
 
 
@@ -64,7 +64,3 @@ RUN set -eu && \
     else \
       uv sync; \
     fi
-
-# COPY requirements*.txt .
-
-# RUN pip3 install --upgrade -r requirements.txt && pip3 install -r requirements-dev.txt && pip3 install -r requirements-test.txt

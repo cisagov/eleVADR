@@ -86,8 +86,7 @@ def infer_risk_basis(
     risk_categories: list | None,
     information_categories: list | None,
 ) -> str | None:
-    """
-    Infer risk_basis from existing category data.
+    """Infer risk_basis from existing category data.
 
     Returns "Observed" if the service has categories tied to active exploitation,
     "Credible" if it has known-risky-but-conditional categories, else null.
@@ -111,8 +110,7 @@ def infer_environment_exposure(
     information_categories: list | None,
     service_name: str | None,
 ) -> str | None:
-    """
-    Infer environment_exposure from category data and service name.
+    """Infer environment_exposure from category data and service name.
 
     Returns "External", "Cross-Zone", or "Internal". Defaults to null when
     no confident inference can be made.
@@ -141,8 +139,7 @@ def infer_protocol_posture(
     information_categories: list | None,
     service_name: str | None,
 ) -> str | None:
-    """
-    Infer protocol_posture from category data and service name.
+    """Infer protocol_posture from category data and service name.
 
     Returns "Inherently Risky" for clear-text or historically exploited protocols,
     "Conditionally Risky" for protocols that are safe when hardened, else null.

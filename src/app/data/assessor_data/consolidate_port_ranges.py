@@ -2,8 +2,8 @@
 
 # Standard Python Libraries
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 
 def consolidate_port_ranges(input_json_path: Path, output_json_path: Path) -> None:

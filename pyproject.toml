@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "fastapi==0.136.3 ; python_full_version >= '3.10'",
-    "numpy==2.4.4 ; python_full_version >= '3.11'",
     "numpy>=2.3.5",
     "pandas==3.0.3 ; python_full_version >= '3.11'",
     "uvicorn[standard]>=0.46.0",
@@ -35,3 +34,30 @@ platforms = [
     "linux/amd64",
     "linux/arm64",
 ]
+
+[tool.ruff]
+line-length = 88
+target-version = "py314"
+extend-exclude = ["tests"]
+
+[tool.ruff.lint]
+# E = pycodestyle, F = Pyflakes, I = isort, B = flake8-bugbear,
+# UP = pyupgrade, N = pep8-naming, D = pydocstyle
+select = ["E", "F", "I", "B", "UP", "N", "D"]
+ignore = ["E203", "E501"]
+
+[tool.ruff.format]
+# This replaces Black
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+# Move your mypy settings here
+python_version = "3.14"
+strict = true
+ignore_missing_imports = true
+exclude = ["tests/", "src/app/data/"]
+
+[tool.codespell]
+skip = "*.json,*.csv"
+ignore-words-list = "OT"

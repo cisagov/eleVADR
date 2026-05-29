@@ -16,7 +16,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c
     hooks:
       - id: check-case-conflict
       - id: check-executables-have-shebangs
@@ -43,20 +43,23 @@ repos:
         exclude: ^.*lock\.json$
       - id: requirements-txt-fixer
       - id: trailing-whitespace
+      - id: check-added-large-files
+        args:
+          - --maxkb=500
 
   # Text file hooks
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.48.0
+    rev: e72a3ca1632f0b11a07d171449fe447a7ff6795e
     hooks:
       - id: markdownlint
         args:
           - --config=.mdl_config.yaml
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.8.3
+    rev: 515f543f5718ebfd6ce22e16708bb32c68ff96e1
     hooks:
       - id: prettier
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.38.0
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530
     hooks:
       - id: yamllint
         args:
@@ -64,20 +67,20 @@ repos:
 
   # GitHub Actions hooks
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.2
+    rev: f805888065fdb6162e1f800e50bb9460cbd223d6
     hooks:
       - id: check-github-actions
       - id: check-github-workflows
 
   # pre-commit hooks
   - repo: https://github.com/pre-commit/pre-commit
-    rev: v4.6.0
+    rev: f35134b05028ec938ac605ae500fdf95462655d3
     hooks:
       - id: validate_manifest
 
   # Shell script hooks
   - repo: https://github.com/scop/pre-commit-shfmt
-    rev: v3.13.1-1
+    rev: 05c1426671b9237fb5e1444dd63aa5731bec0dfb
     hooks:
       - id: shfmt
         args:
@@ -95,29 +98,22 @@ repos:
           # Redirect operators are followed by a space
           - --space-redirects
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.11.0.1
+    rev: 745eface02aef23e168a8afb6b5737818efbea95
     hooks:
       - id: shellcheck
 
   # Python hooks
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.9.4
+    rev: 92ae8b82fb422a639f0ed8d99e96cea769594e08
     hooks:
       - id: bandit
-        name: bandit (tests tree)
-        files: tests
+        name: bandit
+        files: ^src
         args:
           - --config=.bandit.yml
 
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.3.1
-    hooks:
-      - id: black
-        args:
-          - --target-version=py310
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
-    rev: v0.15.12
+    rev: 0671d8ab202c4ac093b78433ae5baf74f3fc7246
     hooks:
       # Run the linter.
       - id: ruff-check
@@ -125,56 +121,49 @@ repos:
           - --fix
       # Run the formatter.
       - id: ruff-format
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.3.0
-    hooks:
-      - id: flake8
-        additional_dependencies:
-          - dlint==0.16.0
-          - flake8-bugbear==25.11.29
-          - flake8-comprehensions==3.17.0
-          - flake8-docstrings==1.7.0
-          - flake8-noqa==1.5.0
-          - pep8-naming==0.15.1
-        args:
-          - --select=C,C4,D,DUO,E,F,N,NQA,W,B,B950
-          - --ignore=E203,E501,W503
-        exclude: tests/
-  - repo: https://github.com/PyCQA/isort
-    rev: 9.0.0a3
-    hooks:
-      - id: isort
+
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.20.2
+    rev: d2823d321df3af8f878f7ee3414dc94d037145b9
     hooks:
       - id: mypy
-
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.21.2
-    hooks:
-      - id: pyupgrade
+        pass_filenames: false
         args:
-          # Python 3.10 is currently the oldest non-EOL version of
-          # Python, so we want to apply all rules that apply to this
-          # version or later.  See here for more details:
-          # https://www.gyford.com/phil/writing/2025/08/26/how-to-use-pyupgrade/
-          - --py314-plus
+          - --config-file=./pyproject.toml
+          - .
 
   # Docker hooks
   - repo: https://github.com/IamTheFij/docker-pre-commit
-    rev: v3.0.1
+    rev: 62a24686f7675bd45dabe32efe0473b746adac73
     hooks:
       - id: docker-compose-check
 
   - repo: https://github.com/osprey-oss/deptry.git
-    rev: 0.25.0
+    rev: 0c39226d761685125c5ff71ca81282d6751c9540
     hooks:
       - id: deptry
         args:
           - --per-rule-ignores
           - DEP002=uvicorn,DEP001=app
 
-  # - repo: https://github.com/astral-sh/uv-pre-commit
-  #   rev: 0.11.11
-  #   hooks:
-  #     - id: uv-audit
+  # General checks (commits, spelling)
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: 91ab4bf57e58b32adf1a122681f6ebe164d081c8
+    hooks:
+      - id: conventional-pre-commit
+        stages:
+          - commit-msg
+        args: []
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a
+    hooks:
+      - id: codespell
+    additional_dependencies:
+      - tomli
+    args:
+      - -w
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 254dd0011fda0cd4bbb281ff135792b157e43e1f
+    hooks:
+      - id: uv-audit

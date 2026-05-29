@@ -1,10 +1,10 @@
 """Utility functions for network traffic analysis and data processing."""
 
 # Standard Python Libraries
-from collections import Counter
-from enum import Enum
 import ipaddress
 import os
+from collections import Counter
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -368,7 +368,7 @@ def is_using_ot_services(row: pd.Series, traffic_df: pd.DataFrame) -> bool:
 
 
 def is_communicating_with_ot_hosts(
-    row: pd.Series, traffic_df: pd.DataFrame, ot_ips: set
+    row: pd.Series, traffic_df: pd.DataFrame, ot_ips: set[str]
 ) -> pd.Series:
     """Check if non-OT device communicates with known OT devices."""
     if row.get("device.is_ot") is True:

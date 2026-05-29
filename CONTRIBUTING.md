@@ -1,175 +1,179 @@
-# Welcome #
+# Contributing to EleVADR #
 
-We're so glad you're thinking about contributing to this open source
-project!  If you're unsure or afraid of anything, just ask or submit
-the issue or pull request anyway.  The worst that can happen is that
-you'll be politely asked to change something.  We appreciate any sort
-of contribution, and don't want a wall of rules to get in the way of
-that.
+We're glad you're thinking about contributing to this project.
+Whether you are reporting a bug, suggesting a feature, or
+submitting a code change, we appreciate your help.
 
-Before contributing, we encourage you to read our CONTRIBUTING policy
-(you are here), our [LICENSE](LICENSE), and our [README](README.md),
-all of which should be in this repository.
+Before contributing, please read the [LICENSE](LICENSE) and
+[README](README.md).
 
-## Issues ##
+## How to Contribute ##
 
-If you want to report a bug or request a new feature, the most direct
-method is to [create an
-issue](https://github.com/cisagov/elevadr-web-backend/issues) in this
-repository.  We recommend that you first search through existing
-issues (both open and closed) to check if your particular issue has
-already been reported.  If it has then you might want to add a comment
-to the existing issue.  If it hasn't then feel free to create a new
-one.
+EleVADR is an open-source project, and we welcome community
+contributions. Here is the recommended workflow:
 
-## Pull requests ##
+### 1. Track the Work ###
 
-If you choose to [submit a pull
-request](https://github.com/cisagov/elevadr-web-backend/pulls), you will
-notice that our continuous integration (CI) system runs a fairly
-extensive set of linters and syntax checkers.  Your pull request may
-fail these checks, and that's OK.  If you want you can stop there and
-wait for us to make the necessary corrections to ensure your code
-passes the CI checks.
+Submit bug reports or feature requests through the
+[issue tracker](https://github.com/cisagov/elevadr-web-backend/issues)
+or [discussions](https://github.com/cisagov/elevadr-web-backend/discussions)
+on GitHub. For complex ideas, discuss them in an issue before
+implementation so there is agreement on direction.
 
-If you want to make the changes yourself, or if you want to become a
-regular contributor, then you will want to set up
-[pre-commit](https://pre-commit.com/) on your local machine.  Once you
-do that, the CI checks will run locally before you even write your
-commit message.  This speeds up your development cycle considerably.
+### 2. Create a Fork and Branch ###
 
-### Setting up pre-commit ###
+Make changes on a personal fork of the repository. Use descriptive
+branch names such as `fix/slow-analysis-processing` or
+`feat/new-ot-protocol`.
 
-There are a few ways to do this, but we prefer to use
-[`pyenv`](https://github.com/pyenv/pyenv) and
-[`pyenv-virtualenv`](https://github.com/pyenv/pyenv-virtualenv) to
-create and manage a Python virtual environment specific to this
-project.
+### 3. Commit with Conventional Commits ###
 
-We recommend using the `setup-env` script located in this repository,
-as it automates the entire environment configuration process. The
-dependencies required to run this script are
-[GNU `getopt`](https://github.com/util-linux/util-linux/blob/master/misc-utils/getopt.1.adoc),
-[`pyenv`](https://github.com/pyenv/pyenv), and [`pyenv-virtualenv`](https://github.com/pyenv/pyenv-virtualenv).
-If these tools are already configured on your system, you can simply run the
-following command:
+We follow the
+[Conventional Commits](https://www.conventionalcommits.org/)
+specification. This helps automate changelogs and versioning.
 
-```console
-./setup-env
-```
+**Format:** `<type>(optional-scope): <description>`
 
-Otherwise, follow the steps below to manually configure your
-environment.
+**Common Types:**
 
-#### Installing and using GNU `getopt`, `pyenv`, and `pyenv-virtualenv` ####
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation changes
+- `style`: Formatting or similar changes with no code impact
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `perf`: A code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `ci`: Changes to CI configuration files and scripts
+- `chore`: Other changes that do not modify source or test files
+- `sec`: Changes that impact system security
 
-On macOS, we recommend installing [brew](https://brew.sh/).  Then
-installation is as simple as `brew install gnu-getopt pyenv pyenv-virtualenv` and
-adding this to your profile:
+### 4. Lint, Format, and Test ###
+
+Ensure your code is clean and functional before submitting.
+
+- **Format and lint:** If you are in the Dev Container,
+  `pre-commit` handles this automatically. To run it manually:
+
+  ```bash
+  pre-commit run --all-files
+  ```
+
+- **Test:** Run the test suite to ensure there are no regressions:
+
+  ```bash
+  pytest
+  ```
+
+### 5. Document Your Changes ###
+
+If your change introduces a feature or modifies existing behavior,
+update the documentation. Documentation drifts quickly, so we place a
+high emphasis on keeping the `/docs` folder and the README current.
+
+### 6. Submit a Pull Request (PR) ###
+
+Follow the PR template. If your code is not ready for merge but you
+want feedback, open the PR as a **Draft** so maintainers know the work
+is still in progress.
+
+---
+
+## Development Environment ##
+
+To avoid "it works on my machine" issues and the complexity of local
+setup, all development should happen inside the VS Code Dev Container.
+
+### Dev Container Setup ###
+
+1. Open the repository in **VS Code**.
+1. Click **Reopen in Container** when prompted, or run
+   `Ctrl+Shift+P` and select
+   `Dev Containers: Rebuild and Reopen in Container`.
+
+### Tooling inside the Container ###
+
+- **Package management:** We use [`uv`](https://github.com/astral-sh/uv).
+  - Use `uv sync` to update dependencies.
+  - Use `uv run <command>` to execute scripts in the environment.
+- **Git hooks:** Run `pre-commit install` once inside the container to
+  enable automatic linting on every commit.
+
+### Manual Setup (Not Recommended) ###
+
+If you cannot use Dev Containers, you can set up the environment
+manually. You are responsible for installing system-level dependencies
+such as Zeek and libpcap, which can be difficult across operating
+systems.
+
+#### 1. System Dependencies ####
+
+Install the following on your host machine before proceeding:
+
+- **Python 3.14+**
+- **Zeek 8.0.5** in your system `PATH`
+- **libpcap** for Zeek PCAP support
+- **`uv`** as the Python package manager
+  - Install with:
+    `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+#### 2. Clone and Configure ####
 
 ```bash
-# GNU getopt must be explicitly added to the path since it is
-# keg-only (https://docs.brew.sh/FAQ#what-does-keg-only-mean)
-export PATH="$(brew --prefix)/opt/gnu-getopt/bin:$PATH"
-
-# Setup pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init --path)"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-```
-
-For Linux, Windows Subsystem for Linux (WSL), or macOS (if you
-don't want to use `brew`) you can use
-[pyenv/pyenv-installer](https://github.com/pyenv/pyenv-installer) to
-install the necessary tools. Before running this ensure that you have
-installed the prerequisites for your platform according to the
-[`pyenv` wiki
-page](https://github.com/pyenv/pyenv/wiki/common-build-problems).
-GNU `getopt` is included in most Linux distributions as part of the
-[`util-linux`](https://github.com/util-linux/util-linux) package.
-
-On WSL you should treat your platform as whatever Linux distribution
-you've chosen to install.
-
-Once you have installed `pyenv` you will need to add the following
-lines to your `.bash_profile` (or `.profile`):
-
-```bash
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init --path)"
-```
-
-and then add the following lines to your `.bashrc`:
-
-```bash
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-```
-
-If you want more information about setting up `pyenv` once installed, please run
-
-```console
-pyenv init
-```
-
-and
-
-```console
-pyenv virtualenv-init
-```
-
-for the current configuration instructions.
-
-If you are using a shell other than `bash` you should follow the
-instructions that the `pyenv-installer` script outputs.
-
-You will need to reload your shell for these changes to take effect so
-you can begin to use `pyenv`.
-
-For a list of Python versions that are already installed and ready to
-use with `pyenv`, use the command `pyenv versions`.  To see a list of
-the Python versions available to be installed and used with `pyenv`
-use the command `pyenv install --list`.  You can read more about
-the [many things that `pyenv` can do](https://github.com/pyenv/pyenv/blob/master/COMMANDS.md).
-See the [usage information](https://github.com/pyenv/pyenv-virtualenv#usage)
-for the additional capabilities that pyenv-virtualenv adds to the `pyenv`
-command.
-
-#### Creating the Python virtual environment ####
-
-Once `pyenv` and `pyenv-virtualenv` are installed on your system, you
-can create and configure the Python virtual environment with these
-commands:
-
-```console
+# Clone the repository
+git clone https://github.com/cisagov/elevadr-web-backend.git
 cd elevadr-web-backend
-pyenv virtualenv <python_version_to_use> elevadr-web-backend
-pyenv local elevadr-web-backend
-pip install --requirement requirements-dev.txt
+
+# Install dependencies using uv
+uv sync
 ```
 
-#### Installing the pre-commit hook ####
+#### 3. Setup Git Hooks ####
 
-Now setting up pre-commit is as simple as:
+To ensure your code passes CI, install the pre-commit hooks:
 
-```console
-pre-commit install
+```bash
+uv run pre-commit install
 ```
 
-At this point the pre-commit checks will run against any files that
-you attempt to commit.  If you want to run the checks against the
-entire repo, just execute `pre-commit run --all-files`.
+#### 4. Validation ####
 
-## Public domain ##
+Verify that the environment is working by running the tests:
+
+```bash
+uv run pytest
+```
+
+**Common Manual Setup Issues:**
+
+- **Zeek path:** If `pytest` fails with a "Zeek not found" error,
+  ensure `/opt/zeek/bin` or your install path is included in `PATH`.
+- **Library mismatches:** If you encounter `ImportError` related to
+  `libpcap` or `libmaxminddb`, install the appropriate development
+  headers through your package manager.
+
+---
+
+## PR Review Guidelines ##
+
+Maintainers review all changes through the lens of critical
+infrastructure safety. Because EleVADR is deployed on sensitive OT
+networks, we prioritize:
+
+1. **Trustworthiness:** Scrutinize changes for backdoors or malicious
+   logic, especially from new contributors.
+1. **Correctness:** Ensure changes use the correct internal APIs, such as
+   `utils` for file I/O rather than raw Python calls.
+1. **Stability:** Treat changes to core data models in
+   `src/app/data/` as high risk because they can affect every module.
+
+---
+
+## Public Domain ##
 
 This project is in the public domain within the United States, and
 copyright and related rights in the work worldwide are waived through
-the [CC0 1.0 Universal public domain
-dedication](https://creativecommons.org/publicdomain/zero/1.0/).
+the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
 
 All contributions to this project will be released under the CC0
-dedication. By submitting a pull request, you are agreeing to comply
-with this waiver of copyright interest.
+ dedication. By submitting a pull request, you agree to comply with
+this waiver of copyright interest.

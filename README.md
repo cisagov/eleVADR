@@ -1,68 +1,116 @@
-# eleVADR - OT Network Security Analysis Tool #
+# EleVADR - OT Network Security Analysis Tool #
 
-A network security analysis tool developed for the Cybersecurity and
-Infrastructure Security Agency (CISA) to assess operational technology
-(OT) systems through PCAP analysis. eleVADR processes network traffic
-captures using Zeek and conducts backend analysis with pandas to
-identify assets, services, security risks, and provide actionable
-remediation guidance.
+![License: CC0](https://img.shields.io/badge/License-CC0-lightgrey.svg)
+![Python 3.14+](https://img.shields.io/badge/python-3.14+-blue.svg)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/cisagov/elevadr-web-backend)
+[![GitHub Actions Pipeline Status](https://github.com/cisagov/eleVADR/actions/workflows/build.yml/badge.svg)](https://github.com/cisagov/eleVADR/actions)
+[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/cisagov/eleVADR)
+
+EleVADR is a specialized network security analysis engine developed
+for the Cybersecurity and Infrastructure Security Agency (CISA). It is
+designed to assess Operational Technology (OT) systems by transforming
+raw PCAP traffic into actionable security intelligence.
+
+This is part of the larger
+[EleVADR operator workflow](https://cisagov.github.io/elevadr-operator).
 
 ## Overview ##
 
 eleVADR analyzes OT network traffic to provide comprehensive security
 assessments including:
 
-- **Asset Discovery**: Identification of network devices, IP addresses,
+- **Asset discovery:** Identification of network devices, IP addresses,
   MAC addresses, and manufacturers
-- **Service Detection**: Recognition of network services including
+- **Service detection:** Recognition of network services including
   industrial protocols such as Modbus and DNP3
-- **Risk Assessment**: Classification of services by security risk
+- **Risk assessment:** Classification of services by security risk
   categories
-- **Network Segmentation Analysis**: Detection of cross-segment
+- **Network segmentation analysis:** Detection of cross-segment
   communications
-- **Security Findings**: Identification of insecure protocols,
+- **Security findings:** Identification of insecure protocols,
   suspicious outbound connections, and risky services
-- **Detailed Reporting**: JSON-formatted reports with executive
+- **Detailed reporting:** JSON-formatted reports with executive
   summaries and detailed module data
-- **Interactive Drilldown APIs**: Report-scoped endpoints for filtering
+- **Interactive drilldown APIs:** Report-scoped endpoints for filtering
   connections, devices, and services after analysis
 
-## Key Features ##
+## The Modern Workflow ##
 
-### Analysis Capabilities ###
+To ensure environment parity and avoid "it works on my machine" issues,
+EleVADR must be run and developed inside containers.
 
-- **Traffic Analysis**: Processes network flows to classify connection
-  types such as unicast, multicast, and broadcast, along with direction
-  and protocol metadata
-- **Endpoint Profiling**: Identifies and profiles devices including
-  manufacturer information, IP assignments, service usage, and OT
-  classification
-- **Service Classification**: Maps ports to services and categorizes
-  them by information type and risk level
-- **OT Device Detection**: Identifies devices using industrial
-  protocols or communicating with OT hosts
-- **Cross-Segment Detection**: Flags OT devices communicating across
-  network segments
+### 1. Running the App (Production/Testing) ###
 
-### Report Modules ###
+Do not attempt to install dependencies locally. Use Docker.
 
-The tool generates comprehensive reports with the following modules:
+#### Pull from DockerHub ####
 
-1. **Device Panel**: Total hosts, OT hosts, cross-segment OT
-   communications
-1. **Service Panel**: Known services, OT-specific protocols, risky
-   services, and unknown services
-1. **Service Risk Breakdown**: Categorization and counts of services by
-   risk category
-1. **Service Count Panel**: Connection frequency analysis per service
-1. **Suspicious Outbound Connections**: External communications from OT
-   devices
-1. **OT Manufacturers**: Distribution of OT device manufacturers
-1. **OT Services**: Detailed list of industrial protocols detected
-1. **Connection Success Panel**: Successful vs unsuccessful Zeek
-   connection-state summary and sample detail rows
+A pre-built container for the latest `develop` image is available on
+[DockerHub](https://hub.docker.com/r/cisagov/elevadr-web-backend/tags).
+
+#### Run the Container ####
+
+`sudo docker run -i cisagov/elevadr-web-backend`
+
+#### Build Locally ####
+
+```bash
+# Build the analysis engine
+docker build -t elevadr-analysis .
+
+# Run analysis on a PCAP
+docker run --rm \
+  -v $(pwd)/pcaps:/input:ro \
+  -v $(pwd)/reports:/output \
+  elevadr-analysis
+```
+
+### 2. Developing the App (Dev Containers) ###
+
+We use VS Code Dev Containers to provide a fully configured
+environment, including Zeek, Python 3.14, and all required system
+dependencies.
+
+**How to start developing:**
+
+1. Open this folder in **VS Code**.
+1. When prompted that the folder contains a Dev Container
+   configuration, click **Reopen in Container**.
+1. If the prompt does not appear, run `Ctrl+Shift+P` and choose
+   `Dev Containers: Rebuild and Reopen in Container`.
+
+**Why Dev Containers?**
+
+- No need to install `pyenv`, `zeek`, or `libpcap` on your host.
+- All linting, formatting, and testing tools are pre-installed.
+- Your development environment matches the production image.
 
 ---
+
+## Core Architecture ##
+
+EleVADR is a data pipeline that transforms raw network traffic into
+security intelligence:
+
+**`PCAP`** → **`Zeek`** (Log Generation) → **`Pandas`**
+(Data Enrichment) → **`JSON Report`**
+
+- **Language:** Python 3.14 via `uv`
+- **Analysis:** Zeek 8.0.5
+- **API:** FastAPI
+- **Reference data:** Optimized Parquet files generated from JSON
+
+---
+
+## Testing & Validation ##
+
+Once inside the Dev Container, run tests with `pytest`:
+
+```bash
+pytest
+```
+
+All tests live in `tests/`.
 
 ## Attribution ##
 

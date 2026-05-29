@@ -4,14 +4,15 @@
 import asyncio
 import json
 import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from unittest.mock import ANY, MagicMock, Mock, patch
+
+import pandas as pd
+import pytest
 
 # Third-Party Libraries
 from fastapi.testclient import TestClient
-import pandas as pd
-import pytest
 
 # cisagov Libraries
 # Assuming the main app is in src/app/main.py
@@ -177,13 +178,11 @@ def test_run_analysis_pcap_parser_failure(mock_emit, mock_pcap_parser_cls):
 
 @pytest.mark.asyncio
 async def test_analyze_endpoint_success():
-    """
-    The endpoint should:
+    """The endpoint should:
     1. Save the uploaded file to a temporary location.
     2. Call the (synchronous) run_analysis function.
     3. Return the dict that run_analysis produces.
     """
-
     with patch("app.main.run_analysis", new_callable=Mock) as mock_run_analysis:
         mock_run_analysis.return_value = {"status": "success"}
 

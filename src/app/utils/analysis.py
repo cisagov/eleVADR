@@ -3,8 +3,9 @@
 # Standard Python Libraries
 import ipaddress
 import json
-from pathlib import Path
 import subprocess
+from pathlib import Path
+from typing import Any, cast
 
 # Third-Party Libraries
 import numpy as np
@@ -79,7 +80,7 @@ class PcapParser:
             traffic_df_schema
         )
 
-    def parse(self):
+    def parse(self) -> None:
         """Execute Zeek processing and load results into dataframes."""
         # Process PCAP using Zeek
         self.zeekify()
@@ -156,7 +157,7 @@ class PcapParser:
             services_df_schema
         )
 
-    def zeekify(self):
+    def zeekify(self) -> None:
         """Execute PCAP analysis using Zeek."""
         # Create output directory if needed
         if not self.upload_output_zeek_dir.exists():
@@ -167,7 +168,7 @@ class PcapParser:
             [
                 "zeek",
                 "-r",
-                self.file_path_info.path_to_pcap,
+                str(self.file_path_info.path_to_pcap),
                 f"Log::default_logdir={self.upload_output_zeek_dir}",
             ]
         )
@@ -180,7 +181,7 @@ class PcapParser:
             [
                 "zeek",
                 "-r",
-                self.file_path_info.path_to_pcap,
+                str(self.file_path_info.path_to_pcap),
                 str(mac_script),
                 f"Log::default_logdir={self.upload_output_zeek_dir}",
             ]
@@ -189,6 +190,10 @@ class PcapParser:
 
 class Analyzer:
     """Enrich traffic data with analysis and generate endpoint/service dataframes."""
+
+    ports_df: pd.DataFrame
+    port_risk_df: pd.DataFrame
+    manufacturers_df: pd.DataFrame
 
     @staticmethod
     def _is_excluded_cross_segment_ip(ip_value: object) -> bool:
@@ -243,7 +248,7 @@ class Analyzer:
         self.endpoints_df_processing()
         self.services_df_processing()
 
-    def traffic_df_processing(self):
+    def traffic_df_processing(self) -> None:
         """Add IP, conn type, direction, subnet, service info to traffic."""
         if self.traffic_df.empty:
             return
@@ -292,12 +297,9 @@ class Analyzer:
             axis=1,
         )
 
-    def endpoints_df_processing(self):
+    def endpoints_df_processing(self) -> None:
         """Create endpoint DataFrame with device info, IPs, services, OT label."""
         # Create a unified list of all observed IP-MAC-Subnet relationships
-
-        def _is_unspecified_ip(ip: str) -> bool:
-            return ip in ("0.0.0.0", "::")
 
         def _filter_specified_ips(df: pd.DataFrame, ip_col: str) -> pd.DataFrame:
             return df[~df[ip_col].isin(["0.0.0.0", "::"])]
@@ -358,8 +360,8 @@ class Analyzer:
         ip_details = ip_map.set_index("ip").join(ip_services).reset_index()
 
         # Define a helper for aggregating lists/sets of items
-        def agg_unique_items(series):
-            items = set()
+        def agg_unique_items(series: pd.Series) -> list[Any] | float:
+            items: set[Any] = set()
             for item in series.dropna():
                 if isinstance(item, (list, set)):
                     items.update(item)
@@ -368,8 +370,8 @@ class Analyzer:
             return sorted(items) if items else np.nan
 
         # Aggregation function to apply to each MAC address group
-        def agg_by_mac(group):
-            res = {}
+        def agg_by_mac(group: pd.DataFrame) -> pd.Series:
+            res: dict[str, object] = {}
             all_ips = group["ip"].dropna().unique()
             all_ips = [ip for ip in all_ips if ip not in ("0.0.0.0", "::")]
             res["device.ipv4_ips"] = [
@@ -477,9 +479,8 @@ class Analyzer:
             axis=1,
         )
 
-    def services_df_processing(self):
-        """
-        Prepare ``self.services_df`` from ``self.traffic_df``.
+    def services_df_processing(self) -> None:
+        """Prepare ``self.services_df`` from ``self.traffic_df``.
 
         - copy only the service‑related columns,
         - convert category fields to comma‑separated strings,
@@ -516,13 +517,13 @@ class Analyzer:
 
         self.services_df = self.services_df.replace({np.nan: None})
 
-    def get_assessor_data(self):
+    def get_assessor_data(self) -> None:
         """Load reference data: ports, port risks, and manufacturers."""
-        parquet_files = {
+        parquet_files: dict[str, str] = {
             "ports_df": "ports.parquet",
             "port_risk_df": "port_risk_v2.parquet",
         }
-        json_files = {
+        json_files: dict[str, str] = {
             "manufacturers_df": "latest_oui_lookup.json",
         }
 
@@ -580,7 +581,7 @@ class Analyzer:
         )
         return len(ot_macs.intersection(cross_segment_macs))
 
-    def service_counts_in_traffic(self) -> dict:
+    def service_counts_in_traffic(self) -> dict[str, object]:
         """Count occurrences of known and unknown services."""
         unknown_services = self.traffic_df[
             self.traffic_df["service.port_type"].isin(
@@ -619,7 +620,7 @@ class Analyzer:
             "unknown_services": unnamed_service_counts,
         }
 
-    def service_category_map(self, category: str) -> dict:
+    def service_category_map(self, category: str) -> dict[str, list[str]]:
         """Map service categories to service names."""
         category_map: dict[str, list[str]] = {}
         for _, row in self.services_df.iterrows():
@@ -744,7 +745,7 @@ class Analyzer:
         if len(df) > limit:
             df = df.head(limit)
 
-        return df.replace({np.nan: None}).to_dict("records")
+        return list(df.replace({np.nan: None}).to_dict("records"))
 
     def _ip_to_endpoint_details(self) -> pd.DataFrame:
         """Build an IP-keyed endpoint lookup with manufacturer and device flags."""
@@ -920,7 +921,7 @@ class Analyzer:
         if len(df) > limit:
             df = df.head(limit)
 
-        return df.replace({np.nan: None}).to_dict("records")
+        return list(df.replace({np.nan: None}).to_dict("records"))
 
     def service_connection_lines(
         self, service_name: str, limit: int = 500
@@ -1140,7 +1141,10 @@ class Analyzer:
 
         existing_cols = {k: v for k, v in device_columns.items() if k in df.columns}
         result_df = df[list(existing_cols.keys())].rename(columns=existing_cols)
-        return result_df.replace({np.nan: None}).to_dict("records")
+        return cast(
+            list[dict[str, object]],
+            result_df.replace({np.nan: None}).to_dict("records"),
+        )
 
     def services_filtered(
         self,
@@ -1219,4 +1223,4 @@ class Analyzer:
             )
             df = df[df["service.name"].isin(allowed_service_names)]
 
-        return df.replace({np.nan: None}).to_dict("records")
+        return list(df.replace({np.nan: None}).to_dict("records"))

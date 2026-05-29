@@ -1,5 +1,4 @@
-"""
-Converts assessor JSON data files to Parquet format for reduced disk footprint.
+"""Converts assessor JSON data files to Parquet format for reduced disk footprint.
 
 Run once after any migration scripts have been applied. The resulting .parquet
 files are what the application loads at runtime.
@@ -7,8 +6,8 @@ files are what the application loads at runtime.
 
 # Standard Python Libraries
 import json
-from pathlib import Path
 import sys  # Import sys for stderr warnings
+from pathlib import Path
 
 # Third-Party Libraries
 import pandas as pd

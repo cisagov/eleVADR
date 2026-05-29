@@ -109,8 +109,5 @@ ENV REPORT_OUTPUT=/output/report.json
 # Volume mounts for input/output
 VOLUME ["/input", "/output"]
 
-# Switch to non-privileged user
-# USER appuser
-
 # Entrypoint
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

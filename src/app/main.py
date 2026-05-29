@@ -3,19 +3,20 @@
 # Standard Python Libraries
 import argparse
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import json
 import logging
 import math
 import os
-from pathlib import Path
 import sys
 import tempfile
 import traceback
-from typing import Annotated, TypeAlias, Union
-from urllib.parse import unquote
 import uuid
 import warnings
+from asyncio import Queue, Task
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Annotated, Any
+from urllib.parse import unquote
 
 # Third-Party Libraries
 from fastapi import (
@@ -30,12 +31,13 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 
 # cisagov Libraries
-from app.utils.analysis import Analyzer, FilePathInfo, PcapParser
+from app.utils.analysis import Analyzer, PcapParser
 from app.utils.report import Report
+from app.utils.utils import FilePathInfo
 
-JSONValue: TypeAlias = Union[
-    dict[str, "JSONValue"], list["JSONValue"], str, int, float, bool, None
-]
+type JSONValue = (
+    dict[str, "JSONValue"] | list["JSONValue"] | str | int | float | bool | None
+)
 
 # Configure logging
 logging.basicConfig(
@@ -44,7 +46,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Per-session progress queues - keyed by session_id, cleaned up after analysis completes
-_progress_queues: dict[str, asyncio.Queue] = {}
+_progress_queues: dict[str, asyncio.Queue[dict[str, object]]] = {}
 _report_registry: dict[str, Analyzer] = {}
 _executor = ThreadPoolExecutor(max_workers=4)
 
@@ -91,9 +93,8 @@ def run_analysis(
     output_path: str | None = None,
     project_root: str | None = None,
     session_id: str | None = None,
-) -> dict:
-    """
-    Run the eleVADR analysis on a given PCAP file.
+) -> dict[str, Any]:
+    """Run the eleVADR analysis on a given PCAP file.
 
     Args:
         pcap_path: Path to the PCAP file.
@@ -103,6 +104,7 @@ def run_analysis(
 
     Returns:
         The generated analysis report as a dictionary.
+
     """
     # Filter FutureWarnings from pandas, but keep other warnings
     with warnings.catch_warnings():
@@ -180,29 +182,28 @@ RequiredFile = Annotated[UploadFile, File()]
 ConnectionLimit = Annotated[int, Query(ge=1, le=5000)]
 
 
-@app.websocket("/ws/progress/{session_id}")
-async def progress_ws(websocket: WebSocket, session_id: str):
+@app.websocket("/ws/progress/{session_id}")  # type: ignore[untyped-decorator]
+async def progress_ws(websocket: WebSocket, session_id: str) -> None:
     """Stream analysis progress events over a WebSocket."""
     await websocket.accept()
 
     # Register a bounded queue for this session.
-    queue: asyncio.Queue = asyncio.Queue(maxsize=32)
+    queue: Queue[dict[str, object]] = asyncio.Queue(maxsize=32)
     _progress_queues[session_id] = queue
 
-    async def _send(event: dict) -> bool:
+    async def _send(event: dict[str, object]) -> bool:
         """Send a JSON event; return True if this is a terminal stage."""
         await websocket.send_json(event)
         return event.get("stage") in ("done", "error")
 
     async def _consumer() -> None:
-        """
-        Pull events from the queue and forward them to the client.
+        """Pull events from the queue and forward them to the client.
 
         Uses an explicit inner Task for queue.get() so that cancellation
         never leaves a coroutine in an unawaited state.
         """
         while True:
-            get_task: asyncio.Task | None = None
+            get_task: Task[dict[str, object]] | None = None
             try:
                 # Wrap queue.get() as a Task — the event loop owns the coroutine.
                 get_task = asyncio.ensure_future(queue.get())
@@ -244,8 +245,8 @@ async def progress_ws(websocket: WebSocket, session_id: str):
                 raise  # re-raise so the Task is marked cancelled
 
     # Create both tasks with explicit references — no anonymous task leaks.
-    consumer_task = asyncio.create_task(_consumer())
-    receive_task = asyncio.create_task(websocket.receive())
+    consumer_task: Task[None] = asyncio.create_task(_consumer())
+    receive_task: Task[dict[str, Any]] = asyncio.create_task(websocket.receive())
 
     try:
         done, pending = await asyncio.wait(
@@ -289,12 +290,12 @@ async def progress_ws(websocket: WebSocket, session_id: str):
         # Close socket — safe even if already closed.
         try:
             await websocket.close()
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("WebSocket close failed for session %s: %s", session_id, exc)
 
 
-@app.get("/health")
-async def health():
+@app.get("/health")  # type: ignore[untyped-decorator]
+async def health() -> dict[str, str]:
     """Return service health status."""
     return {"status": "ok"}
 
@@ -307,12 +308,12 @@ def _require_analyzer(report_id: str) -> Analyzer:
     return analyzer
 
 
-@app.get("/reports/{report_id}/drilldown/service/{service_name}")
+@app.get("/reports/{report_id}/drilldown/service/{service_name}")  # type: ignore[untyped-decorator]
 async def drilldown_service(
     report_id: str,
     service_name: str,
     limit: ConnectionLimit = 500,
-):
+) -> dict[str, Any]:
     """Return detailed connection rows for a specific service name within a report."""
     try:
         decoded_service_name = unquote(service_name)
@@ -330,15 +331,17 @@ async def drilldown_service(
     except Exception as e:
         logger.error("Service drilldown failed: %s", e)
         logger.error("Traceback:\n%s", traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Service drilldown failed: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Service drilldown failed: {e}"
+        ) from e
 
 
-@app.get("/reports/{report_id}/drilldown/connection-state/{state}")
+@app.get("/reports/{report_id}/drilldown/connection-state/{state}")  # type: ignore[untyped-decorator]
 async def drilldown_connection_state(
     report_id: str,
     state: str,
     limit: ConnectionLimit = 500,
-):
+) -> dict[str, Any]:
     """Return detailed connection rows for a Zeek connection state within a report."""
     try:
         decoded_state = unquote(state)
@@ -356,10 +359,10 @@ async def drilldown_connection_state(
         logger.error("Traceback:\n%s", traceback.format_exc())
         raise HTTPException(
             status_code=500, detail=f"Connection state drilldown failed: {e}"
-        )
+        ) from e
 
 
-@app.get("/reports/{report_id}/drilldown/suspicious-outbound")
+@app.get("/reports/{report_id}/drilldown/suspicious-outbound")  # type: ignore[untyped-decorator]
 async def drilldown_suspicious_outbound(
     report_id: str,
     src_ip: str,
@@ -367,7 +370,7 @@ async def drilldown_suspicious_outbound(
     dst_port: int,
     service_name: str,
     limit: ConnectionLimit = 500,
-):
+) -> dict[str, Any]:
     """Return detailed rows for a suspicious outbound group in a report."""
     try:
         analyzer = _require_analyzer(report_id)
@@ -393,16 +396,16 @@ async def drilldown_suspicious_outbound(
         logger.error("Traceback:\n%s", traceback.format_exc())
         raise HTTPException(
             status_code=500, detail=f"Suspicious outbound drilldown failed: {e}"
-        )
+        ) from e
 
 
-@app.get("/reports/{report_id}/drilldown/cross-segment")
+@app.get("/reports/{report_id}/drilldown/cross-segment")  # type: ignore[untyped-decorator]
 async def drilldown_cross_segment(
     report_id: str,
     src_subnet: str,
     dst_subnet: str,
     limit: ConnectionLimit = 500,
-):
+) -> dict[str, Any]:
     """Return cross‑segment rows for a source‑destination subnet pair in a report."""
     try:
         analyzer = _require_analyzer(report_id)
@@ -424,10 +427,10 @@ async def drilldown_cross_segment(
         logger.error("Traceback:\n%s", traceback.format_exc())
         raise HTTPException(
             status_code=500, detail=f"Cross-segment drilldown failed: {e}"
-        )
+        ) from e
 
 
-@app.get("/reports/{report_id}/connections")
+@app.get("/reports/{report_id}/connections")  # type: ignore[untyped-decorator]
 async def filtered_connections(
     report_id: str,
     ip: OptionalQueryStr = None,
@@ -443,7 +446,7 @@ async def filtered_connections(
     success: OptionalQueryBool = None,
     is_ot: OptionalQueryBool = None,
     limit: ConnectionLimit = 500,
-):
+) -> dict[str, Any]:
     """Return filtered connection detail rows for a report."""
     try:
         analyzer = _require_analyzer(report_id)
@@ -486,10 +489,10 @@ async def filtered_connections(
         logger.error("Traceback:\n%s", traceback.format_exc())
         raise HTTPException(
             status_code=500, detail=f"Filtered connections drilldown failed: {e}"
-        )
+        ) from e
 
 
-@app.get("/reports/{report_id}/devices")
+@app.get("/reports/{report_id}/devices")  # type: ignore[untyped-decorator]
 async def filtered_devices(
     report_id: str,
     manufacturer: OptionalQueryStr = None,
@@ -497,7 +500,7 @@ async def filtered_devices(
     service_name: OptionalQueryStr = None,
     is_ot: OptionalQueryBool = None,
     is_edge: OptionalQueryBool = None,
-):
+) -> dict[str, Any]:
     """Return filtered device rows for a report."""
     try:
         analyzer = _require_analyzer(report_id)
@@ -525,10 +528,10 @@ async def filtered_devices(
         logger.error("Traceback:\n%s", traceback.format_exc())
         raise HTTPException(
             status_code=500, detail=f"Filtered devices drilldown failed: {e}"
-        )
+        ) from e
 
 
-@app.get("/reports/{report_id}/services")
+@app.get("/reports/{report_id}/services")  # type: ignore[untyped-decorator]
 async def filtered_services(
     report_id: str,
     subnet: OptionalQueryStr = None,
@@ -536,7 +539,7 @@ async def filtered_services(
     device_ip: OptionalQueryStr = None,
     risk_category: OptionalQueryStr = None,
     service_name: OptionalQueryStr = None,
-):
+) -> dict[str, Any]:
     """Return filtered service rows matching the provided filters."""
     try:
         analyzer = _require_analyzer(report_id)
@@ -564,14 +567,14 @@ async def filtered_services(
         logger.error("Traceback:\n%s", traceback.format_exc())
         raise HTTPException(
             status_code=500, detail=f"Filtered services drilldown failed: {e}"
-        )
+        ) from e
 
 
-@app.post("/analyze")
+@app.post("/analyze")  # type: ignore[untyped-decorator]
 async def analyze(
     file: RequiredFile,
     session_id: OptionalSessionId = None,
-):
+) -> JSONValue:
     """Upload a PCAP, run analysis, and return the JSON report."""
     filename = file.filename or ""
     if not filename.lower().endswith(".pcap"):
@@ -612,7 +615,7 @@ async def analyze(
         logger.error("Analysis failed: %s", e)
         logger.error("Traceback:\n%s", traceback.format_exc())
         _emit(session_id, "error", 0, f"Analysis failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {e}") from e
     finally:
         if tmp_path and os.path.exists(tmp_path):
             try:

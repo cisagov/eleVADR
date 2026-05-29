@@ -884,8 +884,7 @@ class TestDevicesModule:
 
 class TestOTServicesModule:
     def test_services_df_processing_removes_nans(self, mock_file_path_info):
-        """
-        Verify that services_df_processing converts np.nan to None
+        """Verify that services_df_processing converts np.nan to None
         to ensure JSON compatibility.
         """
         with (
