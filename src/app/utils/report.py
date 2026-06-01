@@ -1,7 +1,9 @@
 """Report assembly and module definitions for eleVADR output."""
 
 # Standard Python Libraries
+import ipaddress
 from abc import ABC, abstractmethod
+from collections import Counter
 from collections.abc import Callable
 from typing import Any
 
@@ -627,42 +629,142 @@ class OTcrossSegmentLinesModule(ReportModule):
         """Return `ot_cross_segment_lines_panel`."""
         return "ot_cross_segment_lines_panel"
 
-    def generate_data(self) -> list[dict[str, object]]:
-        """Return OT cross-segment connection records grouped by subnet pair."""
-        cross_seg_df = self.analyzer._cross_segment_traffic_df()
+    @staticmethod
+    def _is_excluded_cross_segment_ip(ip: object) -> bool:
+        """Return whether an IP should be excluded from cross-segment reporting."""
+        if not isinstance(ip, str) or not ip.strip():
+            return True
 
-        # Only keep rows where either endpoint is an OT device
+        try:
+            parsed_ip = ipaddress.ip_address(ip)
+        except ValueError:
+            return True
+
+        return bool(
+            getattr(parsed_ip, "is_multicast", False)
+            or getattr(parsed_ip, "is_link_local", False)
+            or ip == "255.255.255.255"
+        )
+
+    @classmethod
+    def _preferred_ip_for_mac(cls, endpoints_df: pd.DataFrame, mac: str) -> str | None:
+        """Return a stable preferred IP for a MAC, preferring IPv4 over IPv6."""
+        if mac not in endpoints_df.index:
+            return None
+
+        endpoint = endpoints_df.loc[mac]
+        if isinstance(endpoint, pd.DataFrame):
+            endpoint = endpoint.iloc[0]
+
+        for column in ("device.ipv4_ips", "device.ipv6_ips"):
+            if column not in endpoint.index:
+                continue
+            ips = endpoint[column]
+            if isinstance(ips, (list, tuple, np.ndarray)):
+                for ip in ips:
+                    if isinstance(ip, str) and ip.strip():
+                        return str(ip)
+        return None
+
+    def generate_data(self) -> dict[str, list[dict[str, object]]]:
+        """Return grouped OT cross-segment reporting data."""
+        cross_seg_df = self.traffic_df.copy()
+
+        empty_result: dict[str, list[dict[str, object]]] = {
+            "lines": [],
+            "subnet_pair_counts": [],
+            "dst_subnet_counts": [],
+            "ot_device_counts": [],
+        }
+
+        if cross_seg_df.empty:
+            return empty_result
+
         ot_macs = set(
-            self.analyzer.endpoints_df[self.analyzer.endpoints_df["device.is_ot"]].index
+            self.endpoints_df[self.endpoints_df["device.is_ot"].fillna(False)].index
         )
         ot_mask = cross_seg_df["src_endpoint.mac"].isin(ot_macs) | cross_seg_df[
             "dst_endpoint.mac"
         ].isin(ot_macs)
-        ot_cross_seg_df = cross_seg_df[ot_mask]
+        ot_cross_seg_df = cross_seg_df[ot_mask].copy()
 
         if ot_cross_seg_df.empty:
-            return []
+            return empty_result
 
-        display_cols = [
-            col
-            for col in [
-                "src_endpoint.ip",
-                "src_endpoint.subnet",
-                "dst_endpoint.ip",
-                "dst_endpoint.subnet",
-                "dst_endpoint.port",
-                "service.name",
-            ]
-            if col in ot_cross_seg_df.columns
+        ot_cross_seg_df = ot_cross_seg_df[
+            ot_cross_seg_df["src_endpoint.subnet"]
+            != ot_cross_seg_df["dst_endpoint.subnet"]
+        ].copy()
+
+        if ot_cross_seg_df.empty:
+            return empty_result
+
+        ot_cross_seg_df = ot_cross_seg_df[
+            ~ot_cross_seg_df["src_endpoint.ip"].apply(
+                self._is_excluded_cross_segment_ip
+            )
+            & ~ot_cross_seg_df["dst_endpoint.ip"].apply(
+                self._is_excluded_cross_segment_ip
+            )
+        ].copy()
+
+        if ot_cross_seg_df.empty:
+            return empty_result
+
+        line_cols = [
+            "src_endpoint.ip",
+            "src_endpoint.subnet",
+            "dst_endpoint.ip",
+            "dst_endpoint.subnet",
+            "dst_endpoint.port",
+            "service.name",
         ]
-
-        return list(
-            ot_cross_seg_df[display_cols]
-            .groupby(display_cols, sort=False)
+        lines = list(
+            ot_cross_seg_df[line_cols]
+            .groupby(line_cols, sort=False)
             .size()
             .reset_index(name="count")
             .to_dict(orient="records")
         )
+
+        subnet_pair_counts = list(
+            ot_cross_seg_df.groupby(
+                ["src_endpoint.subnet", "dst_endpoint.subnet"], sort=False
+            )
+            .size()
+            .reset_index(name="count")
+            .to_dict(orient="records")
+        )
+
+        dst_subnet_counts = list(
+            ot_cross_seg_df.groupby(["dst_endpoint.subnet"], sort=False)
+            .size()
+            .reset_index(name="count")
+            .to_dict(orient="records")
+        )
+
+        ot_device_counter: Counter[str] = Counter()
+        for _, row in ot_cross_seg_df.iterrows():
+            for mac_column in ("src_endpoint.mac", "dst_endpoint.mac"):
+                mac = row[mac_column]
+                if mac in ot_macs:
+                    ot_device_counter[mac] += 1
+
+        ot_device_counts = [
+            {
+                "mac": mac,
+                "ip": self._preferred_ip_for_mac(self.endpoints_df, mac),
+                "count": count,
+            }
+            for mac, count in ot_device_counter.items()
+        ]
+
+        return {
+            "lines": lines,
+            "subnet_pair_counts": subnet_pair_counts,
+            "dst_subnet_counts": dst_subnet_counts,
+            "ot_device_counts": ot_device_counts,
+        }
 
 
 class SuspiciousOutboundConnectionsDetection(DetectionModule):
@@ -676,9 +778,34 @@ class SuspiciousOutboundConnectionsDetection(DetectionModule):
     @property
     def executive_summary(self) -> str:
         """Return a human-readable finding summary."""
+        if not self.run_detection():
+            return ""
+        module = self.report_modules[0]
+        data = module.data
+        assert type(data) is list
+        count = len(data)
+
+        examples = ""
+        example_lines = [
+            (
+                f"- {entry['src_endpoint.ip']} → "
+                f"{entry['dst_endpoint.ip']}:{entry['dst_endpoint.port']} "
+                f"({entry['service.name']}) - {entry['count']}x"
+            )
+            for entry in data
+        ]
+        examples = "\n".join(example_lines)
+
         return (
+            "**FINDING: Suspicious Outbound Connections Detected**\n\n"
+            f"{count} suspicious outbound connection(s) from OT devices were identified.\n\n"
+            f"{examples}\n\n"
             "OT devices were observed making outbound connections to external hosts. "
-            "This may indicate unauthorized communication or a compromised device."
+            "This may indicate unauthorized communication or a compromised device.\n\n"
+            "**Recommended Actions:**\n"
+            "- Validate whether the destinations are approved external dependencies.\n"
+            "- Review device ownership, change history, and recent operational intent.\n"
+            "- Investigate for compromise, tunneling, or policy bypass if the traffic is unexpected."
         )
 
     def run_detection(self) -> bool:
@@ -699,13 +826,43 @@ class OTcrossSegmentDetection(DetectionModule):
     @property
     def executive_summary(self) -> str:
         """Return a human-readable finding summary."""
+        if not self.run_detection():
+            return ""
+        module = self.report_modules[0]
+        data = module.data
+        lines = data.get("lines", []) if isinstance(data, dict) else []
+        count = len(lines)
+
+        examples = ""
+        example_lines = [
+            (
+                f"- {entry['src_endpoint.ip']} → "
+                f"{entry['dst_endpoint.ip']}:{entry['dst_endpoint.port']} "
+                f"({entry['service.name']}) - {entry['count']}x"
+            )
+            for entry in lines
+        ]
+        if example_lines:
+            examples = "\n".join(example_lines)
+
         return (
+            "**FINDING: OT Cross-Segment Communications Detected**\n\n"
+            f"{count} cross-segment communication example(s) involving OT assets were identified.\n\n"
+            f"{examples}\n\n"
             "OT devices were observed communicating across network segments. "
-            "This may indicate a misconfiguration or lateral movement attempt."
+            "This may indicate a misconfiguration or lateral movement attempt.\n\n"
+            "**Recommended Actions:**\n"
+            "- Validate whether the observed communications are expected for operations.\n"
+            "- Review segmentation policy, firewall rules, and routing between the affected subnets.\n"
+            "- Investigate potential unauthorized lateral movement if the traffic is unexpected."
         )
 
     def run_detection(self) -> bool:
         """Trip if any cross-segment OT lines are present."""
         module = self.report_modules[0]
         data = module.data
-        return isinstance(data, list) and len(data) > 0
+        return (
+            isinstance(data, dict)
+            and isinstance(data.get("lines"), list)
+            and len(data["lines"]) > 0
+        )

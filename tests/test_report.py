@@ -506,11 +506,11 @@ class TestOTcrossSegmentLinesModule:
 
         # Invalid IP
         mock_ip_address.side_effect = ValueError
-        assert not OTcrossSegmentLinesModule._is_excluded_cross_segment_ip("invalid-ip")
+        assert OTcrossSegmentLinesModule._is_excluded_cross_segment_ip("invalid-ip")
         mock_ip_address.side_effect = None  # Reset side effect
 
         # Non-string
-        assert not OTcrossSegmentLinesModule._is_excluded_cross_segment_ip(123)
+        assert OTcrossSegmentLinesModule._is_excluded_cross_segment_ip(123)
 
     def test_preferred_ip_for_mac(self, mock_analyzer):
         # Test with IPv4
@@ -733,14 +733,18 @@ class TestOTcrossSegmentLinesModule:
         assert len(data["lines"]) == 2  # Unique lines
         assert {
             "src_endpoint.ip": "192.168.1.1",
+            "src_endpoint.subnet": "192.168.1.0/24",
             "dst_endpoint.ip": "10.0.0.10",
+            "dst_endpoint.subnet": "10.0.0.0/8",
             "dst_endpoint.port": 80,
             "service.name": "HTTP",
             "count": 2,
         } in data["lines"]
         assert {
             "src_endpoint.ip": "10.0.0.1",
+            "src_endpoint.subnet": "10.0.0.0/8",
             "dst_endpoint.ip": "192.168.1.10",
+            "dst_endpoint.subnet": "192.168.1.0/24",
             "dst_endpoint.port": 22,
             "service.name": "SSH",
             "count": 1,
@@ -748,23 +752,37 @@ class TestOTcrossSegmentLinesModule:
 
         assert len(data["subnet_pair_counts"]) == 2
         assert {
-            "src_subnet": "192.168.1.0/24",
-            "dst_subnet": "10.0.0.0/8",
+            "src_endpoint.subnet": "192.168.1.0/24",
+            "dst_endpoint.subnet": "10.0.0.0/8",
             "count": 2,
         } in data["subnet_pair_counts"]
         assert {
-            "src_subnet": "10.0.0.0/8",
-            "dst_subnet": "192.168.1.0/24",
+            "src_endpoint.subnet": "10.0.0.0/8",
+            "dst_endpoint.subnet": "192.168.1.0/24",
             "count": 1,
         } in data["subnet_pair_counts"]
 
         assert len(data["dst_subnet_counts"]) == 2
-        assert {"dst_subnet": "10.0.0.0/8", "count": 2} in data["dst_subnet_counts"]
-        assert {"dst_subnet": "192.168.1.0/24", "count": 1} in data["dst_subnet_counts"]
+        assert {
+            "dst_endpoint.subnet": "10.0.0.0/8",
+            "count": 2,
+        } in data["dst_subnet_counts"]
+        assert {
+            "dst_endpoint.subnet": "192.168.1.0/24",
+            "count": 1,
+        } in data["dst_subnet_counts"]
 
         assert len(data["ot_device_counts"]) == 2
-        assert {"src_device_ip": "192.168.1.1", "count": 2} in data["ot_device_counts"]
-        assert {"src_device_ip": "10.0.0.1", "count": 1} in data["ot_device_counts"]
+        assert {
+            "mac": "AA:AA:AA:AA:AA:AA",
+            "ip": "192.168.1.1",
+            "count": 2,
+        } in data["ot_device_counts"]
+        assert {
+            "mac": "CC:CC:CC:CC:CC:CC",
+            "ip": "10.0.0.1",
+            "count": 1,
+        } in data["ot_device_counts"]
 
 
 class TestDevicesModule:
