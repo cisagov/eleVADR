@@ -41,7 +41,7 @@ EleVADR must be run and developed inside containers.
 
 ### 1. Running the App (Production/Testing) ###
 
-Do not attempt to install dependencies locally. Use Docker.
+Do not attempt to install dependencies locally. Use containerization tools.
 
 #### Pull from DockerHub ####
 
