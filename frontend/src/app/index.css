@@ -1,0 +1,18 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    "Source Sans Pro", "Helvetica Neue", "Helvetica", "Roboto", "Arial",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f0f0f0;
+}
+
+code {
+  font-family:
+    "Roboto Mono", "Bitstream Vera Sans Mono", "Consolas", "Courier", monospace;
+}

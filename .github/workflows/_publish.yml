@@ -1,0 +1,123 @@
+---
+name: Reusable publish
+
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      component:
+        description: Component directory and name (e.g. backend, frontend)
+        required: true
+        type: string
+      version:
+        description: Semver version to tag the image with (e.g. 1.2.3)
+        required: true
+        type: string
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+
+defaults:
+  run:
+    shell: bash -Eueo pipefail -x {0}
+
+jobs:
+  diagnostics:
+    name: Run diagnostics
+    permissions: {}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply standard cisagov job preamble
+        uses: cisagov/action-job-preamble@v1
+        with:
+          monitor_permissions: "false"
+          output_workflow_context: "true"
+          permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
+
+  repo-metadata:
+    name: Gather repository metadata
+    needs:
+      - diagnostics
+    permissions:
+      contents: read
+    uses: ./.github/workflows/_repo-metadata.yml
+    with:
+      component: ${{ inputs.component }}
+
+  prepare:
+    name: Prepare build variables
+    needs:
+      - diagnostics
+      - repo-metadata
+    outputs:
+      labels: ${{ steps.generate-metadata.outputs.labels }}
+      tags: ${{ steps.generate-metadata.outputs.tags }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply standard cisagov job preamble
+        uses: cisagov/action-job-preamble@v1
+        with:
+          monitor_permissions: "false"
+          permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
+      - uses: actions/checkout@v6
+      - id: generate-metadata
+        name: Generate Docker image metadata
+        uses: docker/metadata-action@v6
+        with:
+          images: |
+            ${{ needs.repo-metadata.outputs.image-name }}
+            ghcr.io/${{ needs.repo-metadata.outputs.image-name }}
+          # Derive tags from the explicit version input rather than the git ref,
+          # so component-prefixed tags (e.g. elevadr-backend@v1.2.3) don't leak
+          # invalid characters into Docker tags.
+          tags: |
+            type=raw,value=${{ inputs.version }}
+            type=raw,value=latest
+
+  publish:
+    name: Build and push release image
+    needs:
+      - diagnostics
+      - repo-metadata
+      - prepare
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply standard cisagov job preamble
+        uses: cisagov/action-job-preamble@v1
+        with:
+          monitor_permissions: "false"
+          permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
+      - uses: actions/checkout@v6
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: ./${{ inputs.component }}
+          file: ./${{ inputs.component }}/Dockerfile
+          push: true
+          tags: ${{ needs.prepare.outputs.tags }}
+          labels: ${{ needs.prepare.outputs.labels }}
+          platforms: >-
+            ${{ join(fromJSON(needs.repo-metadata.outputs.image-platforms)) }}
+          cache-from: type=gha,scope=${{ inputs.component }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.component }}

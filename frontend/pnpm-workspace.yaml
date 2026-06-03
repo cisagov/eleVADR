@@ -1,0 +1,8 @@
+---
+
+allowBuilds:
+  "@ast-grep/cli": true
+  core-js: true
+  core-js-pure: false
+  esbuild: true
+  keytar: true

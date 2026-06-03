@@ -1,0 +1,140 @@
+.sortable-table-wrapper {
+  width: 100%;
+}
+
+.table-filter-section {
+  margin-bottom: 1.5rem;
+}
+
+.table-filter-section .usa-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.table-filter-section .usa-input {
+  max-width: 400px;
+}
+
+.scrollable-table-container {
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #dfe1e2;
+  border-radius: 4px;
+}
+
+.scrollable-table-container table {
+  margin: 0;
+  width: 100%;
+}
+
+/* Ensure text wraps within table cells and headers */
+.scrollable-table-container table {
+  table-layout: fixed;
+}
+
+.scrollable-table-container table th,
+.scrollable-table-container table td {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 0;
+  vertical-align: top;
+}
+
+.usa-table--sortable th.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.usa-table--sortable th.sortable:hover {
+  background-color: #e7f2f5;
+}
+
+.th-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.sort-icon {
+  font-size: 0.875rem;
+  color: #71767a;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.sort-icon.active {
+  color: #005ea2;
+  opacity: 1;
+  font-weight: bold;
+}
+
+.usa-table--sortable th.sortable:hover .sort-icon {
+  opacity: 1;
+}
+
+.empty-cell {
+  text-align: center;
+  color: #71767a;
+  font-style: italic;
+  padding: 2rem !important;
+}
+
+.table-summary {
+  margin-top: 1rem;
+  text-align: right;
+  color: #71767a;
+  font-size: 0.875rem;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover {
+  background-color: #f0f8ff;
+}
+
+.clickable-cell {
+  cursor: pointer;
+}
+
+.clickable-cell button,
+.clickable-service-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #005ea2;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: left;
+  max-width: 100%;
+}
+
+.clickable-cell-text {
+  display: inline-block;
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .table-filter-section .usa-input {
+    max-width: 100%;
+  }
+
+  .scrollable-table-container {
+    font-size: 0.875rem;
+  }
+}

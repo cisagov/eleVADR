@@ -3,6 +3,11 @@ name: Provide repository metadata
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
+    inputs:
+      component:
+        description: Which component to read metadata for (backend or frontend)
+        required: true
+        type: string
     outputs:
       image-name:
         description: The name of the Docker image.
@@ -19,6 +24,8 @@ jobs:
       image-platforms: ${{ steps.set-outputs.outputs.image-platforms }}
     permissions: {}
     runs-on: ubuntu-latest
+    env:
+      COMPONENT: ${{ inputs.component }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v6
@@ -34,15 +41,21 @@ jobs:
           except ImportError:
               import tomli as tomllib
 
+          component = os.environ["COMPONENT"]
+          config_file = "pyproject.toml" if component == "backend" else "package.json"
+
           # Ensure the script runs from the repo root
           # (In Actions, this is the default)
-          config_path = "pyproject.toml"
+          config_path = os.path.join(component, config_file)
           if not os.path.exists(config_path):
               print(f"Error: {config_path} not found.")
               sys.exit(1)
 
           with open(config_path, "rb") as f:
-              config = tomllib.load(f)
+              if component == "backend":
+                config = tomllib.load(f)
+              else:
+                config = json.load(f)
 
           # Read from the config file
           image_name = config["tool"]["elevadr"]["image_name"]

@@ -33,8 +33,6 @@ updates:
       - dependency-name: cisagov/setup-env-github-action
       - dependency-name: crazy-max/ghaction-github-labeler
       - dependency-name: github/codeql-action
-      - dependency-name: hashicorp/setup-packer
-      - dependency-name: hashicorp/setup-terraform
       - dependency-name: mxschmitt/action-tmate
 
     labels:
@@ -47,8 +45,12 @@ updates:
     schedule:
       interval: weekly
 
-  - directory: /
+  - directory: /backend
     package-ecosystem: pip
+    schedule:
+      interval: weekly
+  - directory: /frontend
+    package-ecosystem: npm
     schedule:
       interval: weekly
 

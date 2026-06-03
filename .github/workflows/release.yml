@@ -13,7 +13,41 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      backend-released: ${{ steps.release.outputs.elevadr-backend--release_created }}
+      backend-version: ${{ steps.release.outputs.elevadr-backend--version }}
+      frontend-released: ${{ steps.release.outputs.elevadr-frontend--release_created }}
+      frontend-version: ${{ steps.release.outputs.elevadr-frontend--version }}
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: google-github-actions/release-please-action@v4
+        id: release
         with:
-          release-type: python
+          manifest-file: .release-please-manifest.json
+          config-file: release-please-config.json
+
+  publish-backend:
+    needs: release-please
+    if: needs.release-please.outputs.backend-released == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/_publish.yml
+    with:
+      component: backend
+      version: ${{ needs.release-please.outputs.backend-version }}
+    secrets: inherit
+
+  publish-frontend:
+    needs: release-please
+    if: needs.release-please.outputs.frontend-released == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/_publish.yml
+    with:
+      component: frontend
+      version: ${{ needs.release-please.outputs.frontend-version }}
+    secrets: inherit

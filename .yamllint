@@ -1,6 +1,12 @@
 ---
 extends: default
 
+ignore:
+  - "*node_modules*"
+  - "*venv*"
+  - "*lock*"
+  - "*pnpm-workspace*"
+
 rules:
   braces:
     # Do not allow non-empty flow mappings

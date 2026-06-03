@@ -1,0 +1,64 @@
+.manufacturer-cell {
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+.count-cell {
+  text-align: center;
+  font-weight: 700;
+  color: #005ea2;
+  width: 150px;
+}
+
+.filter-container {
+  margin-bottom: 1.5rem;
+}
+
+.filter-container .usa-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.filter-container .usa-input {
+  max-width: 400px;
+}
+
+.scrollable-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #dfe1e2;
+  border-radius: 4px;
+}
+
+.scrollable-table-container table {
+  margin: 0;
+  width: 100%;
+}
+
+.empty-cell {
+  text-align: center;
+  color: #71767a;
+  font-style: italic;
+  padding: 2rem !important;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #71767a;
+  font-style: italic;
+}
+
+.table-summary {
+  margin-top: 1rem;
+  text-align: right;
+  color: #71767a;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .filter-container .usa-input {
+    max-width: 100%;
+  }
+}

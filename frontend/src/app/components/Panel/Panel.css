@@ -1,0 +1,84 @@
+.panel {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.panel-highlight {
+  border: 2px solid #005ea2;
+  box-shadow: 0 2px 8px rgba(0, 94, 162, 0.15);
+}
+
+.panel-header {
+  padding: 1.25rem 1.5rem;
+  background: #f0f0f0;
+  border-bottom: 1px solid #dfe1e2;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-highlight .panel-header {
+  background: #e7f2f5;
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1b1b1b;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-toggle-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #005ea2;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.panel-toggle-button:hover,
+.panel-toggle-button:focus {
+  background-color: #e0e0e0;
+  outline: none;
+}
+
+.panel-content {
+  padding: 1.5rem;
+  border-radius: 0 0 8px 8px;
+}
+
+.panel-collapsed .panel-header {
+  border-bottom: none; /* No border-bottom when collapsed */
+  border-radius: 8px; /* Fully rounded corners when collapsed */
+}
+
+@media (max-width: 768px) {
+  .panel-header {
+    padding: 1rem;
+  }
+
+  .panel-content {
+    padding: 1rem;
+  }
+
+  .panel-title {
+    font-size: 1.1rem;
+  }
+}

@@ -1,66 +1,67 @@
-
-FROM cisagov/elevadr-web-backend:develop
+FROM ubuntu:26.04
 
 USER root
 
-# Copy certs (expect the PEM file(s) in .devcontainer/certs/)
-COPY .devcontainer/certs/ /tmp/certs/
+RUN mkdir -p /etc/apt/keyrings
 
-# If you have multiple files, we concatenate into one bundle for apk.
-RUN set -eu && \
-    if [ -n "$(ls -A /tmp/certs 2>/dev/null)" ]; then \
-      mkdir -p /usr/local/share/ca-certificates/ && \
-      cat /tmp/certs/* > /usr/local/share/ca-certificates/custom-bundle.crt && \
-      apt-get update && \
-      apt-get install -y --no-install-recommends \
-        ca-certificates && update-ca-certificates; \
+RUN apt-get update && apt-get install --no-install-recommends -y \
+        ca-certificates curl gnupg2 lsb-release wget software-properties-common git gh\
+    && add-apt-repository -y universe
+
+RUN --mount=type=secret,id=ca_cert,required=false \
+    set -eu; \
+    CERT_INSTALLED=0; \
+    if [ -s /run/secrets/ca_cert ]; then \
+        cp /run/secrets/ca_cert /usr/local/share/ca-certificates/corp-ca.crt; \
+        update-ca-certificates; \
+        CERT_INSTALLED=1; \
+    fi; \
+    . /etc/os-release; \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+    gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    apt-get update \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+        https://download.docker.com/linux/ubuntu ${VERSION_CODENAME} stable" \
+        > /etc/apt/sources.list.d/docker.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        docker.io docker-compose-plugin \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && if [ "$CERT_INSTALLED" -eq 1 ]; then \
+        rm -f /usr/local/share/ca-certificates/corp-ca.crt; \
+        update-ca-certificates --fresh; \
     fi
 
-# Install development essentials
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
-    vim \
-    sudo \
-    gpg \
-    openssh-client \
-    locales \
-    build-essential \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install --no-install-recommends -y \
+        git \
+        vim \
+        sudo \
+        openssh-client \
+        locales \
+        build-essential \
+    && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8 \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
-    locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8
+RUN useradd -m -s /bin/bash elevadr \
+    && echo "elevadr ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt, /usr/sbin/update-ca-certificates" \
+        > /etc/sudoers.d/elevadr \
+    && chmod 0440 /etc/sudoers.d/elevadr
 
-RUN mkdir -p /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/debian/gpg | \
-    gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+COPY --chown=elevadr:elevadr --from=zeek/zeek@sha256:a89555858fb4e48fd8dc8a943ed280c0e414b170270b3bc6847653597d3fab03 /usr/local/zeek /bin/
+COPY --chown=elevadr:elevadr --from=ghcr.io/astral-sh/uv:python3.14-trixie-slim /usr/local/bin/uv /usr/local/bin/uvx /bin/
+COPY --chown=elevadr:elevadr --from=ghcr.io/pnpm/pnpm:11 /opt/pnpm /bin/
+COPY --chown=elevadr:elevadr --from=rust:slim-trixie /usr/local/cargo/bin /bin/
 
-RUN echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-  https://download.docker.com/linux/debian bookworm stable" \
-  > /etc/apt/sources.list.d/docker.list
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+ENV LANG=en_US.UTF-8
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV NVM_DIR=/home/elevadr/.nvm
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        docker-ce docker-ce-cli containerd.io docker-compose-plugin && \
-    rm -rf /var/lib/apt/lists/*
+USER elevadr
+WORKDIR /workspace
 
-
-# Give the appuser sudo access so you can install things while developing
-RUN echo "appuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-# Switch back to your non-privileged user
-USER appuser
-
-RUN echo "export PATH=\$HOME/.local/bin:\$PATH" >> ~/.bashrc
-RUN echo "export PATH=/usr/libexec/docker/cli-plugins:\$PATH" >> ~/.bashrc
-
-COPY pyproject.toml uv.lock ./
-
-RUN set -eu && \
-    if [ -n "$(ls -A /tmp/certs 2>/dev/null)" ]; then \
-      echo "export SSL_CERT_FILE=/usr/local/share/ca-certificates/custom-bundle.crt" >> ~/.bashrc && \
-      SSL_CERT_FILE=/usr/local/share/ca-certificates/custom-bundle.crt uv sync; \
-    else \
-      uv sync; \
-    fi
+EXPOSE 8000
+CMD ["sleep", "infinity"]

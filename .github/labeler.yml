@@ -8,39 +8,34 @@
 # crazy-max/ghaction-github-labeler configuration file located at
 # .github/labels.yml.
 
-ansible:
-  - changed-files:
-      - any-glob-to-any-file:
-          - "**/ansible/**"
 dependencies:
   - changed-files:
       - any-glob-to-any-file:
-          # Add any dependency files used.
-          - "**/Pipfile*"
-          - .pre-commit-config.yaml
-          - requirements*.txt
+          - "**/uv.lock"
+          - "**/pnpm-lock.yaml"
+
 docker:
   - changed-files:
       - any-glob-to-any-file:
           - "**/compose*.yml"
           - "**/docker-compose*.yml"
           - "**/Dockerfile*"
+
 documentation:
   - changed-files:
       - any-glob-to-any-file:
           - "**/*.md"
+
 github-actions:
   - changed-files:
       - any-glob-to-any-file:
           - .github/workflows/**
+
 javascript:
   - changed-files:
       - any-glob-to-any-file:
           - "**/*.js"
-packer:
-  - changed-files:
-      - any-glob-to-any-file:
-          - "**/*.pkr.hcl"
+
 python:
   - changed-files:
       - any-glob-to-any-file:
@@ -53,10 +48,7 @@ shell script:
           - "**/*.sh"
           - bump-version
           - setup-env
-terraform:
-  - changed-files:
-      - any-glob-to-any-file:
-          - "**/*.tf"
+
 test:
   - changed-files:
       - any-glob-to-any-file:
@@ -78,8 +70,3 @@ upstream update:
   - head-branch:
       # Any Lineage pull requests should use this branch.
       - lineage/skeleton
-version bump:
-  - changed-files:
-      - any-glob-to-any-file:
-          # Ensure this matches your version tracking file(s).
-          - src/version.txt

@@ -1,0 +1,78 @@
+.filter-container {
+  margin-bottom: 1.5rem;
+}
+
+.filter-container .usa-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.filter-container .usa-input {
+  max-width: 400px;
+}
+
+.scrollable-table-container {
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #dfe1e2;
+  border-radius: 4px;
+}
+
+.scrollable-table-container table {
+  margin: 0;
+  width: 100%;
+}
+
+.ip-cell {
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.port-cell {
+  font-family: "Roboto Mono", monospace;
+  text-align: center;
+  font-weight: 600;
+}
+
+.count-cell {
+  text-align: center;
+  font-weight: 700;
+  color: #005ea2;
+}
+
+.empty-cell {
+  text-align: center;
+  color: #71767a;
+  font-style: italic;
+  padding: 2rem !important;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #71767a;
+  font-style: italic;
+}
+
+.table-summary {
+  margin-top: 1rem;
+  text-align: right;
+  color: #71767a;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .filter-container .usa-input {
+    max-width: 100%;
+  }
+
+  .scrollable-table-container {
+    font-size: 0.875rem;
+  }
+
+  .ip-cell {
+    font-size: 0.8rem;
+  }
+}
