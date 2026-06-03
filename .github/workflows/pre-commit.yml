@@ -61,34 +61,38 @@ jobs:
 
       - uses: actions/checkout@v6
 
+      # ---- Python toolchain (for deptry, mypy, bandit, ruff, uv-audit) ----
       - id: setup-python
         uses: actions/setup-python@v6
         with:
           python-version: ${{ steps.setup-env.outputs.python-version }}
 
-      # Node toolchain is needed if any pre-commit hooks operate on JS/TS
-      # (e.g. prettier, eslint) for the Vite frontend.
+      - id: setup-uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        with:
+          version: 0.11.11
+          enable-cache: false
+
+      - name: Install backend Python dependencies
+        working-directory: ./backend
+        run: uv sync
+
+      # ---- Node toolchain (for eslint, typescript-check) ----
+      - id: setup-pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: "11"
+
       - id: setup-node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      - name: Cache pip and pre-commit environments
-        uses: actions/cache@v5
-        env:
-          BASE_CACHE_KEY: >-
-            ${{ github.job }}-${{ runner.os }}-py${{
-            steps.setup-python.outputs.python-version }}-
-        with:
-          key: >-
-            ${{ env.BASE_CACHE_KEY }}${{
-            hashFiles('.pre-commit-config.yaml') }}
-          path: |
-            ${{ env.PIP_CACHE_DIR }}
-            ${{ env.PRE_COMMIT_CACHE_DIR }}
-          restore-keys: |
-            ${{ env.BASE_CACHE_KEY }}
+      - name: Install frontend Node dependencies
+        working-directory: ./frontend
+        run: pnpm install --frozen-lockfile
 
+      # ---- pre-commit ----
       - name: Install pre-commit
         run: pip install pre-commit
 
