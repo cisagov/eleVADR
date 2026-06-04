@@ -65,7 +65,7 @@ jobs:
       - id: setup-python
         uses: actions/setup-python@v6
         with:
-          python-version: ${{ steps.setup-env.outputs.python-version }}
+          python-version: 3.14
 
       - id: setup-uv
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
@@ -93,6 +93,22 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # ---- pre-commit ----
+      - name: Cache pip and pre-commit environments
+        uses: actions/cache@v5
+        env:
+          BASE_CACHE_KEY: >-
+            ${{ github.job }}-${{ runner.os }}-py${{
+            steps.setup-python.outputs.python-version }}-
+        with:
+          key: >-
+            ${{ env.BASE_CACHE_KEY }}${{
+            hashFiles('.pre-commit-config.yaml') }}
+          path: |
+            ${{ env.PIP_CACHE_DIR }}
+            ${{ env.PRE_COMMIT_CACHE_DIR }}
+          restore-keys: |
+            ${{ env.BASE_CACHE_KEY }}
+
       - name: Install pre-commit
         run: pip install pre-commit
 
