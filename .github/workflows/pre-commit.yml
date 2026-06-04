@@ -77,6 +77,11 @@ jobs:
         working-directory: ./backend
         run: uv sync
 
+      # Deptry needs to be installed separately because it would require
+      # `uv run deptry` in the pre-commit.
+      - name: Install Deptry as tool
+        run: uv tool install deptry
+
       # ---- Node toolchain (for eslint, typescript-check) ----
       - id: setup-pnpm
         uses: pnpm/action-setup@v6
