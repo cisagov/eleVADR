@@ -176,6 +176,7 @@ repos:
     hooks:
       - id: eslint
         name: ESLint
+        files: frontend/
         entry: pnpm --dir frontend run lint
         language: system
         types_or:
@@ -184,6 +185,7 @@ repos:
         pass_filenames: false
       - id: typescript-check
         name: TypeScript Check
+        files: frontend/
         entry: pnpm --dir frontend run type-check
         language: system
         pass_filenames: false
