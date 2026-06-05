@@ -39,16 +39,14 @@ def consolidate_port_ranges(input_json_path: Path, output_json_path: Path) -> No
                 expanded_ports_data[port_num] = value
         except ValueError as e:
             print(
-                f"Warning: Skipping invalid port key '{key}' in "
-                f"{input_json_path.name} due to: {e}",
+                f"Warning: Skipping invalid port key '{key}' in {input_json_path.name} due to: {e}",
                 file=sys.stderr,
             )
             # Do not exit, just skip this malformed entry
             continue
         except Exception as e:
             print(
-                f"Unexpected error processing key '{key}' in "
-                f"{input_json_path.name}: {e}",
+                f"Unexpected error processing key '{key}' in {input_json_path.name}: {e}",
                 file=sys.stderr,
             )
             sys.exit(1)  # Still exit on unexpected errors
@@ -88,9 +86,7 @@ def consolidate_port_ranges(input_json_path: Path, output_json_path: Path) -> No
                 consolidated_output[str(port)] = current_service_def
             else:
                 # Range of ports
-                consolidated_output[f"{current_range_start}-{port}"] = (
-                    current_service_def
-                )
+                consolidated_output[f"{current_range_start}-{port}"] = current_service_def
 
             # Start a new range for the next port, if available
             if i + 1 < len(sorted_ports):

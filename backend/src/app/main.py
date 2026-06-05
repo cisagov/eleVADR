@@ -36,14 +36,10 @@ from src.app.utils.analysis import Analyzer, PcapParser
 from src.app.utils.report import Report
 from src.app.utils.utils import FilePathInfo
 
-type JSONValue = (
-    dict[str, "JSONValue"] | list["JSONValue"] | str | int | float | bool | None
-)
+type JSONValue = dict[str, "JSONValue"] | list["JSONValue"] | str | int | float | bool | None
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # Per-session progress queues - keyed by session_id, cleaned up after analysis completes
@@ -81,10 +77,7 @@ def _emit(session_id: str | None, stage: str, progress: int, message: str) -> No
             }
         )
     except asyncio.QueueFull:
-        logger.warning(
-            f"Progress queue for session {session_id} is full. "
-            f"Dropping event: {message}"
-        )
+        logger.warning(f"Progress queue for session {session_id} is full. Dropping event: {message}")
     except Exception as e:
         logger.error(f"Error emitting progress for session {session_id}: {e}")
 
@@ -160,10 +153,7 @@ app = FastAPI(
 
 # Support comma-separated origins for cases where the frontend is accessed
 # via multiple hostnames (e.g. localhost vs 127.0.0.1)
-origins = [
-    origin.strip()
-    for origin in os.environ.get("FRONTEND_ORIGIN", "http://localhost:8080").split(",")
-]
+origins = [origin.strip() for origin in os.environ.get("FRONTEND_ORIGIN", "http://localhost:8080").split(",")]
 
 app.add_middleware(
     CORSMiddleware,
@@ -173,9 +163,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DEFAULT_PROJECT_ROOT = Path(
-    os.environ.get("PROJECT_ROOT", Path(__file__).resolve().parent)
-)
+DEFAULT_PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", Path(__file__).resolve().parent))
 OptionalSessionId = Annotated[str | None, Query()]
 OptionalQueryStr = Annotated[str | None, Query()]
 OptionalQueryBool = Annotated[bool | None, Query()]
@@ -272,9 +260,7 @@ async def progress_ws(websocket: WebSocket, session_id: str) -> None:
         logger.info(f"WebSocket disconnected for session {session_id}.")
     except Exception as exc:  # pragma: no cover
         logger.error(f"Unhandled error in WebSocket for session {session_id}: {exc}")
-        await websocket.send_json(
-            {"stage": "error", "progress": 0, "message": f"WebSocket error: {exc}"}
-        )
+        await websocket.send_json({"stage": "error", "progress": 0, "message": f"WebSocket error: {exc}"})
     finally:
         # Ensure both tasks are cancelled and awaited before cleanup.
         for t in (consumer_task, receive_task):
@@ -323,18 +309,14 @@ async def drilldown_service(
         return {
             "report_id": report_id,
             "service_name": decoded_service_name,
-            "connections": analyzer.service_connection_lines(
-                decoded_service_name, limit=limit
-            ),
+            "connections": analyzer.service_connection_lines(decoded_service_name, limit=limit),
         }
     except HTTPException:
         raise
     except Exception as e:
         logger.error("Service drilldown failed: %s", e)
         logger.error("Traceback:\n%s", traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"Service drilldown failed: {e}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Service drilldown failed: {e}") from e
 
 
 @app.get("/reports/{report_id}/drilldown/connection-state/{state}")  # type: ignore[untyped-decorator]
@@ -358,9 +340,7 @@ async def drilldown_connection_state(
     except Exception as e:
         logger.error("Connection state drilldown failed: %s", e)
         logger.error("Traceback:\n%s", traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"Connection state drilldown failed: {e}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Connection state drilldown failed: {e}") from e
 
 
 @app.get("/reports/{report_id}/drilldown/suspicious-outbound")  # type: ignore[untyped-decorator]
@@ -395,9 +375,7 @@ async def drilldown_suspicious_outbound(
     except Exception as e:
         logger.error("Suspicious outbound drilldown failed: %s", e)
         logger.error("Traceback:\n%s", traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"Suspicious outbound drilldown failed: {e}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Suspicious outbound drilldown failed: {e}") from e
 
 
 @app.get("/reports/{report_id}/drilldown/cross-segment")  # type: ignore[untyped-decorator]
@@ -426,9 +404,7 @@ async def drilldown_cross_segment(
     except Exception as e:
         logger.error("Cross-segment drilldown failed: %s", e)
         logger.error("Traceback:\n%s", traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"Cross-segment drilldown failed: {e}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Cross-segment drilldown failed: {e}") from e
 
 
 @app.get("/reports/{report_id}/connections")  # type: ignore[untyped-decorator]
@@ -488,9 +464,7 @@ async def filtered_connections(
     except Exception as e:
         logger.error("Filtered connections drilldown failed: %s", e)
         logger.error("Traceback:\n%s", traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"Filtered connections drilldown failed: {e}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Filtered connections drilldown failed: {e}") from e
 
 
 @app.get("/reports/{report_id}/devices")  # type: ignore[untyped-decorator]
@@ -527,9 +501,7 @@ async def filtered_devices(
     except Exception as e:
         logger.error("Filtered devices drilldown failed: %s", e)
         logger.error("Traceback:\n%s", traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"Filtered devices drilldown failed: {e}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Filtered devices drilldown failed: {e}") from e
 
 
 @app.get("/reports/{report_id}/services")  # type: ignore[untyped-decorator]
@@ -566,9 +538,7 @@ async def filtered_services(
     except Exception as e:
         logger.error("Filtered services drilldown failed: %s", e)
         logger.error("Traceback:\n%s", traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"Filtered services drilldown failed: {e}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Filtered services drilldown failed: {e}") from e
 
 
 @app.post("/analyze")  # type: ignore[untyped-decorator]
@@ -648,10 +618,7 @@ if __name__ == "__main__":
         "--output",
         type=str,
         default=os.environ.get("REPORT_OUTPUT"),
-        help=(
-            "Output path for JSON report "
-            "(can also use REPORT_OUTPUT env var, default: stdout)"
-        ),
+        help=("Output path for JSON report (can also use REPORT_OUTPUT env var, default: stdout)"),
     )
 
     argument_parser.add_argument(

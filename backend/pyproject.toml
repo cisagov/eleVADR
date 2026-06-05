@@ -39,7 +39,7 @@ platforms = [
 ]
 
 [tool.ruff]
-line-length = 88
+line-length = 120
 target-version = "py314"
 extend-exclude = ["tests"]
 

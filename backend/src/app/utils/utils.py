@@ -20,19 +20,11 @@ def _normalize_categories(categories: Any) -> str | None:
     """
     if isinstance(categories, (list, np.ndarray)):
         # Filter out None/NaN from the list before joining
-        filtered_categories = [
-            str(x)
-            for x in categories
-            if x is not None and pd.notna(x) and str(x).strip() != ""
-        ]
+        filtered_categories = [str(x) for x in categories if x is not None and pd.notna(x) and str(x).strip() != ""]
         if not filtered_categories:
             return None  # Return None if no valid categories remain
         return ", ".join(filtered_categories)
-    elif (
-        categories is None
-        or pd.isna(categories)
-        or (isinstance(categories, str) and categories.strip() == "")
-    ):
+    elif categories is None or pd.isna(categories) or (isinstance(categories, str) and categories.strip() == ""):
         return None
     return str(categories)  # For single string values or other types
 
@@ -68,13 +60,9 @@ class PortType(Enum):
     """Define the status of the port for service analysis."""
 
     KNOWN = 0  # eleVADR has a known service mapping for this port
-    UNKNOWN_PRIV = (
-        1  # unknown service operating on a port less than 1024, the privileged range
-    )
+    UNKNOWN_PRIV = 1  # unknown service operating on a port less than 1024, the privileged range
     UNKNOWN = 2  # port between 1024 and 49152 without a mapping in eleVADR
-    EPHEMERAL = (
-        3  # ephemeral port, used for the client side of client-server communications
-    )
+    EPHEMERAL = 3  # ephemeral port, used for the client side of client-server communications
 
 
 # IP Processing Functions
@@ -106,10 +94,7 @@ def connection_type_processing(ip: str) -> str | None:
             return "multicast"
         elif ip_obj.is_link_local:
             return "link-local"
-        elif (
-            ip_obj.version == 4
-            and int.from_bytes(ip_obj.packed, byteorder="big") & 255 == 255
-        ):
+        elif ip_obj.version == 4 and int.from_bytes(ip_obj.packed, byteorder="big") & 255 == 255:
             return "broadcast"
         else:
             return "unicast"
@@ -173,9 +158,7 @@ def subnet_membership(
             try:
                 src_ip_v4 = ipaddress.IPv4Address(src_ip_str)
                 if src_ip_v4 != ipaddress.IPv4Address("0.0.0.0"):
-                    src_network_v4 = ipaddress.IPv4Network(
-                        f"{src_ip_v4}/24", strict=False
-                    )
+                    src_network_v4 = ipaddress.IPv4Network(f"{src_ip_v4}/24", strict=False)
                     src_subnet = str(src_network_v4)
             except ValueError, ipaddress.AddressValueError:
                 pass
@@ -185,9 +168,7 @@ def subnet_membership(
                     dst_subnet = src_subnet
                 elif dst_ip_str != "0.0.0.0":
                     dst_ip_v4 = ipaddress.IPv4Address(dst_ip_str)
-                    dst_network_v4 = ipaddress.IPv4Network(
-                        f"{dst_ip_v4}/24", strict=False
-                    )
+                    dst_network_v4 = ipaddress.IPv4Network(f"{dst_ip_v4}/24", strict=False)
                     dst_subnet = str(dst_network_v4)
             except ValueError, ipaddress.AddressValueError:
                 pass
@@ -195,16 +176,12 @@ def subnet_membership(
             try:
                 src_ip_v6 = ipaddress.IPv6Address(src_ip_str)
                 if src_ip_v6 != ipaddress.IPv6Address("::"):
-                    src_network_v6 = ipaddress.IPv6Network(
-                        f"{src_ip_v6}/64", strict=False
-                    )
+                    src_network_v6 = ipaddress.IPv6Network(f"{src_ip_v6}/64", strict=False)
                     src_subnet = str(src_network_v6)
 
                 if dst_ip_str != "::":
                     dst_ip_v6 = ipaddress.IPv6Address(dst_ip_str)
-                    dst_network_v6 = ipaddress.IPv6Network(
-                        f"{dst_ip_v6}/64", strict=False
-                    )
+                    dst_network_v6 = ipaddress.IPv6Network(f"{dst_ip_v6}/64", strict=False)
                     dst_subnet = str(dst_network_v6)
             except ValueError, ipaddress.AddressValueError:
                 pass
@@ -217,9 +194,7 @@ def subnet_membership(
 # Service Processing Functions
 
 
-def service_processing(
-    row: pd.Series, ports_df: pd.DataFrame, port_risk_df: pd.DataFrame
-) -> pd.Series:
+def service_processing(row: pd.Series, ports_df: pd.DataFrame, port_risk_df: pd.DataFrame) -> pd.Series:
     """Map port to service name and enrich with risk information."""
     port = row["dst_endpoint.port"]
     # port_str = str(port) # No longer strictly needed for lookups on 'port' column
@@ -233,9 +208,7 @@ def service_processing(
     row["service.risk_basis"] = None
     row["service.environment_exposure"] = None
     row["service.protocol_posture"] = None
-    row["service.port_type"] = (
-        None  # Will be set to KNOWN if found, else UNKNOWN_PRIV/UNKNOWN/EPHEMERAL
-    )
+    row["service.port_type"] = None  # Will be set to KNOWN if found, else UNKNOWN_PRIV/UNKNOWN/EPHEMERAL
 
     # Flag to track if the port is "known" in either dataset
     is_known_port = False
@@ -262,12 +235,8 @@ def service_processing(
             raise ValueError(f"Port {port} does not have a service name defined!")
 
         row["service.description"] = port_risk_row["description"]
-        row["service.information_categories"] = _normalize_categories(
-            port_risk_row["information_categories"]
-        )
-        row["service.risk_categories"] = _normalize_categories(
-            port_risk_row["risk_categories"]
-        )
+        row["service.information_categories"] = _normalize_categories(port_risk_row["information_categories"])
+        row["service.risk_categories"] = _normalize_categories(port_risk_row["risk_categories"])
         row["service.risk_basis"] = port_risk_row.get("risk_basis")
         row["service.environment_exposure"] = port_risk_row.get("environment_exposure")
         row["service.protocol_posture"] = port_risk_row.get("protocol_posture")
@@ -287,12 +256,8 @@ def service_processing(
         if int(port) < 1024:
             row["service.port_type"] = PortType.UNKNOWN_PRIV.name
             row["service.name"] = PortType.UNKNOWN_PRIV.name + " " + str(port)
-            row["service.description"] = (
-                "Unassigned well-known port number; this port should not be used."
-            )
-            row["service.risk_categories"] = _normalize_categories(
-                ["Legacy Protocol", "Unknown Service"]
-            )
+            row["service.description"] = "Unassigned well-known port number; this port should not be used."
+            row["service.risk_categories"] = _normalize_categories(["Legacy Protocol", "Unknown Service"])
         elif int(port) < 49151:
             row["service.port_type"] = PortType.UNKNOWN.name
             row["service.name"] = PortType.UNKNOWN.name + " " + str(port)
@@ -311,11 +276,7 @@ def service_processing(
 
     # Ensure name is never None regardless of lookup path
     if row["service.name"] is None:
-        row["service.name"] = (
-            f"{row['service.port_type']} {port}"
-            if row["service.port_type"]
-            else f"UNKNOWN {port}"
-        )
+        row["service.name"] = f"{row['service.port_type']} {port}" if row["service.port_type"] else f"UNKNOWN {port}"
 
     return row
 
@@ -357,8 +318,7 @@ def is_using_ot_services(row: pd.Series, traffic_df: pd.DataFrame) -> bool:
         return False
 
     device_traffic = traffic_df[
-        traffic_df["src_endpoint.ip"].isin(ips_to_check)
-        | traffic_df["dst_endpoint.ip"].isin(ips_to_check)
+        traffic_df["src_endpoint.ip"].isin(ips_to_check) | traffic_df["dst_endpoint.ip"].isin(ips_to_check)
     ]
 
     if device_traffic.empty:
@@ -367,9 +327,7 @@ def is_using_ot_services(row: pd.Series, traffic_df: pd.DataFrame) -> bool:
     return bool(device_traffic["service.is_ot"].any())
 
 
-def is_communicating_with_ot_hosts(
-    row: pd.Series, traffic_df: pd.DataFrame, ot_ips: set[str]
-) -> pd.Series:
+def is_communicating_with_ot_hosts(row: pd.Series, traffic_df: pd.DataFrame, ot_ips: set[str]) -> pd.Series:
     """Check if non-OT device communicates with known OT devices."""
     if row.get("device.is_ot") is True:
         return row
@@ -387,13 +345,10 @@ def is_communicating_with_ot_hosts(
         return row
 
     device_traffic = traffic_df[
-        traffic_df["src_endpoint.ip"].isin(device_ips)
-        | traffic_df["dst_endpoint.ip"].isin(device_ips)
+        traffic_df["src_endpoint.ip"].isin(device_ips) | traffic_df["dst_endpoint.ip"].isin(device_ips)
     ]
 
-    connected_ips = set(device_traffic["src_endpoint.ip"]) | set(
-        device_traffic["dst_endpoint.ip"]
-    )
+    connected_ips = set(device_traffic["src_endpoint.ip"]) | set(device_traffic["dst_endpoint.ip"])
     connected_ips -= set(device_ips)
 
     if not connected_ips.isdisjoint(ot_ips):

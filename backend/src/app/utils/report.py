@@ -45,15 +45,11 @@ class Report:
             # Table Analysis Modules
             SuspiciousOutboundConnectionsModule(analyzer),
             OTcrossSegmentLinesModule(analyzer),
-            DevicesModule(
-                analyzer, name="ot_devices", device_filter=lambda df: df["device.is_ot"]
-            ),
+            DevicesModule(analyzer, name="ot_devices", device_filter=lambda df: df["device.is_ot"]),
             DevicesModule(
                 analyzer,
                 name="it_devices",
-                device_filter=lambda df: (
-                    (~df["device.is_ot"]) & (~df["device.is_edge"])
-                ),
+                device_filter=lambda df: (~df["device.is_ot"]) & (~df["device.is_edge"]),
             ),
             DevicesModule(
                 analyzer,
@@ -66,9 +62,7 @@ class Report:
 
         # Initialize detection modules
         self.detections = [
-            SuspiciousOutboundConnectionsDetection(
-                [self.modules["suspicious_outbound_connections_panel"]]
-            ),
+            SuspiciousOutboundConnectionsDetection([self.modules["suspicious_outbound_connections_panel"]]),
             OTcrossSegmentDetection(
                 [
                     self.modules["ot_cross_segment_lines_panel"],
@@ -88,9 +82,7 @@ class Report:
             "report_version": self.REPORT_VERSION,
             "report_id": self.report_id,
             "executive_summary": executive_summary,
-            "modules": {
-                module_name: module.data for module_name, module in self.modules.items()
-            },
+            "modules": {module_name: module.data for module_name, module in self.modules.items()},
             "arch_insights": {},
         }
 
@@ -157,10 +149,7 @@ class DevicePanelModule(ReportModule):
         """
         ot_hosts = self.endpoints_df[self.endpoints_df["device.is_ot"]]
         edge_hosts = self.endpoints_df[self.endpoints_df["device.is_edge"]]
-        it_hosts = self.endpoints_df[
-            (~self.endpoints_df["device.is_ot"])
-            & (~self.endpoints_df["device.is_edge"])
-        ]
+        it_hosts = self.endpoints_df[(~self.endpoints_df["device.is_ot"]) & (~self.endpoints_df["device.is_edge"])]
 
         return {
             "hosts": len(self.endpoints_df),
@@ -195,29 +184,21 @@ class ServicePanelModule(ReportModule):
             )
         ]
         # Known services
-        known_services = self.traffic_df[
-            self.traffic_df["service.port_type"].isin([PortType.KNOWN.name])
-        ]
+        known_services = self.traffic_df[self.traffic_df["service.port_type"].isin([PortType.KNOWN.name])]
 
         return {
             "num_known_services": len(known_services["service.name"].dropna().unique()),
             "num_ot_services": len(
                 self.services_df[
                     self.services_df["service.information_categories"].apply(
-                        lambda x: (
-                            "Industrial Protocol" in x if isinstance(x, str) else False
-                        )
+                        lambda x: "Industrial Protocol" in x if isinstance(x, str) else False
                     )
                 ]
             ),
             "num_risky_services": len(
-                self.services_df[self.services_df["service.risk_categories"].notna()][
-                    "service.name"
-                ].unique()
+                self.services_df[self.services_df["service.risk_categories"].notna()]["service.name"].unique()
             ),
-            "num_unknown_services": len(
-                unknown_services["service.name"].dropna().unique()
-            ),
+            "num_unknown_services": len(unknown_services["service.name"].dropna().unique()),
         }
 
 
@@ -241,12 +222,8 @@ class ServiceRiskBreakdownModule(ReportModule):
         }
 
         """
-        risk_category_counts = count_values_in_list_column(
-            self.services_df, "service.risk_categories"
-        )
-        risk_category_services = self.analyzer.service_category_map(
-            "service.risk_categories"
-        )
+        risk_category_counts = count_values_in_list_column(self.services_df, "service.risk_categories")
+        risk_category_services = self.analyzer.service_category_map("service.risk_categories")
 
         return {
             "risk_category_counts": risk_category_counts,
@@ -297,13 +274,11 @@ class ServiceCountModule(ReportModule):
             )
         ]
         # Known services
-        known_services = self.traffic_df[
-            self.traffic_df["service.port_type"].isin([PortType.KNOWN.name])
-        ]
+        known_services = self.traffic_df[self.traffic_df["service.port_type"].isin([PortType.KNOWN.name])]
 
-        service_total_count = len(
-            known_services["service.name"].dropna().unique()
-        ) + len(unknown_services["service.name"].dropna().unique())
+        service_total_count = len(known_services["service.name"].dropna().unique()) + len(
+            unknown_services["service.name"].dropna().unique()
+        )
 
         return {
             "service_count": service_total_count,
@@ -325,14 +300,10 @@ class RiskBasisBreakdownModule(ReportModule):
 
     def generate_data(self) -> dict[str, object]:
         """Return risk-basis counts and associated service names."""
-        known_services = self.services_df[
-            self.services_df["service.port_type"] == "KNOWN"
-        ]
+        known_services = self.services_df[self.services_df["service.port_type"] == "KNOWN"]
 
         # Count services per basis value, excluding nulls
-        basis_counts = (
-            known_services["service.risk_basis"].dropna().value_counts().to_dict()
-        )
+        basis_counts = known_services["service.risk_basis"].dropna().value_counts().to_dict()
 
         # Map each basis value to the services that carry it
         basis_service_map: dict[str, list[str]] = {}
@@ -362,24 +333,15 @@ class ExposureBreakdownModule(ReportModule):
 
     def generate_data(self) -> dict[str, object]:
         """Return exposure counts and associated service names."""
-        known_services = self.services_df[
-            self.services_df["service.port_type"] == "KNOWN"
-        ]
+        known_services = self.services_df[self.services_df["service.port_type"] == "KNOWN"]
 
-        exposure_counts = (
-            known_services["service.environment_exposure"]
-            .dropna()
-            .value_counts()
-            .to_dict()
-        )
+        exposure_counts = known_services["service.environment_exposure"].dropna().value_counts().to_dict()
 
         exposure_service_map: dict[str, list[str]] = {}
         for _, row in known_services.iterrows():
             exposure = row["service.environment_exposure"]
             if isinstance(exposure, str) and exposure:
-                exposure_service_map.setdefault(exposure, []).append(
-                    row["service.name"]
-                )
+                exposure_service_map.setdefault(exposure, []).append(row["service.name"])
 
         return {
             "exposure_counts": exposure_counts,
@@ -417,13 +379,9 @@ class ProtocolPostureModule(ReportModule):
 
     def generate_data(self) -> dict[str, object]:
         """Return protocol-posture counts and associated service names."""
-        known_services = self.services_df[
-            self.services_df["service.port_type"] == "KNOWN"
-        ]
+        known_services = self.services_df[self.services_df["service.port_type"] == "KNOWN"]
 
-        posture_counts = (
-            known_services["service.protocol_posture"].dropna().value_counts().to_dict()
-        )
+        posture_counts = known_services["service.protocol_posture"].dropna().value_counts().to_dict()
 
         posture_service_map: dict[str, list[str]] = {}
         for _, row in known_services.iterrows():
@@ -454,15 +412,9 @@ class SuspiciousOutboundConnectionsModule(ReportModule):
 
     def generate_data(self) -> list[dict[str, object]]:
         """Return grouped outbound OT connection records for reporting."""
-        outbound_traffic = self.traffic_df[
-            self.traffic_df["connection_info.direction_name"] == "outbound"
-        ]
+        outbound_traffic = self.traffic_df[self.traffic_df["connection_info.direction_name"] == "outbound"]
 
-        ot_join_col = (
-            "src_endpoint.mac"
-            if "src_endpoint.mac" in outbound_traffic.columns
-            else "dst_endpoint.mac"
-        )
+        ot_join_col = "src_endpoint.mac" if "src_endpoint.mac" in outbound_traffic.columns else "dst_endpoint.mac"
         outbound_traffic_w_ot = outbound_traffic.merge(
             self.endpoints_df["device.is_ot"],
             left_on=ot_join_col,
@@ -476,9 +428,7 @@ class SuspiciousOutboundConnectionsModule(ReportModule):
             "dst_endpoint.port",
             "service.name",
         ]
-        outbound_traffic_ot = outbound_traffic_w_ot[
-            outbound_traffic_w_ot["device.is_ot"].fillna(False)
-        ][display_cols]
+        outbound_traffic_ot = outbound_traffic_w_ot[outbound_traffic_w_ot["device.is_ot"].fillna(False)][display_cols]
         return list(
             outbound_traffic_ot.groupby(display_cols, sort=False)
             .size()
@@ -522,9 +472,7 @@ class DevicesModule(ReportModule):
 
         return self._prep_df_for_json(devices_df, device_columns)
 
-    def _prep_df_for_json(
-        self, df: pd.DataFrame, columns: dict[str, str]
-    ) -> list[dict[str, Any]]:
+    def _prep_df_for_json(self, df: pd.DataFrame, columns: dict[str, str]) -> list[dict[str, Any]]:
         """Prepare a dataframe for JSON serialization.
 
         Selects and renames columns before converting rows to records.
@@ -575,9 +523,7 @@ class OTServicesModule(ReportModule):
         return list(
             self.services_df[
                 self.services_df["service.information_categories"].apply(
-                    lambda x: (
-                        "Industrial Protocol" in x if isinstance(x, str) else False
-                    )
+                    lambda x: "Industrial Protocol" in x if isinstance(x, str) else False
                 )
             ].to_dict(orient="records")
         )
@@ -682,32 +628,23 @@ class OTcrossSegmentLinesModule(ReportModule):
         if cross_seg_df.empty:
             return empty_result
 
-        ot_macs = set(
-            self.endpoints_df[self.endpoints_df["device.is_ot"].fillna(False)].index
-        )
-        ot_mask = cross_seg_df["src_endpoint.mac"].isin(ot_macs) | cross_seg_df[
-            "dst_endpoint.mac"
-        ].isin(ot_macs)
+        ot_macs = set(self.endpoints_df[self.endpoints_df["device.is_ot"].fillna(False)].index)
+        ot_mask = cross_seg_df["src_endpoint.mac"].isin(ot_macs) | cross_seg_df["dst_endpoint.mac"].isin(ot_macs)
         ot_cross_seg_df = cross_seg_df[ot_mask].copy()
 
         if ot_cross_seg_df.empty:
             return empty_result
 
         ot_cross_seg_df = ot_cross_seg_df[
-            ot_cross_seg_df["src_endpoint.subnet"]
-            != ot_cross_seg_df["dst_endpoint.subnet"]
+            ot_cross_seg_df["src_endpoint.subnet"] != ot_cross_seg_df["dst_endpoint.subnet"]
         ].copy()
 
         if ot_cross_seg_df.empty:
             return empty_result
 
         ot_cross_seg_df = ot_cross_seg_df[
-            ~ot_cross_seg_df["src_endpoint.ip"].apply(
-                self._is_excluded_cross_segment_ip
-            )
-            & ~ot_cross_seg_df["dst_endpoint.ip"].apply(
-                self._is_excluded_cross_segment_ip
-            )
+            ~ot_cross_seg_df["src_endpoint.ip"].apply(self._is_excluded_cross_segment_ip)
+            & ~ot_cross_seg_df["dst_endpoint.ip"].apply(self._is_excluded_cross_segment_ip)
         ].copy()
 
         if ot_cross_seg_df.empty:
@@ -730,9 +667,7 @@ class OTcrossSegmentLinesModule(ReportModule):
         )
 
         subnet_pair_counts = list(
-            ot_cross_seg_df.groupby(
-                ["src_endpoint.subnet", "dst_endpoint.subnet"], sort=False
-            )
+            ot_cross_seg_df.groupby(["src_endpoint.subnet", "dst_endpoint.subnet"], sort=False)
             .size()
             .reset_index(name="count")
             .to_dict(orient="records")
@@ -863,8 +798,4 @@ class OTcrossSegmentDetection(DetectionModule):
         """Trip if any cross-segment OT lines are present."""
         module = self.report_modules[0]
         data = module.data
-        return (
-            isinstance(data, dict)
-            and isinstance(data.get("lines"), list)
-            and len(data["lines"]) > 0
-        )
+        return isinstance(data, dict) and isinstance(data.get("lines"), list) and len(data["lines"]) > 0

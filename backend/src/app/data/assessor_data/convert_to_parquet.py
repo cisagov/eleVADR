@@ -76,8 +76,7 @@ def convert(json_path: Path, parquet_path: Path) -> None:
                 raise e  # Re-raise the specific duplicate error
             else:
                 print(
-                    f"Warning: Skipping invalid port key '{key}' in "
-                    f"{json_path.name} due to: {e}",
+                    f"Warning: Skipping invalid port key '{key}' in {json_path.name} due to: {e}",
                     file=sys.stderr,
                 )
                 continue  # Skip this entry if it's just an invalid key format
@@ -104,10 +103,7 @@ def convert(json_path: Path, parquet_path: Path) -> None:
     reduction = (1 - parquet_size / json_size) * 100
 
     print(f"{json_path.name} -> {parquet_path.name}")
-    print(
-        f"  {json_size / 1024:.1f} KB -> {parquet_size / 1024:.1f} KB "
-        f"({reduction:.1f}% reduction)"
-    )
+    print(f"  {json_size / 1024:.1f} KB -> {parquet_size / 1024:.1f} KB ({reduction:.1f}% reduction)")
 
 
 if __name__ == "__main__":

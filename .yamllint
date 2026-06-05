@@ -43,7 +43,7 @@ rules:
     # This rule implies the allow-non-breakable-words rule
     allow-non-breakable-inline-mappings: true
     # Allows a 10% overage from the default limit of 80
-    max: 88
+    max: 120
 
   # Using anything other than strings to express octal values can lead to unexpected
   # and potentially unsafe behavior. Ansible strongly recommends against such practices

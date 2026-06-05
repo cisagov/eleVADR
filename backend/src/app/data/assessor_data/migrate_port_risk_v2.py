@@ -219,12 +219,8 @@ def migrate(input_path: Path, output_path: Path) -> None:
             "risk_categories": risk_cats,
             # New fields
             "risk_basis": infer_risk_basis(risk_cats, info_cats),
-            "environment_exposure": infer_environment_exposure(
-                risk_cats, info_cats, service_name
-            ),
-            "protocol_posture": infer_protocol_posture(
-                risk_cats, info_cats, service_name
-            ),
+            "environment_exposure": infer_environment_exposure(risk_cats, info_cats, service_name),
+            "protocol_posture": infer_protocol_posture(risk_cats, info_cats, service_name),
         }
 
     with open(output_path, "w") as f:
@@ -233,23 +229,13 @@ def migrate(input_path: Path, output_path: Path) -> None:
     # Print a summary so the operator knows what was inferred vs left null
     total = len(migrated)
     basis_null = sum(1 for v in migrated.values() if v.get("risk_basis") is None)
-    exposure_null = sum(
-        1 for v in migrated.values() if v.get("environment_exposure") is None
-    )
-    posture_null = sum(
-        1 for v in migrated.values() if v.get("protocol_posture") is None
-    )
+    exposure_null = sum(1 for v in migrated.values() if v.get("environment_exposure") is None)
+    posture_null = sum(1 for v in migrated.values() if v.get("protocol_posture") is None)
 
     print(f"Migrated {total} entries to {output_path}")
     print(f"  risk_basis       - inferred: {total - basis_null:>4}, null: {basis_null}")
-    print(
-        f"  environment_exposure - inferred: {total - exposure_null:>4}, "
-        f"null: {exposure_null}"
-    )
-    print(
-        f"  protocol_posture - inferred: {total - posture_null:>4}, "
-        f"null: {posture_null}"
-    )
+    print(f"  environment_exposure - inferred: {total - exposure_null:>4}, null: {exposure_null}")
+    print(f"  protocol_posture - inferred: {total - posture_null:>4}, null: {posture_null}")
     print("Review null entries and populate from VM reports.")
 
 

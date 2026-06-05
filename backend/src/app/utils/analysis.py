@@ -38,9 +38,7 @@ class PcapParser:
         if file_path_info.path_to_zeek is None:
             raise ValueError("path_to_zeek must be provided.")
         self.pcap_filename = Path(file_path_info.path_to_pcap).stem
-        self.upload_output_zeek_dir = (
-            Path(file_path_info.path_to_zeek) / self.pcap_filename
-        )
+        self.upload_output_zeek_dir = Path(file_path_info.path_to_zeek) / self.pcap_filename
 
         # Define traffic dataframe schema
         traffic_df_schema = {
@@ -76,9 +74,7 @@ class PcapParser:
             "service.protocol_posture": str,
             "service.is_ot": bool,  # CUSTOM
         }
-        self.traffic_df = pd.DataFrame(columns=traffic_df_schema.keys()).astype(
-            traffic_df_schema
-        )
+        self.traffic_df = pd.DataFrame(columns=traffic_df_schema.keys()).astype(traffic_df_schema)
 
     def parse(self) -> None:
         """Execute Zeek processing and load results into dataframes."""
@@ -92,9 +88,7 @@ class PcapParser:
         try:
             conn_df = log_to_df.create_dataframe(str(conn_log_path))
         except Exception as exc:
-            raise OSError(
-                f"Could not read/access zeek log file: {conn_log_path}"
-            ) from exc
+            raise OSError(f"Could not read/access zeek log file: {conn_log_path}") from exc
 
         # Map Zeek columns to traffic_df schema
         conn_df_mappings = {
@@ -109,9 +103,7 @@ class PcapParser:
             "history": "connection_info.history",
         }
         mapped_conn_df = conn_df.rename(columns=conn_df_mappings)
-        available_columns = [
-            column for column in conn_df_mappings.values() if column in mapped_conn_df
-        ]
+        available_columns = [column for column in conn_df_mappings.values() if column in mapped_conn_df]
         if available_columns:
             self.traffic_df = pd.concat(
                 [self.traffic_df, mapped_conn_df[available_columns]],
@@ -136,9 +128,7 @@ class PcapParser:
             "device.sent_ports": object,
             "device.incoming_ports": object,
         }
-        self.endpoints_df = pd.DataFrame(columns=endpoints_df_schema.keys()).astype(
-            endpoints_df_schema
-        )
+        self.endpoints_df = pd.DataFrame(columns=endpoints_df_schema.keys()).astype(endpoints_df_schema)
 
         services_df_schema = {
             "service.name": str,  # CUSTOM
@@ -153,9 +143,7 @@ class PcapParser:
             "service.protocol_posture": str,
             "service.is_ot": bool,  # CUSTOM
         }
-        self.services_df = pd.DataFrame(columns=services_df_schema.keys()).astype(
-            services_df_schema
-        )
+        self.services_df = pd.DataFrame(columns=services_df_schema.keys()).astype(services_df_schema)
 
     def zeekify(self) -> None:
         """Execute PCAP analysis using Zeek."""
@@ -208,9 +196,7 @@ class Analyzer:
         if ip_obj.is_link_local or ip_obj.is_multicast:
             return True
 
-        if isinstance(
-            ip_obj, ipaddress.IPv4Address
-        ) and ip_obj == ipaddress.IPv4Address("255.255.255.255"):
+        if isinstance(ip_obj, ipaddress.IPv4Address) and ip_obj == ipaddress.IPv4Address("255.255.255.255"):
             return True
 
         return False
@@ -224,10 +210,7 @@ class Analyzer:
             ~excluded_ip_mask
             & self.traffic_df["src_endpoint.subnet"].notna()
             & self.traffic_df["dst_endpoint.subnet"].notna()
-            & (
-                self.traffic_df["dst_endpoint.subnet"]
-                != self.traffic_df["src_endpoint.subnet"]
-            )
+            & (self.traffic_df["dst_endpoint.subnet"] != self.traffic_df["src_endpoint.subnet"])
         ]
 
     def __init__(
@@ -266,19 +249,15 @@ class Analyzer:
             return
 
         # IP version (4, 6 or 99 for invalid)
-        self.traffic_df["connection_info.protocol_ver_id"] = self.traffic_df[
-            "src_endpoint.ip"
-        ].apply(check_ip_version)
+        self.traffic_df["connection_info.protocol_ver_id"] = self.traffic_df["src_endpoint.ip"].apply(check_ip_version)
 
         # Connection type (multicast, broadcast, unicast)
-        self.traffic_df["connection_info.type_name"] = self.traffic_df[
-            "dst_endpoint.ip"
-        ].apply(connection_type_processing)
+        self.traffic_df["connection_info.type_name"] = self.traffic_df["dst_endpoint.ip"].apply(
+            connection_type_processing
+        )
 
         # Traffic direction (inbound, outbound, lateral, external, or other)
-        self.traffic_df["connection_info.direction_name"] = self.traffic_df.apply(
-            traffic_direction, axis=1
-        )
+        self.traffic_df["connection_info.direction_name"] = self.traffic_df.apply(traffic_direction, axis=1)
 
         # If the dataframe became empty after the above transformations
         # (e.g., all rows were filtered out by a custom ``traffic_direction``)
@@ -304,22 +283,16 @@ class Analyzer:
         def _filter_specified_ips(df: pd.DataFrame, ip_col: str) -> pd.DataFrame:
             return df[~df[ip_col].isin(["0.0.0.0", "::"])]
 
-        unicast_traffic = self.traffic_df[
-            self.traffic_df["connection_info.type_name"] == "unicast"
-        ]
+        unicast_traffic = self.traffic_df[self.traffic_df["connection_info.type_name"] == "unicast"]
 
-        src = unicast_traffic[
-            ["src_endpoint.ip", "src_endpoint.mac", "src_endpoint.subnet"]
-        ].rename(
+        src = unicast_traffic[["src_endpoint.ip", "src_endpoint.mac", "src_endpoint.subnet"]].rename(
             columns={
                 "src_endpoint.ip": "ip",
                 "src_endpoint.mac": "mac",
                 "src_endpoint.subnet": "subnet",
             }
         )
-        dst = unicast_traffic[
-            ["dst_endpoint.ip", "dst_endpoint.mac", "dst_endpoint.subnet"]
-        ].rename(
+        dst = unicast_traffic[["dst_endpoint.ip", "dst_endpoint.mac", "dst_endpoint.subnet"]].rename(
             columns={
                 "dst_endpoint.ip": "ip",
                 "dst_endpoint.mac": "mac",
@@ -334,9 +307,7 @@ class Analyzer:
         ip_map = ip_map[~ip_map["ip"].isin(["0.0.0.0", "::"])]
 
         if ip_map.empty:
-            self.endpoints_df = pd.DataFrame().set_index(
-                pd.Index([], name="device.mac")
-            )
+            self.endpoints_df = pd.DataFrame().set_index(pd.Index([], name="device.mac"))
             return
 
         # Filter traffic to exclude unspecified IPs
@@ -374,47 +345,25 @@ class Analyzer:
             res: dict[str, object] = {}
             all_ips = group["ip"].dropna().unique()
             all_ips = [ip for ip in all_ips if ip not in ("0.0.0.0", "::")]
-            res["device.ipv4_ips"] = [
-                ip for ip in all_ips if check_ip_version(ip) == 4
-            ] or np.nan
-            res["device.ipv6_ips"] = [
-                ip for ip in all_ips if check_ip_version(ip) == 6
-            ] or np.nan
+            res["device.ipv4_ips"] = [ip for ip in all_ips if check_ip_version(ip) == 4] or np.nan
+            res["device.ipv6_ips"] = [ip for ip in all_ips if check_ip_version(ip) == 6] or np.nan
 
             ipv4_subnets = (
-                group[
-                    group["ip"].apply(
-                        lambda x: (
-                            check_ip_version(x) == 4 and x not in ("0.0.0.0", "::")
-                        )
-                    )
-                ]["subnet"]
+                group[group["ip"].apply(lambda x: check_ip_version(x) == 4 and x not in ("0.0.0.0", "::"))]["subnet"]
                 .dropna()
                 .unique()
             )
 
             ipv6_subnets = (
-                group[
-                    group["ip"].apply(
-                        lambda x: (
-                            check_ip_version(x) == 6 and x not in ("0.0.0.0", "::")
-                        )
-                    )
-                ]["subnet"]
+                group[group["ip"].apply(lambda x: check_ip_version(x) == 6 and x not in ("0.0.0.0", "::"))]["subnet"]
                 .dropna()
                 .unique()
             )
 
-            res["device.ipv4_subnets"] = (
-                list(ipv4_subnets) if len(ipv4_subnets) > 0 else np.nan
-            )
-            res["device.ipv6_subnets"] = (
-                list(ipv6_subnets) if len(ipv6_subnets) > 0 else np.nan
-            )
+            res["device.ipv4_subnets"] = list(ipv4_subnets) if len(ipv4_subnets) > 0 else np.nan
+            res["device.ipv6_subnets"] = list(ipv6_subnets) if len(ipv6_subnets) > 0 else np.nan
 
-            res["device.incoming_services"] = agg_unique_items(
-                group["incoming_services"]
-            )
+            res["device.incoming_services"] = agg_unique_items(group["incoming_services"])
             res["device.sent_services"] = agg_unique_items(group["sent_services"])
             res["device.incoming_ports"] = agg_unique_items(group["incoming_ports"])
             res["device.sent_ports"] = agg_unique_items(group["sent_ports"])
@@ -428,10 +377,7 @@ class Analyzer:
             .rename(columns={"mac": "device.mac"})
         )
 
-        endpoints_df = endpoints_df[
-            endpoints_df["device.ipv4_ips"].notna()
-            | endpoints_df["device.ipv6_ips"].notna()
-        ]
+        endpoints_df = endpoints_df[endpoints_df["device.ipv4_ips"].notna() | endpoints_df["device.ipv6_ips"].notna()]
 
         # Add manufacturer information
         manufacturers_df = getattr(
@@ -439,9 +385,7 @@ class Analyzer:
             "manufacturers_df",
             pd.DataFrame(columns=["manufacturer"]),
         )
-        endpoints_df = endpoints_df.apply(
-            lambda row: set_manufacturers(row, manufacturers_df), axis=1
-        )
+        endpoints_df = endpoints_df.apply(lambda row: set_manufacturers(row, manufacturers_df), axis=1)
 
         self.endpoints_df = endpoints_df.set_index("device.mac")
 
@@ -464,16 +408,8 @@ class Analyzer:
             lambda row: any(
                 is_public_ip(ip)
                 for ip in (
-                    (
-                        row.get("device.ipv4_ips")
-                        if isinstance(row.get("device.ipv4_ips"), list)
-                        else []
-                    )
-                    + (
-                        row.get("device.ipv6_ips")
-                        if isinstance(row.get("device.ipv6_ips"), list)
-                        else []
-                    )
+                    (row.get("device.ipv4_ips") if isinstance(row.get("device.ipv4_ips"), list) else [])
+                    + (row.get("device.ipv6_ips") if isinstance(row.get("device.ipv6_ips"), list) else [])
                 )
             ),
             axis=1,
@@ -501,19 +437,15 @@ class Analyzer:
         ]
         for col in category_cols:
             self.services_df[col] = self.services_df[col].apply(
-                lambda x: (
-                    ", ".join(x)
-                    if isinstance(x, (list, np.ndarray))
-                    else (x if pd.notna(x) else None)
-                )
+                lambda x: ", ".join(x) if isinstance(x, (list, np.ndarray)) else (x if pd.notna(x) else None)
             )
 
         # Deduplicate by service name, preferring rows with the most populated fields.
         # Sort so that rows with risk_categories
         # populated sort before nulls, then keep first.
-        self.services_df = self.services_df.sort_values(
-            "service.risk_categories", na_position="last"
-        ).drop_duplicates(subset=["service.name"], keep="first")
+        self.services_df = self.services_df.sort_values("service.risk_categories", na_position="last").drop_duplicates(
+            subset=["service.name"], keep="first"
+        )
 
         self.services_df = self.services_df.replace({np.nan: None})
 
@@ -554,14 +486,10 @@ class Analyzer:
         # Special handling for manufacturers dataframe
         self.manufacturers_df.index = self.manufacturers_df.index.rename("oui")
         if 0 in self.manufacturers_df.columns:
-            self.manufacturers_df = self.manufacturers_df.rename(
-                columns={0: "manufacturer"}
-            )
+            self.manufacturers_df = self.manufacturers_df.rename(columns={0: "manufacturer"})
         elif "manufacturer" not in self.manufacturers_df.columns:
             first_column = self.manufacturers_df.columns[0]
-            self.manufacturers_df = self.manufacturers_df.rename(
-                columns={first_column: "manufacturer"}
-            )
+            self.manufacturers_df = self.manufacturers_df.rename(columns={first_column: "manufacturer"})
 
     # Report Analysis Methods
 
@@ -592,16 +520,12 @@ class Analyzer:
                 ]
             )
         ]
-        known_services = self.traffic_df[
-            self.traffic_df["service.port_type"].isin([PortType.KNOWN.name])
-        ]
+        known_services = self.traffic_df[self.traffic_df["service.port_type"].isin([PortType.KNOWN.name])]
 
         # For known services, group by name and port
         if not known_services.empty:
             known_service_counts = (
-                known_services.groupby(["service.name", "dst_endpoint.port"])
-                .size()
-                .reset_index(name="count")
+                known_services.groupby(["service.name", "dst_endpoint.port"]).size().reset_index(name="count")
             )
             known_service_counts = known_service_counts.rename(
                 columns={"service.name": "name", "dst_endpoint.port": "port"}
@@ -612,9 +536,7 @@ class Analyzer:
 
         # For unknown services, the name already
         # includes the port, so value_counts is fine
-        unnamed_service_counts = (
-            unknown_services["service.name"].value_counts().to_dict()
-        )
+        unnamed_service_counts = unknown_services["service.name"].value_counts().to_dict()
         return {
             "known_services": named_service_counts,
             "unknown_services": unnamed_service_counts,
@@ -626,9 +548,7 @@ class Analyzer:
         for _, row in self.services_df.iterrows():
             categories = row[category]
             if isinstance(categories, str) and categories.strip():
-                split_categories = [
-                    cat.strip() for cat in categories.split(",") if cat.strip()
-                ]
+                split_categories = [cat.strip() for cat in categories.split(",") if cat.strip()]
                 for cat in split_categories:
                     service_names = category_map.setdefault(cat, [])
                     service_name = row["service.name"]
@@ -720,9 +640,7 @@ class Analyzer:
 
         df = self.traffic_df[selected_columns].copy()
 
-        df["success"] = df["connection_info.activity_name"].apply(
-            self._is_successful_conn_state
-        )
+        df["success"] = df["connection_info.activity_name"].apply(self._is_successful_conn_state)
         df = df.rename(
             columns={
                 "connection_info.activity_name": "state",
@@ -767,16 +685,8 @@ class Analyzer:
         endpoints_reset = self.endpoints_df.reset_index()
         for _, row in endpoints_reset.iterrows():
             endpoint_mac = row.get("device.mac")
-            ipv4_ips = (
-                row.get("device.ipv4_ips")
-                if isinstance(row.get("device.ipv4_ips"), list)
-                else []
-            )
-            ipv6_ips = (
-                row.get("device.ipv6_ips")
-                if isinstance(row.get("device.ipv6_ips"), list)
-                else []
-            )
+            ipv4_ips = row.get("device.ipv4_ips") if isinstance(row.get("device.ipv4_ips"), list) else []
+            ipv6_ips = row.get("device.ipv6_ips") if isinstance(row.get("device.ipv6_ips"), list) else []
             for ip in [*ipv4_ips, *ipv6_ips]:
                 if not isinstance(ip, str) or not ip:
                     continue
@@ -841,9 +751,7 @@ class Analyzer:
             selected_columns.append("dst_endpoint.subnet")
 
         df = self.traffic_df[selected_columns].copy()
-        df["success"] = df["connection_info.activity_name"].apply(
-            self._is_successful_conn_state
-        )
+        df["success"] = df["connection_info.activity_name"].apply(self._is_successful_conn_state)
         df = df.rename(
             columns={
                 "connection_info.activity_name": "state",
@@ -900,9 +808,7 @@ class Analyzer:
         return df
 
     @staticmethod
-    def _finalize_connection_detail_df(
-        df: pd.DataFrame, limit: int
-    ) -> list[dict[str, object]]:
+    def _finalize_connection_detail_df(df: pd.DataFrame, limit: int) -> list[dict[str, object]]:
         """Sort, cap, and serialize connection detail rows."""
         if limit <= 0 or df.empty:
             return []
@@ -923,9 +829,7 @@ class Analyzer:
 
         return list(df.replace({np.nan: None}).to_dict("records"))
 
-    def service_connection_lines(
-        self, service_name: str, limit: int = 500
-    ) -> list[dict[str, object]]:
+    def service_connection_lines(self, service_name: str, limit: int = 500) -> list[dict[str, object]]:
         """Return detailed connection rows for a specific service."""
         if limit <= 0 or self.traffic_df.empty:
             return []
@@ -934,9 +838,7 @@ class Analyzer:
         df = df[df["service.name"] == service_name]
         return self._finalize_connection_detail_df(df, limit)
 
-    def connections_by_state(
-        self, state: str, limit: int = 500
-    ) -> list[dict[str, object]]:
+    def connections_by_state(self, state: str, limit: int = 500) -> list[dict[str, object]]:
         """Return detailed connection rows for a specific Zeek state."""
         if limit <= 0 or self.traffic_df.empty:
             return []
@@ -1039,10 +941,7 @@ class Analyzer:
                 if "dst_device.manufacturer" in df.columns
                 else pd.Series("", index=df.index)
             )
-            df = df[
-                (src_manufacturer == manufacturer_lower)
-                | (dst_manufacturer == manufacturer_lower)
-            ]
+            df = df[(src_manufacturer == manufacturer_lower) | (dst_manufacturer == manufacturer_lower)]
         if service_name:
             df = df[df["service.name"] == service_name]
         if connection_state:
@@ -1082,23 +981,16 @@ class Analyzer:
         df = self.endpoints_df.reset_index().copy()
 
         if manufacturer:
-            df = df[
-                df["device.manufacturer"].fillna("").astype(str).str.lower()
-                == manufacturer.lower()
-            ]
+            df = df[df["device.manufacturer"].fillna("").astype(str).str.lower() == manufacturer.lower()]
 
         if subnet:
 
             def _row_has_subnet(row: pd.Series) -> bool:
                 ipv4_subnets = (
-                    row.get("device.ipv4_subnets")
-                    if isinstance(row.get("device.ipv4_subnets"), list)
-                    else []
+                    row.get("device.ipv4_subnets") if isinstance(row.get("device.ipv4_subnets"), list) else []
                 )
                 ipv6_subnets = (
-                    row.get("device.ipv6_subnets")
-                    if isinstance(row.get("device.ipv6_subnets"), list)
-                    else []
+                    row.get("device.ipv6_subnets") if isinstance(row.get("device.ipv6_subnets"), list) else []
                 )
                 return subnet in [*ipv4_subnets, *ipv6_subnets]
 
@@ -1108,15 +1000,9 @@ class Analyzer:
 
             def _row_has_service(row: pd.Series) -> bool:
                 incoming = (
-                    row.get("device.incoming_services")
-                    if isinstance(row.get("device.incoming_services"), list)
-                    else []
+                    row.get("device.incoming_services") if isinstance(row.get("device.incoming_services"), list) else []
                 )
-                sent = (
-                    row.get("device.sent_services")
-                    if isinstance(row.get("device.sent_services"), list)
-                    else []
-                )
+                sent = row.get("device.sent_services") if isinstance(row.get("device.sent_services"), list) else []
                 return service_name in [*incoming, *sent]
 
             df = df[df.apply(_row_has_service, axis=1)]
@@ -1166,13 +1052,7 @@ class Analyzer:
                 df["service.risk_categories"]
                 .fillna("")
                 .astype(str)
-                .apply(
-                    lambda value: (
-                        risk_category in [item.strip() for item in value.split(",")]
-                        if value
-                        else False
-                    )
-                )
+                .apply(lambda value: risk_category in [item.strip() for item in value.split(",")] if value else False)
             ]
 
         if service_name:
@@ -1183,44 +1063,31 @@ class Analyzer:
             if subnet:
                 subnet_mask = pd.Series(False, index=allowed_connections.index)
                 if "src_endpoint.subnet" in allowed_connections.columns:
-                    subnet_mask = subnet_mask | (
-                        allowed_connections["src_endpoint.subnet"] == subnet
-                    )
+                    subnet_mask = subnet_mask | (allowed_connections["src_endpoint.subnet"] == subnet)
                 if "dst_endpoint.subnet" in allowed_connections.columns:
-                    subnet_mask = subnet_mask | (
-                        allowed_connections["dst_endpoint.subnet"] == subnet
-                    )
+                    subnet_mask = subnet_mask | (allowed_connections["dst_endpoint.subnet"] == subnet)
                 allowed_connections = allowed_connections[subnet_mask]
             if manufacturer:
                 manufacturer_lower = manufacturer.lower()
                 src_manufacturer = (
-                    allowed_connections["src_device.manufacturer"]
-                    .fillna("")
-                    .astype(str)
-                    .str.lower()
+                    allowed_connections["src_device.manufacturer"].fillna("").astype(str).str.lower()
                     if "src_device.manufacturer" in allowed_connections.columns
                     else pd.Series("", index=allowed_connections.index)
                 )
                 dst_manufacturer = (
-                    allowed_connections["dst_device.manufacturer"]
-                    .fillna("")
-                    .astype(str)
-                    .str.lower()
+                    allowed_connections["dst_device.manufacturer"].fillna("").astype(str).str.lower()
                     if "dst_device.manufacturer" in allowed_connections.columns
                     else pd.Series("", index=allowed_connections.index)
                 )
                 allowed_connections = allowed_connections[
-                    (src_manufacturer == manufacturer_lower)
-                    | (dst_manufacturer == manufacturer_lower)
+                    (src_manufacturer == manufacturer_lower) | (dst_manufacturer == manufacturer_lower)
                 ]
             if device_ip:
                 allowed_connections = allowed_connections[
                     (allowed_connections["src_endpoint.ip"] == device_ip)
                     | (allowed_connections["dst_endpoint.ip"] == device_ip)
                 ]
-            allowed_service_names = set(
-                allowed_connections["service.name"].dropna().unique()
-            )
+            allowed_service_names = set(allowed_connections["service.name"].dropna().unique())
             df = df[df["service.name"].isin(allowed_service_names)]
 
         return list(df.replace({np.nan: None}).to_dict("records"))
