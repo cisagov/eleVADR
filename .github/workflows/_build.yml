@@ -201,7 +201,7 @@ jobs:
 
       - name: Reconstruct Image from Cache
         id: docker_reconstruct
-        uses: docker/build-push-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
         with:
           context: ./${{ inputs.component }}
           file: ./${{ inputs.component }}/Dockerfile
@@ -331,7 +331,7 @@ jobs:
 
       - name: Build and Push Platform Images to Registries
         id: docker_push
-        uses: docker/build-push-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
         with:
           context: ./${{ inputs.component }}
           file: ./${{ inputs.component }}/Dockerfile
