@@ -241,7 +241,7 @@ jobs:
         if: inputs.runtime == 'python'
         uses: actions/setup-python@v6
         with:
-          python-version-file: pyproject.toml
+          python-version-file: backend/pyproject.toml
       - id: setup-uv
         if: inputs.runtime == 'python'
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
