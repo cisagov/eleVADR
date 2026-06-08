@@ -2,12 +2,28 @@ FROM ubuntu:26.04
 
 USER root
 
-RUN mkdir -p /etc/apt/keyrings
-
+# Combine packages installation and configure locale in a single layer
 RUN apt-get update && apt-get install --no-install-recommends -y \
-        ca-certificates curl gnupg2 lsb-release wget software-properties-common git gh\
-    && add-apt-repository -y universe
+        ca-certificates \
+        curl \
+        gnupg2 \
+        lsb-release \
+        wget \
+        software-properties-common \
+        git \
+        gh \
+        vim \
+        sudo \
+        openssh-client \
+        locales \
+        build-essential \
+    && add-apt-repository -y universe \
+    && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8 \
+    && rm -rf /var/lib/apt/lists/*
 
+# Install Docker CLI and Compose Plugin inside container with CA handling
 RUN --mount=type=secret,id=ca_cert,required=false \
     set -eu; \
     CERT_INSTALLED=0; \
@@ -17,10 +33,10 @@ RUN --mount=type=secret,id=ca_cert,required=false \
         CERT_INSTALLED=1; \
     fi; \
     . /etc/os-release; \
+    mkdir -p /etc/apt/keyrings; \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
     gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
-    apt-get update \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
         https://download.docker.com/linux/ubuntu ${VERSION_CODENAME} stable" \
         > /etc/apt/sources.list.d/docker.list \
     && apt-get update \
@@ -32,28 +48,25 @@ RUN --mount=type=secret,id=ca_cert,required=false \
         update-ca-certificates --fresh; \
     fi
 
-RUN apt-get update && apt-get install --no-install-recommends -y \
-        git \
-        vim \
-        sudo \
-        openssh-client \
-        locales \
-        build-essential \
-    && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
-    && locale-gen en_US.UTF-8 \
-    && update-locale LANG=en_US.UTF-8 \
-    && rm -rf /var/lib/apt/lists/*
-
+# Create non-root developer user
 RUN useradd -m -s /bin/bash elevadr \
     && echo "elevadr ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt, /usr/sbin/update-ca-certificates" \
         > /etc/sudoers.d/elevadr \
     && chmod 0440 /etc/sudoers.d/elevadr
 
-COPY --chown=elevadr:elevadr --from=zeek/zeek@sha256:a89555858fb4e48fd8dc8a943ed280c0e414b170270b3bc6847653597d3fab03 /usr/local/zeek /bin/
-COPY --chown=elevadr:elevadr --from=ghcr.io/astral-sh/uv:python3.14-trixie-slim /usr/local/bin/uv /usr/local/bin/uvx /bin/
-COPY --chown=elevadr:elevadr --from=ghcr.io/pnpm/pnpm:11 /opt/pnpm /bin/
-COPY --chown=elevadr:elevadr --from=rust:slim-trixie /usr/local/cargo/bin /bin/
+# Copy tooling from official images cleanly
+COPY --link --from=zeek/zeek:8.0.5 /usr/local/zeek /usr/local/zeek
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+COPY --link --from=ghcr.io/pnpm/pnpm:11 /opt/pnpm /usr/local/bin/
 
+# Copy cargo & rustup completely to ensure toolchain functions correctly
+COPY --link --from=rust:slim-trixie /usr/local/cargo /usr/local/cargo
+COPY --link --from=rust:slim-trixie /usr/local/rustup /usr/local/rustup
+
+# Environment configurations
+ENV CARGO_HOME=/usr/local/cargo
+ENV RUSTUP_HOME=/usr/local/rustup
+ENV PATH="/usr/local/zeek/bin:/usr/local/cargo/bin:${PATH}"
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 ENV LANG=en_US.UTF-8

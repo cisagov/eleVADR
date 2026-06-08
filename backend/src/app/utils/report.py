@@ -5,16 +5,16 @@ import ipaddress
 from abc import ABC, abstractmethod
 from collections import Counter
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 # Third-Party Libraries
 import numpy as np
 import pandas as pd
 
-from src.app.main import JSONValue
-
-from .analysis import Analyzer  # Ensure this line is present and correct
+from .analysis import Analyzer
 from .utils import PortType, count_values_in_list_column
+
+type JSONValue = dict[str, "JSONValue"] | list["JSONValue"] | str | int | float | bool | None
 
 
 class Report:
@@ -68,7 +68,6 @@ class Report:
                     self.modules["ot_cross_segment_lines_panel"],
                 ]
             ),
-            # TestDetectionAlwaysTrips([]),  # Test detection doesn't need any modules
         ]
 
         # Build executive summary from detections
@@ -81,8 +80,8 @@ class Report:
         self.data: JSONValue = {
             "report_version": self.REPORT_VERSION,
             "report_id": self.report_id,
-            "executive_summary": executive_summary,
-            "modules": {module_name: module.data for module_name, module in self.modules.items()},
+            "executive_summary": cast(JSONValue, executive_summary),
+            "modules": {module_name: cast(JSONValue, module.data) for module_name, module in self.modules.items()},
             "arch_insights": {},
         }
 

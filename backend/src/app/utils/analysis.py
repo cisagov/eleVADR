@@ -3,7 +3,9 @@
 # Standard Python Libraries
 import ipaddress
 import json
+import multiprocessing
 import subprocess
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Any, cast
 
@@ -25,6 +27,18 @@ from .utils import (
     subnet_membership,
     traffic_direction,
 )
+
+
+def _worker_traffic_direction(chunk: pd.DataFrame) -> pd.Series:
+    return chunk.apply(traffic_direction, axis=1)
+
+
+def _worker_subnet_membership(chunk: pd.DataFrame) -> pd.DataFrame:
+    return chunk.apply(subnet_membership, axis=1)
+
+
+def _worker_service_processing(chunk: pd.DataFrame, ports_df: pd.DataFrame, port_risk_df: pd.DataFrame) -> pd.DataFrame:
+    return chunk.apply(lambda row: service_processing(row, ports_df, port_risk_df), axis=1)
 
 
 class PcapParser:
@@ -146,34 +160,32 @@ class PcapParser:
         self.services_df = pd.DataFrame(columns=services_df_schema.keys()).astype(services_df_schema)
 
     def zeekify(self) -> None:
-        """Execute PCAP analysis using Zeek."""
+        """Execute PCAP analysis using Zeek in a single high-performance pass."""
         # Create output directory if needed
         if not self.upload_output_zeek_dir.exists():
             self.upload_output_zeek_dir.mkdir(parents=True)
 
-        # Run default Zeek processing
-        subprocess.check_output(
-            [
-                "zeek",
-                "-r",
-                str(self.file_path_info.path_to_pcap),
-                f"Log::default_logdir={self.upload_output_zeek_dir}",
-            ]
-        )
-
-        # Run mac_logging Zeek script
         if self.file_path_info.path_to_zeek_scripts is None:
             raise ValueError("path_to_zeek_scripts must be provided.")
+
         mac_script = Path(self.file_path_info.path_to_zeek_scripts) / "mac_logging.zeek"
-        subprocess.check_output(
-            [
-                "zeek",
-                "-r",
-                str(self.file_path_info.path_to_pcap),
-                str(mac_script),
-                f"Log::default_logdir={self.upload_output_zeek_dir}",
-            ]
-        )
+
+        # Execute Zeek with default scripts and the custom mac_logging.zeek script simultaneously
+        try:
+            subprocess.run(
+                [
+                    "zeek",
+                    "-r",
+                    str(self.file_path_info.path_to_pcap),
+                    str(mac_script),
+                    f"Log::default_logdir={self.upload_output_zeek_dir}",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"Zeek unified analysis pass failed: {e.stderr}") from e
 
 
 class Analyzer:
@@ -231,8 +243,34 @@ class Analyzer:
         self.endpoints_df_processing()
         self.services_df_processing()
 
+    def _parallel_apply(self, df: pd.DataFrame, worker_func: Any, *args: Any) -> Any:
+        """Split a DataFrame into chunks and process them concurrently across multiple CPU cores."""
+        # Cap workers to 4 to align with docker-compose resource limitations
+        num_cores = min(multiprocessing.cpu_count(), 4)
+
+        # Fall back to sequential processing if dataframe is too small to justify IPC/fork overhead
+        if len(df) < 1000 or num_cores < 2:
+            if worker_func == _worker_traffic_direction:
+                return df.apply(traffic_direction, axis=1)
+            elif worker_func == _worker_subnet_membership:
+                return df.apply(subnet_membership, axis=1)
+            elif worker_func == _worker_service_processing:
+                return df.apply(lambda row: service_processing(row, args[0], args[1]), axis=1)
+            return df
+
+        # Pure Pandas chunking to guarantee each partition remains a DataFrame
+        chunk_size = int(np.ceil(len(df) / num_cores))
+        df_split = [df.iloc[i : i + chunk_size] for i in range(0, len(df), chunk_size)]
+
+        # Process chunks concurrently using ProcessPoolExecutor
+        with ProcessPoolExecutor(max_workers=num_cores) as executor:
+            futures = [executor.submit(worker_func, chunk, *args) for chunk in df_split]
+            results = [f.result() for f in futures]
+
+        return pd.concat(results)
+
     def traffic_df_processing(self) -> None:
-        """Add IP, conn type, direction, subnet, service info to traffic."""
+        """Add IP, conn type, direction, subnet, service info to traffic concurrently."""
         if self.traffic_df.empty:
             return
 
@@ -243,12 +281,9 @@ class Analyzer:
         }
         missing = required_cols - set(self.traffic_df.columns)
         if missing:
-            # If the caller supplied a traffic dataframe without the expected
-            # schema we bail out silently – the Analyzer will still be usable
-            # for modules that only need endpoint/service data.
             return
 
-        # IP version (4, 6 or 99 for invalid)
+        # IP version (4, 6 or 99 for invalid) - Vectorized or fast row applies
         self.traffic_df["connection_info.protocol_ver_id"] = self.traffic_df["src_endpoint.ip"].apply(check_ip_version)
 
         # Connection type (multicast, broadcast, unicast)
@@ -256,24 +291,20 @@ class Analyzer:
             connection_type_processing
         )
 
-        # Traffic direction (inbound, outbound, lateral, external, or other)
-        self.traffic_df["connection_info.direction_name"] = self.traffic_df.apply(traffic_direction, axis=1)
+        # Traffic direction (inbound, outbound, lateral, external, or other) - Concurrently
+        self.traffic_df["connection_info.direction_name"] = self._parallel_apply(
+            self.traffic_df, _worker_traffic_direction
+        )
 
-        # If the dataframe became empty after the above transformations
-        # (e.g., all rows were filtered out by a custom ``traffic_direction``)
-        # we stop further processing.
         if self.traffic_df.empty:
             return
 
-        # Subnet membership – adds ``src_endpoint.subnet`` and ``dst_endpoint.subnet``
-        self.traffic_df = self.traffic_df.apply(subnet_membership, axis=1)
+        # Subnet membership - Concurrently
+        self.traffic_df = self._parallel_apply(self.traffic_df, _worker_subnet_membership)
 
-        # Service mapping and risk categorisation.
-        # ``service_processing`` expects the ports and risk dataframes to be
-        # present – they are populated in ``get_assessor_data``.
-        self.traffic_df = self.traffic_df.apply(
-            lambda row: service_processing(row, self.ports_df, self.port_risk_df),
-            axis=1,
+        # Service mapping and risk categorisation - Concurrently
+        self.traffic_df = self._parallel_apply(
+            self.traffic_df, _worker_service_processing, self.ports_df, self.port_risk_df
         )
 
     def endpoints_df_processing(self) -> None:

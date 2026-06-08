@@ -28,23 +28,11 @@ if [ -d frontend ]; then
   (cd frontend && pnpm install)
 fi
 
-uv tool install pre-commit && uv tool update-shell \
-  && export PATH="/home/elevadr/.local/bin:$PATH" \
+uv tool install pre-commit && uv tool install deptry \
+  && uv tool update-shell \
+  && echo "export PATH=\"/home/elevadr/.local/bin:\$PATH\"" >> ~/.bashrc \
   && pre-commit install && pre-commit install-hooks
 
-# if [ -e ~/.gnupg/pubring.kbx ] || [ -d ~/.gnupg/private-keys-v1.d ]; then
-#   chown -R "$(id -u):$(id -g)" ~/.gnupg
-#   mkdir -p ~/.gnupg/private-keys-v1.d
-#   chmod 700 ~/.gnupg ~/.gnupg/private-keys-v1.d
-#   find ~/.gnupg -type f -exec chmod 600 {} \; 2>/dev/null || true
-#   cat > ~/.gnupg/gpg-agent.conf <<'EOF'
-# pinentry-program /usr/bin/pinentry-curses
-# allow-loopback-pinentry
-# EOF
-#   gpgconf --kill gpg-agent 2>/dev/null || true
-#   echo "GPG configured."
-# else
-#   echo "No GPG keyring found; skipping GPG setup."
-# fi
+echo "export GPG_TTY=\$(tty)" >> ~/.bashrc
 
 echo "post-create complete."

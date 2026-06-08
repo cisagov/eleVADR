@@ -296,7 +296,7 @@ def _require_analyzer(report_id: str) -> Analyzer:
 
 
 @app.get("/reports/{report_id}/drilldown/service/{service_name}")  # type: ignore[untyped-decorator]
-async def drilldown_service(
+def drilldown_service(
     report_id: str,
     service_name: str,
     limit: ConnectionLimit = 500,
@@ -320,7 +320,7 @@ async def drilldown_service(
 
 
 @app.get("/reports/{report_id}/drilldown/connection-state/{state}")  # type: ignore[untyped-decorator]
-async def drilldown_connection_state(
+def drilldown_connection_state(
     report_id: str,
     state: str,
     limit: ConnectionLimit = 500,
@@ -344,7 +344,7 @@ async def drilldown_connection_state(
 
 
 @app.get("/reports/{report_id}/drilldown/suspicious-outbound")  # type: ignore[untyped-decorator]
-async def drilldown_suspicious_outbound(
+def drilldown_suspicious_outbound(
     report_id: str,
     src_ip: str,
     dst_ip: str,
@@ -379,7 +379,7 @@ async def drilldown_suspicious_outbound(
 
 
 @app.get("/reports/{report_id}/drilldown/cross-segment")  # type: ignore[untyped-decorator]
-async def drilldown_cross_segment(
+def drilldown_cross_segment(
     report_id: str,
     src_subnet: str,
     dst_subnet: str,
@@ -408,7 +408,7 @@ async def drilldown_cross_segment(
 
 
 @app.get("/reports/{report_id}/connections")  # type: ignore[untyped-decorator]
-async def filtered_connections(
+def filtered_connections(
     report_id: str,
     ip: OptionalQueryStr = None,
     src_ip: OptionalQueryStr = None,
@@ -468,7 +468,7 @@ async def filtered_connections(
 
 
 @app.get("/reports/{report_id}/devices")  # type: ignore[untyped-decorator]
-async def filtered_devices(
+def filtered_devices(
     report_id: str,
     manufacturer: OptionalQueryStr = None,
     subnet: OptionalQueryStr = None,
@@ -505,7 +505,7 @@ async def filtered_devices(
 
 
 @app.get("/reports/{report_id}/services")  # type: ignore[untyped-decorator]
-async def filtered_services(
+def filtered_services(
     report_id: str,
     subnet: OptionalQueryStr = None,
     manufacturer: OptionalQueryStr = None,
