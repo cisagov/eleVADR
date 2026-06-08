@@ -70,39 +70,34 @@ def dummy_services_df():
 class TestPcapParser:
     """Tests for PCAP parsing helpers."""
 
-    @patch("src.app.utils.analysis.subprocess.check_output")
+    @patch("src.app.utils.analysis.subprocess.run")
     @patch("src.app.utils.analysis.Path.mkdir")
-    def test_zeekify(self, mock_mkdir, mock_check_output, mock_file_path_info):
-        """Run both Zeek passes and create the output directory."""
+    def test_zeekify(self, mock_mkdir, mock_run, mock_file_path_info):
+        """Run the single-pass Zeek execution and create the output directory."""
         parser = PcapParser(mock_file_path_info)
         parser.zeekify()
 
+        # Check output directory creation
         mock_mkdir.assert_called_once_with(parents=True)
-
-        # Check calls for default Zeek processing
-        mock_check_output.assert_any_call(
-            [
-                "zeek",
-                "-r",
-                mock_file_path_info.path_to_pcap,
-                f"Log::default_logdir={parser.upload_output_zeek_dir}",
-            ]
-        )
 
         # Check calls for mac_logging Zeek script
         mac_script_path = (
             Path(mock_file_path_info.path_to_zeek_scripts) / "mac_logging.zeek"
         )
-        mock_check_output.assert_any_call(
+
+        # Check call for unified high-performance Zeek processing
+        mock_run.assert_called_once_with(
             [
                 "zeek",
                 "-r",
-                mock_file_path_info.path_to_pcap,
+                str(mock_file_path_info.path_to_pcap),
                 str(mac_script_path),
                 f"Log::default_logdir={parser.upload_output_zeek_dir}",
-            ]
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
         )
-        assert mock_check_output.call_count == 2
 
     @patch("src.app.utils.analysis.LogToDataFrame")
     @patch("src.app.utils.analysis.PcapParser.zeekify")
