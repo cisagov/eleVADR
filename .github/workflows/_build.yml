@@ -38,8 +38,8 @@ defaults:
     shell: bash -Eueo pipefail -x {0}
 
 env:
-  UV_CACHE_DIR: ~/.cache/uv
-  PNPM_CACHE_DIR: ~/.cache/pnpm
+  UV_CACHE_DIR: /home/runner/.cache/uv
+  PNPM_CACHE_DIR: /home/runner/.cache/pnpm
   NODE_VERSION: "22"
   PNPM_VERSION: "11"
   RUN_TMATE: ${{ secrets.RUN_TMATE }}

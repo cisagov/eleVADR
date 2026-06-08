@@ -30,7 +30,6 @@ fi
 
 uv tool install pre-commit && uv tool install deptry \
   && uv tool update-shell \
-  && echo "export PATH=\"/home/elevadr/.local/bin:\$PATH\"" >> ~/.bashrc \
   && pre-commit install && pre-commit install-hooks
 
 echo "export GPG_TTY=\$(tty)" >> ~/.bashrc

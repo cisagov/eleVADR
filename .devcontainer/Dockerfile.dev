@@ -17,6 +17,22 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         openssh-client \
         locales \
         build-essential \
+        bind9 \
+        bison \
+        ccache \
+        cmake \
+        cppzmq-dev \
+        flex \
+        g++ cmake make libpcap-dev \
+        libfl2 \
+        libfl-dev \
+        libnode-dev \
+        libmaxminddb-dev \
+        libpcap-dev \
+        libssl-dev \
+        libuv1-dev \
+        libz-dev \
+        libzmq5 \
     && add-apt-repository -y universe \
     && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
     && locale-gen en_US.UTF-8 \
@@ -54,10 +70,18 @@ RUN useradd -m -s /bin/bash elevadr \
         > /etc/sudoers.d/elevadr \
     && chmod 0440 /etc/sudoers.d/elevadr
 
-# Copy tooling from official images cleanly
+# Copy tooling from official images cleanly (automatically matches host architecture)
 COPY --link --from=zeek/zeek:8.0.5 /usr/local/zeek /usr/local/zeek
+
+# Surgeon-copy the exact compiled version of libnode and dependent libicu libraries Zeek/V8 expects
+COPY --link --from=zeek/zeek:8.0.5 /usr/lib/*-linux-gnu/libnode.so.115* /usr/local/zeek/lib/
+COPY --link --from=zeek/zeek:8.0.5 /usr/lib/*-linux-gnu/libicu*.so.76* /usr/local/zeek/lib/
+
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 COPY --link --from=ghcr.io/pnpm/pnpm:11 /opt/pnpm /usr/local/bin/
+
+# Configure the dynamic library linker so the system can find Zeek's shared libraries natively
+RUN echo "/usr/local/zeek/lib" > /etc/ld.so.conf.d/zeek.conf && ldconfig
 
 # Copy cargo & rustup completely to ensure toolchain functions correctly
 COPY --link --from=rust:slim-trixie /usr/local/cargo /usr/local/cargo
@@ -74,6 +98,9 @@ ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 ENV NVM_DIR=/home/elevadr/.nvm
 
 USER elevadr
+
+RUN echo 'if [ -f "/workspace/backend/.venv/bin/activate" ]; then source "/workspace/backend/.venv/bin/activate"; fi' >> /home/elevadr/.bashrc
+
 WORKDIR /workspace
 
 EXPOSE 8000

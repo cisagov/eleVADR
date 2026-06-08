@@ -20,8 +20,8 @@ defaults:
     shell: bash -Eueo pipefail -x {0}
 
 env:
-  PIP_CACHE_DIR: ~/.cache/pip
-  PRE_COMMIT_CACHE_DIR: ~/.cache/pre-commit
+  PIP_CACHE_DIR: /home/runner/.cache/pip
+  PRE_COMMIT_CACHE_DIR: /home/runner/.cache/pre-commit
   RUN_TMATE: ${{ secrets.RUN_TMATE }}
 
 jobs:
