@@ -1,10 +1,5 @@
 ---
 
-# Any ignore directives should be uncommented in downstream projects to disable
-# Dependabot updates for the given dependency. Downstream projects will get
-# these updates when the pull request(s) in the appropriate skeleton are merged
-# and Lineage processes these changes.
-
 updates:
   - directory: /
     package-ecosystem: docker
@@ -17,62 +12,18 @@ updates:
       interval: weekly
 
   - directory: /
-    groups:
-      upload-download-artifact:
-        patterns:
-          - actions/download-artifact
-          - actions/upload-artifact
-    ignore:
-      # -----------------------------------------------------------------
-      # Managed by cisagov/skeleton-docker
-      # Dependabot ignores these. Lineage will update them in the background.
-      # -----------------------------------------------------------------
-      # Managed by cisagov/skeleton-generic
-      - dependency-name: actions/cache
-      - dependency-name: actions/checkout
-      - dependency-name: actions/dependency-review-action
-      - dependency-name: actions/labeler
-      - dependency-name: actions/setup-go
-      - dependency-name: actions/setup-python
-      - dependency-name: cisagov/action-job-preamble
-      - dependency-name: cisagov/setup-env-github-action
-      - dependency-name: crazy-max/ghaction-github-labeler
-      - dependency-name: github/codeql-action
-      - dependency-name: hashicorp/setup-packer
-      - dependency-name: hashicorp/setup-terraform
-      - dependency-name: mxschmitt/action-tmate
-      # Managed by cisagov/skeleton-docker
-      - dependency-name: actions/download-artifact
-      - dependency-name: actions/upload-artifact
-      - dependency-name: aquasecurity/trivy-action
-      - dependency-name: docker/build-push-action
-      - dependency-name: docker/login-action
-      - dependency-name: docker/metadata-action
-      - dependency-name: docker/setup-buildx-action
-      - dependency-name: docker/setup-qemu-action
-      - dependency-name: peter-evans/dockerhub-description
-
-      # -----------------------------------------------------------------
-      # Managed by cisagov/EleVADR
-      # Dependabot will scan these dependencies and open PRs to update these.
-      # -----------------------------------------------------------------
-      # - dependency-name: pnpm/action-setup
-      # - dependency-name: astral-sh/setup-uv
-
-    labels:
-      - dependencies
-      - github-actions
     package-ecosystem: github-actions
     schedule:
       interval: weekly
 
   - directory: /backend
-    package-ecosystem: pip
+    package-ecosystem: uv
     schedule:
-      interval: weekly
+      interval: daily
+
   - directory: /frontend
     package-ecosystem: npm
     schedule:
-      interval: weekly
+      interval: daily
 
 version: 2
