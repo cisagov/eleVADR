@@ -6,4 +6,4 @@
 * @cisagov/eleVADR
 
 # Set owner for the codeowner file to prevent changes.
-/.github/CODEOWNERS @CISAConnorB
+/.github/CODEOWNERS @CISAConnorB @bdnels @matthewRekos
