@@ -1,66 +1,107 @@
-
-FROM cisagov/elevadr-web-backend:develop
+FROM ubuntu:26.04
 
 USER root
 
-# Copy certs (expect the PEM file(s) in .devcontainer/certs/)
-COPY .devcontainer/certs/ /tmp/certs/
+# Combine packages installation and configure locale in a single layer
+RUN apt-get update && apt-get install --no-install-recommends -y \
+        ca-certificates \
+        curl \
+        gnupg2 \
+        lsb-release \
+        wget \
+        software-properties-common \
+        git \
+        gh \
+        vim \
+        sudo \
+        openssh-client \
+        locales \
+        build-essential \
+        bind9 \
+        bison \
+        ccache \
+        cmake \
+        cppzmq-dev \
+        flex \
+        g++ cmake make libpcap-dev \
+        libfl2 \
+        libfl-dev \
+        libnode-dev \
+        libmaxminddb-dev \
+        libpcap-dev \
+        libssl-dev \
+        libuv1-dev \
+        libz-dev \
+        libzmq5 \
+    && add-apt-repository -y universe \
+    && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8 \
+    && rm -rf /var/lib/apt/lists/*
 
-# If you have multiple files, we concatenate into one bundle for apk.
-RUN set -eu && \
-    if [ -n "$(ls -A /tmp/certs 2>/dev/null)" ]; then \
-      mkdir -p /usr/local/share/ca-certificates/ && \
-      cat /tmp/certs/* > /usr/local/share/ca-certificates/custom-bundle.crt && \
-      apt-get update && \
-      apt-get install -y --no-install-recommends \
-        ca-certificates && update-ca-certificates; \
+# Install Docker CLI and Compose Plugin inside container with CA handling
+RUN --mount=type=secret,id=ca_cert,required=false \
+    set -eu; \
+    CERT_INSTALLED=0; \
+    if [ -s /run/secrets/ca_cert ]; then \
+        cp /run/secrets/ca_cert /usr/local/share/ca-certificates/corp-ca.crt; \
+        update-ca-certificates; \
+        CERT_INSTALLED=1; \
+    fi; \
+    . /etc/os-release; \
+    mkdir -p /etc/apt/keyrings; \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+    gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+        https://download.docker.com/linux/ubuntu ${VERSION_CODENAME} stable" \
+        > /etc/apt/sources.list.d/docker.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        docker.io docker-compose-plugin \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && if [ "$CERT_INSTALLED" -eq 1 ]; then \
+        rm -f /usr/local/share/ca-certificates/corp-ca.crt; \
+        update-ca-certificates --fresh; \
     fi
 
-# Install development essentials
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
-    vim \
-    sudo \
-    gpg \
-    openssh-client \
-    locales \
-    build-essential \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Create non-root developer user
+RUN useradd -m -s /bin/bash elevadr \
+    && echo "elevadr ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt, /usr/sbin/update-ca-certificates" \
+        > /etc/sudoers.d/elevadr \
+    && chmod 0440 /etc/sudoers.d/elevadr
 
-RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
-    locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8
+# Copy tooling from official images cleanly (automatically matches host architecture)
+COPY --link --from=zeek/zeek:8.0.5 /usr/local/zeek /usr/local/zeek
 
-RUN mkdir -p /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/debian/gpg | \
-    gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+# Surgeon-copy the exact compiled version of libnode and dependent libicu libraries Zeek/V8 expects
+COPY --link --from=zeek/zeek:8.0.5 /usr/lib/*-linux-gnu/libnode.so.115* /usr/local/zeek/lib/
+COPY --link --from=zeek/zeek:8.0.5 /usr/lib/*-linux-gnu/libicu*.so.76* /usr/local/zeek/lib/
 
-RUN echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-  https://download.docker.com/linux/debian bookworm stable" \
-  > /etc/apt/sources.list.d/docker.list
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+COPY --link --from=ghcr.io/pnpm/pnpm:11 /opt/pnpm /usr/local/bin/
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        docker-ce docker-ce-cli containerd.io docker-compose-plugin && \
-    rm -rf /var/lib/apt/lists/*
+# Configure the dynamic library linker so the system can find Zeek's shared libraries natively
+RUN echo "/usr/local/zeek/lib" > /etc/ld.so.conf.d/zeek.conf && ldconfig
 
+# Copy cargo & rustup completely to ensure toolchain functions correctly
+COPY --link --from=rust:slim-trixie /usr/local/cargo /usr/local/cargo
+COPY --link --from=rust:slim-trixie /usr/local/rustup /usr/local/rustup
 
-# Give the appuser sudo access so you can install things while developing
-RUN echo "appuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+# Environment configurations
+ENV CARGO_HOME=/usr/local/cargo
+ENV RUSTUP_HOME=/usr/local/rustup
+ENV PATH="/usr/local/zeek/bin:/usr/local/cargo/bin:${PATH}"
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+ENV LANG=en_US.UTF-8
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV NVM_DIR=/home/elevadr/.nvm
 
-# Switch back to your non-privileged user
-USER appuser
+USER elevadr
 
-RUN echo "export PATH=\$HOME/.local/bin:\$PATH" >> ~/.bashrc
-RUN echo "export PATH=/usr/libexec/docker/cli-plugins:\$PATH" >> ~/.bashrc
+RUN echo 'if [ -f "/workspace/backend/.venv/bin/activate" ]; then source "/workspace/backend/.venv/bin/activate"; fi' >> /home/elevadr/.bashrc
 
-COPY pyproject.toml uv.lock ./
+WORKDIR /workspace
 
-RUN set -eu && \
-    if [ -n "$(ls -A /tmp/certs 2>/dev/null)" ]; then \
-      echo "export SSL_CERT_FILE=/usr/local/share/ca-certificates/custom-bundle.crt" >> ~/.bashrc && \
-      SSL_CERT_FILE=/usr/local/share/ca-certificates/custom-bundle.crt uv sync; \
-    else \
-      uv sync; \
-    fi
+EXPOSE 8000
+CMD ["sleep", "infinity"]

@@ -1,58 +1,124 @@
 ---
-version: "3.8"
+name: elevadr-orchestration
 
 services:
-  elevadr:
+  elevadr-web-backend:
+    image: docker.io/cisagov/elevadr-web-backend:develop
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
-    image: elevadr-web-backend:latest
-    container_name: elevadr-analysis
+      secrets:
+        - ssl_cert
     cap_drop:
       - ALL
-
-    # Environment variables
-    environment:
-      - PCAP_INPUT=${PCAP_INPUT:-/input/capture.pcap}
-      - REPORT_OUTPUT=${REPORT_OUTPUT:-/output/report.json}
-      - PYTHONUNBUFFERED=1
-
-    # Volume mounts
+    container_name: elevadr-backend
+    read_only: true
     volumes:
-      # Mount your PCAP file(s)
-      - ./pcaps:/input:ro
-      # Mount output directory for reports
-      - ./reports:/output
-      # Optional: mount custom reference data
-      # - ./custom-data:/app/app/data/assessor_data:ro
-
-      # Resource limits
+      - type: tmpfs
+        target: /tmp
+      - type: tmpfs
+        target: /app/src/app/data/uploads
+        tmpfs:
+          mode: 1023
+      - type: tmpfs
+        target: /app/src/app/data/zeeks
+        tmpfs:
+          mode: 1023
+      - type: tmpfs
+        target: /app/output
+        tmpfs:
+          mode: 1023
+      - type: tmpfs
+        target: /input
+        tmpfs:
+          mode: 1023
+      - type: tmpfs
+        target: /output
+        tmpfs:
+          mode: 1023
+    environment:
+      ELEVADR_MODE: api
+      API_PORT: 8000
+      FRONTEND_ORIGIN: http://localhost:8080,http://127.0.0.1:8080
+      SSL_CERT_FILE: ${SSL_CERT_FILE}
+      REQUESTS_CA_BUNDLE: ${REQUESTS_CA_BUNDLE}
+      CURL_CA_BUNDLE: ${CURL_CA_BUNDLE}
+      UV_CACHE_DIR: /tmp/uv_cache
+    ports:
+      - 127.0.0.1:8000:8000
+    restart: unless-stopped
+    networks:
+      - elevadr-network
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8000/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
     deploy:
       resources:
         limits:
-          memory: 4GB # Hard limit of 4GB
+          memory: 4GB
+          # Limit CPU resources to align with the parallel_apply processing engine
+          cpus: "4"
         reservations:
-          memory: 512MB # Soft limit (reservation) of 512MB
+          memory: 512MB
 
-    # Automatically remove container after completion
-    # Remove this if you want to inspect logs afterward
-    # rm: true
-
-    # Restart policy
-    restart: "no"
-    security_opt:
-      - no-new-privileges:true
-
-  # Optional: Add a service to serve reports via HTTP
-  report-server:
-    image: nginx:alpine
-    container_name: elevadr-reports
+  elevadr-web-frontend:
+    image: docker.io/cisagov/elevadr-frontend:develop
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      secrets:
+        - ssl_cert
+    cap_drop:
+      - ALL
+    container_name: elevadr-frontend
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    environment:
+      SSL_CERT_FILE: ${SSL_CERT_FILE}
+      CURL_CA_BUNDLE: ${CURL_CA_BUNDLE}
     ports:
-      - 127.0.0.1:8080:80
-    volumes:
-      - ./reports:/usr/share/nginx/html:ro
+      - 127.0.0.1:8080:8080
     restart: unless-stopped
-    profiles:
-      - web-server
+    networks:
+      - elevadr-network
     security_opt:
       - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD
+        - sh
+        - -c
+        - wget -qO- http://localhost:8080/health | grep -q OK
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    depends_on:
+      elevadr-web-backend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512MB
+        reservations:
+          memory: 200MB
+
+networks:
+  elevadr-network:
+    driver: bridge
+
+secrets:
+  ssl_cert:
+    file: ./.devcontainer/certs/corp-ca.crt

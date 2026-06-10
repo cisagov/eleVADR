@@ -50,9 +50,6 @@
 - color: f0db4f
   description: Pull requests that update JavaScript code
   name: javascript
-- color: ce099a
-  description: This pull request is ready to merge during the next Lineage Kraken release
-  name: kraken 🐙
 - color: a4fc5d
   description: This issue or pull request requires further information
   name: need info

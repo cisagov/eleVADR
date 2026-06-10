@@ -41,7 +41,6 @@ repos:
         args:
           - --autofix
         exclude: ^.*lock\.json$
-      - id: requirements-txt-fixer
       - id: trailing-whitespace
       - id: check-added-large-files
         args:
@@ -58,6 +57,7 @@ repos:
     rev: 515f543f5718ebfd6ce22e16708bb32c68ff96e1
     hooks:
       - id: prettier
+
   - repo: https://github.com/adrienverge/yamllint
     rev: cba56bcde1fdd01c1deb3f945e69764c291a6530
     hooks:
@@ -108,7 +108,6 @@ repos:
     hooks:
       - id: bandit
         name: bandit
-        files: ^src
         args:
           - --config=.bandit.yml
 
@@ -128,7 +127,7 @@ repos:
       - id: mypy
         pass_filenames: false
         args:
-          - --config-file=./pyproject.toml
+          - --config-file=./backend/pyproject.toml
           - .
 
   # Docker hooks
@@ -141,9 +140,9 @@ repos:
     rev: 0c39226d761685125c5ff71ca81282d6751c9540
     hooks:
       - id: deptry
+        pass_filenames: false
         args:
-          - --per-rule-ignores
-          - DEP002=uvicorn,DEP001=app
+          - --config=backend/pyproject.toml
 
   # General checks (commits, spelling)
   - repo: https://github.com/compilerla/conventional-pre-commit
@@ -158,12 +157,35 @@ repos:
     rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a
     hooks:
       - id: codespell
-    additional_dependencies:
-      - tomli
-    args:
-      - -w
+        pass_filenames: false
+        additional_dependencies:
+          - tomli
+        args:
+          - --toml ./backend/pyproject.toml
 
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 254dd0011fda0cd4bbb281ff135792b157e43e1f
     hooks:
       - id: uv-audit
+        always_run: true
+        args:
+          - --directory=backend/
+          - --preview-features=audit
+
+  - repo: local
+    hooks:
+      - id: eslint
+        name: ESLint
+        files: frontend/
+        entry: pnpm --dir frontend run lint
+        language: system
+        types_or:
+          - ts
+          - tsx
+        pass_filenames: false
+      - id: typescript-check
+        name: TypeScript Check
+        files: frontend/
+        entry: pnpm --dir frontend run type-check
+        language: system
+        pass_filenames: false

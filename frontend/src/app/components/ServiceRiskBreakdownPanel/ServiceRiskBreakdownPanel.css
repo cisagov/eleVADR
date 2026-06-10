@@ -1,0 +1,83 @@
+.risk-breakdown-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section-subtitle {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1b1b1b;
+}
+
+.risk-chart-section {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #dfe1e2;
+}
+
+.risk-chart-tooltip {
+  background: white;
+  border: 1px solid #dfe1e2;
+  border-radius: 4px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-width: 300px;
+}
+
+.tooltip-title {
+  font-weight: 700;
+  color: #005ea2;
+  margin: 0 0 0.5rem 0;
+}
+
+.tooltip-count {
+  margin: 0 0 0.5rem 0;
+  color: #1b1b1b;
+}
+
+.tooltip-services {
+  font-size: 0.875rem;
+}
+
+.tooltip-services strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.tooltip-services ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.tooltip-services li {
+  margin: 0.25rem 0;
+}
+
+.scrollable-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #dfe1e2;
+  border-radius: 4px;
+}
+
+.scrollable-table-container table {
+  margin: 0;
+}
+
+.category-cell {
+  font-weight: 700;
+  vertical-align: top;
+  background: #f0f0f0 !important;
+}
+
+@media (max-width: 768px) {
+  .risk-chart-section {
+    overflow-x: auto;
+  }
+
+  .section-subtitle {
+    font-size: 1rem;
+  }
+}

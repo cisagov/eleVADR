@@ -1,0 +1,347 @@
+---
+name: Reusable build
+
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      component:
+        description: Component directory and name (e.g. backend, frontend)
+        required: true
+        type: string
+      runtime:
+        description: "Toolchain to use: python or node"
+        required: true
+        type: string
+      image-tag:
+        description: Tag to apply to pushed images on workflow_dispatch
+        required: false
+        type: string
+        default: dispatch
+      remote-shell:
+        description: Debug with remote shell
+        required: false
+        type: string
+        default: "false"
+    secrets:
+      DOCKER_USERNAME:
+        required: false
+      DOCKER_PASSWORD:
+        required: false
+      RUN_TMATE:
+        required: false
+
+# Set a default shell for any run steps. The `-Eueo pipefail` sets errtrace,
+# nounset, errexit, and pipefail. The `-x` will print all commands as they are
+# run.
+defaults:
+  run:
+    shell: bash -Eueo pipefail -x {0}
+
+env:
+  UV_CACHE_DIR: /home/runner/.cache/uv
+  PNPM_CACHE_DIR: /home/runner/.cache/pnpm
+  NODE_VERSION: "22"
+  PNPM_VERSION: "11"
+  RUN_TMATE: ${{ secrets.RUN_TMATE }}
+
+jobs:
+  diagnostics:
+    name: Run diagnostics
+    permissions: {}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply standard cisagov job preamble
+        uses: cisagov/action-job-preamble@v1
+        with:
+          check_github_status: "true"
+          monitor_permissions: "false"
+          output_workflow_context: "true"
+          permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
+
+  # repo-metadata:
+  #   name: Gather repository metadata
+  #   needs:
+  #     - diagnostics
+  #   permissions:
+  #     contents: read
+  #   uses: ./.github/workflows/_repo-metadata.yml
+  #   with:
+  #     component: ${{ inputs.component }}
+
+  prepare:
+    name: Prepare build variables
+    needs:
+      - diagnostics
+    outputs:
+      image-name: ${{ steps.metadata.outputs.image-name }}
+      image-platforms: ${{ steps.metadata.outputs.image-platforms }}
+      labels: ${{ steps.generate-metadata.outputs.labels }}
+      tags: ${{ steps.generate-metadata.outputs.tags }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    env:
+      COMPONENT: ${{ inputs.component }}
+    steps:
+      - name: Apply standard cisagov job preamble
+        uses: cisagov/action-job-preamble@v1
+        with:
+          monitor_permissions: "false"
+          permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
+      - uses: actions/checkout@v6
+
+      - name: Gather repository metadata
+        id: metadata
+        run: |
+          import json
+          import os
+          import sys
+          try:
+              import tomllib
+          except ImportError:
+              import tomli as tomllib
+
+          component = os.environ["COMPONENT"]
+          config_file = "pyproject.toml" if component == "backend" else "package.json"
+          config_path = os.path.join(component, config_file)
+
+          if not os.path.exists(config_path):
+              print(f"Error: {config_path} not found.")
+              sys.exit(1)
+
+          with open(config_path, "rb") as f:
+              if component == "backend":
+                  config = tomllib.load(f)
+              else:
+                  config = json.load(f)
+
+          image_name = config["tool"]["elevadr"]["image_name"]
+          image_platforms = config["tool"]["elevadr"]["platforms"]
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as gh_output:
+              gh_output.write(f"image-name={image_name}\n")
+              gh_output.write(f"image-platforms={json.dumps(image_platforms)}\n")
+        shell: python3 {0}
+
+      - id: generate-metadata
+        name: Generate Docker image metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ steps.metadata.outputs.image-name }}
+            ghcr.io/${{ steps.metadata.outputs.image-name }}
+          tags: |
+            type=edge
+            type=raw,event=workflow_dispatch,value=${{ inputs.image-tag }}
+            type=ref,event=branch
+            type=ref,event=pr
+            type=ref,event=tag
+            type=schedule
+            type=semver,pattern={{major}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{version}}
+            type=sha
+      - name: Setup tmate debug session
+        uses: mxschmitt/action-tmate@v3
+        if: inputs.remote-shell == 'true' || env.RUN_TMATE
+
+  build:
+    name: Build Image Layers
+    needs:
+      - diagnostics
+      - prepare
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply standard cisagov job preamble
+        uses: cisagov/action-job-preamble@v1
+        with:
+          monitor_permissions: "false"
+          permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
+      - uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5
+
+      - name: Build and Cache Layers
+        id: docker_build
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
+        with:
+          context: ./${{ inputs.component }}
+          file: ./${{ inputs.component }}/Dockerfile
+          cache-from: type=gha,scope=${{ inputs.component }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.component }}
+          labels: ${{ needs.prepare.outputs.labels }}
+          push: false
+
+  scan:
+    name: Scan Image for Vulnerabilities
+    needs:
+      - diagnostics
+      - prepare
+      - build
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply standard cisagov job preamble
+        uses: cisagov/action-job-preamble@v1
+        with:
+          monitor_permissions: "false"
+          permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
+      - uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5
+
+      - name: Reconstruct Image from Cache
+        id: docker_reconstruct
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
+        with:
+          context: ./${{ inputs.component }}
+          file: ./${{ inputs.component }}/Dockerfile
+          cache-from: type=gha,scope=${{ inputs.component }}
+          labels: ${{ needs.prepare.outputs.labels }}
+          load: true
+          tags: ${{ needs.prepare.outputs.image-name }}:latest
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: ${{ needs.prepare.outputs.image-name }}:latest
+
+  test:
+    name: Test component
+    needs:
+      - diagnostics
+      - prepare
+    defaults:
+      run:
+        working-directory: ./${{ inputs.component }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply standard cisagov job preamble
+        uses: cisagov/action-job-preamble@v1
+        with:
+          monitor_permissions: "false"
+          permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
+      - id: setup-env
+        uses: cisagov/setup-env-github-action@v1
+      - uses: actions/checkout@v6
+
+      # ---- Python toolchain ----
+      - id: setup-python
+        if: inputs.runtime == 'python'
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: backend/pyproject.toml
+      - id: setup-uv
+        if: inputs.runtime == 'python'
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        with:
+          version: 0.11.11
+          enable-cache: true
+
+      - name: Install Python dependencies
+        if: inputs.runtime == 'python'
+        run: uv sync
+
+      # ---- Node toolchain ----
+      - id: setup-pnpm
+        if: inputs.runtime == 'node'
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - id: setup-node
+        if: inputs.runtime == 'node'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Resolve pnpm store path
+        if: inputs.runtime == 'node'
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+      - if: inputs.runtime == 'node'
+        uses: actions/cache@v5
+        with:
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ steps.pnpm-store.outputs.path }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+      - name: Install Node dependencies
+        if: inputs.runtime == 'node'
+        run: pnpm install --frozen-lockfile
+
+      # ---- Run tests (per runtime) ----
+      - name: Run Python tests
+        if: inputs.runtime == 'python'
+        run: |
+          uv pip install -e .
+          uv run pytest
+      - name: Run Node tests
+        if: inputs.runtime == 'node'
+        run: pnpm test
+
+      - name: Setup tmate debug session
+        uses: mxschmitt/action-tmate@v3
+        if: env.RUN_TMATE
+
+  build-push-all:
+    name: Build and push all platforms
+    if: github.event_name != 'pull_request'
+    needs:
+      - diagnostics
+      - prepare
+      - scan
+      - test
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply standard cisagov job preamble
+        uses: cisagov/action-job-preamble@v1
+        with:
+          monitor_permissions: "false"
+          permissions_monitoring_config: ${{ vars.ACTIONS_PERMISSIONS_CONFIG }}
+      - uses: actions/checkout@v6
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5
+
+      - name: Build and Push Platform Images to Registries
+        id: docker_push
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
+        with:
+          context: ./${{ inputs.component }}
+          file: ./${{ inputs.component }}/Dockerfile
+          cache-from: type=gha,scope=${{ inputs.component }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.component }}
+          labels: ${{ needs.prepare.outputs.labels }}
+          platforms: >-
+            ${{ join(fromJSON(needs.prepare.outputs.image-platforms)) }}
+          push: true
+          tags: ${{ needs.prepare.outputs.tags }}
+      - name: Setup tmate debug session
+        uses: mxschmitt/action-tmate@v3
+        if: env.RUN_TMATE
