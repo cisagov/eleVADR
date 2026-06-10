@@ -261,7 +261,7 @@ jobs:
           version: ${{ env.PNPM_VERSION }}
       - id: setup-node
         if: inputs.runtime == 'node'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Resolve pnpm store path
