@@ -15,7 +15,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "deptry>=0.25.1",
-    "httpx2>=2.3.0",
+    "httpx2>=2.4.0",
     "pre-commit>=4.6.0",
     "pyarrow>=24.0.0",
     "pytest>=9.0.3",
