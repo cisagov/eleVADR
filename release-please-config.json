@@ -3,12 +3,12 @@
   "include-component-in-tag": true,
   "include-v-in-tag": true,
   "packages": {
-    "elevadr-backend": {
-      "path": "backend",
+    "backend": {
+      "package-name": "elevadr-backend",
       "release-type": "python"
     },
-    "elevadr-ui": {
-      "path": "frontend",
+    "frontend": {
+      "package-name": "elevadr-ui",
       "release-type": "node"
     }
   },
