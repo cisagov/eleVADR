@@ -54,7 +54,7 @@
       "react-app"
     ]
   },
-  "name": "elevadr-web-frontend",
+  "name": "elevadr-ui",
   "private": true,
   "scripts": {
     "build": "vite build",
@@ -65,7 +65,7 @@
   },
   "tool": {
     "elevadr": {
-      "image_name": "cisagov/elevadr-frontend",
+      "image_name": "cisagov/elevadr-ui",
       "platforms": [
         "linux/amd64",
         "linux/arm64"

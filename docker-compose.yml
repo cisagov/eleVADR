@@ -2,8 +2,8 @@
 name: elevadr-orchestration
 
 services:
-  elevadr-web-backend:
-    image: docker.io/cisagov/elevadr-web-backend:develop
+  elevadr-backend:
+    image: cisagov/elevadr-backend:develop
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -70,8 +70,8 @@ services:
         reservations:
           memory: 512MB
 
-  elevadr-web-frontend:
-    image: docker.io/cisagov/elevadr-frontend:develop
+  elevadr-ui:
+    image: cisagov/elevadr-frontend:develop
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -106,7 +106,7 @@ services:
       retries: 3
       start_period: 5s
     depends_on:
-      elevadr-web-backend:
+      elevadr-backend:
         condition: service_healthy
     deploy:
       resources:
