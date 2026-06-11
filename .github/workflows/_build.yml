@@ -125,7 +125,7 @@ jobs:
 
       - id: generate-metadata
         name: Generate Docker image metadata
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9
         with:
           images: |
             ${{ steps.metadata.outputs.image-name }}
@@ -261,7 +261,7 @@ jobs:
           version: ${{ env.PNPM_VERSION }}
       - id: setup-node
         if: inputs.runtime == 'node'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Resolve pnpm store path
