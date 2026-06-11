@@ -43,13 +43,16 @@
       }
     }
   },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2.5.9": {
+      "upgradePackages": false
+    }
+  },
   "mounts": [
     "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
     "source=${localWorkspaceFolder}/.devcontainer/certs,target=/usr/local/share/ca-certificates/host,type=bind,consistency=cached"
   ],
   "name": "EleVADR",
   "postCreateCommand": "bash .devcontainer/post-create.sh",
-  "remoteUser": "elevadr",
-  "updateRemoteUserUID": true,
   "workspaceFolder": "/workspace"
 }
