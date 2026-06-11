@@ -64,12 +64,6 @@ RUN --mount=type=secret,id=ca_cert,required=false \
         update-ca-certificates --fresh; \
     fi
 
-# Create non-root developer user
-RUN useradd -m -s /bin/bash elevadr \
-    && echo "elevadr ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt, /usr/sbin/update-ca-certificates" \
-        > /etc/sudoers.d/elevadr \
-    && chmod 0440 /etc/sudoers.d/elevadr
-
 # Copy tooling from official images cleanly (automatically matches host architecture)
 COPY --link --from=zeek/zeek:8.0.5 /usr/local/zeek /usr/local/zeek
 
@@ -96,10 +90,12 @@ ENV UV_LINK_MODE=copy
 ENV LANG=en_US.UTF-8
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 ENV NVM_DIR=/home/elevadr/.nvm
+ENV PRE_COMMIT_HOME=/workspace/.local_cache/pre-commit
+ENV UV_CACHE_DIR=/workspace/.local_cache/uv
+ENV PNPM_CACHE_DIR=/workspace/.local_cahce/pnpm/cache
+ENV PNPM_STORE_DIR=/workspace/.local_cahce/pnpm/store
 
 USER elevadr
-
-RUN echo 'if [ -f "/workspace/backend/.venv/bin/activate" ]; then source "/workspace/backend/.venv/bin/activate"; fi' >> /home/elevadr/.bashrc
 
 WORKDIR /workspace
 

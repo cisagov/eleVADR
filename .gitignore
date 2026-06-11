@@ -202,3 +202,4 @@ claude.md
 **/node_modules
 
 **/.pnpm-store
+.local_cache/

@@ -52,7 +52,7 @@ repos:
     hooks:
       - id: markdownlint
         args:
-          - --config=.mdl_config.yaml
+          - --config=./backend/pyproject.toml
   - repo: https://github.com/rbubley/mirrors-prettier
     rev: 515f543f5718ebfd6ce22e16708bb32c68ff96e1
     hooks:
@@ -109,7 +109,7 @@ repos:
       - id: bandit
         name: bandit
         args:
-          - --config=.bandit.yml
+          - --config=./backend/pyproject.toml
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: 0671d8ab202c4ac093b78433ae5baf74f3fc7246

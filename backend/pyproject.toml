@@ -32,7 +32,7 @@ DEP001 = ["app", "src", "backend"]
 DEP002 = ["uvicorn"]
 
 [tool.elevadr]
-image_name = "cisagov/elevadr-web-backend"
+image_name = "cisagov/elevadr-backend"
 platforms = [
     "linux/amd64",
     "linux/arm64",
@@ -63,3 +63,18 @@ explicit_package_bases = true
 [tool.codespell]
 skip = "*.json,*.csv,*lock*,*.min*"
 ignore-words-list = "OT"
+
+[tool.markdownlint-cli]
+default = true
+MD003 = { "style" = "atx_closed" }
+MD004 = { "style" = "dash" }
+MD013 = { "code_blocks" = false, "tables" = false }
+MD024 = { "allow_different_nesting" = true }
+MD029 = { "style" = "one" }
+MD033 = { "allowed_elements" = ["h1", "img"] }
+MD035 = { "style" = "---" }
+MD050 = { "style" = "asterisk" }
+
+[tool.bandit]
+tests = ["B102"]
+skips = ["B104", "B108", "B404", "B603", "B607", "B310"]

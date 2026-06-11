@@ -18,6 +18,9 @@ export NVM_DIR="${HOME}/.nvm"
 
 git config core.fileMode false
 
+pnpm config set cache-dir /workspace/.local_cache/pnpm/cache
+pnpm config set store-dir /workspace/.local_cache/pnpm/store
+
 if [ -d backend ]; then
   echo "Installing backend dependencies with uv..."
   (cd backend && uv sync)
@@ -31,7 +34,5 @@ fi
 uv tool install pre-commit && uv tool install deptry \
   && uv tool update-shell \
   && pre-commit install && pre-commit install-hooks
-
-echo "export GPG_TTY=\$(tty)" >> ~/.bashrc
 
 echo "post-create complete."

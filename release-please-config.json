@@ -3,13 +3,13 @@
   "include-component-in-tag": true,
   "include-v-in-tag": true,
   "packages": {
-    "elevadr-frontend": {
-      "path": "frontend",
-      "release-type": "node"
-    },
-    "elevadr-web-backend": {
-      "path": "backend",
+    "backend": {
+      "package-name": "elevadr-backend",
       "release-type": "python"
+    },
+    "frontend": {
+      "package-name": "elevadr-ui",
+      "release-type": "node"
     }
   },
   "separate-pull-requests": true,

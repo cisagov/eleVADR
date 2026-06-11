@@ -15,8 +15,8 @@ contributions. Here is the recommended workflow:
 ### 1. Track the Work ###
 
 Submit bug reports or feature requests through the
-[issue tracker](https://github.com/cisagov/elevadr-web-backend/issues)
-or [discussions](https://github.com/cisagov/elevadr-web-backend/discussions)
+[issue tracker](https://github.com/cisagov/eleVADR/issues)
+or [discussions](https://github.com/cisagov/eleVADR/discussions)
 on GitHub. For complex ideas, discuss them in an issue before
 implementation so there is agreement on direction.
 
@@ -115,16 +115,22 @@ Install the following on your host machine before proceeding:
 - **`uv`** as the Python package manager
   - Install with:
     `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- **`pnpm`** as the node package manager
+  - Install with:
+    `curl -fsSL https://get.pnpm.io/install.sh | sh -`
 
 #### 2. Clone and Configure ####
 
 ```bash
 # Clone the repository
-git clone https://github.com/cisagov/elevadr-web-backend.git
-cd elevadr-web-backend
+git clone https://github.com/cisagov/elevadr.git
+cd elevadr/
 
 # Install dependencies using uv
-uv sync
+(cd backend && uv sync)
+
+# Install dependencies using pnpm
+(cd frontend && pnpm install)
 ```
 
 #### 3. Setup Git Hooks ####
@@ -140,7 +146,9 @@ uv run pre-commit install
 Verify that the environment is working by running the tests:
 
 ```bash
-uv run pytest
+(cd backend && uv run pytest)
+
+(cd frontend && pnpm run test)
 ```
 
 **Common Manual Setup Issues:**
