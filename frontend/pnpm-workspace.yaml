@@ -6,3 +6,18 @@ allowBuilds:
   core-js-pure: false
   esbuild: true
   keytar: true
+
+supportedArchitectures:
+  os:
+  - current
+  - darwin
+  - win32
+  - linux
+  cpu:
+  - current
+  - x64
+  - arm64
+  libc:
+  - current
+  - glibc
+  - musl
