@@ -126,7 +126,7 @@ Test suites are separated by component:
 Build the documentation locally with:
 
 ```bash
-# First, we need to isntall the docs dependencies.
+# First, we need to install the docs dependencies.
 uv sync --group docs --directory backend/
 
 # Then, we need to install the backend for the source to be importable
