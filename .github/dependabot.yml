@@ -5,31 +5,16 @@ updates:
     package-ecosystem: docker
     schedule:
       interval: weekly
-    cooldown:
-      default-days: 5
-      semver-major-days: 30
-      semver-minor-days: 7
-      semver-patch-days: 3
 
   - directory: /
     package-ecosystem: docker-compose
     schedule:
       interval: weekly
-    cooldown:
-      default-days: 5
-      semver-major-days: 30
-      semver-minor-days: 7
-      semver-patch-days: 3
 
   - directory: /
     package-ecosystem: github-actions
     schedule:
       interval: weekly
-    cooldown:
-      default-days: 5
-      semver-major-days: 30
-      semver-minor-days: 7
-      semver-patch-days: 3
 
   - directory: /backend
     package-ecosystem: uv
