@@ -451,8 +451,7 @@ class Analyzer:
 
         - copy only the service‑related columns,
         - convert category fields to comma‑separated strings,
-        - deduplicate by ``service.name`` keeping the row with the most populated
-        ``service.risk_categories``.
+        - deduplicate by ``service.name`` keeping the row with the most populated ``service.risk_categories``.
         """
         if self.traffic_df.empty:
             self.services_df = pd.DataFrame(columns=self.services_df.columns)

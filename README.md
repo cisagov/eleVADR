@@ -121,6 +121,24 @@ Test suites are separated by component:
 
 ---
 
+### Building Docs ###
+
+Build the documentation locally with:
+
+```bash
+# First, we need to isntall the docs dependencies.
+uv sync --group docs --directory backend/
+
+# Then, we need to install the backend for the source to be importable
+uv pip install -e ./backend
+
+# Finally we can build the docs
+sphinx-build -b html docs/source docs/_build/html
+
+# To access them locally, you can juse start a server
+python -m http.server --directory docs/_build/html 8010
+```
+
 ## Public Domain ##
 
 This project is in the public domain within the United States, and
