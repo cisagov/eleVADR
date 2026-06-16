@@ -28,7 +28,7 @@ fi
 
 if [ -d frontend ]; then
   echo "Installing frontend dependencies with pnpm..."
-  (cd frontend && pnpm install)
+  (cd frontend && pnpm install --no-ignore-scripts)
 fi
 
 uv tool install pre-commit && uv tool install deptry \

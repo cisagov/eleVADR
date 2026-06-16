@@ -6,3 +6,4 @@
 # Already being linted by yamllint
 *.yaml
 *.yml
+.git
