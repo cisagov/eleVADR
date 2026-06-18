@@ -1,4 +1,4 @@
-FROM ubuntu:26.04
+FROM docker.io/ubuntu:26.04
 
 USER root
 
@@ -65,11 +65,11 @@ RUN --mount=type=secret,id=ca_cert,required=false \
     fi
 
 # Copy tooling from official images cleanly (automatically matches host architecture)
-COPY --link --from=zeek/zeek:8.0.5 /usr/local/zeek /usr/local/zeek
+COPY --link --from=docker.io/zeek/zeek:8.0.5 /usr/local/zeek /usr/local/zeek
 
 # Surgeon-copy the exact compiled version of libnode and dependent libicu libraries Zeek/V8 expects
-COPY --link --from=zeek/zeek:8.0.5 /usr/lib/*-linux-gnu/libnode.so.115* /usr/local/zeek/lib/
-COPY --link --from=zeek/zeek:8.0.5 /usr/lib/*-linux-gnu/libicu*.so.76* /usr/local/zeek/lib/
+COPY --link --from=docker.io/zeek/zeek:8.0.5 /usr/lib/*-linux-gnu/libnode.so.115* /usr/local/zeek/lib/
+COPY --link --from=docker.io/zeek/zeek:8.0.5 /usr/lib/*-linux-gnu/libicu*.so.76* /usr/local/zeek/lib/
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 COPY --link --from=ghcr.io/pnpm/pnpm:11 /opt/pnpm /usr/local/bin/
@@ -78,8 +78,8 @@ COPY --link --from=ghcr.io/pnpm/pnpm:11 /opt/pnpm /usr/local/bin/
 RUN echo "/usr/local/zeek/lib" > /etc/ld.so.conf.d/zeek.conf && ldconfig
 
 # Copy cargo & rustup completely to ensure toolchain functions correctly
-COPY --link --from=rust:slim-trixie /usr/local/cargo /usr/local/cargo
-COPY --link --from=rust:slim-trixie /usr/local/rustup /usr/local/rustup
+COPY --link --from=docker.io/rust:slim-trixie /usr/local/cargo /usr/local/cargo
+COPY --link --from=docker.io/rust:slim-trixie /usr/local/rustup /usr/local/rustup
 
 # Environment configurations
 ENV CARGO_HOME=/usr/local/cargo

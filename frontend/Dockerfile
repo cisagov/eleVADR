@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22.22-alpine AS build
+FROM docker.io/node:22.22-alpine AS build
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ RUN --mount=type=secret,id=ssl_cert,required=false \
     pnpm run build
 
 # Production runtime stage
-FROM nginxinc/nginx-unprivileged:alpine
+FROM docker.io/nginxinc/nginx-unprivileged:alpine
 
 USER root
 
