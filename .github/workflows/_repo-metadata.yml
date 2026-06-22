@@ -28,7 +28,7 @@ jobs:
       COMPONENT: ${{ inputs.component }}
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set outputs for repository metadata
         id: set-outputs
         run: |
