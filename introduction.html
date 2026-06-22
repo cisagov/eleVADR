@@ -1,0 +1,766 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Production Hardening &amp; Deployment" href="install.html"><link rel="prev" title="eleVADR" href="index.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Introduction - eleVADR Documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_js.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">eleVADR Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  <span class="sidebar-brand-text">eleVADR Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Production Hardening &amp; Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Development Environment Setup</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/cisagov/eleVADR/blob/develop/docs/introduction.md?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/cisagov/eleVADR/edit/develop/docs/introduction.md" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h1>
+<p><a class="reference internal" href="glossary.html#term-eleVADR"><span class="xref std std-term">eleVADR</span></a> is a network security analysis engine
+designed to assess <a class="reference internal" href="glossary.html#term-Operational-Technology"><span class="xref std std-term">Operational Technology</span></a>
+(OT) systems by transforming raw <a class="reference internal" href="glossary.html#term-PCAP"><span class="xref std std-term">PCAP</span></a> traffic into
+actionable security intelligence.</p>
+<p>The overall goal is to support the automated analysis of data to
+allow anyone operating <a class="reference internal" href="glossary.html#term-OT"><span class="xref std std-term">OT</span></a> to make informed decisions about
+their network security posture.</p>
+<p>It is currently designed with ease of use in mind by leveraging
+<a class="reference internal" href="glossary.html#term-Containerization"><span class="xref std std-term">containerization</span></a>.</p>
+<section id="core-architecture">
+<h2>Core Architecture<a class="headerlink" href="#core-architecture" title="Link to this heading">¶</a></h2>
+<p>EleVADR is split into a <a class="reference internal" href="glossary.html#term-Frontend"><span class="xref std std-term">frontend</span></a> and a <a class="reference internal" href="glossary.html#term-Backend"><span class="xref std std-term">backend</span></a>
+component.</p>
+<section id="backend">
+<h3>Backend<a class="headerlink" href="#backend" title="Link to this heading">¶</a></h3>
+<p>The backend is a <a class="reference internal" href="glossary.html#term-Python"><span class="xref std std-term">Python</span></a> application that is used to run
+<a class="reference internal" href="glossary.html#term-Zeek"><span class="xref std std-term">Zeek</span></a> to collect network data and analyze
+it with <a class="reference internal" href="glossary.html#term-Numpy"><span class="xref std std-term">numpy</span></a>, <a class="reference internal" href="glossary.html#term-Pandas"><span class="xref std std-term">pandas</span></a>, and generate a
+<a class="reference internal" href="glossary.html#term-JSON"><span class="xref std std-term">JSON</span></a> report.</p>
+<p>The backend collects a <a class="reference internal" href="glossary.html#term-PCAP"><span class="xref std std-term">PCAP</span></a> file from the frontend
+and spawns a <a class="reference internal" href="glossary.html#term-Zeek"><span class="xref std std-term">Zeek</span></a> process to collect
+the network logs. Those logs are then converted to <a class="reference internal" href="glossary.html#term-Pandas"><span class="xref std std-term">pandas</span></a>
+using <a class="reference internal" href="glossary.html#term-Zat"><span class="xref std std-term">zat</span></a> and then custom
+analytics are written to create report modules.</p>
+<section id="zeek-script-integration">
+<h4>Zeek Script Integration<a class="headerlink" href="#zeek-script-integration" title="Link to this heading">¶</a></h4>
+<p>eleVADR relies on Zeek to parse raw packet captures (PCAP) and
+generate structured log files. To support advanced physical asset
+discovery and network logical boundary mapping, the backend executes
+custom Zeek scripts located in the <code class="docutils literal notranslate"><span class="pre">backend/src/app/data/zeek_scripts/</span></code>
+directory during the analysis pass.</p>
+<section id="mac-logging-script-mac-logging-zeek">
+<h5>1. MAC Logging Script (<code class="docutils literal notranslate"><span class="pre">mac_logging.zeek</span></code>)<a class="headerlink" href="#mac-logging-script-mac-logging-zeek" title="Link to this heading">¶</a></h5>
+<p>By default, Zeek tracks connections at Layer 3 (IP addresses)
+and Layer 4 (Ports). However, mapping physical hardware
+manufacturers and establishing true hardware identities requires
+Layer 2 MAC addresses.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">mac_logging.zeek</span></code> script hooks into Zeek’s connection state removal
+pipeline and appends Layer 2 source and destination MAC addresses to the
+connection metadata.</p>
+<ul class="simple">
+<li><p><strong>Log Hook:</strong> <code class="docutils literal notranslate"><span class="pre">connection_state_remove(c:</span> <span class="pre">connection)</span></code></p></li>
+<li><p><strong>Extended Fields:</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">orig_l2_addr</span></code> (String): The hardware MAC address of the initiator (Originator).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">resp_l2_addr</span></code> (String): The hardware MAC address of the responder.</p></li>
+</ul>
+</li>
+</ul>
+<p>These fields are mapped to <code class="docutils literal notranslate"><span class="pre">src_endpoint.mac</span></code> and <code class="docutils literal notranslate"><span class="pre">dst_endpoint.mac</span></code>
+in the backend Pandas DataFrame, allowing the engine to aggregate
+manufacturer profiles via OUI lookup.</p>
+</section>
+<hr class="docutils" />
+<section id="known-services-script-known-services-zeek-depracated">
+<h5>2. Known Services Script (<code class="docutils literal notranslate"><span class="pre">known_services.zeek</span></code>) DEPRACATED<a class="headerlink" href="#known-services-script-known-services-zeek-depracated" title="Link to this heading">¶</a></h5>
+<p>The <code class="docutils literal notranslate"><span class="pre">known_services.zeek</span></code> script tracks active, validated services
+communicating on the network. For the purposes of eleVADR, an active service
+is defined under the following lifecycle rules:</p>
+<ul class="simple">
+<li><p><strong>TCP Connections:</strong> Requires a completed TCP handshake (SYN+ACK)
+or an established state where server payload transfer is recognized.
+Passive, unacknowledged connection attempts
+(e.g., ports scanned but not open) are ignored.</p></li>
+<li><p><strong>UDP Connections:</strong> Requires at least one packet from the server side
+confirming that the target port is actively responding, unless
+the configuration option
+<code class="docutils literal notranslate"><span class="pre">Known::service_udp_requires_response</span></code>
+is explicitly disabled.</p></li>
+<li><p><strong>ICMP Traffic:</strong> Excluded from service classification.</p></li>
+</ul>
+</section>
+<section id="configurable-options">
+<h5>Configurable Options<a class="headerlink" href="#configurable-options" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">service_tracking</span></code>: Defaults to <code class="docutils literal notranslate"><span class="pre">LOCAL_HOSTS</span></code>. Limits active service
+profiling to local subnets to protect memory overhead.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">service_store_expiry</span></code>: Defaults to <code class="docutils literal notranslate"><span class="pre">1day</span></code>. Forces periodic state
+evaluation to prevent stale connection maps on continuous captures.</p></li>
+</ul>
+</section>
+</section>
+<section id="pcapparser">
+<h4>PcapParser<a class="headerlink" href="#pcapparser" title="Link to this heading">¶</a></h4>
+<p>The parsing is done through <code class="docutils literal notranslate"><span class="pre">PcapParser</span></code>.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.analysis.PcapParser">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">PcapParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path_info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#PcapParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.analysis.PcapParser" title="Link to this definition">¶</a></dt>
+<dd><p>Process PCAP files using Zeek and create traffic dataframe.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.app.utils.analysis.PcapParser.parse">
+<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#PcapParser.parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.analysis.PcapParser.parse" title="Link to this definition">¶</a></dt>
+<dd><p>Execute Zeek processing and load results into dataframes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.app.utils.analysis.PcapParser.zeekify">
+<span class="sig-name descname"><span class="pre">zeekify</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#PcapParser.zeekify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.analysis.PcapParser.zeekify" title="Link to this definition">¶</a></dt>
+<dd><p>Execute PCAP analysis using Zeek in a single high-performance pass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p>The data is then passed to <code class="docutils literal notranslate"><span class="pre">Analyzer</span></code>.</p>
+</section>
+<section id="analyzer">
+<h4>Analyzer<a class="headerlink" href="#analyzer" title="Link to this heading">¶</a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">Analyzer</span></code> is responsible for processing the data and running
+analytics on the data.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.analysis.Analyzer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Analyzer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">traffic_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">services_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_path_info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#Analyzer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.analysis.Analyzer" title="Link to this definition">¶</a></dt>
+<dd><p>Enrich traffic data with analysis and generate endpoint/service dataframes.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.app.utils.analysis.Analyzer.traffic_df_processing">
+<span class="sig-name descname"><span class="pre">traffic_df_processing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#Analyzer.traffic_df_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.analysis.Analyzer.traffic_df_processing" title="Link to this definition">¶</a></dt>
+<dd><p>Add IP, conn type, direction, subnet, service info to traffic concurrently.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.app.utils.analysis.Analyzer.endpoints_df_processing">
+<span class="sig-name descname"><span class="pre">endpoints_df_processing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#Analyzer.endpoints_df_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.analysis.Analyzer.endpoints_df_processing" title="Link to this definition">¶</a></dt>
+<dd><p>Create endpoint DataFrame with device info, IPs, services, OT label.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.app.utils.analysis.Analyzer.services_df_processing">
+<span class="sig-name descname"><span class="pre">services_df_processing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#Analyzer.services_df_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.analysis.Analyzer.services_df_processing" title="Link to this definition">¶</a></dt>
+<dd><p>Prepare <code class="docutils literal notranslate"><span class="pre">self.services_df</span></code> from <code class="docutils literal notranslate"><span class="pre">self.traffic_df</span></code>.</p>
+<ul class="simple">
+<li><p>copy only the service‑related columns,</p></li>
+<li><p>convert category fields to comma‑separated strings,</p></li>
+<li><p>deduplicate by <code class="docutils literal notranslate"><span class="pre">service.name</span></code> keeping the row with the most populated <code class="docutils literal notranslate"><span class="pre">service.risk_categories</span></code>.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.app.utils.analysis.Analyzer.ot_cross_segment_communication_count">
+<span class="sig-name descname"><span class="pre">ot_cross_segment_communication_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#Analyzer.ot_cross_segment_communication_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.analysis.Analyzer.ot_cross_segment_communication_count" title="Link to this definition">¶</a></dt>
+<dd><p>Count OT devices communicating across network segments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.app.utils.analysis.Analyzer.service_counts_in_traffic">
+<span class="sig-name descname"><span class="pre">service_counts_in_traffic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#Analyzer.service_counts_in_traffic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.analysis.Analyzer.service_counts_in_traffic" title="Link to this definition">¶</a></dt>
+<dd><p>Count occurrences of known and unknown services.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p>It is also responsible for responding to the
+frontend to filter the data for unique views.</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Analyzer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">traffic_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">services_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_path_info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#Analyzer"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Enrich traffic data with analysis and generate endpoint/service dataframes.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">connection_lines_filtered</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">ip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_ip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_ip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subnet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_subnet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_subnet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manufacturer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">success</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_ot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#Analyzer.connection_lines_filtered"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Return connection rows matching the provided filter set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">devices_filtered</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">manufacturer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subnet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_ot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#Analyzer.devices_filtered"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Return device rows matching the provided filters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">services_filtered</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">subnet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manufacturer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_ip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">risk_category</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/analysis.html#Analyzer.services_filtered"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Return service rows matching the provided filters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="structure">
+<h4>Structure<a class="headerlink" href="#structure" title="Link to this heading">¶</a></h4>
+<p>All of the findings are summarized into a <a class="reference internal" href="glossary.html#term-JSON"><span class="xref std std-term">JSON</span></a> report.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.Report">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analyzer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#Report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.Report" title="Link to this definition">¶</a></dt>
+<dd><p>Main report orchestrator class.</p>
+<p>Instantiates module classes and aggregates
+their data into a unified report structure.</p>
+</dd></dl>
+
+<p>The report is split into different <code class="docutils literal notranslate"><span class="pre">Modules</span></code>. See <a class="reference internal" href="#report-modules">Report Modules</a>
+for the list of modules that are available.</p>
+</section>
+</section>
+<section id="frontend">
+<h3>Frontend<a class="headerlink" href="#frontend" title="Link to this heading">¶</a></h3>
+<p>The frontend is a <a class="reference internal" href="glossary.html#term-React"><span class="xref std std-term">React</span></a> application that is used to interact
+with the <a class="reference internal" href="glossary.html#term-Python"><span class="xref std std-term">Python</span></a> <a class="reference internal" href="glossary.html#term-Backend"><span class="xref std std-term">backend</span></a> component.
+The frontend takes the <a class="reference internal" href="glossary.html#term-JSON"><span class="xref std std-term">JSON</span></a> report that the <a class="reference internal" href="glossary.html#term-Backend"><span class="xref std std-term">backend</span></a>
+generates and displays it in an interactive format,
+allowing the user to filter and drill-down into the data.</p>
+<p>The frontend is organized into sections that mirror what the <a class="reference internal" href="glossary.html#term-Backend"><span class="xref std std-term">backend</span></a> generates.</p>
+<section id="upload-form">
+<h4>Upload Form<a class="headerlink" href="#upload-form" title="Link to this heading">¶</a></h4>
+<p>The upload form is where a user can upload a <a class="reference internal" href="glossary.html#term-PCAP"><span class="xref std std-term">PCAP</span></a> to run the analysis
+and download the associated JSON report.
+There is also an option to upload a <a class="reference internal" href="glossary.html#term-JSON"><span class="xref std std-term">JSON</span></a> report to view it.</p>
+</section>
+<section id="report">
+<h4>Report<a class="headerlink" href="#report" title="Link to this heading">¶</a></h4>
+<p>The frontend is a <a class="reference internal" href="glossary.html#term-React"><span class="xref std std-term">React</span></a> application that is used to interact with the
+<a class="reference internal" href="glossary.html#term-Python"><span class="xref std std-term">Python</span></a> <a class="reference internal" href="glossary.html#term-Backend"><span class="xref std std-term">backend</span></a> component.
+The frontend takes the <a class="reference internal" href="glossary.html#term-JSON"><span class="xref std std-term">JSON</span></a> report that the <a class="reference internal" href="glossary.html#term-Backend"><span class="xref std std-term">backend</span></a>
+generates and displays it in an interactive format,
+allowing the user to filter and drill-down into the data.</p>
+<p>The frontend is organized into the following sections.</p>
+<section id="executive-summary">
+<h5>Executive Summary<a class="headerlink" href="#executive-summary" title="Link to this heading">¶</a></h5>
+<p>The executive summary is a high-level set of key takeaways from the report.
+It can include alerts defined by
+any class that inherits from <code class="docutils literal notranslate"><span class="pre">DetectionModule</span></code> and implements
+<code class="docutils literal notranslate"><span class="pre">executive_summary</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.DetectionModule">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">DetectionModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_modules</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#DetectionModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.DetectionModule" title="Link to this definition">¶</a></dt>
+<dd><p>Abstract base class for detections based on report modules.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="src.app.utils.report.DetectionModule.executive_summary">
+<span class="property"><span class="k"><span class="pre">abstract</span></span><span class="w"> </span><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">executive_summary</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#src.app.utils.report.DetectionModule.executive_summary" title="Link to this definition">¶</a></dt>
+<dd><p>Return the human-readable finding summary.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>That list is currently:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.SuspiciousOutboundConnectionsDetection">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">SuspiciousOutboundConnectionsDetection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_modules</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#SuspiciousOutboundConnectionsDetection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.SuspiciousOutboundConnectionsDetection" title="Link to this definition">¶</a></dt>
+<dd><p>Detection: OT devices making suspicious outbound connections.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.OTcrossSegmentDetection">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">OTcrossSegmentDetection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_modules</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#OTcrossSegmentDetection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.OTcrossSegmentDetection" title="Link to this definition">¶</a></dt>
+<dd><p>Detection: OT devices communicating across network segments.</p>
+</dd></dl>
+
+</section>
+<section id="report-modules">
+<span id="id1"></span><h5>Report Modules<a class="headerlink" href="#report-modules" title="Link to this heading">¶</a></h5>
+<p>The report modules are panels that aim to answer specific
+analytic questions. Each module inherits from
+<code class="docutils literal notranslate"><span class="pre">ReportModule</span></code> and implements <code class="docutils literal notranslate"><span class="pre">generate_data</span></code></p>
+<p>That list is currently:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.DevicePanelModule">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">DevicePanelModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analyzer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#DevicePanelModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.DevicePanelModule" title="Link to this definition">¶</a></dt>
+<dd><p>Device statistics module.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.ServicePanelModule">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ServicePanelModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analyzer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#ServicePanelModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.ServicePanelModule" title="Link to this definition">¶</a></dt>
+<dd><p>Service overview statistics module.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.ServiceRiskBreakdownModule">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ServiceRiskBreakdownModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analyzer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#ServiceRiskBreakdownModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.ServiceRiskBreakdownModule" title="Link to this definition">¶</a></dt>
+<dd><p>Service risk categorization module.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.ServiceCountModule">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ServiceCountModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analyzer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#ServiceCountModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.ServiceCountModule" title="Link to this definition">¶</a></dt>
+<dd><p>Service connection counts module.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.RiskBasisBreakdownModule">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">RiskBasisBreakdownModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analyzer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#RiskBasisBreakdownModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.RiskBasisBreakdownModule" title="Link to this definition">¶</a></dt>
+<dd><p>Breaks down observed services by risk basis (Observed vs Credible).</p>
+<p>Observed - directly used in compromises with evidence.
+Credible - known threat actor TTPs, not necessarily active now.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.ExposureBreakdownModule">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ExposureBreakdownModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analyzer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#ExposureBreakdownModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.ExposureBreakdownModule" title="Link to this definition">¶</a></dt>
+<dd><p>Breaks down observed services by environment/exposure classification.</p>
+<p>External   - internet-facing or reachable from outside the org.
+Cross-Zone - traverses trust boundaries without broker/inspection.
+Internal   - confined within a protected cell/zone.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.ConnectionSuccessModule">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ConnectionSuccessModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analyzer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#ConnectionSuccessModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.ConnectionSuccessModule" title="Link to this definition">¶</a></dt>
+<dd><p>Connection success vs failure breakdown based on Zeek conn.log.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.ProtocolPostureModule">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ProtocolPostureModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analyzer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#ProtocolPostureModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.ProtocolPostureModule" title="Link to this definition">¶</a></dt>
+<dd><p>Breaks down observed services by protocol posture.</p>
+<p>Inherently Risky   - clear-text or long-standing exploitation history.
+Conditionally Risky - secure if hardened, risky when exposed or tunnelled.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.SuspiciousOutboundConnectionsModule">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">SuspiciousOutboundConnectionsModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analyzer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#SuspiciousOutboundConnectionsModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.SuspiciousOutboundConnectionsModule" title="Link to this definition">¶</a></dt>
+<dd><p>Suspicious outbound connections from OT devices module.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.DevicesModule">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">DevicesModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analyzer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_filter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#DevicesModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.DevicesModule" title="Link to this definition">¶</a></dt>
+<dd><p>Generic devices module to list devices based on a filter.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.utils.report.OTServicesModule">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">OTServicesModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analyzer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/app/utils/report.html#OTServicesModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.utils.report.OTServicesModule" title="Link to this definition">¶</a></dt>
+<dd><p>OT services/protocols module.</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="install.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Production Hardening &amp; Deployment</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Home</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, CISA
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#core-architecture">Core Architecture</a><ul>
+<li><a class="reference internal" href="#backend">Backend</a><ul>
+<li><a class="reference internal" href="#zeek-script-integration">Zeek Script Integration</a><ul>
+<li><a class="reference internal" href="#mac-logging-script-mac-logging-zeek">1. MAC Logging Script (<code class="docutils literal notranslate"><span class="pre">mac_logging.zeek</span></code>)</a></li>
+<li><a class="reference internal" href="#known-services-script-known-services-zeek-depracated">2. Known Services Script (<code class="docutils literal notranslate"><span class="pre">known_services.zeek</span></code>) DEPRACATED</a></li>
+<li><a class="reference internal" href="#configurable-options">Configurable Options</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pcapparser">PcapParser</a><ul>
+<li><a class="reference internal" href="#src.app.utils.analysis.PcapParser"><code class="docutils literal notranslate"><span class="pre">PcapParser</span></code></a><ul>
+<li><a class="reference internal" href="#src.app.utils.analysis.PcapParser.parse"><code class="docutils literal notranslate"><span class="pre">PcapParser.parse()</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.analysis.PcapParser.zeekify"><code class="docutils literal notranslate"><span class="pre">PcapParser.zeekify()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#analyzer">Analyzer</a><ul>
+<li><a class="reference internal" href="#src.app.utils.analysis.Analyzer"><code class="docutils literal notranslate"><span class="pre">Analyzer</span></code></a><ul>
+<li><a class="reference internal" href="#src.app.utils.analysis.Analyzer.traffic_df_processing"><code class="docutils literal notranslate"><span class="pre">Analyzer.traffic_df_processing()</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.analysis.Analyzer.endpoints_df_processing"><code class="docutils literal notranslate"><span class="pre">Analyzer.endpoints_df_processing()</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.analysis.Analyzer.services_df_processing"><code class="docutils literal notranslate"><span class="pre">Analyzer.services_df_processing()</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.analysis.Analyzer.ot_cross_segment_communication_count"><code class="docutils literal notranslate"><span class="pre">Analyzer.ot_cross_segment_communication_count()</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.analysis.Analyzer.service_counts_in_traffic"><code class="docutils literal notranslate"><span class="pre">Analyzer.service_counts_in_traffic()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#structure">Structure</a><ul>
+<li><a class="reference internal" href="#src.app.utils.report.Report"><code class="docutils literal notranslate"><span class="pre">Report</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#frontend">Frontend</a><ul>
+<li><a class="reference internal" href="#upload-form">Upload Form</a></li>
+<li><a class="reference internal" href="#report">Report</a><ul>
+<li><a class="reference internal" href="#executive-summary">Executive Summary</a><ul>
+<li><a class="reference internal" href="#src.app.utils.report.DetectionModule"><code class="docutils literal notranslate"><span class="pre">DetectionModule</span></code></a><ul>
+<li><a class="reference internal" href="#src.app.utils.report.DetectionModule.executive_summary"><code class="docutils literal notranslate"><span class="pre">DetectionModule.executive_summary</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.app.utils.report.SuspiciousOutboundConnectionsDetection"><code class="docutils literal notranslate"><span class="pre">SuspiciousOutboundConnectionsDetection</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.report.OTcrossSegmentDetection"><code class="docutils literal notranslate"><span class="pre">OTcrossSegmentDetection</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#report-modules">Report Modules</a><ul>
+<li><a class="reference internal" href="#src.app.utils.report.DevicePanelModule"><code class="docutils literal notranslate"><span class="pre">DevicePanelModule</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.report.ServicePanelModule"><code class="docutils literal notranslate"><span class="pre">ServicePanelModule</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.report.ServiceRiskBreakdownModule"><code class="docutils literal notranslate"><span class="pre">ServiceRiskBreakdownModule</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.report.ServiceCountModule"><code class="docutils literal notranslate"><span class="pre">ServiceCountModule</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.report.RiskBasisBreakdownModule"><code class="docutils literal notranslate"><span class="pre">RiskBasisBreakdownModule</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.report.ExposureBreakdownModule"><code class="docutils literal notranslate"><span class="pre">ExposureBreakdownModule</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.report.ConnectionSuccessModule"><code class="docutils literal notranslate"><span class="pre">ConnectionSuccessModule</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.report.ProtocolPostureModule"><code class="docutils literal notranslate"><span class="pre">ProtocolPostureModule</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.report.SuspiciousOutboundConnectionsModule"><code class="docutils literal notranslate"><span class="pre">SuspiciousOutboundConnectionsModule</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.report.DevicesModule"><code class="docutils literal notranslate"><span class="pre">DevicesModule</span></code></a></li>
+<li><a class="reference internal" href="#src.app.utils.report.OTServicesModule"><code class="docutils literal notranslate"><span class="pre">OTServicesModule</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    </body>
+</html>
