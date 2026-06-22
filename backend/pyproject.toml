@@ -24,6 +24,16 @@ dev = [
     "python-multipart==0.0.32",
 ]
 
+docs = [
+    "sphinx>=9.1.0",
+    "furo>=2025.12.19",
+    "myst-parser>=5.1.0",
+    "sphinx-js>=5.0.3",
+    "sphinx-autodoc-typehints>=3.11.0",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-design>=0.7.0",
+]
+
 [tool.deptry]
 extend_exclude = [".*tests.*"]
 
@@ -68,7 +78,7 @@ ignore-words-list = "OT"
 default = true
 MD003 = { "style" = "atx_closed" }
 MD004 = { "style" = "dash" }
-MD013 = { "code_blocks" = false, "tables" = false }
+MD013 = { "code_blocks" = false, "tables" = false, "line_length" = 120 }
 MD024 = { "allow_different_nesting" = true }
 MD029 = { "style" = "one" }
 MD033 = { "allowed_elements" = ["h1", "img"] }

@@ -1,0 +1,46 @@
+---
+name: Deploy Sphinx Docs
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: backend/pyproject.toml
+
+      - id: setup-uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        with:
+          version: 0.11.11
+          enable-cache: false
+
+      - name: Install dependencies
+        run: |
+            uv sync --group docs --directory backend/
+            uv pip install -e ./backend
+
+      - name: Build HTML
+        run: |
+            # -b html: build target
+            # docs/: source directory
+            # docs/_build/html: output directory
+            sphinx-build -b html docs/source docs/_build/html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_build/html

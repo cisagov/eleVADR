@@ -5,12 +5,16 @@ ci:
   # Autoupdate hooks weekly (this is the default).
   autoupdate_schedule: weekly
 
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+
 default_language_version:
   # force all unspecified python hooks to run python3
   python: python
 
 repos:
-  # Check the pre-commit configuration
+  # Check the pre-commit configurations
   - repo: meta
     hooks:
       - id: check-useless-excludes
@@ -57,6 +61,8 @@ repos:
     rev: 515f543f5718ebfd6ce22e16708bb32c68ff96e1
     hooks:
       - id: prettier
+        stages:
+          - pre-commit
 
   - repo: https://github.com/adrienverge/yamllint
     rev: cba56bcde1fdd01c1deb3f945e69764c291a6530
