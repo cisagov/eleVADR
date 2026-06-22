@@ -1,20 +1,39 @@
 ---
+version: 2
 
 updates:
   - directory: /
     package-ecosystem: docker
     schedule:
       interval: weekly
+    groups:
+      docker-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
   - directory: /
     package-ecosystem: docker-compose
     schedule:
       interval: weekly
+    groups:
+      docker-compose-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
   - directory: /
     package-ecosystem: github-actions
     schedule:
       interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - directory: /backend
     package-ecosystem: uv
@@ -25,6 +44,13 @@ updates:
       semver-major-days: 30
       semver-minor-days: 7
       semver-patch-days: 3
+    groups:
+      backend-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
   - directory: /frontend
     package-ecosystem: npm
@@ -35,5 +61,10 @@ updates:
       semver-major-days: 30
       semver-minor-days: 7
       semver-patch-days: 3
-
-version: 2
+    groups:
+      frontend-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
