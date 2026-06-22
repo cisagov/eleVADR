@@ -14,7 +14,7 @@
   "dependencies": {
     "@types/node": "^25.9.2",
     "@typescript-eslint/eslint-plugin": "^8.60.0",
-    "@typescript-eslint/parser": "^8.60.0",
+    "@typescript-eslint/parser": "^8.61.1",
     "@uswds/uswds": "^3.13.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

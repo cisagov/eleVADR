@@ -1,5 +1,5 @@
 # Build stage
-FROM docker.io/node:22.22-alpine AS build
+FROM docker.io/node:22.22-slim AS build
 
 WORKDIR /app
 
