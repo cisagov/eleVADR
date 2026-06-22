@@ -3,7 +3,7 @@ name: elevadr-orchestration
 
 services:
   elevadr-backend:
-    image: cisagov/elevadr-backend:develop
+    image: docker.io/cisagov/elevadr-backend:develop
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -65,13 +65,12 @@ services:
       resources:
         limits:
           memory: 4GB
-          # Limit CPU resources to align with the parallel_apply processing engine
           cpus: "4"
         reservations:
           memory: 512MB
 
   elevadr-ui:
-    image: cisagov/elevadr-frontend:develop
+    image: docker.io/cisagov/elevadr-ui:develop
     build:
       context: ./frontend
       dockerfile: Dockerfile
