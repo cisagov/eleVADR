@@ -19,7 +19,7 @@ This repository contains both the Python/Zeek backend analysis engine
 and the React/TypeScript frontend dashboard.
 
 Advanced operational documentation can be found on our
-[[TODO] GitHub Pages site][docs-url].
+[GitHub Pages site][docs-url].
 
 ---
 
@@ -145,5 +145,5 @@ This project is in the public domain within the United States, and
 copyright and related rights in the work worldwide are waived through
 the [CC0 1.0 Universal public domain dedication][cc0-url].
 
-[docs-url]: https://github.com/cisagov/eleVADR
+[docs-url]: https://cisagov.github.io/eleVADR
 [cc0-url]: https://creativecommons.org/publicdomain/zero/1.0/
