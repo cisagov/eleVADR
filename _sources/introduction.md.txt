@@ -60,7 +60,7 @@ manufacturer profiles via OUI lookup.
 
 ---
 
-##### 2. Known Services Script (`known_services.zeek`) DEPRACATED ######
+##### 2. Known Services Script (`known_services.zeek`) DEPRECATED ######
 
 The `known_services.zeek` script tracks active, validated services
 communicating on the network. For the purposes of eleVADR, an active service
