@@ -38,7 +38,7 @@ updates:
   - directory: /backend
     package-ecosystem: uv
     schedule:
-      interval: daily
+      interval: weekly
     cooldown:
       default-days: 5
       semver-major-days: 30
@@ -55,7 +55,7 @@ updates:
   - directory: /frontend
     package-ecosystem: npm
     schedule:
-      interval: daily
+      interval: weekly
     cooldown:
       default-days: 5
       semver-major-days: 30
