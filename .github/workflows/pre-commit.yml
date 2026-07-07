@@ -68,7 +68,7 @@ jobs:
           python-version: 3.14
 
       - id: setup-uv
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        uses: astral-sh/setup-uv@f98e06938123ccabd21905ea5d0069192241f9f1
         with:
           version: 0.11.11
           enable-cache: false

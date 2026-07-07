@@ -125,7 +125,7 @@ jobs:
 
       - id: generate-metadata
         name: Generate Docker image metadata
-        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
         with:
           images: |
             ${{ steps.metadata.outputs.image-name }}
@@ -244,7 +244,7 @@ jobs:
           python-version-file: backend/pyproject.toml
       - id: setup-uv
         if: inputs.runtime == 'python'
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        uses: astral-sh/setup-uv@f98e06938123ccabd21905ea5d0069192241f9f1
         with:
           version: 0.11.11
           enable-cache: true
