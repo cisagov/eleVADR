@@ -65,7 +65,7 @@ jobs:
       - uses: actions/checkout@v7
       - id: generate-metadata
         name: Generate Docker image metadata
-        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
         with:
           images: |
             ${{ needs.repo-metadata.outputs.image-name }}
