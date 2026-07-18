@@ -21,8 +21,12 @@ from fastapi.testclient import TestClient
 # or if the src/app directory is added to PYTHONPATH.
 # If not, we might need to adjust sys.path or use a different import strategy.
 from src.app.main import (
+    MAX_STORED_REPORTS,
     _emit,
     _progress_queues,
+    _report_registry,
+    _require_analyzer,
+    _store_analyzer,
     app,
     logger,
     run_analysis,
@@ -37,6 +41,44 @@ def clear_progress_queues():
     _progress_queues.clear()
     yield
     _progress_queues.clear()
+
+
+@pytest.fixture
+def clear_report_registry():
+    """Clear the report registry around a test case."""
+    _report_registry.clear()
+    yield
+    _report_registry.clear()
+
+
+def test_store_analyzer_bounds_registry(clear_report_registry):
+    """Keep the report registry capped when more reports are stored than the limit."""
+    total = MAX_STORED_REPORTS + 10
+    for i in range(total):
+        _store_analyzer(f"report-{i}", Mock())
+
+    # Without a bound the registry would hold every insert; it must stay capped.
+    assert len(_report_registry) == MAX_STORED_REPORTS
+
+    # The oldest reports are evicted first; only the most recent survive.
+    assert "report-0" not in _report_registry
+    assert f"report-{total - 1}" in _report_registry
+
+
+def test_require_analyzer_keeps_recently_used(clear_report_registry):
+    """Evict the least-recently-used report rather than a recently accessed one."""
+    for i in range(MAX_STORED_REPORTS):
+        _store_analyzer(f"report-{i}", Mock())
+
+    # Touch the oldest report so it counts as recently used.
+    _require_analyzer("report-0")
+
+    # One more insert should evict report-1 (now the oldest) and spare report-0.
+    _store_analyzer("report-new", Mock())
+
+    assert len(_report_registry) == MAX_STORED_REPORTS
+    assert "report-0" in _report_registry
+    assert "report-1" not in _report_registry
 
 
 @pytest.mark.asyncio
