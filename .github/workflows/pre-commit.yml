@@ -63,7 +63,7 @@ jobs:
 
       # ---- Python toolchain (for deptry, mypy, bandit, ruff, uv-audit) ----
       - id: setup-python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: 3.14
 

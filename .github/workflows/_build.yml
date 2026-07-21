@@ -239,7 +239,7 @@ jobs:
       # ---- Python toolchain ----
       - id: setup-python
         if: inputs.runtime == 'python'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version-file: backend/pyproject.toml
       - id: setup-uv
