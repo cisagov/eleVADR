@@ -38,11 +38,11 @@
   },
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2.5.9": {
-      "upgradePackages": false,
-      "installZsh": true,
       "configureZshAsDefaultShell": false,
       "installOhMyZsh": false,
-      "installOhMyZshConfig": false
+      "installOhMyZshConfig": false,
+      "installZsh": true,
+      "upgradePackages": false
     }
   },
   "mounts": [
@@ -51,8 +51,6 @@
   ],
   "name": "EleVADR",
   "postCreateCommand": "bash .devcontainer/post-create.sh",
-  "workspaceFolder": "/workspace",
-  "runArgs": [
-    "--group-add=104"
-  ]
+  "postStartCommand": "bash .devcontainer/docker-socket-permissions.sh",
+  "workspaceFolder": "/workspace"
 }

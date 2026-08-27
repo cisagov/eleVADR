@@ -5,6 +5,7 @@ USER root
 # Combine packages installation and configure locale in a single layer
 RUN apt-get update && apt-get install --no-install-recommends -y \
         ca-certificates \
+        acl \
         curl \
         gnupg2 \
         lsb-release \

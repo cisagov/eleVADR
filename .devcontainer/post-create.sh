@@ -19,7 +19,7 @@ remove_corp_ca_shell_config() {
 }
 
 case "${ELEVADR_USE_CORP_CA,,}" in
-  true|1|yes|on)
+  true | 1 | yes | on)
     echo "Corporate CA support enabled."
 
     CORP_INTERMEDIATE_CA="${CORP_CA_DIR}/corp-intermediate.crt"
@@ -45,7 +45,7 @@ case "${ELEVADR_USE_CORP_CA,,}" in
 
     # Apply the same trust settings to future interactive bash terminals.
     mkdir -p "$(dirname "${CORP_CA_ENV}")"
-    cat > "${CORP_CA_ENV}" <<ENVEOF
+    cat > "${CORP_CA_ENV}" << ENVEOF
 export SSL_CERT_FILE="${SYSTEM_CA_BUNDLE}"
 export REQUESTS_CA_BUNDLE="${SYSTEM_CA_BUNDLE}"
 export NODE_OPTIONS="--use-system-ca"
@@ -55,7 +55,7 @@ ENVEOF
     if [ -f "${BASHRC}" ]; then
       sed -i "/${BASHRC_MARKER_BEGIN//\//\\/}/,/${BASHRC_MARKER_END//\//\\/}/d" "${BASHRC}"
     fi
-    cat >> "${BASHRC}" <<'BASHRCEOF'
+    cat >> "${BASHRC}" << 'BASHRCEOF'
 # >>> eleVADR corporate CA >>>
 if [ -f "${HOME}/.config/elevadr/corp-ca.env" ]; then
   . "${HOME}/.config/elevadr/corp-ca.env"
@@ -64,7 +64,7 @@ fi
 BASHRCEOF
     ;;
 
-  false|0|no|off|"")
+  false | 0 | no | off | "")
     echo "Corporate CA support disabled; using default system trust."
     remove_corp_ca_shell_config
     ;;
