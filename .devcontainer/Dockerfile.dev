@@ -39,30 +39,13 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     && update-locale LANG=en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Docker CLI and Compose Plugin inside container with CA handling
-RUN --mount=type=secret,id=ca_cert,required=false \
-    set -eu; \
-    CERT_INSTALLED=0; \
-    if [ -s /run/secrets/ca_cert ]; then \
-        cp /run/secrets/ca_cert /usr/local/share/ca-certificates/corp-ca.crt; \
-        update-ca-certificates; \
-        CERT_INSTALLED=1; \
-    fi; \
-    . /etc/os-release; \
-    mkdir -p /etc/apt/keyrings; \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
-    gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-        https://download.docker.com/linux/ubuntu ${VERSION_CODENAME} stable" \
-        > /etc/apt/sources.list.d/docker.list \
-    && apt-get update \
+# Install Docker CLI and Compose V2 from Ubuntu repositories
+RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        docker.io docker-compose-plugin \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && if [ "$CERT_INSTALLED" -eq 1 ]; then \
-        rm -f /usr/local/share/ca-certificates/corp-ca.crt; \
-        update-ca-certificates --fresh; \
-    fi
+        docker.io \
+        docker-compose-v2 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy tooling from official images cleanly (automatically matches host architecture)
 COPY --link --from=docker.io/zeek/zeek:8.0.5 /usr/local/zeek /usr/local/zeek
@@ -88,7 +71,6 @@ ENV PATH="/usr/local/zeek/bin:/usr/local/cargo/bin:${PATH}"
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 ENV LANG=en_US.UTF-8
-ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 ENV NVM_DIR=/home/elevadr/.nvm
 ENV PRE_COMMIT_HOME=/workspace/.local_cache/pre-commit
 ENV UV_CACHE_DIR=/workspace/.local_cache/uv

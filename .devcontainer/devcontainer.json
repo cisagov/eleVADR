@@ -1,19 +1,12 @@
 {
   "build": {
     "context": "..",
-    "dockerfile": "Dockerfile.dev",
-    "options": [
-      "--secret",
-      "id=ca_cert,src=.devcontainer/certs/corp-ca.crt"
-    ]
+    "dockerfile": "Dockerfile.dev"
   },
   "containerEnv": {
     "HTTPS_PROXY": "${localEnv:HTTPS_PROXY}",
     "HTTP_PROXY": "${localEnv:HTTP_PROXY}",
-    "NODE_EXTRA_CA_CERTS": "/usr/local/share/ca-certificates/host/corp-ca.crt",
     "NO_PROXY": "${localEnv:NO_PROXY}",
-    "REQUESTS_CA_BUNDLE": "/usr/local/share/ca-certificates/host/corp-ca.crt",
-    "SSL_CERT_FILE": "/usr/local/share/ca-certificates/host/corp-ca.crt",
     "http_proxy": "${localEnv:http_proxy}",
     "https_proxy": "${localEnv:https_proxy}",
     "no_proxy": "${localEnv:no_proxy}"
@@ -45,14 +38,21 @@
   },
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2.5.9": {
-      "upgradePackages": false
+      "upgradePackages": false,
+      "installZsh": true,
+      "configureZshAsDefaultShell": false,
+      "installOhMyZsh": false,
+      "installOhMyZshConfig": false
     }
   },
   "mounts": [
     "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
-    "source=${localWorkspaceFolder}/.devcontainer/certs,target=/usr/local/share/ca-certificates/host,type=bind,consistency=cached"
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "name": "EleVADR",
   "postCreateCommand": "bash .devcontainer/post-create.sh",
-  "workspaceFolder": "/workspace"
+  "workspaceFolder": "/workspace",
+  "runArgs": [
+    "--group-add=104"
+  ]
 }
