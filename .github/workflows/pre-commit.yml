@@ -63,12 +63,12 @@ jobs:
 
       # ---- Python toolchain (for deptry, mypy, bandit, ruff, uv-audit) ----
       - id: setup-python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: 3.14
 
       - id: setup-uv
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
         with:
           version: 0.11.11
           enable-cache: false

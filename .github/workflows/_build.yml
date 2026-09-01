@@ -239,12 +239,12 @@ jobs:
       # ---- Python toolchain ----
       - id: setup-python
         if: inputs.runtime == 'python'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version-file: backend/pyproject.toml
       - id: setup-uv
         if: inputs.runtime == 'python'
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
         with:
           version: 0.11.11
           enable-cache: true
