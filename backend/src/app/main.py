@@ -13,6 +13,7 @@ import traceback
 import uuid
 import warnings
 from asyncio import Queue, Task
+from collections import OrderedDict
 from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -44,11 +45,25 @@ logger = logging.getLogger(__name__)
 
 # Per-session progress queues - keyed by session_id, cleaned up after analysis completes
 _progress_queues: dict[str, asyncio.Queue[dict[str, object]]] = {}
-_report_registry: dict[str, Analyzer] = {}
+
+# Completed reports, keyed by report_id, used by the drilldown routes.
+# Each stored Analyzer holds the full parsed-pcap pandas frames, so the registry
+# is bounded and evicts the least-recently-used report once the cap is reached.
+# Ordered oldest-to-newest; reads move the entry to the end (see _require_analyzer).
+_report_registry: OrderedDict[str, Analyzer] = OrderedDict()
 _executor = ThreadPoolExecutor(max_workers=4)
 
 # Constants
 PCAP_CHUNK_SIZE = 1024 * 1024  # 1MB
+MAX_STORED_REPORTS = 32  # Cap on retained reports before the oldest is evicted.
+
+
+def _store_analyzer(report_id: str, analyzer: Analyzer) -> None:
+    """Register an analyzer for later drilldown, evicting the oldest if over cap."""
+    _report_registry[report_id] = analyzer
+    _report_registry.move_to_end(report_id)
+    while len(_report_registry) > MAX_STORED_REPORTS:
+        _report_registry.popitem(last=False)
 
 
 def sanitize_for_json(obj: JSONValue) -> JSONValue:
@@ -129,7 +144,7 @@ def run_analysis(
         )
 
         report_id = str(uuid.uuid4())
-        _report_registry[report_id] = analyzer
+        _store_analyzer(report_id, analyzer)
 
         _emit(session_id, "report", 80, "Generating report...")
         report = Report(analyzer, report_id=report_id)
@@ -292,6 +307,8 @@ def _require_analyzer(report_id: str) -> Analyzer:
     analyzer = _report_registry.get(report_id)
     if analyzer is None:
         raise HTTPException(status_code=404, detail=f"Report not found: {report_id}")
+    # Mark this report as recently used so active drilldowns are not evicted first.
+    _report_registry.move_to_end(report_id)
     return analyzer
 
 
