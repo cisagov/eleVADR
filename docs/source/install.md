@@ -107,13 +107,8 @@ On corporate networks, eleVADR requires intercepting proxies and
 custom Certificate Authorities (CA) to fetch
 external dependencies during compilation.
 
-1. Place your CA certificate inside `.devcontainer/certs/corp-ca.crt`.
-1. The Docker build engine resolves the certificate using BuildKit cache mounts.
-1. Pass environment references to the container runtime to enforce trusted connections:
-
-```yaml
-environment:
-  SSL_CERT_FILE: ${SSL_CERT_FILE}
-  REQUESTS_CA_BUNDLE: ${REQUESTS_CA_BUNDLE}
-  CURL_CA_BUNDLE: ${CURL_CA_BUNDLE}
-```
+1. Place `corp-intermediate.crt` and `corp-root.crt` in `.devcontainer/certs/`.
+1. Rebuild the dev container. Corporate CA support is detected automatically and
+   the certificates are installed into the container trust store.
+1. To override auto-detection, set `ELEVADR_USE_CORP_CA=true` or
+   `ELEVADR_USE_CORP_CA=false` in the host environment before rebuilding.

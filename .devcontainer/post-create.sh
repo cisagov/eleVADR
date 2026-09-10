@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Set to true only for environments that require additional corporate CA certificates.
-ELEVADR_USE_CORP_CA=true
+# Auto-detect corporate CA certificates unless explicitly enabled or disabled.
+ELEVADR_USE_CORP_CA="${ELEVADR_USE_CORP_CA:-auto}"
 
 SYSTEM_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"
 CORP_CA_DIR="/workspace/.devcontainer/certs"
+CORP_INTERMEDIATE_CA="${CORP_CA_DIR}/corp-intermediate.crt"
+CORP_ROOT_CA="${CORP_CA_DIR}/corp-root.crt"
 CORP_CA_ENV="${HOME}/.config/elevadr/corp-ca.env"
 BASHRC="${HOME}/.bashrc"
 BASHRC_MARKER_BEGIN="# >>> eleVADR corporate CA >>>"
@@ -19,11 +21,29 @@ remove_corp_ca_shell_config() {
 }
 
 case "${ELEVADR_USE_CORP_CA,,}" in
+  auto | "")
+    if [ -s "${CORP_INTERMEDIATE_CA}" ] && [ -s "${CORP_ROOT_CA}" ]; then
+      ELEVADR_USE_CORP_CA=true
+    elif [ ! -e "${CORP_INTERMEDIATE_CA}" ] && [ ! -e "${CORP_ROOT_CA}" ]; then
+      ELEVADR_USE_CORP_CA=false
+    else
+      echo "ERROR: Corporate CA setup is incomplete; provide both corp-intermediate.crt and corp-root.crt." >&2
+      exit 1
+    fi
+    ;;
+  true | 1 | yes | on)
+    ;;
+  false | 0 | no | off)
+    ;;
+  *)
+    echo "ERROR: ELEVADR_USE_CORP_CA must be auto, true, or false (received: ${ELEVADR_USE_CORP_CA})." >&2
+    exit 2
+    ;;
+esac
+
+case "${ELEVADR_USE_CORP_CA,,}" in
   true | 1 | yes | on)
     echo "Corporate CA support enabled."
-
-    CORP_INTERMEDIATE_CA="${CORP_CA_DIR}/corp-intermediate.crt"
-    CORP_ROOT_CA="${CORP_CA_DIR}/corp-root.crt"
 
     for cert in "${CORP_INTERMEDIATE_CA}" "${CORP_ROOT_CA}"; do
       if [ ! -s "${cert}" ]; then
@@ -64,14 +84,9 @@ fi
 BASHRCEOF
     ;;
 
-  false | 0 | no | off | "")
+  false | 0 | no | off)
     echo "Corporate CA support disabled; using default system trust."
     remove_corp_ca_shell_config
-    ;;
-
-  *)
-    echo "ERROR: ELEVADR_USE_CORP_CA must be true or false (received: ${ELEVADR_USE_CORP_CA})." >&2
-    exit 2
     ;;
 esac
 

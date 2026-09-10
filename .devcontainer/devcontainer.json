@@ -4,6 +4,7 @@
     "dockerfile": "Dockerfile.dev"
   },
   "containerEnv": {
+    "ELEVADR_USE_CORP_CA": "${localEnv:ELEVADR_USE_CORP_CA}",
     "HTTPS_PROXY": "${localEnv:HTTPS_PROXY}",
     "HTTP_PROXY": "${localEnv:HTTP_PROXY}",
     "NO_PROXY": "${localEnv:NO_PROXY}",
