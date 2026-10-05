@@ -1,0 +1,10 @@
+{
+  "report_version": "2.0.0",
+  "report_id": "current-v2-sparse",
+  "executive_summary": {},
+  "modules": {
+    "service_panel": {"num_known_services": 0, "num_ot_services": 0, "num_risky_services": 0, "num_unknown_services": 0},
+    "device_panel": {"hosts": 0, "ot_hosts": 0, "it_hosts": 0, "edge_hosts": 0, "ot_cross_segment": 0}
+  },
+  "arch_insights": {}
+}

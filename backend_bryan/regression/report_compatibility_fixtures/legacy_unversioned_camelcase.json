@@ -1,0 +1,10 @@
+{
+  "reportId": "legacy-unversioned-camel",
+  "executiveSummary": {"summary": "Unversioned camelCase compatibility fixture"},
+  "modules": {
+    "servicePanel": {"numKnownServices": 2, "numOtServices": 2},
+    "devicePanel": {"hosts": 1, "otHosts": 1},
+    "serviceRiskBreakdownPanel": {"riskCategoryCounts": {"high": 1}, "riskCategoryServices": {"high": ["modbus"]}},
+    "otDevices": [{"manufacturer": null, "ip_addresses": ["10.1.1.10"], "subnets": ["OT"], "incoming_services": ["modbus"], "sent_services": [], "is_ot": true}]
+  }
+}

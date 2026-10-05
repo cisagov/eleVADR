@@ -6,7 +6,7 @@
 
 .section-subtitle {
   margin: 0 0 1rem 0;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: #1b1b1b;
 }
@@ -37,7 +37,7 @@
 }
 
 .tooltip-services {
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
 }
 
 .tooltip-services strong {
@@ -78,6 +78,6 @@
   }
 
   .section-subtitle {
-    font-size: 1rem;
+    font-size: var(--text-md);
   }
 }

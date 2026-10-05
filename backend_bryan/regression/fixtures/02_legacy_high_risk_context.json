@@ -1,0 +1,480 @@
+{
+  "schemaVersion": 3,
+  "id": "b7bfd45d-98c7-484f-9a3f-ca16b6fb83a7",
+  "name": "Regression 02 - Legacy High-Risk",
+  "description": "Companion Detection Context for 02_legacy_high_risk.pcap. Models a known engineering host and legacy OT-service hosts while intentionally omitting 10.30.0.99 so rogue/brute-force behavior remains detectable.",
+  "updatedAt": "2026-09-29T04:54:37.143Z",
+  "selectedModules": [
+    "bacnet_discovery_anomalies",
+    "beaconing_c2_communication",
+    "brute_force_authentication",
+    "cleartext_credentials",
+    "codesys_runtime_exposure",
+    "control_system_enterprise_non_dmz",
+    "cross_purdue_level_traffic",
+    "database_service_exposed",
+    "deprecated_insecure_services_protocols",
+    "deprecated_vpn_protocol",
+    "dns_tunneling_exfiltration",
+    "engineering_tools_cleartext",
+    "enip_cip_write_session_abuses",
+    "excessive_broadcast_multicast_ot",
+    "file_extraction_sensitive_types",
+    "high_fan_in_out",
+    "http_user_agent_anomalies",
+    "iccp_tase2_detected",
+    "icmp_data_channel",
+    "ics_protocol_error_spike",
+    "ics_write_operations",
+    "internet_exposed_ics",
+    "ipv6_traffic_ot",
+    "irc_traffic_detected",
+    "ja3_fingerprint_outliers",
+    "kerberos_asrep_roastable_accounts",
+    "large_outbound_http_uploads",
+    "ldap_cleartext_anonymous_cross_segment",
+    "llmnr_nbtns_mdns_poisoning_signals",
+    "netbios_smbv1_exposure",
+    "new_ot_conversation_pair",
+    "new_service_emergence_ot",
+    "niagara_fox_detected",
+    "ntp_internet_multi_dest_ot",
+    "ot_asset_gone_silent",
+    "ot_external_dns_resolver",
+    "ot_management_certificate_risk",
+    "ot_outbound_internet_any_protocol",
+    "ot_protocol_exposure",
+    "plc_program_logic_firmware_update",
+    "port_host_scanning",
+    "protocol_unexpected_high_risk_port",
+    "public_to_public_traffic",
+    "quic_ot_segments",
+    "rdp_nla_disabled",
+    "remote_access_tool_exposure",
+    "rogue_dhcp_static_ot",
+    "s7comm_unauthorized_write_stop",
+    "smb_admin_share_access",
+    "smb_signing_disabled_ntlmv1",
+    "snmp_write_ot_devices",
+    "socks_open_proxy_behavior",
+    "tls_certificate_anomalies",
+    "tls_sni_certificate_reuse",
+    "unknown_rogue_devices",
+    "unusual_outbound_data_volume",
+    "upnp_ssdp_igd_port_mapping",
+    "vlan_tag_mismatch_double_tag",
+    "weak_broken_tls_ssl",
+    "weird_protocol_violations"
+  ],
+  "scan": {
+    "filesScanned": 2,
+    "recordsParsed": 17,
+    "logTypes": {
+      "connections": 16,
+      "ftp": 1
+    },
+    "warnings": [],
+    "scannedAt": "2026-09-29T04:54:20.351Z",
+    "sourceLabel": "02_legacy_high_risk.pcap",
+    "selectedFileCount": 1,
+    "fileNames": [
+      "conn.log",
+      "ftp.log",
+      "packet_filter.log"
+    ],
+    "dhcpAssignmentsObserved": 0,
+    "ipv6AddressesObserved": 0
+  },
+  "captureScope": {
+    "internalIcsOnlyExpected": true,
+    "dedicatedOtSensor": true,
+    "ipv4OnlyExpected": true
+  },
+  "segments": [
+    {
+      "id": "seg-02-eng",
+      "name": "Engineering Network",
+      "cidr": "10.30.0.0/24",
+      "role": "it",
+      "purdueLevel": "Level 4",
+      "vlanId": 30,
+      "addressing": "static",
+      "dhcpAllowed": false,
+      "ipv6Allowed": false,
+      "source": "imported",
+      "confidence": "high",
+      "reason": "Companion regression-test context.",
+      "observedCount": 2,
+      "observedDhcp": false,
+      "observedOtProtocols": [],
+      "observedVlanIds": [],
+      "suggestedRole": "unknown",
+      "suggestedAddressing": "unknown"
+    },
+    {
+      "id": "seg-02-legacy",
+      "name": "Legacy OT Services",
+      "cidr": "10.40.0.0/24",
+      "role": "ot",
+      "purdueLevel": "Level 3",
+      "vlanId": 40,
+      "addressing": "static",
+      "dhcpAllowed": false,
+      "ipv6Allowed": false,
+      "source": "imported",
+      "confidence": "high",
+      "reason": "Companion regression-test context.",
+      "observedCount": 8,
+      "observedDhcp": false,
+      "observedOtProtocols": [],
+      "observedVlanIds": [],
+      "suggestedRole": "unknown",
+      "suggestedAddressing": "unknown"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a02-eng",
+      "ip": "10.30.0.50",
+      "hostname": "legacy-eng-ws",
+      "macAddresses": [
+        "02:00:00:00:00:10"
+      ],
+      "assetType": "engineering workstation",
+      "role": "engineering",
+      "segment": "Engineering Network",
+      "purdueLevel": "Level 4",
+      "services": [
+        "ftp",
+        "irc",
+        "mssql",
+        "pptp",
+        "smb",
+        "telnet",
+        "vnc"
+      ],
+      "ports": [
+        21,
+        23,
+        139,
+        445,
+        1433,
+        1723,
+        5900,
+        6667
+      ],
+      "source": "imported",
+      "confidence": "high",
+      "reason": "Known asset in companion regression-test context.",
+      "observedCount": 9
+    },
+    {
+      "id": "a02-ftp",
+      "ip": "10.40.0.10",
+      "hostname": "legacy-ftp",
+      "macAddresses": [
+        "02:00:00:00:00:20"
+      ],
+      "assetType": "legacy server",
+      "role": "ot support",
+      "segment": "Legacy OT Services",
+      "purdueLevel": "Level 3",
+      "services": [
+        "ftp"
+      ],
+      "ports": [
+        21
+      ],
+      "source": "imported",
+      "confidence": "high",
+      "reason": "Known asset in companion regression-test context.",
+      "observedCount": 2
+    },
+    {
+      "id": "a02-telnet",
+      "ip": "10.40.0.11",
+      "hostname": "legacy-telnet",
+      "macAddresses": [
+        "02:00:00:00:00:20"
+      ],
+      "assetType": "legacy appliance",
+      "role": "ot support",
+      "segment": "Legacy OT Services",
+      "purdueLevel": "Level 3",
+      "services": [
+        "telnet"
+      ],
+      "ports": [
+        23
+      ],
+      "source": "imported",
+      "confidence": "high",
+      "reason": "Known asset in companion regression-test context.",
+      "observedCount": 1
+    },
+    {
+      "id": "a02-smb",
+      "ip": "10.40.0.12",
+      "hostname": "legacy-smb",
+      "macAddresses": [
+        "02:00:00:00:00:20"
+      ],
+      "assetType": "file server",
+      "role": "ot support",
+      "segment": "Legacy OT Services",
+      "purdueLevel": "Level 3",
+      "services": [
+        "netbios",
+        "smb"
+      ],
+      "ports": [
+        139,
+        445
+      ],
+      "source": "imported",
+      "confidence": "high",
+      "reason": "Known asset in companion regression-test context.",
+      "observedCount": 2
+    },
+    {
+      "id": "a02-rdp",
+      "ip": "10.40.0.15",
+      "hostname": "legacy-rdp",
+      "macAddresses": [
+        "02:00:00:00:00:40"
+      ],
+      "assetType": "remote access server",
+      "role": "ot support",
+      "segment": "Legacy OT Services",
+      "purdueLevel": "Level 3",
+      "services": [
+        "rdp"
+      ],
+      "ports": [
+        3389
+      ],
+      "source": "imported",
+      "confidence": "high",
+      "reason": "Known asset in companion regression-test context.",
+      "observedCount": 8
+    },
+    {
+      "id": "a02-db",
+      "ip": "10.40.0.20",
+      "hostname": "legacy-db",
+      "macAddresses": [
+        "02:00:00:00:00:20"
+      ],
+      "assetType": "database server",
+      "role": "ot support",
+      "segment": "Legacy OT Services",
+      "purdueLevel": "Level 3",
+      "services": [
+        "mssql"
+      ],
+      "ports": [
+        1433
+      ],
+      "source": "imported",
+      "confidence": "high",
+      "reason": "Known asset in companion regression-test context.",
+      "observedCount": 1
+    },
+    {
+      "id": "a02-vnc",
+      "ip": "10.40.0.21",
+      "hostname": "legacy-vnc",
+      "macAddresses": [
+        "02:00:00:00:00:20"
+      ],
+      "assetType": "remote access server",
+      "role": "ot support",
+      "segment": "Legacy OT Services",
+      "purdueLevel": "Level 3",
+      "services": [
+        "vnc"
+      ],
+      "ports": [
+        5900
+      ],
+      "source": "imported",
+      "confidence": "high",
+      "reason": "Known asset in companion regression-test context.",
+      "observedCount": 1
+    },
+    {
+      "id": "a02-pptp",
+      "ip": "10.40.0.22",
+      "hostname": "legacy-vpn",
+      "macAddresses": [
+        "02:00:00:00:00:20"
+      ],
+      "assetType": "vpn gateway",
+      "role": "ot support",
+      "segment": "Legacy OT Services",
+      "purdueLevel": "Level 3",
+      "services": [
+        "pptp"
+      ],
+      "ports": [
+        1723
+      ],
+      "source": "imported",
+      "confidence": "high",
+      "reason": "Known asset in companion regression-test context.",
+      "observedCount": 1
+    },
+    {
+      "id": "a02-irc",
+      "ip": "10.40.0.23",
+      "hostname": "legacy-irc",
+      "macAddresses": [
+        "02:00:00:00:00:20"
+      ],
+      "assetType": "application server",
+      "role": "ot support",
+      "segment": "Legacy OT Services",
+      "purdueLevel": "Level 3",
+      "services": [
+        "irc"
+      ],
+      "ports": [
+        6667
+      ],
+      "source": "imported",
+      "confidence": "high",
+      "reason": "Known asset in companion regression-test context.",
+      "observedCount": 1
+    },
+    {
+      "id": "6af09d9b-c46a-4b5a-a1c2-f409ca109b55",
+      "ip": "10.30.0.99",
+      "hostname": "",
+      "assetType": "Observed host",
+      "role": "Unknown",
+      "macAddresses": [],
+      "services": [],
+      "ports": [],
+      "source": "zeek",
+      "confidence": "low",
+      "reason": "Observed in Zeek network telemetry; role cannot be established from traffic alone.",
+      "observedCount": 8
+    }
+  ],
+  "infrastructure": [],
+  "communicationPairs": [
+    {
+      "id": "p02-ftp",
+      "sourceIp": "10.30.0.50",
+      "destinationIp": "10.40.0.10",
+      "protocol": "tcp",
+      "description": "Observed/expected communication in companion test capture.",
+      "source": "imported",
+      "confidence": "high",
+      "destinationPort": 21,
+      "service": "ftp",
+      "observedCount": 1
+    },
+    {
+      "id": "p02-telnet",
+      "sourceIp": "10.30.0.50",
+      "destinationIp": "10.40.0.11",
+      "protocol": "tcp",
+      "description": "Observed/expected communication in companion test capture.",
+      "source": "imported",
+      "confidence": "high",
+      "destinationPort": 23,
+      "service": "telnet",
+      "observedCount": 1
+    },
+    {
+      "id": "p02-smb445",
+      "sourceIp": "10.30.0.50",
+      "destinationIp": "10.40.0.12",
+      "protocol": "tcp",
+      "description": "Observed/expected communication in companion test capture.",
+      "source": "imported",
+      "confidence": "high",
+      "destinationPort": 445,
+      "service": "smb",
+      "observedCount": 1
+    },
+    {
+      "id": "p02-nb139",
+      "sourceIp": "10.30.0.50",
+      "destinationIp": "10.40.0.12",
+      "protocol": "tcp",
+      "description": "Observed/expected communication in companion test capture.",
+      "source": "imported",
+      "confidence": "high",
+      "destinationPort": 139,
+      "service": "netbios",
+      "observedCount": 1
+    },
+    {
+      "id": "p02-db",
+      "sourceIp": "10.30.0.50",
+      "destinationIp": "10.40.0.20",
+      "protocol": "tcp",
+      "description": "Observed/expected communication in companion test capture.",
+      "source": "imported",
+      "confidence": "high",
+      "destinationPort": 1433,
+      "service": "mssql",
+      "observedCount": 1
+    },
+    {
+      "id": "p02-vnc",
+      "sourceIp": "10.30.0.50",
+      "destinationIp": "10.40.0.21",
+      "protocol": "tcp",
+      "description": "Observed/expected communication in companion test capture.",
+      "source": "imported",
+      "confidence": "high",
+      "destinationPort": 5900,
+      "service": "vnc",
+      "observedCount": 1
+    },
+    {
+      "id": "p02-pptp",
+      "sourceIp": "10.30.0.50",
+      "destinationIp": "10.40.0.22",
+      "protocol": "tcp",
+      "description": "Observed/expected communication in companion test capture.",
+      "source": "imported",
+      "confidence": "high",
+      "destinationPort": 1723,
+      "service": "pptp",
+      "observedCount": 1
+    },
+    {
+      "id": "p02-irc",
+      "sourceIp": "10.30.0.50",
+      "destinationIp": "10.40.0.23",
+      "protocol": "tcp",
+      "description": "Observed/expected communication in companion test capture.",
+      "source": "imported",
+      "confidence": "high",
+      "destinationPort": 6667,
+      "service": "irc",
+      "observedCount": 1
+    },
+    {
+      "id": "p02-rdp-rogue",
+      "sourceIp": "10.30.0.99",
+      "destinationIp": "10.40.0.15",
+      "protocol": "tcp",
+      "description": "Observed repeated RDP attempts from intentionally unlisted test host 10.30.0.99.",
+      "source": "imported",
+      "confidence": "high",
+      "destinationPort": 3389,
+      "service": "rdp",
+      "observedCount": 8
+    }
+  ],
+  "allowedHosts": [],
+  "allowedSegmentPairs": [],
+  "approvedExternalDestinations": [],
+  "authorizedControlActions": [],
+  "modulePolicies": {}
+}

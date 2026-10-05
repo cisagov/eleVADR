@@ -147,3 +147,34 @@ the [CC0 1.0 Universal public domain dedication][cc0-url].
 
 [docs-url]: https://cisagov.github.io/eleVADR
 [cc0-url]: https://creativecommons.org/publicdomain/zero/1.0/
+
+
+### Finding provenance
+
+Detector findings now include Zeek-record provenance (`log_type`, parsed `record_index`, and supporting field/value pairs). See `backend_bryan/reference/finding_provenance.md`.
+
+### Dataset 19: multi-hour OT site simulation
+
+The regression pack now includes Dataset 19, a deterministic four-hour site-like OT PCAP intended to measure false-positive behavior across the complete 75-detector registry. The full regression gate runs it after Datasets 15-17. Its normal traffic is explicitly represented in Detection Context policy, while two late deliberate anomalies verify that the site-like workload remains quiet except for the reviewed expected modules.
+
+## Release-readiness preflight
+
+Before running the full regression suite, you can run the fast release invariant check:
+
+```bash
+python -m backend_bryan.integration.release_preflight
+```
+
+The full `run_regression_tests.bat` / `run_regression_tests.sh` gate runs this automatically as stage 1. The local reference backend also exposes `GET http://127.0.0.1:8765/health` for detector/contract/Zeek-runtime diagnostics.
+
+
+
+## Release-candidate package validation
+
+The known-good release checkpoint and clean-package gate are documented in
+`RELEASE_CANDIDATE_CHECKPOINT.md`. After extracting a release/upload bundle into
+a clean directory, run `run_release_candidate_validation.bat` on Windows or
+`run_release_candidate_validation.sh` on Linux/macOS. The default clean mode
+validates package integrity, toolchain compatibility, release invariants, an
+isolated frontend install/build/test, and a raw-PCAP smoke analysis when Zeek is
+available. Add `--full` to run the complete regression gate as well.

@@ -1,93 +1,31 @@
-import React from "react";
+import React, { useMemo } from "react";
 import "./ServicePanel.css";
 import Panel from "../Panel/Panel";
-import { ServicePanel as ServicePanelType } from "../../types/Report";
+import { ElevadrReport } from "../../types/Report";
 import InfoTooltip from "../InfoTooltip/InfoTooltip";
+import { deriveFindings } from "../FindingsPanel/FindingsPanel";
 
-interface ServicePanelProps {
-  data: ServicePanelType;
-}
+interface ServicePanelProps { report: ElevadrReport; }
 
-const ServicePanel: React.FC<ServicePanelProps> = ({ data }) => {
-  const handleLinkClick = (panelId: string) => {
-    const panel = document.getElementById(panelId);
-    if (panel) {
-      panel.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
+const ServicePanel: React.FC<ServicePanelProps> = ({ report }) => {
+  const data = report.modules.service_panel;
   const totalServices = data.num_known_services + data.num_unknown_services;
-  const isEmpty = totalServices === 0;
-
+  const implicated = useMemo(() => new Set(deriveFindings(report).map((finding) => finding.service).filter(Boolean)).size, [report]);
+  const otServices = data.num_ot_services;
+  const itServices = Math.max(0, data.num_known_services - data.num_ot_services);
+  const otherServices = data.num_unknown_services;
+  const go = (panelId: string) => document.getElementById(panelId)?.scrollIntoView({ behavior: "smooth", block: "start" });
   return (
-    <Panel
-      id="service-panel"
-      title={
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span>Service Panel</span>
-          <InfoTooltip text="Summary of network services detected including known, OT-specific, risky, and unknown services." />
-        </div>
-      }
-      isEmpty={isEmpty}
-    >
+    <Panel id="service-panel" title={<div style={{ display: "flex", alignItems: "center", gap: "8px" }}><span>Service Overview</span><InfoTooltip text="High-level counts for observed services, including services implicated by the context of a security finding." /></div>} isEmpty={totalServices === 0}>
       <div className="data-grid">
-        <div
-          className="data-item linked"
-          onClick={() => handleLinkClick("service-count-panel")}
-        >
-          <span className="data-label">
-            <InfoTooltip text="The total number of unique services identified on the network. Click to see details." />
-            Total Services
-          </span>
-          <span className="data-value data-value-total">{totalServices}</span>
-        </div>
-        <div
-          className="data-item linked"
-          onClick={() => handleLinkClick("service-count-panel")}
-        >
-          <span className="data-label">
-            <InfoTooltip text="Services that are recognized and have well-defined characteristics. Click to see details." />
-            Known Services
-          </span>
-          <span className="data-value">{data.num_known_services}</span>
-        </div>
-        <div
-          className="data-item linked"
-          onClick={() => handleLinkClick("ot-services-panel")}
-        >
-          <span className="data-label">
-            <InfoTooltip text="Operational Technology (OT) services specific to industrial control systems. Click to see details." />
-            OT Services
-          </span>
-          <span className="data-value">{data.num_ot_services}</span>
-        </div>
-        <div
-          className="data-item linked"
-          onClick={() => handleLinkClick("service-risk-breakdown-panel")}
-        >
-          <span className="data-label">
-            <InfoTooltip text="Services associated with security risks. Click to see details." />
-            Risky Services
-          </span>
-          <span className="data-value data-value-warning">
-            {data.num_risky_services}
-          </span>
-        </div>
-        <div
-          className="data-item linked"
-          onClick={() => handleLinkClick("service-count-panel")}
-        >
-          <span className="data-label">
-            <InfoTooltip text="Services that could not be identified. Click to see details." />
-            Unknown Services
-          </span>
-          <span className="data-value data-value-warning">
-            {data.num_unknown_services}
-          </span>
-        </div>
+        <DataItem label="Services" value={totalServices} onClick={() => go("service-inventory-panel")} />
+        <DataItem label="OT Services" value={otServices} onClick={() => go("service-inventory-panel")} />
+        <DataItem label="IT Services" value={itServices} onClick={() => go("service-inventory-panel")} />
+        <DataItem label="Other / Unclassified" value={otherServices} onClick={() => go("service-inventory-panel")} />
+        <DataItem label="Implicated In A Finding" value={implicated} onClick={() => go("findings")} warning={implicated > 0} />
       </div>
     </Panel>
   );
 };
-
+const DataItem: React.FC<{label:string;value:number;onClick:()=>void;warning?:boolean}> = ({label,value,onClick,warning=false}) => <button type="button" className={`data-item linked data-item-button${warning ? " data-item-warning" : ""}`} onClick={onClick}><span className="data-label">{label}</span><span className={`data-value${warning?" data-value-warning":""}`}>{value}</span></button>;
 export default ServicePanel;

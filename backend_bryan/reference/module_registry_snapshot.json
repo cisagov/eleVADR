@@ -1,0 +1,757 @@
+[
+  {
+    "id": "arp_ip_mac_identity_change",
+    "name": "ARP / IP-MAC Identity Change",
+    "category": "security_analysis",
+    "required_logs": [
+      "arp"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "arp_l2_reconnaissance",
+    "name": "ARP / L2 Reconnaissance",
+    "category": "security_analysis",
+    "required_logs": [
+      "arp"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "bacnet_discovery_anomalies",
+    "name": "BACnet Who-Is/I-Am Flood or External Discovery",
+    "category": "security_analysis",
+    "required_logs": [
+      "bacnet"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "beaconing_c2_communication",
+    "name": "Beaconing / C2 Communication",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "brute_force_authentication",
+    "name": "Brute Force Authentication",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "cleartext_credentials",
+    "name": "Cleartext Credentials",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "codesys_runtime_exposure",
+    "name": "CoDeSys Runtime Exposure",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "control_system_enterprise_non_dmz",
+    "name": "Control System to Enterprise IT Communication (Non-DMZ)",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "controller_communication_jitter",
+    "name": "Controller Communication Jitter",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "cross_purdue_level_traffic",
+    "name": "Cross-Purdue-Level Traffic",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "database_service_exposed",
+    "name": "Database Service Exposed",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "deprecated_insecure_services_protocols",
+    "name": "Deprecated / Insecure Connection Services and Protocols",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "deprecated_vpn_protocol",
+    "name": "PPTP / Deprecated VPN Protocol",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "dns_source_drift",
+    "name": "DNS Resolver Source Drift",
+    "category": "security_analysis",
+    "required_logs": [
+      "dns"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "dns_tunneling_exfiltration",
+    "name": "DNS Tunneling / Exfiltration",
+    "category": "security_analysis",
+    "required_logs": [
+      "dns"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "encrypted_session_fingerprint_change",
+    "name": "Encrypted Session Fingerprint Change",
+    "category": "security_analysis",
+    "required_logs": [
+      "ssl"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "engineering_tools_cleartext",
+    "name": "Engineers Tools Over Clear-Text (TFTP/FTP)",
+    "category": "Insecure Engineering Transfer",
+    "required_logs": [],
+    "required_any_logs": [
+      "ftp",
+      "tftp",
+      "files"
+    ],
+    "default_enabled": true
+  },
+  {
+    "id": "engineering_workstation_control_burst",
+    "name": "Engineering Workstation Control Burst",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [
+      "modbus",
+      "dnp3",
+      "s7comm",
+      "enip"
+    ],
+    "default_enabled": true
+  },
+  {
+    "id": "enip_cip_write_session_abuses",
+    "name": "EtherNet/IP CIP Write and Session Abuses",
+    "category": "security_analysis",
+    "required_logs": [
+      "enip"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "excessive_broadcast_multicast_ot",
+    "name": "Excessive Broadcast / Multicast in OT",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "file_extraction_sensitive_types",
+    "name": "File Extraction on Wire (Sensitive Types)",
+    "category": "Data Transfer / Boundary Monitoring",
+    "required_logs": [
+      "files"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "high_fan_in_out",
+    "name": "High Fan-Out or Fan-In Patterns",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "http_user_agent_anomalies",
+    "name": "HTTP User-Agent Anomalies",
+    "category": "security_analysis",
+    "required_logs": [
+      "http"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "iccp_tase2_detected",
+    "name": "ICCP / Inter-Control-Center Protocol",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "icmp_data_channel",
+    "name": "ICMP as Data Channel",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "ics_protocol_error_spike",
+    "name": "ICS Protocol Error / Exception Spike",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [
+      "modbus",
+      "dnp3",
+      "enip",
+      "s7comm"
+    ],
+    "default_enabled": true
+  },
+  {
+    "id": "ics_write_operations",
+    "name": "Modbus/DNP3 Write Operations Outside Allowed Paths",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [
+      "modbus",
+      "dnp3"
+    ],
+    "default_enabled": true
+  },
+  {
+    "id": "internet_exposed_ics",
+    "name": "Internet-Exposed ICS Device / External Admin to PLC/HMI",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "ipv6_traffic_ot",
+    "name": "IPv6 Traffic in OT Environment",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "irc_traffic_detected",
+    "name": "IRC Traffic Detected",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "ja3_fingerprint_outliers",
+    "name": "JA3/JA3S Fingerprint Outliers",
+    "category": "security_analysis",
+    "required_logs": [
+      "ssl"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "kerberos_asrep_roastable_accounts",
+    "name": "Kerberos AS-REP Roastable Accounts",
+    "category": "security_analysis",
+    "required_logs": [
+      "kerberos"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "large_outbound_http_uploads",
+    "name": "Large Outbound POST/PUT to Unknown Hosts",
+    "category": "security_analysis",
+    "required_logs": [
+      "http"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "ldap_cleartext_anonymous_cross_segment",
+    "name": "LDAP Cleartext / Anonymous Bind / Cross-Segment",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "llmnr_nbtns_mdns_poisoning_signals",
+    "name": "LLMNR/NBT-NS/mDNS Poisoning Signals",
+    "category": "security_analysis",
+    "required_logs": [
+      "dns"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "netbios_smbv1_exposure",
+    "name": "NetBIOS / SMBv1 Exposure",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [
+      "conn",
+      "smb",
+      "smb_mapping",
+      "smb_files",
+      "smb_cmd"
+    ],
+    "default_enabled": true
+  },
+  {
+    "id": "new_ot_conversation_pair",
+    "name": "New OT Conversation Pair (Comm-Matrix Drift)",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "new_service_emergence_ot",
+    "name": "New Service Emergence in OT (Baseline Drift)",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "niagara_fox_detected",
+    "name": "Niagara Fox Protocol Detected",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "ntp_internet_multi_dest_ot",
+    "name": "NTP Sourced from Internet (Multi-Dest / OT)",
+    "category": "security_analysis",
+    "required_logs": [
+      "ntp"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "ntp_source_drift",
+    "name": "NTP Source Drift",
+    "category": "security_analysis",
+    "required_logs": [
+      "ntp"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "ot_asset_gone_silent",
+    "name": "OT Asset Gone Silent (Loss of Expected Periodic Comms)",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "ot_external_dns_resolver",
+    "name": "OT Host Using External / Internet DNS Resolver",
+    "category": "security_analysis",
+    "required_logs": [
+      "dns"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "ot_management_certificate_risk",
+    "name": "Certificate Long Validity / Self-Issued in OT Mgmt",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [
+      "ssl",
+      "x509"
+    ],
+    "default_enabled": true
+  },
+  {
+    "id": "ot_outbound_internet_any_protocol",
+    "name": "OT Outbound Internet Connection (Any Protocol)",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "ot_protocol_exposure",
+    "name": "OT Protocol Exposure",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "ot_protocol_role_reversal",
+    "name": "OT Protocol Role Reversal",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "plc_program_logic_firmware_update",
+    "name": "PLC Program / Logic Download or Firmware Update",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [
+      "modbus",
+      "s7comm",
+      "enip",
+      "dnp3"
+    ],
+    "default_enabled": true
+  },
+  {
+    "id": "plc_rtu_peer_change",
+    "name": "PLC / RTU Peer Change",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "polling_cadence_disruption",
+    "name": "Polling Cadence Disruption",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "port_host_scanning",
+    "name": "Port / Host Scanning",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "protocol_unexpected_high_risk_port",
+    "name": "Protocol on Unexpected / High-Risk Port",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "public_to_public_traffic",
+    "name": "Public-to-Public Traffic in Capture",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "quic_ot_segments",
+    "name": "QUIC in OT Segments",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "rdp_nla_disabled",
+    "name": "Unexpected RDP with NLA Disabled",
+    "category": "security_analysis",
+    "required_logs": [
+      "rdp"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "remote_access_session_anomaly",
+    "name": "Remote Access Session Anomaly",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "remote_access_tool_exposure",
+    "name": "VNC / Remote Access Tool Exposure",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "rogue_dhcp_static_ot",
+    "name": "Rogue DHCP Server / DHCP Activity on Static OT Segment",
+    "category": "security_analysis",
+    "required_logs": [
+      "dhcp"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "s7comm_unauthorized_write_stop",
+    "name": "S7comm Unauthorized Write/Stop PLC",
+    "category": "security_analysis",
+    "required_logs": [
+      "s7comm"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "service_disappearance_replacement",
+    "name": "Service Disappearance / Replacement",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "smb_admin_share_access",
+    "name": "SMB Admin-Share Access (IPC$/ADMIN$)",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "smb_signing_disabled_ntlmv1",
+    "name": "SMB Signing Disabled or NTLMv1 Detected",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "snmp_write_ot_devices",
+    "name": "SNMP Write / Set to OT Devices",
+    "category": "security_analysis",
+    "required_logs": [
+      "snmp"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "socks_open_proxy_behavior",
+    "name": "SOCKS / Open Proxy Behavior",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [
+      "socks",
+      "http"
+    ],
+    "default_enabled": true
+  },
+  {
+    "id": "tcp_reset_abort_surge",
+    "name": "TCP Reset / Connection-Abort Surge",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "tls_certificate_anomalies",
+    "name": "TLS Certificate Anomalies",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "tls_sni_certificate_reuse",
+    "name": "TLS SNI Mismatch / Certificate Reuse Across Hosts",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [
+      "ssl",
+      "x509"
+    ],
+    "default_enabled": true
+  },
+  {
+    "id": "unexpected_dhcp_server",
+    "name": "Unexpected DHCP Server",
+    "category": "security_analysis",
+    "required_logs": [
+      "dhcp"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "unexpected_multicast_behavior",
+    "name": "Unexpected Multicast Behavior",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "unknown_rogue_devices",
+    "name": "Unknown / Rogue Devices",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "unusual_outbound_data_volume",
+    "name": "Unusual Outbound Data Volume",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "upnp_ssdp_igd_port_mapping",
+    "name": "UPnP / SSDP Exposure & IGD Port Mapping",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [
+      "upnp",
+      "upnp_igd",
+      "ssdp"
+    ],
+    "default_enabled": true
+  },
+  {
+    "id": "vlan_tag_mismatch_double_tag",
+    "name": "VLAN Tag Mismatch / Double-Tag Indicators",
+    "category": "security_analysis",
+    "required_logs": [
+      "conn"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "weak_broken_tls_ssl",
+    "name": "Weak or Broken TLS/SSL",
+    "category": "security_analysis",
+    "required_logs": [],
+    "required_any_logs": [],
+    "default_enabled": true
+  },
+  {
+    "id": "weird_protocol_violations",
+    "name": "Weird.log Protocol Violations",
+    "category": "security_analysis",
+    "required_logs": [
+      "weird"
+    ],
+    "required_any_logs": [],
+    "default_enabled": true
+  }
+]

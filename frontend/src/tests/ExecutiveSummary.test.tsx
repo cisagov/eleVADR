@@ -5,7 +5,7 @@ import "@testing-library/jest-dom";
 import ExecutiveSummary from "../app/components/ExecutiveSummary/ExecutiveSummary";
 
 describe("ExecutiveSummary (Vitest)", () => {
-  it("renders formatted alert titles and stripped tooltip text", () => {
+  it("renders priority findings with cleaned summary text", () => {
     render(
       <ExecutiveSummary
         data={{
@@ -15,28 +15,15 @@ describe("ExecutiveSummary (Vitest)", () => {
       />,
     );
 
-    // Title should be rendered (the component probably formats the key)
-    expect(screen.getByText("Risky Services Alert")).toBeInTheDocument();
-
-    // Hover over the 3rd info button (index 2) to show the tooltip
-    const infoButtons = screen.getAllByRole("button", { name: "Information" });
-    fireEvent.mouseEnter(infoButtons[2]);
-
-    // The tooltip text should be stripped of HTML tags
+    expect(screen.getByText("Priority Findings")).toBeInTheDocument();
+    expect(screen.getByText("Risk-Tagged Services")).toBeInTheDocument();
+    expect(screen.getByText("High")).toBeInTheDocument();
     expect(
-      screen.getByText((content, element) => {
-        const hasText =
-          element?.textContent === "Detected risky services on the network.";
-        const isDeepest =
-          element?.firstElementChild === null ||
-          element?.firstElementChild?.textContent !==
-            "Detected risky services on the network.";
-        return hasText && isDeepest;
-      }),
+      screen.getByText("Detected risky services on the network."),
     ).toBeInTheDocument();
   });
 
-  it("scrolls to the mapped panel when an alert link is clicked", () => {
+  it("scrolls to the mapped panel when View details is clicked", () => {
     const target = document.createElement("div");
     target.id = "service-risk-breakdown-panel";
     document.body.appendChild(target);
@@ -51,27 +38,23 @@ describe("ExecutiveSummary (Vitest)", () => {
       />,
     );
 
-    // Click the alert link – the component should call target.scrollIntoView(...)
-    fireEvent.click(screen.getByRole("link", { name: "Risky Services Alert" }));
+    fireEvent.click(screen.getByRole("button", { name: "View details" }));
 
     expect(scrollSpy).toHaveBeenCalledWith({
       behavior: "smooth",
       block: "start",
     });
 
-    // Clean‑up
     document.body.removeChild(target);
     scrollSpy.mockRestore();
   });
 
-  it("renders the panel empty state when no alerts are present", () => {
+  it("renders the priority findings empty state when no alerts are present", () => {
     render(<ExecutiveSummary data={{}} />);
 
-    // The toggle button that expands the panel is a simple “+” button
-    const toggleButton = screen.getByText("+");
-    fireEvent.click(toggleButton);
-
-    // After expanding, the component should show the empty‑state text
-    expect(screen.getByText("No Results")).toBeInTheDocument();
+    expect(screen.getByText("Priority Findings")).toBeInTheDocument();
+    expect(
+      screen.getByText("No high-priority summary findings were reported."),
+    ).toBeInTheDocument();
   });
 });

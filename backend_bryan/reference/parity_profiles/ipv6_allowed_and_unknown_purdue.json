@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 3,
+  "id": "parity-ipv6_allowed_and_unknown_purdue",
+  "name": "Ipv6 Allowed And Unknown Purdue",
+  "description": "",
+  "updatedAt": "2026-09-21T00:00:00.000Z",
+  "selectedModules": [],
+  "scan": {
+    "filesScanned": 0,
+    "recordsParsed": 0,
+    "logTypes": {},
+    "warnings": []
+  },
+  "captureScope": {
+    "internalIcsOnlyExpected": false,
+    "dedicatedOtSensor": false,
+    "ipv4OnlyExpected": false
+  },
+  "segments": [
+    {
+      "id": "s1",
+      "name": "Control",
+      "cidr": "10.30.0.0/16",
+      "role": "ot",
+      "purdueLevel": "Unknown",
+      "addressing": "mixed",
+      "dhcpAllowed": true,
+      "ipv6Allowed": true,
+      "observedOtProtocols": [
+        "modbus"
+      ],
+      "source": "user",
+      "confidence": "high"
+    }
+  ],
+  "assets": [],
+  "infrastructure": [],
+  "communicationPairs": [],
+  "allowedHosts": [],
+  "allowedSegmentPairs": [],
+  "approvedExternalDestinations": [],
+  "authorizedControlActions": [],
+  "modulePolicies": {}
+}

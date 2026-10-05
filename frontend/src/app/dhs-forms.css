@@ -1,0 +1,357 @@
+/*
+ * eleVADR DHS / CISA form treatment
+ * Based on DHS visual standards and USWDS form-control conventions.
+ * This stylesheet intentionally loads after the application/component styles.
+ */
+
+:root {
+  --form-border: #5a5b5d;
+  --form-border-hover: #1b1b1b;
+  --form-focus: #005288;
+  --form-focus-ring: #005ea2;
+  --form-bg: #ffffff;
+  --form-text: #1b1b1b;
+  --form-muted: #5a5b5d;
+  --form-hint: #565c65;
+  --form-disabled-bg: #e6e6e6;
+  --form-disabled-text: #757575;
+  --form-error: #c41230;
+  --form-success: #5e9732;
+  --form-control-height: 2.5rem;
+}
+
+/* Labels / legends */
+.app-shell label,
+.help-drawer label,
+.entity-drawer label,
+.tour-card label {
+  color: var(--form-text);
+}
+
+.app-shell label > span:first-child,
+.help-drawer label > span:first-child,
+.app-shell .usa-label,
+.app-shell legend {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Standard text controls. Keep selectors broad because several component files
+   provide their own compact control styles. */
+.app-shell input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.app-shell select,
+.app-shell textarea,
+.help-drawer input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.help-drawer select,
+.help-drawer textarea,
+.entity-drawer input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.entity-drawer select,
+.entity-drawer textarea {
+  min-height: var(--form-control-height) !important;
+  padding: .5rem .625rem !important;
+  border: 1px solid var(--form-border) !important;
+  border-radius: 0 !important;
+  background: var(--form-bg) !important;
+  color: var(--form-text) !important;
+  font-size: 1rem !important;
+  line-height: 1.3 !important;
+  box-shadow: none !important;
+  outline: 0;
+}
+
+.app-shell textarea,
+.help-drawer textarea,
+.entity-drawer textarea {
+  min-height: 7rem !important;
+  resize: vertical;
+}
+
+.app-shell input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
+.app-shell select:hover,
+.app-shell textarea:hover,
+.help-drawer input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover {
+  border-color: var(--form-border-hover) !important;
+}
+
+/* High-visibility focus: dark blue border plus CISA-blue outer ring. */
+.app-shell input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+.app-shell select:focus,
+.app-shell textarea:focus,
+.help-drawer input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+.help-drawer select:focus,
+.help-drawer textarea:focus,
+.entity-drawer input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+.entity-drawer select:focus,
+.entity-drawer textarea:focus {
+  border-color: var(--form-focus) !important;
+  outline: .25rem solid var(--form-focus-ring) !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+
+.app-shell input::placeholder,
+.app-shell textarea::placeholder,
+.help-drawer input::placeholder {
+  color: #71767a;
+  opacity: 1;
+}
+
+/* Select arrow: retain native semantics, but avoid pill/card styling. */
+.app-shell select,
+.help-drawer select,
+.entity-drawer select {
+  padding-right: 2.25rem !important;
+  cursor: pointer;
+}
+
+/* Checkbox / radio controls. Native controls are retained for accessibility. */
+.app-shell input[type="checkbox"],
+.app-shell input[type="radio"],
+.help-drawer input[type="checkbox"],
+.help-drawer input[type="radio"] {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  margin: 0 .5rem 0 0 !important;
+  flex: 0 0 1.25rem;
+  accent-color: #005288 !important;
+  cursor: pointer;
+}
+
+.app-shell input[type="checkbox"]:focus-visible,
+.app-shell input[type="radio"]:focus-visible,
+.help-drawer input[type="checkbox"]:focus-visible,
+.help-drawer input[type="radio"]:focus-visible {
+  outline: .25rem solid var(--form-focus-ring) !important;
+  outline-offset: .125rem !important;
+}
+
+.app-shell label:has(> input[type="checkbox"]),
+.app-shell label:has(> input[type="radio"]) {
+  min-height: 2rem;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  color: var(--form-text) !important;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  cursor: pointer;
+}
+
+/* Disabled controls: visually clear, while component logic remains unchanged. */
+.app-shell input:disabled,
+.app-shell select:disabled,
+.app-shell textarea:disabled,
+.help-drawer input:disabled,
+.help-drawer select:disabled,
+.help-drawer textarea:disabled {
+  border-color: #a9aeb1 !important;
+  background: var(--form-disabled-bg) !important;
+  color: var(--form-disabled-text) !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+}
+
+.app-shell label:has(input:disabled) {
+  color: var(--form-disabled-text) !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+}
+
+/* Existing USWDS class names used in SortableTable. */
+.app-shell .usa-label {
+  display: block;
+  margin: 0 0 .5rem !important;
+}
+
+.app-shell .usa-input {
+  width: 100%;
+  max-width: 32rem !important;
+}
+
+/* Search/filter toolbars: labels stack above DHS-shaped controls. */
+.findings-controls > label,
+.topology-toolbar > label,
+.activity-toolbar > label,
+.table-filter-section,
+.help-search {
+  gap: .5rem !important;
+}
+
+.findings-controls > label > span,
+.topology-toolbar > label > span,
+.activity-toolbar > label > span,
+.help-search > span {
+  color: var(--form-text) !important;
+  font-size: .9375rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* Compact table pagination can remain compact while matching form geometry. */
+.app-shell .table-pagination-controls select {
+  min-height: 2.25rem !important;
+  padding: .375rem 2rem .375rem .5rem !important;
+  border-radius: 0 !important;
+  font-size: .9375rem !important;
+}
+
+/* File input / drop target: adapt the custom workflow to a government form look. */
+.app-shell .upload-container {
+  gap: 1rem;
+}
+
+.app-shell .unified-dropzone {
+  min-height: 9rem;
+  padding: 1.5rem !important;
+  border: 2px dashed #71767a !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  color: var(--form-text) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.app-shell .unified-dropzone:hover,
+.app-shell .unified-dropzone.is-dragging {
+  border-color: #005288 !important;
+  background: #f5f8fa !important;
+}
+
+.app-shell .unified-dropzone:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+
+.app-shell .dropzone-icon {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #005288 !important;
+}
+
+.app-shell .dropzone-copy strong {
+  color: #1b1b1b !important;
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+}
+
+.app-shell .dropzone-copy > span {
+  color: var(--form-hint) !important;
+  font-size: 1rem !important;
+}
+
+.app-shell .dropzone-types span {
+  padding: .125rem .375rem !important;
+  border: 1px solid #a9aeb1 !important;
+  border-radius: 0 !important;
+  background: #f0f0f0 !important;
+  color: #454545 !important;
+  font-size: .875rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+}
+
+.app-shell .dropzone-browse,
+.app-shell .download-button {
+  min-height: 2.5rem !important;
+  padding: .5rem 1rem !important;
+  border: 2px solid #005288 !important;
+  border-radius: 0 !important;
+  background: #005288 !important;
+  color: #ffffff !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+.app-shell .dropzone-browse:hover,
+.app-shell .download-button:hover {
+  border-color: #003e67 !important;
+  background: #003e67 !important;
+}
+
+.app-shell .download-button:focus-visible {
+  outline: .25rem solid var(--form-focus-ring) !important;
+  outline-offset: .25rem !important;
+}
+
+/* Validation treatment usable by existing error containers and future form fields. */
+.app-shell .error-container,
+.app-shell .form-error,
+.app-shell [aria-invalid="true"] {
+  border-color: var(--form-error) !important;
+}
+
+.app-shell input[aria-invalid="true"],
+.app-shell select[aria-invalid="true"],
+.app-shell textarea[aria-invalid="true"] {
+  border-left-width: .25rem !important;
+}
+
+.app-shell .error-text,
+.app-shell .form-error-message {
+  color: #b50909 !important;
+  font-weight: 700;
+}
+
+/* Preserve the optional dark theme without losing form boundaries. */
+:root[data-theme="dark"] {
+  --form-border: #a9aeb1;
+  --form-border-hover: #ffffff;
+  --form-focus: #73b3e7;
+  --form-bg: #0b1e2a;
+  --form-text: #f0f0f0;
+  --form-muted: #c9c9c9;
+  --form-hint: #c9c9c9;
+  --form-disabled-bg: #3d4551;
+  --form-disabled-text: #c9c9c9;
+}
+
+:root[data-theme="dark"] .app-shell .unified-dropzone {
+  background: #0b1e2a !important;
+  border-color: #a9aeb1 !important;
+}
+
+:root[data-theme="dark"] .app-shell .unified-dropzone:hover,
+:root[data-theme="dark"] .app-shell .unified-dropzone.is-dragging {
+  background: #162e3d !important;
+  border-color: #73b3e7 !important;
+}
+
+:root[data-theme="dark"] .app-shell .dropzone-copy strong { color: #f0f0f0 !important; }
+:root[data-theme="dark"] .app-shell .dropzone-types span {
+  background: #3d4551 !important;
+  border-color: #71767a !important;
+  color: #f0f0f0 !important;
+}
+
+@media (max-width: 700px) {
+  .app-shell .unified-dropzone { padding: 1.25rem !important; }
+}
+
+/* Keep the upload target hover treatment identical before and after a report
+   is loaded. The hidden file input can retain focus after selection, so
+   :focus-within must not change the hover appearance. */
+.app-shell .unified-dropzone:focus-within {
+  border: 2px dashed #71767a !important;
+  background: #ffffff !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.app-shell .unified-dropzone:hover,
+.app-shell .unified-dropzone:focus-within:hover {
+  border: 2px dashed #71767a !important;
+  background: #f5f8fa !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}

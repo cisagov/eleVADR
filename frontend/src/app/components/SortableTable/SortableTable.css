@@ -15,6 +15,49 @@
   max-width: 400px;
 }
 
+
+.table-filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid #dfe5e8;
+}
+
+.table-filter-header-title {
+  min-width: 0;
+}
+
+.table-filter-header-title > div {
+  margin: 0;
+}
+
+
+.table-filter-header-title .section-subtitle {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.table-filter-inline {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .75rem;
+  margin-left: auto;
+  color: #1b1b1b;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table-filter-inline .usa-input {
+  width: min(25rem, 34vw);
+  max-width: 25rem !important;
+  margin: 0 !important;
+}
+
 .scrollable-table-container {
   max-height: 500px;
   overflow-y: auto;
@@ -62,7 +105,7 @@
 }
 
 .sort-icon {
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   color: #71767a;
   opacity: 0.5;
   transition: opacity 0.2s ease;
@@ -89,7 +132,7 @@
   margin-top: 1rem;
   text-align: right;
   color: #71767a;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
 }
 
 .clickable-row {
@@ -109,8 +152,8 @@
   background: none;
   border: none;
   padding: 0;
-  color: #005ea2;
-  text-decoration: underline;
+  color: #0b628e;
+  text-decoration: none;
   cursor: pointer;
   font: inherit;
   white-space: normal;
@@ -118,6 +161,15 @@
   word-break: break-word;
   text-align: left;
   max-width: 100%;
+}
+
+
+.clickable-cell button:hover,
+.clickable-cell button:focus-visible,
+.clickable-service-link:hover,
+.clickable-service-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .clickable-cell-text {
@@ -135,6 +187,102 @@
   }
 
   .scrollable-table-container {
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
   }
+}
+.table-pagination{display:flex!important;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.table-pagination-controls{display:flex;align-items:center;gap:7px}.table-pagination-controls label{display:flex;align-items:center;gap:5px}.table-pagination-controls select,.table-pagination-controls button{min-height:30px;padding:4px 7px;border:1px solid #cad9e3;border-radius:6px;background:var(--surface,#fff);color:var(--shell-text,#35556c);font-size:var(--text-xs)}.table-pagination-controls button{cursor:pointer;font-weight:700}.table-pagination-controls button:disabled{opacity:.45;cursor:not-allowed}@media(max-width:650px){.table-pagination-controls{width:100%;justify-content:space-between}.table-pagination-controls label{display:none}}
+
+@media (max-width: 700px) {
+  .table-filter-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .table-filter-inline {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .table-filter-inline .usa-input {
+    width: 100%;
+    max-width: none !important;
+  }
+}
+
+/* Inline filter headers provide their own full-width divider. Avoid drawing the
+   nested section-title divider as well, which creates a second short line under
+   the title only. */
+.app-shell .table-filter-header-title h3.section-subtitle {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+/* Responsive table controls: never let the title/filter header force the page
+   wider than the viewport. Tables themselves remain horizontally scrollable. */
+@media (max-width: 560px) {
+  .table-filter-header { gap: .65rem; margin-bottom: .75rem; padding-bottom: .6rem; }
+  .table-filter-inline { align-items: stretch; flex-direction: column; gap: .35rem; white-space: normal; }
+  .table-filter-inline .usa-input { min-height: 40px; }
+  .scrollable-table-container { max-width: 100%; -webkit-overflow-scrolling: touch; }
+  .table-summary { text-align: left; }
+  .table-pagination { align-items: stretch; flex-direction: column; }
+  .table-pagination-controls { width: 100%; flex-wrap: wrap; justify-content: flex-start; }
+}
+
+/* Legacy drill-down links use the same discoverable pivot cue as PivotValue. */
+.clickable-service-link::after {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+  vertical-align: -1px;
+  background: currentColor;
+  clip-path: polygon(8% 8%, 92% 8%, 61% 44%, 61% 82%, 39% 94%, 39% 44%);
+  opacity: 0;
+  transform: translateX(-2px);
+  transition: opacity .12s ease, transform .12s ease;
+}
+.clickable-service-link:hover::after,
+.clickable-service-link:focus-visible::after {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Keep pivotable identifiers in the Devices focus visually consistent with PivotValue. */
+.device-pivot-link {
+  font-weight: 800 !important;
+}
+
+/* Manufacturer cells are legacy drill-down buttons; force their visible label to
+   the same weight as PivotValue identifiers regardless of global button rules. */
+.manufacturer-pivot-link,
+.manufacturer-pivot-link strong {
+  font-weight: 800 !important;
+}
+
+/* Device-table values retain a visual pivot affordance without becoming
+   interactive child controls. This keeps single-click row details reliable while
+   signaling that press-and-hold / Device Details can filter on the value. */
+.device-filter-hint {
+  display: inline;
+  position: relative;
+}
+.device-filter-hint::after {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+  vertical-align: -1px;
+  background: #0b628e;
+  clip-path: polygon(8% 8%, 92% 8%, 61% 44%, 61% 82%, 39% 94%, 39% 44%);
+  opacity: 0;
+  transform: translateX(-2px);
+  transition: opacity .12s ease, transform .12s ease;
+  pointer-events: none;
+}
+.clickable-row td:hover .device-filter-hint::after,
+.clickable-row:focus-within .device-filter-hint::after {
+  opacity: .9;
+  transform: translateX(0);
 }

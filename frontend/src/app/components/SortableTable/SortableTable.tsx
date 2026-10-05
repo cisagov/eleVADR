@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import "./SortableTable.css";
 import { getNestedValue, toFilterableString } from "../../utils/tableUtils";
 
@@ -17,6 +17,7 @@ interface SortableTableProps<T = unknown, R extends object = object> {
   data: R[];
   filterable?: boolean;
   filterPlaceholder?: string;
+  filterHeader?: React.ReactNode;
   emptyMessage?: string;
   onRowClick?: (row: R) => void;
 }
@@ -28,13 +29,15 @@ const SortableTable = <T = unknown, R extends object = object>({
   data,
   filterable = false,
   filterPlaceholder = "Filter table...",
+  filterHeader,
   emptyMessage = "No data available",
   onRowClick,
 }: SortableTableProps<T, R>) => {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [filter, setFilter] = useState("");
-
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(50);
   const handleSort = (columnKey: string) => {
     if (sortColumn === columnKey) {
       if (sortDirection === "asc") {
@@ -91,6 +94,10 @@ const SortableTable = <T = unknown, R extends object = object>({
     return result;
   }, [data, filter, sortColumn, sortDirection, columns, filterable]);
 
+  const pageCount = Math.max(1, Math.ceil(filteredAndSortedData.length / pageSize));
+  const safePage = Math.min(page, pageCount - 1);
+  const visibleData = filteredAndSortedData.slice(safePage * pageSize, safePage * pageSize + pageSize);
+
   const getSortIcon = (columnKey: string) => {
     if (sortColumn !== columnKey) {
       return <span className="sort-icon">↕</span>;
@@ -104,19 +111,34 @@ const SortableTable = <T = unknown, R extends object = object>({
   return (
     <div className="sortable-table-wrapper">
       {filterable && (
-        <div className="table-filter-section">
-          <label htmlFor="table-filter" className="usa-label">
-            Filter:
-          </label>
-          <input
-            id="table-filter"
-            className="usa-input"
-            type="text"
-            placeholder={filterPlaceholder}
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          />
-        </div>
+        filterHeader ? (
+          <div className="table-filter-header">
+            <div className="table-filter-header-title">{filterHeader}</div>
+            <label className="table-filter-inline">
+              <span>Filter:</span>
+              <input
+                className="usa-input"
+                type="text"
+                placeholder={filterPlaceholder}
+                value={filter}
+                onChange={(e) => { setFilter(e.target.value); setPage(0); }}
+              />
+            </label>
+          </div>
+        ) : (
+          <div className="table-filter-section">
+            <label className="usa-label">
+              Filter:
+            </label>
+            <input
+              className="usa-input"
+              type="text"
+              placeholder={filterPlaceholder}
+              value={filter}
+              onChange={(e) => { setFilter(e.target.value); setPage(0); }}
+            />
+          </div>
+        )
       )}
 
       <div className="scrollable-table-container">
@@ -150,11 +172,20 @@ const SortableTable = <T = unknown, R extends object = object>({
 
           <tbody>
             {filteredAndSortedData.length > 0 ? (
-              filteredAndSortedData.map((row, idx) => (
+              visibleData.map((row, idx) => (
                 <tr
                   key={idx}
                   className={onRowClick ? "clickable-row" : ""}
                   onClick={() => onRowClick?.(row)}
+                  tabIndex={onRowClick ? 0 : undefined}
+                  role={onRowClick ? "button" : undefined}
+                  onKeyDown={(event) => {
+                    if (!onRowClick) return;
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onRowClick(row);
+                    }
+                  }}
                 >
                   {columns.map((col) => {
                     const cellValue = getNestedValue(row, col.key) as T;
@@ -193,9 +224,15 @@ const SortableTable = <T = unknown, R extends object = object>({
         </table>
       </div>
 
-      {filterable && filteredAndSortedData.length > 0 && (
-        <div className="table-summary">
-          Showing {filteredAndSortedData.length} of {data.length} rows
+      {filteredAndSortedData.length > 0 && (
+        <div className="table-summary table-pagination">
+          <span>Showing {safePage * pageSize + 1}–{Math.min((safePage + 1) * pageSize, filteredAndSortedData.length)} of {filteredAndSortedData.length}{filterable && filteredAndSortedData.length !== data.length ? ` matching (${data.length} total)` : ""}</span>
+          <div className="table-pagination-controls">
+            <label>Rows <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}><option value={25}>25</option><option value={50}>50</option><option value={100}>100</option></select></label>
+            <button type="button" disabled={safePage === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}>Previous</button>
+            <span>Page {safePage + 1} of {pageCount}</span>
+            <button type="button" disabled={safePage >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Next</button>
+          </div>
         </div>
       )}
     </div>

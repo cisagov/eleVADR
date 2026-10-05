@@ -1,0 +1,14 @@
+.json-drawer-layer { position: fixed; inset: 0; z-index: 120; }
+.json-drawer-backdrop { position: absolute; inset: 0; width: 100%; border: 0; background: rgba(7,25,40,.46); backdrop-filter: blur(2px); cursor: default; }
+.json-drawer { position: absolute; inset: 0 0 0 auto; width: min(720px, 92vw); display: grid; grid-template-rows: auto auto auto 1fr; background: #fff; box-shadow: -20px 0 50px rgba(7,25,40,.2); animation: json-slide .18s ease-out; }
+@keyframes json-slide { from { transform: translateX(24px); opacity: .7; } to { transform: translateX(0); opacity: 1; } }
+.json-drawer header { display: flex; align-items: flex-start; justify-content: space-between; padding: 22px 24px 18px; border-bottom: 1px solid #e4ebf1; }
+.json-drawer header p { margin: 0 0 3px; color: #66839d; font-size: var(--text-xs); font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
+.json-drawer header h2 { margin: 0; color: #183b56; font-size: var(--text-xl); }
+.json-close { width: 36px; height: 36px; border: 1px solid #d5e0e8; border-radius: 8px; background: #fff; color: #536d8a; font-size: var(--text-2xl); cursor: pointer; }
+.json-tools { display: flex; gap: 9px; padding: 14px 24px 8px; }
+.json-tools input { flex: 1; min-width: 0; padding: 9px 11px; border: 1px solid #cddbe6; border-radius: 7px; outline: 0; }
+.json-tools input:focus { border-color: #5d91bb; box-shadow: 0 0 0 3px rgba(18,97,160,.1); }
+.json-tools button { padding: 8px 12px; border: 1px solid #b9cbd9; border-radius: 7px; background: #f8fafc; color: #294e6d; font-weight: 700; cursor: pointer; }
+.json-meta { padding: 0 24px 10px; color: #7890a4; font-size: var(--text-xs); }
+.json-drawer pre { min-height: 0; margin: 0; overflow: auto; padding: 20px 24px 32px; border-top: 1px solid #eef3f7; background: #0d2235; color: #d9e7f1; font: 12px/1.55 "Roboto Mono", "Consolas", monospace; white-space: pre-wrap; overflow-wrap: anywhere; }

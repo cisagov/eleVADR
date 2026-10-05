@@ -1,0 +1,1596 @@
+/*
+ * eleVADR DHS/CISA design and accessibility compliance layer
+ * Applies DHS palette plus USWDS/Section 508 interaction conventions without
+ * representing this non-.gov development build as an official government site.
+ */
+
+:root {
+  --dhs-navy: #003e67;
+  --dhs-blue: #005288;
+  --dhs-blue-dark: #002b47;
+  --dhs-blue-light: #d6e9f2;
+  --dhs-red: #c41230;
+  --dhs-green: #5e9732;
+  --dhs-ink: #1b1b1b;
+  --dhs-gray-90: #1b1b1b;
+  --dhs-gray-70: #454545;
+  --dhs-gray-60: #565c65;
+  --dhs-gray-40: #8d9297;
+  --dhs-gray-20: #dfe1e2;
+  --dhs-gray-10: #f0f0f0;
+  --dhs-gray-5: #f7f9fa;
+  --dhs-white: #ffffff;
+  --dhs-focus: #005ea2;
+  --dhs-error: #b50909;
+  --dhs-warning: #e5a000;
+  --dhs-success: #2e8540;
+  --dhs-info: #00bde3;
+  --dhs-border-radius: 0.125rem;
+  --dhs-content-max: 90rem;
+}
+
+html { scroll-behavior: smooth; }
+body { background: #f7f9fa; color: var(--dhs-ink); }
+
+/* Skip repetitive navigation (Section 508 / WCAG 2.4.1). */
+.skip-link {
+  position: fixed;
+  z-index: 10000;
+  top: .5rem;
+  left: .5rem;
+  padding: .75rem 1rem;
+  transform: translateY(-180%);
+  border: 2px solid var(--dhs-white);
+  background: var(--dhs-blue-dark);
+  color: var(--dhs-white) !important;
+  font-weight: 700;
+  text-decoration: none;
+}
+.skip-link:focus { transform: translateY(0); outline: .25rem solid var(--dhs-focus); outline-offset: .125rem; }
+#main-content:focus { outline: none; }
+
+/* Consistent, highly visible keyboard focus. */
+:where(a, button, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: .25rem solid var(--dhs-focus) !important;
+  outline-offset: .125rem !important;
+  box-shadow: 0 0 0 .125rem var(--dhs-ink) !important;
+}
+
+/* DHS/USWDS button geometry and states. */
+.app-shell button,
+.help-drawer button,
+.entity-drawer button,
+.json-drawer button,
+.detail-modal button,
+.tour-card button {
+  min-height: 2.5rem;
+  border-radius: var(--dhs-border-radius) !important;
+  font-weight: 700;
+}
+.app-shell button:disabled,
+.help-drawer button:disabled,
+.entity-drawer button:disabled,
+.json-drawer button:disabled,
+.detail-modal button:disabled,
+.tour-card button:disabled {
+  opacity: 1;
+  background: #c9c9c9 !important;
+  border-color: #c9c9c9 !important;
+  color: #565c65 !important;
+  cursor: not-allowed;
+}
+
+/* Header: strong agency-style masthead, restrained decoration. */
+.titlebar {
+  border-bottom: .25rem solid var(--dhs-red) !important;
+  background: var(--dhs-blue-dark) !important;
+  box-shadow: none !important;
+}
+.brand-mark { border-radius: var(--dhs-border-radius) !important; background: transparent !important; border: 1px solid rgba(255,255,255,.55) !important; }
+.brand-name { font-weight: 800 !important; letter-spacing: 0 !important; }
+.brand-subtitle { color: #d9e8f2 !important; }
+.top-action-button {
+  min-height: 2.5rem !important;
+  border: 1px solid rgba(255,255,255,.5) !important;
+  border-radius: var(--dhs-border-radius) !important;
+  background: transparent !important;
+  color: var(--dhs-white) !important;
+}
+.top-action-button:hover { background: rgba(255,255,255,.12) !important; }
+.titlebar-status { color: #fff !important; }
+.status-dot { border: 1px solid currentColor; }
+.status-dot.ready { background: var(--dhs-green) !important; }
+.status-dot.ready::after { content: ""; }
+
+/* Side navigation uses list semantics and a clear current location. */
+.sidebar { border-right: 1px solid #c9c9c9 !important; background: #fff !important; }
+.sidebar-nav { display: block !important; }
+.sidebar-nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .125rem; }
+.sidebar-nav li { margin: 0; padding: 0; }
+.sidebar-nav button {
+  min-height: 2.75rem !important;
+  border-radius: 0 !important;
+  border-left: .25rem solid transparent !important;
+  font-weight: 600 !important;
+}
+.sidebar-nav button:hover { background: #f0f0f0 !important; color: var(--dhs-blue-dark) !important; }
+.sidebar-nav button.active,
+.sidebar-nav button[aria-current="location"] {
+  border-color: transparent !important;
+  border-left-color: var(--dhs-blue) !important;
+  background: var(--dhs-blue-light) !important;
+  color: var(--dhs-blue-dark) !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+.sidebar-count { border: 1px solid #8d9297 !important; border-radius: 999px !important; }
+.sidebar-nav button.active .sidebar-count { border-color: var(--dhs-blue) !important; }
+
+/* Page hierarchy and readable measure. */
+.content-container { width: min(100%, var(--dhs-content-max)); }
+.page-heading { border-bottom: 1px solid var(--dhs-gray-20); padding-bottom: 1.25rem; }
+.page-heading h1 { color: var(--dhs-blue-dark) !important; font-weight: 800 !important; line-height: 1.15 !important; }
+.page-description { max-width: 72ch; color: var(--dhs-gray-60) !important; font-size: 1rem !important; line-height: 1.6 !important; }
+.eyebrow { color: var(--dhs-gray-60) !important; letter-spacing: .04em !important; }
+.section-heading { align-items: flex-start !important; border-bottom: 1px solid var(--dhs-gray-20); padding-bottom: .625rem; }
+.section-heading h2 {
+  margin: 0;
+  color: var(--dhs-blue-dark) !important;
+  font-size: 1.375rem !important;
+  line-height: 1.2;
+  font-weight: 800;
+}
+.section-heading-analysis h2 { font-size: 1.125rem !important; }
+.section-heading small { display: block; margin-top: .25rem; max-width: 78ch; color: var(--dhs-gray-60) !important; font-size: .9375rem !important; line-height: 1.45; }
+.subsection-label { color: var(--dhs-blue-dark) !important; }
+
+/* Panels/cards: flat, bordered government UI instead of floating decorative cards. */
+:where(.panel, .report-guide, .security-overview, .findings-panel, .network-topology, .activity-timeline, .status-container, .report-detail-block) {
+  border-color: #c9c9c9 !important;
+  border-radius: var(--dhs-border-radius) !important;
+  box-shadow: none !important;
+}
+.section-chip, .report-badge, .entity-type, .severity-badge { border-radius: .125rem !important; text-transform: none !important; letter-spacing: 0 !important; }
+
+/* Links remain recognizable without relying on color alone. */
+a:not(.skip-link) { text-decoration: underline; text-decoration-thickness: .08em; text-underline-offset: .15em; }
+a:not(.skip-link):hover { text-decoration-thickness: .14em; }
+
+/* Tables: strong headers, visible grid, scroll containment and accessible sorting. */
+.scrollable-table-container,
+.findings-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #c9c9c9; }
+.app-shell table { width: 100%; border-collapse: collapse; background: #fff; color: var(--dhs-ink); }
+.app-shell th { background: #e6e6e6 !important; color: var(--dhs-ink) !important; font-weight: 700 !important; }
+.app-shell th,
+.app-shell td { border-bottom: 1px solid #dfe1e2 !important; padding: .625rem .75rem !important; vertical-align: top; }
+.app-shell tbody tr:nth-child(even) { background: #f7f9fa; }
+.app-shell tbody tr:hover { background: #eef7fb; }
+.table-sort-button {
+  width: 100%;
+  min-height: 2rem !important;
+  padding: .125rem 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  text-align: inherit;
+  justify-content: flex-start;
+  cursor: pointer;
+}
+.table-sort-button:hover { text-decoration: underline; }
+.table-summary { color: var(--dhs-gray-60) !important; }
+
+/* Alert/status language gets shape and icon-independent emphasis, not color only. */
+.error-container,
+.status-container:has(.error-details) {
+  border-left: .5rem solid var(--dhs-error) !important;
+}
+.loading-container .loading-text { font-weight: 700; }
+
+/* Make small icon/action controls meet usable target sizing. */
+:where(.section-help-button, .chart-link, .inspect-button, .findings-export, .show-more-findings, .secondary-action, .report-toolbar-actions button) {
+  min-height: 2.5rem !important;
+  padding: .5rem .75rem !important;
+  border-radius: var(--dhs-border-radius) !important;
+}
+
+/* Dialog/drawer presentation follows USWDS modal restraint. */
+:where(.detail-modal, .help-drawer, .entity-drawer, .json-drawer, .tour-card) {
+  border-radius: var(--dhs-border-radius) !important;
+  box-shadow: 0 1rem 2rem rgba(0,0,0,.2) !important;
+}
+:where(.detail-modal-overlay, .help-backdrop, .entity-drawer-backdrop, .json-drawer-backdrop, .tour-backdrop) { background: rgba(0,0,0,.55) !important; }
+
+/* Forced-colors / Windows high-contrast support. */
+@media (forced-colors: active) {
+  .titlebar, .sidebar, .panel, .report-guide, .security-overview, .findings-panel, .network-topology { forced-color-adjust: auto; }
+  .sidebar-nav button.active, .sidebar-nav button[aria-current="location"] { border-left: .25rem solid Highlight !important; }
+  .status-dot { border: 2px solid CanvasText !important; }
+}
+
+/* Respect user motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Zoom/mobile resilience. */
+@media (max-width: 900px) {
+  .titlebar { min-height: 3.5rem; }
+  .top-action-button { min-width: 2.75rem; }
+  .section-heading { flex-direction: column; gap: .625rem !important; }
+}
+@media (max-width: 640px) {
+  .page-heading h1 { font-size: 1.75rem !important; }
+  .content-container { padding-inline: 1rem !important; }
+  .report-toolbar { position: static !important; }
+  .app-shell th, .app-shell td { padding: .5rem !important; }
+}
+
+/* Print removes application chrome and preserves readable evidence tables. */
+@media print {
+  .skip-link, .titlebar, .sidebar, .report-toolbar, .section-help-button, .sidebar-backdrop { display: none !important; }
+  .app-main { margin: 0 !important; padding: 0 !important; }
+  .content-container { width: 100% !important; max-width: none !important; }
+  body { background: #fff !important; color: #000 !important; }
+  a { color: #000 !important; text-decoration: underline !important; }
+  .app-shell table { font-size: 10pt; }
+  .dashboard-section, .panel { break-inside: avoid; }
+}
+
+/* Dark theme: maintain the same information architecture and contrast cues. */
+:root[data-theme="dark"] .sidebar { background: #0b1e2a !important; border-color: #71767a !important; }
+:root[data-theme="dark"] .sidebar-nav button.active,
+:root[data-theme="dark"] .sidebar-nav button[aria-current="location"] { background: #163d56 !important; color: #fff !important; border-left-color: #73b3e7 !important; }
+:root[data-theme="dark"] .section-heading { border-color: #565c65; }
+:root[data-theme="dark"] .section-heading h2 { color: #d9e8f2 !important; }
+:root[data-theme="dark"] .app-shell table { background: #102a3a; color: #f0f0f0; }
+:root[data-theme="dark"] .app-shell th { background: #1f445c !important; color: #fff !important; }
+:root[data-theme="dark"] .app-shell td { border-color: #565c65 !important; }
+:root[data-theme="dark"] .app-shell tbody tr:nth-child(even) { background: #153447; }
+:root[data-theme="dark"] .app-shell tbody tr:hover { background: #1e4a64; }
+
+/* --------------------------------------------------------------------------
+   DHS visual-polish pass: remove redundant chrome and normalize spacing.
+   Keep keyboard focus outlines intact; these changes only affect resting UI.
+   -------------------------------------------------------------------------- */
+
+/* The shield is a brand mark, not a button/card. Avoid a box-within-a-header. */
+.brand-mark {
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+.brand-mark .nav-icon {
+  width: 1.55rem !important;
+  height: 1.55rem !important;
+}
+.titlebar-brand { gap: .625rem !important; }
+.brand-subtitle { margin-top: .125rem !important; }
+
+/* Header actions use a quiet/ghost treatment. Focus still receives the strong
+   blue/ink Section 508 focus ring defined above. */
+.titlebar {
+  grid-template-columns: auto minmax(12rem, 1fr) auto !important;
+  column-gap: .75rem !important;
+  padding-inline: 1rem !important;
+}
+.titlebar-actions { gap: .125rem !important; }
+.top-action-button {
+  min-height: 2.5rem !important;
+  padding: .5rem .625rem !important;
+  border: 0 !important;
+  background: transparent !important;
+  white-space: nowrap !important;
+}
+.top-action-button:hover { background: rgba(255,255,255,.12) !important; }
+.icon-only-action { width: 2.5rem !important; padding-inline: .5rem !important; }
+.titlebar-status {
+  margin-left: .375rem !important;
+  padding-left: .75rem !important;
+  border-left-color: rgba(255,255,255,.28) !important;
+}
+
+/* The report identity is informational; one subtle divider is enough. */
+.titlebar-center { overflow: hidden; }
+.titlebar-report-chip {
+  max-width: min(34rem, 100%) !important;
+  padding: .375rem .5rem !important;
+  border: 0 !important;
+  background: transparent !important;
+  gap: .5rem !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+.titlebar-report-chip strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.report-chip-divider { background: rgba(255,255,255,.32) !important; }
+
+/* Sidebar: reduce boxed-control appearance and give rows a consistent rhythm. */
+.sidebar { padding: .875rem .625rem .75rem !important; }
+.sidebar-topline { padding: 0 .375rem .625rem .625rem !important; }
+.sidebar-collapse-button {
+  width: 2rem !important;
+  height: 2rem !important;
+  min-height: 2rem !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+.sidebar-collapse-button:hover { background: var(--dhs-gray-10) !important; }
+.sidebar-nav ul { gap: 0 !important; }
+.sidebar-nav button {
+  padding: .5rem .625rem .5rem .5rem !important;
+}
+.sidebar-nav-icon { width: 2rem !important; height: 2rem !important; }
+.sidebar-footer { padding: .625rem .625rem .125rem !important; }
+
+/* Page header controls: avoid nested borders in segmented controls and badges. */
+.page-heading {
+  gap: 1.25rem !important;
+  margin-bottom: 1rem !important;
+  padding-bottom: 1rem !important;
+}
+.page-heading-actions { gap: .375rem !important; }
+.view-mode-toggle {
+  padding: 0 !important;
+  border: 1px solid var(--dhs-gray-20) !important;
+  border-radius: var(--dhs-border-radius) !important;
+  background: #fff !important;
+  overflow: hidden;
+}
+.view-mode-toggle button {
+  min-height: 2.5rem !important;
+  padding: .5rem .75rem !important;
+  border: 0 !important;
+  border-right: 1px solid var(--dhs-gray-20) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.view-mode-toggle button:last-child { border-right: 0 !important; }
+.view-mode-toggle button.active {
+  background: var(--dhs-blue-light) !important;
+  color: var(--dhs-blue-dark) !important;
+  box-shadow: inset 0 -.1875rem 0 var(--dhs-blue) !important;
+}
+.report-badge {
+  min-height: 2.5rem !important;
+  padding: .5rem .625rem !important;
+  border-color: var(--dhs-gray-20) !important;
+}
+.secondary-action {
+  min-height: 2.5rem !important;
+  padding: .5rem .75rem !important;
+  white-space: nowrap !important;
+}
+
+/* Tool strip: one container border plus one border per actual field/button.
+   Reduce the large nested-card feel seen in the current build. */
+.report-toolbar {
+  top: calc(var(--titlebar-height) + .5rem) !important;
+  gap: .625rem !important;
+  margin-bottom: 1rem !important;
+  padding: .5rem !important;
+  border-radius: var(--dhs-border-radius) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.report-toolbar-actions { gap: .375rem !important; }
+.report-toolbar-actions button { padding: .5rem .75rem !important; }
+
+/* Section spacing should read as one continuous government workspace rather
+   than a stack of separately padded cards. */
+.content-container { padding-top: 1.5rem !important; }
+.section-heading { margin-bottom: .625rem !important; padding-bottom: .5rem !important; }
+.section-heading-analysis { margin-bottom: .5rem !important; }
+.app-section { margin-bottom: 1.25rem !important; }
+.panel-grid { gap: 1.75rem !important; }
+
+/* Upload area: preserve the strong dashed drop target while making its internal
+   spacing more balanced at desktop widths. */
+.app-shell .upload-container { padding: .75rem !important; }
+.app-shell .dropzone { padding: 1.25rem 1.5rem !important; }
+
+@media (max-width: 1180px) {
+  .titlebar { grid-template-columns: auto 1fr auto !important; }
+  .titlebar-report-chip { max-width: 24rem !important; }
+  .top-action-button { padding-inline: .5rem !important; }
+  .titlebar-actions { gap: 0 !important; }
+}
+
+@media (max-width: 960px) {
+  .titlebar-center { display: none !important; }
+  .titlebar { grid-template-columns: 1fr auto !important; }
+}
+
+:root[data-theme="dark"] .view-mode-toggle {
+  background: #0d2533 !important;
+  border-color: #315064 !important;
+}
+:root[data-theme="dark"] .view-mode-toggle button {
+  border-right-color: #315064 !important;
+}
+:root[data-theme="dark"] .view-mode-toggle button.active {
+  background: #163d56 !important;
+  color: #fff !important;
+}
+
+/* --------------------------------------------------------------------------
+   Workspace gutter: keep report content visually separated from the fixed
+   collapsible navigation rail. The gutter remains stable as the rail changes
+   width because .app-main already owns the sidebar offset.
+   -------------------------------------------------------------------------- */
+.content-container {
+  box-sizing: border-box !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+@media (min-width: 1200px) {
+  .content-container {
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .content-container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+
+/* CISA product branding --------------------------------------------------
+   The agency seal is kept visually distinct from the eleVADR product name.
+   Clearspace prevents the agency mark from reading as a custom app icon. */
+.cisa-branding {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-right: .125rem;
+  padding: .1875rem;
+  border: 0 !important;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.cisa-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0 !important;
+  outline: 0;
+  object-fit: contain;
+}
+
+.product-branding {
+  min-width: 0;
+  padding-left: .125rem;
+}
+
+.titlebar-brand {
+  gap: .5rem !important;
+}
+
+.cisa-branding:focus,
+.cisa-logo:focus {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 760px) {
+  .cisa-branding {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: .125rem;
+  }
+}
+
+@media print {
+  .cisa-logo {
+    filter: none !important;
+  }
+}
+
+/* Search toolbar spacing polish: give the primary search control and its
+   companion action consistent breathing room inside the toolbar. */
+.report-toolbar {
+  padding: .75rem !important;
+  gap: .75rem !important;
+}
+.report-toolbar > .report-search {
+  margin: 0 !important;
+}
+.report-toolbar-actions {
+  gap: .5rem !important;
+  margin: 0 !important;
+}
+.report-toolbar-actions button {
+  margin: 0 !important;
+}
+
+@media (max-width: 640px) {
+  .report-toolbar {
+    padding: .625rem !important;
+    gap: .625rem !important;
+  }
+}
+
+/* Increase the inset between the search control and the toolbar frame. */
+.report-toolbar {
+  padding: 1rem !important;
+}
+
+@media (max-width: 640px) {
+  .report-toolbar {
+    padding: .75rem !important;
+  }
+}
+
+
+/* Header report actions: JSON inspection and download live together above the
+   report toolbar. Keep labels intact and wrap the group only when necessary. */
+.page-heading-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.page-heading-actions .secondary-action {
+  white-space: nowrap;
+}
+
+
+/* Keep the JSON report actions together on a single row. */
+.json-action-group {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.json-action-group .secondary-action {
+  flex: 0 0 auto;
+}
+
+/* Keep every report-level control on one continuous row. Give the action strip
+   the full header width so the JSON buttons do not wrap beneath the report ID. */
+@media (min-width: 621px) {
+  .page-heading-actions {
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+
+  .page-heading {
+    flex-wrap: wrap !important;
+  }
+
+  .view-mode-toggle,
+  .report-badge,
+  .json-action-group {
+    flex: 0 0 auto !important;
+  }
+
+  .report-badge {
+    min-width: 0 !important;
+    max-width: min(32vw, 360px) !important;
+  }
+}
+
+/* Keep the report title/subtitle and all report-level controls on the same
+   desktop header row. The controls only move below the title when the viewport
+   is genuinely too narrow to preserve readable labels and touch targets. */
+@media (min-width: 1000px) {
+  .page-heading {
+    display: grid !important;
+    grid-template-columns: minmax(22rem, 1fr) auto !important;
+    align-items: end !important;
+    column-gap: 1.25rem !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .page-heading > div:first-child {
+    min-width: 0;
+  }
+
+  .page-heading-actions {
+    width: auto !important;
+    flex: none !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    align-self: end !important;
+  }
+
+  .view-mode-toggle,
+  .report-badge,
+  .json-action-group {
+    flex: 0 0 auto !important;
+  }
+
+  .report-badge {
+    max-width: min(27vw, 330px) !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (min-width: 621px) and (max-width: 999px) {
+  .page-heading-actions {
+    width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+}
+
+/* DHS-style masthead + horizontal primary navigation ----------------------
+   Mirrors the hierarchy used by the DHS design reference: a light masthead
+   for agency/product identity and search, followed by a solid blue menu bar. */
+:root {
+  --titlebar-height: 142px;
+}
+
+.site-header {
+  position: fixed;
+  z-index: 60;
+  inset: 0 0 auto 0;
+  background: #fff;
+  border-bottom: 1px solid #cfd1d2;
+}
+
+.dhs-masthead {
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 0 2.75rem;
+  background: #fff;
+}
+
+.dhs-masthead .titlebar-brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: .75rem !important;
+  color: #003e67;
+}
+
+.dhs-masthead .cisa-branding {
+  width: 3.75rem;
+  height: 3.75rem;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.dhs-masthead .brand-name {
+  color: #003e67;
+  font-size: 1.75rem;
+  line-height: 1.05;
+  font-weight: 700;
+}
+
+.dhs-masthead .brand-subtitle {
+  margin-top: .25rem;
+  color: #444547;
+  font-size: .8125rem;
+  line-height: 1.25;
+}
+
+.masthead-search-area {
+  flex: 0 1 25rem;
+  width: min(25rem, 38vw);
+  min-width: 18rem;
+}
+
+.masthead-search-disabled {
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: 0 .75rem;
+  border: 1px solid #929395;
+  background: #f5f5f6;
+  color: #646566;
+  font-size: .8125rem;
+}
+
+.masthead-search-disabled .nav-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Compact website-style search in the masthead. */
+.masthead-search-area .report-search {
+  width: 100%;
+  min-height: 2.25rem;
+  gap: 0 !important;
+  background: transparent;
+}
+
+.masthead-search-area .report-search-icon {
+  display: none;
+}
+
+.masthead-search-area .report-search input {
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  padding: .375rem .625rem !important;
+  border: 1px solid #929395 !important;
+  border-right: 0 !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  color: #1b1b1b !important;
+  font-size: .875rem !important;
+}
+
+.masthead-search-area .report-search input:focus {
+  position: relative;
+  z-index: 2;
+  border-color: #005288 !important;
+}
+
+.masthead-search-area .report-search-hint {
+  width: 2.875rem;
+  height: 2.25rem;
+  min-height: 2.25rem !important;
+  padding: 0 !important;
+  border: 1px solid #005288 !important;
+  border-radius: 0 !important;
+  background-color: #0078ae !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m15.5 15.5 5 5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 1.25rem !important;
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+.masthead-search-area .report-search-hint:hover {
+  background-color: #005288 !important;
+}
+
+.masthead-search-area .report-search-results {
+  top: calc(100% + .25rem);
+  z-index: 90;
+  border-radius: 0;
+}
+
+.primary-menubar {
+  height: 46px;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  background: #005288;
+  border-bottom: 3px solid #c41230;
+  color: #fff;
+  overflow: hidden;
+}
+
+.primary-nav {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.primary-nav ul {
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 0;
+  padding: 0 0 0 2.25rem;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.primary-nav li {
+  display: flex;
+  align-items: stretch;
+}
+
+.primary-nav button,
+.menubar-action {
+  min-height: 43px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  padding: 0 .85rem;
+  border: 0 !important;
+  border-bottom: 3px solid transparent !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #fff !important;
+  font-size: .78rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.primary-nav button:hover,
+.menubar-action:hover {
+  background: #003e67 !important;
+}
+
+.primary-nav button.active {
+  border-bottom-color: #fff !important;
+  background: #003e67 !important;
+}
+
+.menubar-count {
+  min-width: 1.25rem;
+  padding: .125rem .3rem;
+  border-radius: 999px;
+  background: #fff;
+  color: #003e67;
+  font-size: .68rem;
+  text-align: center;
+}
+
+.menubar-utilities {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  margin-left: auto;
+  padding-right: 1rem;
+  border-left: 1px solid rgba(255,255,255,.22);
+  background: #005288;
+}
+
+.menubar-action .nav-icon {
+  width: .95rem;
+  height: .95rem;
+}
+
+.menubar-status {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: 0 .8rem;
+  border-left: 1px solid rgba(255,255,255,.22);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.menubar-status .status-dot {
+  width: .5rem;
+  height: .5rem;
+}
+
+/* The horizontal menu replaces the legacy left-side navigation and the
+   separate sticky search toolbar. */
+.sidebar,
+.sidebar-backdrop,
+.report-toolbar {
+  display: none !important;
+}
+
+.app-main,
+.sidebar-is-collapsed .app-main {
+  min-height: 100vh;
+  padding-top: var(--titlebar-height) !important;
+  padding-left: 0 !important;
+}
+
+.content-container {
+  width: min(100% - 2.5rem, 1540px) !important;
+  padding-top: 1.5rem !important;
+}
+
+.mobile-menu-button {
+  display: none;
+  color: #003e67 !important;
+  border-color: #929395 !important;
+  background: #fff !important;
+}
+
+@media (max-width: 1280px) {
+  .dhs-masthead { padding-inline: 1.5rem; }
+  .primary-nav ul { padding-left: 1rem; }
+  .primary-nav button,
+  .menubar-action { padding-inline: .65rem; font-size: .74rem; }
+  .menubar-action span { display: none; }
+  .menubar-action { width: 2.5rem; padding-inline: 0; }
+  .menubar-status span:last-child { display: none; }
+  .menubar-status { padding-inline: .65rem; }
+}
+
+@media (max-width: 900px) {
+  :root { --titlebar-height: 82px; }
+
+  .site-header { height: 82px; }
+  .dhs-masthead {
+    height: 82px;
+    padding: 0 1rem;
+    gap: 1rem;
+  }
+  .dhs-masthead .cisa-branding { width: 2.75rem; height: 2.75rem; }
+  .dhs-masthead .brand-name { font-size: 1.3rem; }
+  .dhs-masthead .brand-subtitle { display: none; }
+  .mobile-menu-button { display: grid !important; flex: 0 0 auto; }
+  .masthead-search-area { min-width: 12rem; width: min(20rem, 46vw); }
+
+  .primary-menubar {
+    position: absolute;
+    top: 82px;
+    left: 0;
+    right: 0;
+    height: auto;
+    max-height: calc(100vh - 82px);
+    display: none;
+    align-items: stretch;
+    flex-direction: column;
+    overflow-y: auto;
+    border-bottom-width: 4px;
+    box-shadow: 0 10px 22px rgba(0,0,0,.2);
+  }
+  .primary-menubar.open { display: flex; }
+  .primary-nav { overflow: visible; }
+  .primary-nav ul {
+    display: grid;
+    height: auto;
+    padding: .5rem 0;
+  }
+  .primary-nav button {
+    width: 100%;
+    min-height: 2.75rem;
+    justify-content: flex-start;
+    padding: .65rem 1rem;
+    border-bottom: 0 !important;
+    border-left: 4px solid transparent !important;
+  }
+  .primary-nav button.active {
+    border-left-color: #fff !important;
+  }
+  .menubar-utilities {
+    display: flex;
+    flex-wrap: wrap;
+    padding: .4rem;
+    border-top: 1px solid rgba(255,255,255,.25);
+    border-left: 0;
+    background: #003e67;
+  }
+  .menubar-action { width: auto; min-width: 2.75rem; flex: 1 1 auto; }
+  .menubar-action span { display: inline; }
+  .menubar-status { flex: 0 0 100%; justify-content: center; min-height: 2rem; border: 0; }
+  .menubar-status span:last-child { display: inline; }
+
+  .content-container { width: min(100% - 1.5rem, 1540px) !important; }
+}
+
+@media (max-width: 560px) {
+  .dhs-masthead { gap: .5rem; padding-inline: .75rem; }
+  .dhs-masthead .cisa-branding { width: 2.25rem; height: 2.25rem; }
+  .dhs-masthead .brand-name { font-size: 1.1rem; }
+  .masthead-search-area { min-width: 0; width: 46vw; }
+  .masthead-search-area .report-search input { font-size: .78rem !important; }
+  .masthead-search-disabled span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+@media print {
+  .site-header { display: none !important; }
+  .app-main { padding-top: 0 !important; }
+}
+
+/* Masthead refinement: keep section navigation visually independent from
+   report utilities. Utilities sit directly beneath the upper-right search. */
+:root {
+  --titlebar-height: 154px;
+}
+
+.dhs-masthead {
+  height: 108px;
+  align-items: center;
+}
+
+.dhs-masthead .brand-subtitle {
+  color: #29485f !important;
+  font-weight: 600;
+}
+
+.masthead-actions {
+  flex: 0 1 34rem;
+  width: min(34rem, 48vw);
+  min-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: .45rem;
+}
+
+.masthead-search-area {
+  flex: none;
+  width: 100%;
+  min-width: 0;
+}
+
+.masthead-search-area .report-search {
+  display: flex;
+  align-items: stretch;
+  gap: 0 !important;
+}
+
+.masthead-search-area .report-search input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.masthead-search-area .report-search-hint {
+  width: 2.875rem !important;
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  display: inline-grid !important;
+  place-items: center;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid #0078ae !important;
+  border-left: 0 !important;
+  border-radius: 0 !important;
+  background: #0078ae !important;
+  color: #fff !important;
+}
+
+.masthead-search-area .report-search-hint:hover {
+  background: #005288 !important;
+}
+
+.masthead-search-area .report-search-hint svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.masthead-utilities {
+  min-height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  color: #003e67;
+  white-space: nowrap;
+}
+
+.masthead-utility-action {
+  min-height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .15rem .65rem;
+  border: 0 !important;
+  border-right: 1px solid #cfd1d2 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #003e67 !important;
+  font-size: .75rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.masthead-utility-action:first-child {
+  padding-left: 0;
+}
+
+.masthead-utility-action:hover {
+  background: #f5f8fa !important;
+  color: #005288 !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.masthead-utility-action .nav-icon {
+  width: .9rem;
+  height: .9rem;
+}
+
+.masthead-status {
+  min-height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .15rem 0 .15rem .7rem;
+  color: #29485f;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.masthead-status .status-dot {
+  width: .9rem;
+  height: .9rem;
+  flex: 0 0 auto;
+}
+
+.primary-menubar {
+  height: 46px;
+  justify-content: flex-start;
+}
+
+.primary-nav {
+  flex: 1 1 auto;
+}
+
+.primary-nav ul {
+  padding-right: 1rem;
+}
+
+/* Legacy in-bar utility rules are intentionally suppressed after the
+   utilities moved into the white masthead. */
+.menubar-utilities,
+.menubar-status {
+  display: none !important;
+}
+
+@media (max-width: 1180px) {
+  .masthead-actions {
+    flex-basis: 30rem;
+    width: min(30rem, 48vw);
+    min-width: 24rem;
+  }
+  .masthead-utility-action { padding-inline: .45rem; }
+  .masthead-utility-action span { font-size: .7rem; }
+  .masthead-status { padding-left: .5rem; }
+}
+
+@media (max-width: 900px) {
+  :root { --titlebar-height: 96px; }
+
+  .site-header { height: 96px; }
+  .dhs-masthead {
+    height: 96px;
+    align-items: center;
+  }
+  .masthead-actions {
+    flex-basis: min(31rem, 58vw);
+    width: min(31rem, 58vw);
+    min-width: 0;
+    gap: .3rem;
+  }
+  .masthead-utilities {
+    overflow-x: auto;
+    justify-content: flex-start;
+    scrollbar-width: none;
+  }
+  .masthead-utilities::-webkit-scrollbar { display: none; }
+
+  .primary-menubar {
+    top: 96px;
+  }
+}
+
+@media (max-width: 680px) {
+  :root { --titlebar-height: 88px; }
+  .site-header { height: 88px; }
+  .dhs-masthead { height: 88px; }
+  .masthead-actions { width: 50vw; flex-basis: 50vw; }
+  .masthead-utilities { display: none; }
+  .primary-menubar { top: 88px; }
+}
+
+/* Masthead utility/search alignment polish ---------------------------------
+   Keep the utility actions visually light, align their total row width with
+   the search control above, and ensure the search action matches field height. */
+.masthead-actions {
+  width: min(36rem, 50vw);
+  flex-basis: 36rem;
+}
+
+.masthead-search-area,
+.masthead-search-area .report-search,
+.masthead-utilities {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.masthead-search-area .report-search {
+  align-items: stretch;
+}
+
+.masthead-search-area .report-search input,
+.masthead-search-area .report-search-hint {
+  height: 2.5rem !important;
+  min-height: 2.5rem !important;
+  box-sizing: border-box;
+}
+
+.masthead-search-area .report-search-hint {
+  width: 3rem !important;
+  flex: 0 0 3rem;
+}
+
+.masthead-utilities {
+  justify-content: space-between;
+  gap: .25rem;
+}
+
+.masthead-utility-action,
+.masthead-utility-action:first-child {
+  padding-inline: .45rem;
+  border-right: 0 !important;
+  border-left: 0 !important;
+}
+
+.masthead-status {
+  padding-left: .45rem;
+}
+
+.masthead-utilities.no-report {
+  justify-content: flex-end;
+  gap: .35rem;
+}
+
+.masthead-utilities.no-report .masthead-utility-action {
+  padding-left: 0;
+  padding-right: .25rem;
+}
+
+.masthead-utilities.no-report .masthead-status {
+  padding-left: .15rem;
+}
+
+
+/* Utility-row mode selector and report-source identification. */
+.masthead-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  border: 1px solid #929395;
+  background: #fff;
+}
+.masthead-mode-toggle button {
+  min-height: 1.75rem;
+  padding: .15rem .55rem;
+  border: 0 !important;
+  border-right: 1px solid #cfd1d2 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #003e67 !important;
+  font-size: .75rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+.masthead-mode-toggle button:last-child { border-right: 0 !important; }
+.masthead-mode-toggle button:hover { background: #f5f8fa !important; }
+.masthead-mode-toggle button.active {
+  background: #d6e9f2 !important;
+  box-shadow: inset 0 -3px 0 #005288;
+  color: #002b47 !important;
+}
+.section-heading-analysis {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.section-heading-analysis .report-badge {
+  flex: 0 1 auto;
+  max-width: min(42rem, 55vw);
+}
+@media (max-width: 900px) {
+  .section-heading-analysis { align-items: flex-start; flex-direction: column; }
+  .section-heading-analysis .report-badge { max-width: 100%; }
+}
+
+/* Report load status indicator */
+.status-dot.idle {
+  background: #e41d3d !important;
+  box-shadow: none !important;
+}
+
+.status-dot.ready {
+  background: #00a91c !important;
+  box-shadow: none !important;
+}
+
+/* Full-report output surface used by Share, Print, and Export. The interactive
+   application remains section-switched; this off-screen surface restores the
+   complete long-scroll report only while an output action is being prepared. */
+.full-report-output {
+  position: fixed;
+  left: -100000px;
+  top: 0;
+  width: 1200px;
+  padding: 1.25rem;
+  background: #fff;
+  color: #1b1b1b;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+.full-report-output-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid #005ea8;
+}
+.full-report-output-header h1 { margin: 0 0 .35rem; }
+.full-report-output-header p { margin: 0; }
+.full-report-output .full-output-section {
+  content-visibility: visible !important;
+  margin-bottom: 2rem;
+}
+
+@media print {
+  .app-main, .site-header, .entity-drawer, .entity-drawer-backdrop,
+  .help-drawer, .help-backdrop, .tour-backdrop { display: none !important; }
+  .full-report-output {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    padding: 0 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: auto !important;
+  }
+  .full-report-output .dashboard-section,
+  .full-report-output .full-output-section {
+    content-visibility: visible !important;
+    break-inside: auto !important;
+  }
+  .full-report-output .topology-card { page-break-before: auto !important; }
+}
+
+/* Mobile navigation drawer --------------------------------------------------
+   At narrow widths, the primary report navigation becomes a vertical drawer
+   that slides in from the left. Selecting a destination or clicking the
+   scrim closes it; desktop navigation remains unchanged. */
+.mobile-nav-backdrop {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  body.mobile-nav-is-open {
+    overflow: hidden;
+  }
+
+  .primary-menubar {
+    position: fixed !important;
+    z-index: 90;
+    top: var(--titlebar-height) !important;
+    right: auto !important;
+    bottom: 0;
+    left: 0;
+    display: block !important;
+    width: min(20rem, 86vw);
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto;
+    border: 0;
+    border-right: 1px solid rgba(255, 255, 255, .24);
+    border-bottom: 0 !important;
+    box-shadow: 10px 0 28px rgba(0, 0, 0, .24);
+    transform: translateX(-102%);
+    visibility: hidden;
+    transition: transform .2s ease, visibility 0s linear .2s;
+  }
+
+  .primary-menubar.open {
+    display: block !important;
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform .2s ease;
+  }
+
+  .primary-nav,
+  .primary-nav ul {
+    width: 100%;
+  }
+
+  .primary-nav ul {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    padding: .5rem 0 !important;
+  }
+
+  .primary-nav li {
+    width: 100%;
+  }
+
+  .primary-nav button {
+    width: 100%;
+    min-height: 3rem;
+    justify-content: flex-start;
+    padding: .75rem 1.25rem !important;
+    border: 0 !important;
+    border-left: 4px solid transparent !important;
+    border-radius: 0 !important;
+    text-align: left;
+  }
+
+  .primary-nav button.active {
+    border-left-color: #fff !important;
+  }
+
+  .mobile-nav-backdrop {
+    position: fixed;
+    z-index: 89;
+    top: var(--titlebar-height);
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: rgba(0, 30, 50, .38);
+    cursor: default;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary-menubar,
+  .primary-menubar.open {
+    transition: none !important;
+  }
+}
+
+/* Responsive masthead collision fix -----------------------------------------
+   Once the hamburger navigation is active, stop compressing the brand and
+   report tools into the same horizontal track. Give branding its own row and
+   let search/utilities consume the full available width below it. */
+@media (max-width: 820px) {
+  :root { --titlebar-height: 148px; }
+
+  .site-header {
+    height: var(--titlebar-height) !important;
+  }
+
+  .dhs-masthead {
+    height: var(--titlebar-height) !important;
+    min-height: var(--titlebar-height);
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 3.25rem minmax(0, 1fr);
+    align-items: center;
+    gap: .35rem;
+    padding: .45rem .9rem !important;
+    box-sizing: border-box;
+  }
+
+  .dhs-masthead .titlebar-brand {
+    width: 100%;
+    min-width: 0;
+    gap: .6rem !important;
+  }
+
+  .dhs-masthead .cisa-branding {
+    width: 2.6rem;
+    height: 2.6rem;
+    flex: 0 0 2.6rem;
+  }
+
+  .dhs-masthead .product-branding {
+    min-width: 0;
+  }
+
+  .dhs-masthead .brand-name {
+    font-size: 1.3rem;
+    white-space: nowrap;
+  }
+
+  .dhs-masthead .brand-subtitle {
+    display: none !important;
+  }
+
+  .masthead-actions {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    flex: none !important;
+    gap: .25rem;
+  }
+
+  .masthead-search-area,
+  .masthead-search-area .report-search,
+  .masthead-search-disabled {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .masthead-utilities {
+    display: flex !important;
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-start !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .masthead-utilities::-webkit-scrollbar {
+    display: none;
+  }
+
+  .primary-menubar,
+  .mobile-nav-backdrop {
+    top: var(--titlebar-height) !important;
+  }
+}
+
+/* Very narrow windows need a little more vertical room so the utility row can
+   wrap instead of being squeezed or clipped. */
+@media (max-width: 520px) {
+  :root { --titlebar-height: 188px; }
+
+  .dhs-masthead {
+    grid-template-rows: 3rem minmax(0, 1fr);
+    padding: .4rem .65rem !important;
+  }
+
+  .dhs-masthead .cisa-branding {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-basis: 2.25rem;
+  }
+
+  .dhs-masthead .brand-name {
+    font-size: 1.15rem;
+  }
+
+  .masthead-utilities {
+    flex-wrap: wrap;
+    align-content: flex-start;
+    overflow: visible;
+    gap: .15rem .25rem;
+    white-space: normal;
+  }
+
+  .masthead-mode-toggle button,
+  .masthead-utility-action,
+  .masthead-status {
+    font-size: .7rem;
+  }
+
+  .masthead-utility-action {
+    padding-inline: .35rem;
+  }
+
+  .masthead-status {
+    padding-left: .35rem;
+  }
+}
+
+/* Report search alignment --------------------------------------------------
+   Keep visible separation between the magnifying-glass icon and the input. */
+.report-toolbar .report-search-icon,
+.masthead-search-area .report-search-icon {
+  flex: 0 0 auto !important;
+  width: 28px !important;
+  height: 28px !important;
+  margin-left: .875rem !important;
+  margin-right: .5rem !important;
+}
+.report-toolbar .report-search input,
+.masthead-search-area .report-search input {
+  margin-left: 0 !important;
+  padding-left: .25rem !important;
+}

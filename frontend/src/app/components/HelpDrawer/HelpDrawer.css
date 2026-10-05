@@ -1,0 +1,38 @@
+.help-backdrop{position:fixed;z-index:3100;inset:0;border:0;background:rgba(7,27,40,.42)}
+.help-drawer{position:fixed;z-index:3110;top:0;right:0;width:min(560px,94vw);height:100vh;padding:22px;background:#fff;border-left:1px solid #d5e2ea;box-shadow:-12px 0 32px rgba(8,31,50,.15);overflow:auto}
+.help-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.help-head p{margin:0 0 3px;color:#0b6e99;font-size:var(--text-xs);font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.help-head h2{margin:0;color:#173c59;font-size:var(--text-xl)}
+.help-head>button{width:34px;height:34px;border:0;border-radius:8px;background:#fff;color:#597388;font-size:var(--text-2xl);cursor:pointer}
+.help-tabs{display:flex;gap:6px;margin:18px 0 0;padding:4px 4px 12px;border-bottom:1px solid #dfe8ee;overflow-x:auto;scroll-padding-inline:4px}
+.help-tabs button{border:1px solid transparent;border-radius:999px;padding:8px 12px;background:transparent;color:#4d697c;font-size:var(--text-sm);font-weight:750;white-space:nowrap;cursor:pointer}
+.help-tabs button.active{border-color:#b9d7e7;background:#eaf5fa;color:#075f89}
+.help-section{padding-top:4px}
+.help-intro{margin:14px 0;padding:13px 14px;border-radius:10px;background:#f2f7fa;color:#587489;font-size:var(--text-sm);line-height:1.5}
+.help-workflow{display:grid;gap:9px}
+.help-workflow article{display:grid;grid-template-columns:34px 1fr;gap:11px;padding:13px 14px;border:1px solid #dfe8ee;border-radius:10px}
+.help-workflow article>span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#eaf5fa;color:#075f89;font-size:var(--text-sm);font-weight:850}
+.help-workflow h3,.help-support-note h3{margin:0 0 5px;color:#244b66;font-size:var(--text-sm)}
+.help-workflow p,.help-support-note p{margin:0;color:#667f92;font-size:var(--text-sm);line-height:1.48}
+.help-actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.help-actions button,.help-diagnostic-actions button{border:1px solid #b9d1df;border-radius:8px;padding:9px 11px;background:#fff;color:#24536f;font-weight:750;cursor:pointer}
+.help-actions button:disabled{cursor:not-allowed;opacity:.5}
+.help-note{margin:8px 0 0;color:#71889a;font-size:var(--text-xs);line-height:1.45}
+.help-search{display:grid;gap:5px}.help-search span{color:#60798d;font-size:var(--text-xs);font-weight:750}.help-search input{padding:10px 11px;border:1px solid #cddde6;border-radius:8px}
+.help-terms{display:grid;gap:9px;margin-top:17px}.help-terms article{padding:13px 14px;border:1px solid #dfe8ee;border-radius:10px}.help-terms h3{margin:0 0 5px;color:#244b66;font-size:var(--text-sm)}.help-terms p{margin:0;color:#667f92;font-size:var(--text-sm);line-height:1.48}.help-empty{color:#7c91a1;text-align:center}
+.help-diagnostics{display:grid;gap:0;border:1px solid #dfe8ee;border-radius:10px;overflow:hidden}
+.help-diagnostics>div{display:grid;grid-template-columns:minmax(120px, .8fr) minmax(0,1.4fr);gap:14px;padding:10px 12px;border-bottom:1px solid #e7eef2;font-size:var(--text-sm)}
+.help-diagnostics>div:last-child{border-bottom:0}.help-diagnostics span{color:#60798d;font-weight:700}.help-diagnostics strong{color:#284b63;overflow-wrap:anywhere;font-weight:650}
+.help-diagnostic-actions{display:flex;align-items:center;gap:10px;margin:12px 0}.help-diagnostic-actions span{color:#0b6e99;font-size:var(--text-xs);font-weight:750}
+.help-support-note{margin-top:12px;padding:13px 14px;border-left:3px solid #6fa9c7;background:#f7fafc;border-radius:0 8px 8px 0}
+.help-drawer :focus-visible{outline:3px solid rgba(18,97,160,.24);outline-offset:2px}.help-tabs button:focus-visible{outline-offset:-2px}
+@media(max-width:620px){.help-drawer{width:100vw;padding:18px}.help-diagnostics>div{grid-template-columns:1fr}.help-actions{display:grid}.help-actions button{width:100%}}
+:root[data-theme="dark"] .help-drawer{background:#0d2533;border-color:#315064;color:#d9e5ed}
+:root[data-theme="dark"] .help-head h2,:root[data-theme="dark"] .help-workflow h3,:root[data-theme="dark"] .help-support-note h3,:root[data-theme="dark"] .help-terms h3{color:#edf6fa}
+:root[data-theme="dark"] .help-head>button,:root[data-theme="dark"] .help-actions button,:root[data-theme="dark"] .help-diagnostic-actions button{background:#102735;border-color:#315064;color:#dceaf1}
+:root[data-theme="dark"] .help-tabs{border-color:#294756}:root[data-theme="dark"] .help-tabs button{color:#b7cad5}:root[data-theme="dark"] .help-tabs button.active{background:#173a4c;border-color:#315f76;color:#e4f4fb}
+:root[data-theme="dark"] .help-intro,:root[data-theme="dark"] .help-support-note{background:#102b3a;color:#b7cad5}
+:root[data-theme="dark"] .help-workflow article,:root[data-theme="dark"] .help-terms article,:root[data-theme="dark"] .help-diagnostics{border-color:#294756}
+:root[data-theme="dark"] .help-workflow article>span{background:#173a4c;color:#9fd4ed}
+:root[data-theme="dark"] .help-workflow p,:root[data-theme="dark"] .help-terms p,:root[data-theme="dark"] .help-support-note p,:root[data-theme="dark"] .help-diagnostics span{color:#9fb5c2}
+:root[data-theme="dark"] .help-diagnostics>div{border-color:#294756}:root[data-theme="dark"] .help-diagnostics strong{color:#dceaf1}

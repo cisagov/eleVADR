@@ -1,126 +1,77 @@
-import React from "react";
+import React, { useMemo } from "react";
 import "./ExecutiveSummary.css";
+import { ElevadrReport } from "../../types/Report";
+import { InvestigationFilter, SelectedEntity } from "../../types/Investigation";
+import { deriveFindings } from "../FindingsPanel/FindingsPanel";
 import Panel from "../Panel/Panel";
-import { ExecutiveSummary as ExecutiveSummaryType } from "../../types/Report";
-import InfoTooltip from "../InfoTooltip/InfoTooltip";
+import PivotValue from "../PivotValue/PivotValue";
 
 interface ExecutiveSummaryProps {
-  data: ExecutiveSummaryType;
+  report: ElevadrReport;
+  filters?: InvestigationFilter[];
+  onFilter?: (filter: InvestigationFilter) => void;
+  onSelect?: (entity: SelectedEntity) => void;
 }
 
-const formatTitle = (key: string): string => {
-  return key
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-};
+const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({ report, filters = [], onFilter, onSelect }) => {
+  const findings = useMemo(
+    () => deriveFindings(report).filter((finding) => finding.severity === "critical" || finding.severity === "high"),
+    [report],
+  );
 
-// Helper function to strip HTML tags for tooltip text
-const stripHtmlTags = (html: string): string => {
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  return div.textContent || div.innerText || "";
-};
+  const openFinding = (findingId: string) => {
+    onSelect?.({ type: "finding", id: findingId });
+  };
 
-// Mapping of alert keys to target panel IDs
-const alertTypeToPanelId: Record<string, string> = {
-  ot_cross_segment_alert: "ot-cross-segment-panel",
-  risky_services_alert: "service-risk-breakdown-panel",
-  unknown_services_alert: "service-panel",
-  suspicious_outbound_connections_alert:
-    "suspicious-outbound-connections-panel",
-  // Add new alert types and their corresponding panel IDs here if needed
-};
-
-const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({ data }) => {
-  const hasAlerts = Object.keys(data).length > 0;
-  const isEmpty = !hasAlerts;
-
-  const handleScrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+  const filterFindingEntity = (filter: InvestigationFilter) => {
+    onFilter?.(filter);
+    window.setTimeout(() => document.getElementById("findings")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
   };
 
   return (
-    <Panel
-      title={
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span>Executive Summary</span>
-          <InfoTooltip text="High-level security findings and alerts that require immediate attention." />
+    <Panel id="summary-high-priority-findings" title="High-Priority Findings">
+      <section className="priority-findings" aria-label="High-Priority Findings">
+        <div className="priority-findings-toolbar">
+          <span className="priority-findings-kicker">Triage</span>
+          {findings.length > 0 && (
+            <button
+              type="button"
+              className="priority-findings-count"
+              onClick={() => document.getElementById("findings")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            >
+              {findings.length} {findings.length === 1 ? "finding" : "findings"} · View all
+            </button>
+          )}
         </div>
-      }
-      highlight={true}
-      isEmpty={isEmpty}
-    >
-      <div className="executive-summary-table">
-        <table className="usa-table usa-table--borderless">
-          <thead>
-            <tr>
-              <th scope="col">
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "4px" }}
-                >
-                  <span>Alert Type</span>
-                  <InfoTooltip text="The category or type of security alert identified." />
-                </div>
-              </th>
-              <th scope="col">
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "4px" }}
-                >
-                  <span>Details</span>
-                  <InfoTooltip text="Specific information and context regarding the alert." />
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(data).map(([key, value]) => {
-              const targetPanelId = alertTypeToPanelId[key];
-              return (
-                <tr key={key}>
-                  <td className="alert-type">
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
-                    >
-                      {targetPanelId ? (
-                        <a
-                          href={`#${targetPanelId}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleScrollToSection(targetPanelId);
-                          }}
-                          className="alert-link"
-                        >
-                          {formatTitle(key)}
-                        </a>
-                      ) : (
-                        <span>{formatTitle(key)}</span>
-                      )}
-                      <InfoTooltip text={stripHtmlTags(value)} />
+
+        {findings.length === 0 ? (
+          <div className="executive-summary-empty">No High or Critical findings were reported.</div>
+        ) : (
+          <div className="priority-findings-list">
+            {findings.slice(0, 6).map((finding) => (
+              <article className={`priority-finding priority-finding-${finding.severity}`} key={finding.id}>
+                <div className="priority-finding-marker" aria-hidden="true" />
+                <div className="priority-finding-content">
+                  <div className="priority-finding-title-row">
+                    <span className={`priority-severity priority-severity-${finding.severity}`}>{finding.severity}</span>
+                    <h4>{finding.title}</h4>
+                  </div>
+                  <p>{finding.summary}</p>
+                  {(finding.ip || finding.service) && (
+                    <div className="priority-finding-pivots" aria-label="Finding pivots">
+                      {finding.ip && onFilter && <PivotValue filter={{ key: "ip", value: finding.ip!, label: "Device" }} filters={filters} onFilter={filterFindingEntity}>{finding.ip}</PivotValue>}
+                      {finding.service && onFilter && <PivotValue filter={{ key: "service", value: finding.service!, label: "Service" }} filters={filters} onFilter={filterFindingEntity}>{finding.service}</PivotValue>}
                     </div>
-                  </td>
-                  <td className="alert-content">
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: value.replace(/\n/g, "<br />"),
-                      }}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                  )}
+                </div>
+                <button type="button" className="priority-finding-link" onClick={() => openFinding(finding.id)}>Inspect</button>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
     </Panel>
-  );
+  )
 };
 
 export default ExecutiveSummary;

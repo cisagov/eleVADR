@@ -30,13 +30,13 @@
 
 .detail-modal-header h2 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
 }
 
 .detail-modal-close {
   border: none;
   background: transparent;
-  font-size: 1.75rem;
+  font-size: var(--text-3xl);
   cursor: pointer;
   color: #3d4551;
 }

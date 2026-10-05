@@ -1,0 +1,42 @@
+{
+  "allowed_finding_modules": [
+    "ics_write_operations",
+    "unexpected_dhcp_server",
+    "rogue_dhcp_static_ot"
+  ],
+  "dataset": "19_site_like_multi_hour_ot",
+  "deliberate_anomalies": [
+    {
+      "expected_modules": [
+        "ics_write_operations"
+      ],
+      "id": "unauthorized_modbus_write",
+      "timestamp": 12600
+    },
+    {
+      "expected_modules": [
+        "unexpected_dhcp_server",
+        "rogue_dhcp_static_ot"
+      ],
+      "id": "unexpected_dhcp_server",
+      "timestamp": 13200
+    }
+  ],
+  "duration_seconds": 14400,
+  "normal_behaviors": [
+    "60-second Modbus polling",
+    "internal DNS",
+    "internal NTP",
+    "approved multicast telemetry",
+    "DHCP lease renewal",
+    "scheduled RDP maintenance",
+    "authorized maintenance write",
+    "routine ARP refresh"
+  ],
+  "purpose": "False-positive tripwire across the complete 75-detector registry using a four-hour site-like OT simulation.",
+  "required_finding_modules": [
+    "ics_write_operations",
+    "unexpected_dhcp_server",
+    "rogue_dhcp_static_ot"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "contractVersion": "elevadr.detection-context.analysis-response.v1",
+  "errors": [
+    {
+      "code": "unsupported_contract_version",
+      "message": "contractVersion must be elevadr.detection-context.analysis.v1",
+      "path": "contractVersion"
+    }
+  ],
+  "moduleResults": [],
+  "status": "failed",
+  "summary": {
+    "completedModules": 0,
+    "failedModules": 0,
+    "findingCount": 0,
+    "requestedModules": 0
+  }
+}

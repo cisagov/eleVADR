@@ -11,10 +11,15 @@ import InfoTooltip from "../InfoTooltip/InfoTooltip";
 import DetailModal from "../DetailModal/DetailModal";
 import { useDrilldown } from "../../hooks/useDrilldown";
 import { fetchSuspiciousOutboundDrilldown } from "../../services/drilldownService";
+import PivotValue from "../PivotValue/PivotValue";
+import { InvestigationFilter, SelectedEntity } from "../../types/Investigation";
 
 interface SuspiciousOutboundConnectionsPanelProps {
   data: SuspiciousOutboundConnection[];
   reportId: ElevadrReport["report_id"];
+  filters?: InvestigationFilter[];
+  onFilter?: (filter: InvestigationFilter) => void;
+  onSelect?: (entity: SelectedEntity) => void;
 }
 
 interface SuspiciousOutboundRow {
@@ -27,7 +32,7 @@ interface SuspiciousOutboundRow {
 
 const SuspiciousOutboundConnectionsPanel: React.FC<
   SuspiciousOutboundConnectionsPanelProps
-> = ({ data, reportId }) => {
+> = ({ data, reportId, filters = [], onFilter, onSelect }) => {
   const drilldown = useDrilldown((row: SuspiciousOutboundRow) =>
     fetchSuspiciousOutboundDrilldown(
       reportId,
@@ -63,9 +68,7 @@ const SuspiciousOutboundConnectionsPanel: React.FC<
         </div>
       ),
       sortable: true,
-      clickable: true,
-      onClick: (_value, row) => handleRowClick(row as SuspiciousOutboundRow),
-      render: (value) => <span className="ip-cell">{String(value ?? "")}</span>,
+      render: (value) => value && onFilter ? <PivotValue filter={{ key: "ip", value: String(value), label: "Device" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : <span className="ip-cell">{String(value ?? "")}</span>,
     },
     {
       key: "dstIp",
@@ -76,9 +79,7 @@ const SuspiciousOutboundConnectionsPanel: React.FC<
         </div>
       ),
       sortable: true,
-      clickable: true,
-      onClick: (_value, row) => handleRowClick(row as SuspiciousOutboundRow),
-      render: (value) => <span className="ip-cell">{String(value ?? "")}</span>,
+      render: (value) => value && onFilter ? <PivotValue filter={{ key: "ip", value: String(value), label: "Device" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : <span className="ip-cell">{String(value ?? "")}</span>,
     },
     {
       key: "port",
@@ -90,11 +91,7 @@ const SuspiciousOutboundConnectionsPanel: React.FC<
       ),
       sortable: true,
       align: "center",
-      clickable: true,
-      onClick: (_value, row) => handleRowClick(row as SuspiciousOutboundRow),
-      render: (value) => (
-        <span className="port-cell">{String(value ?? "")}</span>
-      ),
+      render: (value) => value != null && onFilter ? <PivotValue filter={{ key: "port", value: String(value), label: "Port" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : <span className="port-cell">{String(value ?? "")}</span>,
     },
     {
       key: "service",
@@ -105,8 +102,7 @@ const SuspiciousOutboundConnectionsPanel: React.FC<
         </div>
       ),
       sortable: true,
-      clickable: true,
-      onClick: (_value, row) => handleRowClick(row as SuspiciousOutboundRow),
+      render: (value) => value && onFilter ? <PivotValue filter={{ key: "service", value: String(value), label: "Service" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—"),
     },
     {
       key: "count",
@@ -118,8 +114,6 @@ const SuspiciousOutboundConnectionsPanel: React.FC<
       ),
       sortable: true,
       align: "center",
-      clickable: true,
-      onClick: (_value, row) => handleRowClick(row as SuspiciousOutboundRow),
       render: (value) => (
         <span className="count-cell">{String(value ?? "")}</span>
       ),
@@ -142,6 +136,7 @@ const SuspiciousOutboundConnectionsPanel: React.FC<
       <SortableTable
         columns={columns}
         data={tableData}
+        onRowClick={(row) => onSelect?.({ type: "connection", id: `${row.srcIp}|${row.dstIp}|${row.service || `Port ${row.port}`}` })}
         filterable={true}
         filterPlaceholder="Search by IP, port, or service..."
         emptyMessage="No Results"
@@ -162,25 +157,23 @@ const SuspiciousOutboundConnectionsPanel: React.FC<
         {!drilldown.isLoading && !drilldown.error && (
           <SortableTable
             columns={[
-              { key: "src_endpoint.ip", label: "Source IP", sortable: true },
+              { key: "src_endpoint.ip", label: "Source IP", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "ip", value: String(value), label: "Device" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
               {
                 key: "src_endpoint.port",
                 label: "Src Port",
                 sortable: true,
                 align: "right",
+                render: (value) => value != null && onFilter ? <PivotValue filter={{ key: "port", value: String(value), label: "Port" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—"),
               },
-              {
-                key: "dst_endpoint.ip",
-                label: "Destination IP",
-                sortable: true,
-              },
+              { key: "dst_endpoint.ip", label: "Destination IP", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "ip", value: String(value), label: "Device" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
               {
                 key: "dst_endpoint.port",
                 label: "Dst Port",
                 sortable: true,
                 align: "right",
+                render: (value) => value != null && onFilter ? <PivotValue filter={{ key: "port", value: String(value), label: "Port" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—"),
               },
-              { key: "service.name", label: "Service", sortable: true },
+              { key: "service.name", label: "Service", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "service", value: String(value), label: "Service" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
               {
                 key: "connection_info.protocol_name",
                 label: "Protocol",
@@ -191,7 +184,7 @@ const SuspiciousOutboundConnectionsPanel: React.FC<
                 label: "Direction",
                 sortable: true,
               },
-              { key: "state", label: "State", sortable: true },
+              { key: "state", label: "State", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "zeekState", value: String(value), label: "Zeek State" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
               { key: "history", label: "History", sortable: true },
               {
                 key: "success",

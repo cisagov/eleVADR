@@ -95,8 +95,17 @@ export interface ConnectionSuccessSummary {
 
 export interface ConnectionSuccessLine {
   "src_endpoint.ip": string | null;
+  "src_endpoint.port"?: number | null;
+  "src_endpoint.subnet"?: string | null;
   "dst_endpoint.ip": string | null;
   "dst_endpoint.port": number | null;
+  "dst_endpoint.subnet"?: string | null;
+  "service.name"?: string | null;
+  "connection_info.protocol_name"?: string | null;
+  "connection_info.direction_name"?: string | null;
+  duration?: number | null;
+  orig_bytes?: number | null;
+  resp_bytes?: number | null;
   state: string | null;
   history?: string | null;
   success: boolean;

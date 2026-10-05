@@ -54,7 +54,7 @@
   margin-top: 1rem;
   text-align: right;
   color: #71767a;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
 }
 
 @media (max-width: 768px) {
