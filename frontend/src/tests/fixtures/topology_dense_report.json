@@ -1,0 +1,6360 @@
+{
+  "report_version": "2.0.0",
+  "report_id": "topology-dense-regression",
+  "executive_summary": {
+    "analysis_summary": "Synthetic dense topology interaction regression fixture.",
+    "device_summary": "Observed 96 synthetic devices.",
+    "service_summary": "Observed six synthetic services."
+  },
+  "modules": {
+    "service_panel": {
+      "num_known_services": 6,
+      "num_ot_services": 2,
+      "num_risky_services": 2,
+      "num_unknown_services": 0
+    },
+    "device_panel": {
+      "hosts": 96,
+      "ot_hosts": 56,
+      "it_hosts": 32,
+      "edge_hosts": 8,
+      "ot_cross_segment": 0
+    },
+    "service_risk_breakdown_panel": {
+      "risk_category_counts": {},
+      "risk_category_services": {}
+    },
+    "service_count_panel": {
+      "service_count": 6,
+      "service_connections_count": {
+        "known_services": [],
+        "unknown_services": {}
+      }
+    },
+    "connection_success_panel": {
+      "summary": {
+        "successful_count": 180,
+        "unsuccessful_count": 0,
+        "by_state": {
+          "SF": 180
+        }
+      },
+      "connections": [
+        {
+          "src_endpoint.ip": "10.10.0.1",
+          "src_endpoint.port": 40000,
+          "dst_endpoint.ip": "10.10.0.12",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 120,
+          "resp_bytes": 80,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.2",
+          "src_endpoint.port": 40001,
+          "dst_endpoint.ip": "10.10.0.19",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 121,
+          "resp_bytes": 81,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.3",
+          "src_endpoint.port": 40002,
+          "dst_endpoint.ip": "10.10.0.26",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 122,
+          "resp_bytes": 82,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.4",
+          "src_endpoint.port": 40003,
+          "dst_endpoint.ip": "10.20.0.1",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 123,
+          "resp_bytes": 83,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.5",
+          "src_endpoint.port": 40004,
+          "dst_endpoint.ip": "10.20.0.8",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 124,
+          "resp_bytes": 84,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.6",
+          "src_endpoint.port": 40005,
+          "dst_endpoint.ip": "10.30.0.7",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 125,
+          "resp_bytes": 85,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.7",
+          "src_endpoint.port": 40006,
+          "dst_endpoint.ip": "10.30.0.14",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 126,
+          "resp_bytes": 86,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.8",
+          "src_endpoint.port": 40007,
+          "dst_endpoint.ip": "10.30.0.21",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 127,
+          "resp_bytes": 87,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.9",
+          "src_endpoint.port": 40008,
+          "dst_endpoint.ip": "10.30.0.28",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 128,
+          "resp_bytes": 88,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.10",
+          "src_endpoint.port": 40009,
+          "dst_endpoint.ip": "10.31.0.7",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 129,
+          "resp_bytes": 89,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.11",
+          "src_endpoint.port": 40010,
+          "dst_endpoint.ip": "10.31.0.14",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 130,
+          "resp_bytes": 90,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.12",
+          "src_endpoint.port": 40011,
+          "dst_endpoint.ip": "10.31.0.21",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 131,
+          "resp_bytes": 91,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.13",
+          "src_endpoint.port": 40012,
+          "dst_endpoint.ip": "10.31.0.28",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 132,
+          "resp_bytes": 92,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.14",
+          "src_endpoint.port": 40013,
+          "dst_endpoint.ip": "10.10.0.7",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 133,
+          "resp_bytes": 93,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.15",
+          "src_endpoint.port": 40014,
+          "dst_endpoint.ip": "10.10.0.14",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 134,
+          "resp_bytes": 94,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.16",
+          "src_endpoint.port": 40015,
+          "dst_endpoint.ip": "10.10.0.21",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 135,
+          "resp_bytes": 95,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.17",
+          "src_endpoint.port": 40016,
+          "dst_endpoint.ip": "10.10.0.28",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 136,
+          "resp_bytes": 96,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.18",
+          "src_endpoint.port": 40017,
+          "dst_endpoint.ip": "10.20.0.3",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 137,
+          "resp_bytes": 97,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.19",
+          "src_endpoint.port": 40018,
+          "dst_endpoint.ip": "10.30.0.2",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 138,
+          "resp_bytes": 98,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.20",
+          "src_endpoint.port": 40019,
+          "dst_endpoint.ip": "10.30.0.9",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 139,
+          "resp_bytes": 99,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.21",
+          "src_endpoint.port": 40020,
+          "dst_endpoint.ip": "10.30.0.16",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 140,
+          "resp_bytes": 100,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.22",
+          "src_endpoint.port": 40021,
+          "dst_endpoint.ip": "10.30.0.23",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 141,
+          "resp_bytes": 101,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.23",
+          "src_endpoint.port": 40022,
+          "dst_endpoint.ip": "10.31.0.2",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 142,
+          "resp_bytes": 102,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.24",
+          "src_endpoint.port": 40023,
+          "dst_endpoint.ip": "10.31.0.9",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 143,
+          "resp_bytes": 103,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.25",
+          "src_endpoint.port": 40024,
+          "dst_endpoint.ip": "10.31.0.16",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 144,
+          "resp_bytes": 104,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.26",
+          "src_endpoint.port": 40025,
+          "dst_endpoint.ip": "10.31.0.23",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 145,
+          "resp_bytes": 105,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.27",
+          "src_endpoint.port": 40026,
+          "dst_endpoint.ip": "10.10.0.2",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 146,
+          "resp_bytes": 106,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.28",
+          "src_endpoint.port": 40027,
+          "dst_endpoint.ip": "10.10.0.9",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 147,
+          "resp_bytes": 107,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.29",
+          "src_endpoint.port": 40028,
+          "dst_endpoint.ip": "10.10.0.16",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 148,
+          "resp_bytes": 108,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.30",
+          "src_endpoint.port": 40029,
+          "dst_endpoint.ip": "10.10.0.23",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 149,
+          "resp_bytes": 109,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.31",
+          "src_endpoint.port": 40030,
+          "dst_endpoint.ip": "10.10.0.30",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 150,
+          "resp_bytes": 110,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.32",
+          "src_endpoint.port": 40031,
+          "dst_endpoint.ip": "10.20.0.5",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 151,
+          "resp_bytes": 111,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.1",
+          "src_endpoint.port": 40032,
+          "dst_endpoint.ip": "10.30.0.4",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 152,
+          "resp_bytes": 112,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.2",
+          "src_endpoint.port": 40033,
+          "dst_endpoint.ip": "10.30.0.11",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 153,
+          "resp_bytes": 113,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.3",
+          "src_endpoint.port": 40034,
+          "dst_endpoint.ip": "10.30.0.18",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 154,
+          "resp_bytes": 114,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.4",
+          "src_endpoint.port": 40035,
+          "dst_endpoint.ip": "10.30.0.25",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 155,
+          "resp_bytes": 115,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.5",
+          "src_endpoint.port": 40036,
+          "dst_endpoint.ip": "10.31.0.4",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 156,
+          "resp_bytes": 116,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.6",
+          "src_endpoint.port": 40037,
+          "dst_endpoint.ip": "10.31.0.11",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 157,
+          "resp_bytes": 117,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.7",
+          "src_endpoint.port": 40038,
+          "dst_endpoint.ip": "10.31.0.18",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 158,
+          "resp_bytes": 118,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.8",
+          "src_endpoint.port": 40039,
+          "dst_endpoint.ip": "10.31.0.25",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 159,
+          "resp_bytes": 119,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.1",
+          "src_endpoint.port": 40040,
+          "dst_endpoint.ip": "10.10.0.4",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 160,
+          "resp_bytes": 120,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.2",
+          "src_endpoint.port": 40041,
+          "dst_endpoint.ip": "10.10.0.11",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 161,
+          "resp_bytes": 121,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.3",
+          "src_endpoint.port": 40042,
+          "dst_endpoint.ip": "10.10.0.18",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 162,
+          "resp_bytes": 122,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.4",
+          "src_endpoint.port": 40043,
+          "dst_endpoint.ip": "10.10.0.25",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 163,
+          "resp_bytes": 123,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.5",
+          "src_endpoint.port": 40044,
+          "dst_endpoint.ip": "10.10.0.32",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 164,
+          "resp_bytes": 124,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.6",
+          "src_endpoint.port": 40045,
+          "dst_endpoint.ip": "10.20.0.7",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 165,
+          "resp_bytes": 125,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.7",
+          "src_endpoint.port": 40046,
+          "dst_endpoint.ip": "10.30.0.6",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 166,
+          "resp_bytes": 126,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.8",
+          "src_endpoint.port": 40047,
+          "dst_endpoint.ip": "10.30.0.13",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 167,
+          "resp_bytes": 127,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.9",
+          "src_endpoint.port": 40048,
+          "dst_endpoint.ip": "10.30.0.20",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 168,
+          "resp_bytes": 128,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.10",
+          "src_endpoint.port": 40049,
+          "dst_endpoint.ip": "10.30.0.27",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 169,
+          "resp_bytes": 129,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.11",
+          "src_endpoint.port": 40050,
+          "dst_endpoint.ip": "10.31.0.6",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 170,
+          "resp_bytes": 130,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.12",
+          "src_endpoint.port": 40051,
+          "dst_endpoint.ip": "10.31.0.13",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 171,
+          "resp_bytes": 131,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.13",
+          "src_endpoint.port": 40052,
+          "dst_endpoint.ip": "10.31.0.20",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 172,
+          "resp_bytes": 132,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.14",
+          "src_endpoint.port": 40053,
+          "dst_endpoint.ip": "10.31.0.27",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 173,
+          "resp_bytes": 133,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.15",
+          "src_endpoint.port": 40054,
+          "dst_endpoint.ip": "10.10.0.6",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 174,
+          "resp_bytes": 134,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.16",
+          "src_endpoint.port": 40055,
+          "dst_endpoint.ip": "10.10.0.13",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 175,
+          "resp_bytes": 135,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.17",
+          "src_endpoint.port": 40056,
+          "dst_endpoint.ip": "10.10.0.20",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 176,
+          "resp_bytes": 136,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.18",
+          "src_endpoint.port": 40057,
+          "dst_endpoint.ip": "10.10.0.27",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 177,
+          "resp_bytes": 137,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.19",
+          "src_endpoint.port": 40058,
+          "dst_endpoint.ip": "10.20.0.2",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 178,
+          "resp_bytes": 138,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.20",
+          "src_endpoint.port": 40059,
+          "dst_endpoint.ip": "10.30.0.1",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 179,
+          "resp_bytes": 139,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.21",
+          "src_endpoint.port": 40060,
+          "dst_endpoint.ip": "10.30.0.8",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 180,
+          "resp_bytes": 140,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.22",
+          "src_endpoint.port": 40061,
+          "dst_endpoint.ip": "10.30.0.15",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 181,
+          "resp_bytes": 141,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.23",
+          "src_endpoint.port": 40062,
+          "dst_endpoint.ip": "10.30.0.22",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 182,
+          "resp_bytes": 142,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.24",
+          "src_endpoint.port": 40063,
+          "dst_endpoint.ip": "10.31.0.1",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 183,
+          "resp_bytes": 143,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.25",
+          "src_endpoint.port": 40064,
+          "dst_endpoint.ip": "10.31.0.8",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 184,
+          "resp_bytes": 144,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.26",
+          "src_endpoint.port": 40065,
+          "dst_endpoint.ip": "10.31.0.15",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 185,
+          "resp_bytes": 145,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.27",
+          "src_endpoint.port": 40066,
+          "dst_endpoint.ip": "10.31.0.22",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 186,
+          "resp_bytes": 146,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.28",
+          "src_endpoint.port": 40067,
+          "dst_endpoint.ip": "10.10.0.1",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 187,
+          "resp_bytes": 147,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.1",
+          "src_endpoint.port": 40068,
+          "dst_endpoint.ip": "10.10.0.8",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 188,
+          "resp_bytes": 148,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.2",
+          "src_endpoint.port": 40069,
+          "dst_endpoint.ip": "10.10.0.15",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 189,
+          "resp_bytes": 149,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.3",
+          "src_endpoint.port": 40070,
+          "dst_endpoint.ip": "10.10.0.22",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 190,
+          "resp_bytes": 150,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.4",
+          "src_endpoint.port": 40071,
+          "dst_endpoint.ip": "10.10.0.29",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 191,
+          "resp_bytes": 151,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.5",
+          "src_endpoint.port": 40072,
+          "dst_endpoint.ip": "10.20.0.4",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 192,
+          "resp_bytes": 152,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.6",
+          "src_endpoint.port": 40073,
+          "dst_endpoint.ip": "10.30.0.3",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 193,
+          "resp_bytes": 153,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.7",
+          "src_endpoint.port": 40074,
+          "dst_endpoint.ip": "10.30.0.10",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 194,
+          "resp_bytes": 154,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.8",
+          "src_endpoint.port": 40075,
+          "dst_endpoint.ip": "10.30.0.17",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 195,
+          "resp_bytes": 155,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.9",
+          "src_endpoint.port": 40076,
+          "dst_endpoint.ip": "10.30.0.24",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 196,
+          "resp_bytes": 156,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.10",
+          "src_endpoint.port": 40077,
+          "dst_endpoint.ip": "10.31.0.3",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 197,
+          "resp_bytes": 157,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.11",
+          "src_endpoint.port": 40078,
+          "dst_endpoint.ip": "10.31.0.10",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 198,
+          "resp_bytes": 158,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.12",
+          "src_endpoint.port": 40079,
+          "dst_endpoint.ip": "10.31.0.17",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 199,
+          "resp_bytes": 159,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.13",
+          "src_endpoint.port": 40080,
+          "dst_endpoint.ip": "10.31.0.24",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 200,
+          "resp_bytes": 160,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.14",
+          "src_endpoint.port": 40081,
+          "dst_endpoint.ip": "10.10.0.3",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 201,
+          "resp_bytes": 161,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.15",
+          "src_endpoint.port": 40082,
+          "dst_endpoint.ip": "10.10.0.10",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 202,
+          "resp_bytes": 162,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.16",
+          "src_endpoint.port": 40083,
+          "dst_endpoint.ip": "10.10.0.17",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 203,
+          "resp_bytes": 163,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.17",
+          "src_endpoint.port": 40084,
+          "dst_endpoint.ip": "10.10.0.24",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 204,
+          "resp_bytes": 164,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.18",
+          "src_endpoint.port": 40085,
+          "dst_endpoint.ip": "10.10.0.31",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 205,
+          "resp_bytes": 165,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.19",
+          "src_endpoint.port": 40086,
+          "dst_endpoint.ip": "10.20.0.6",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 206,
+          "resp_bytes": 166,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.20",
+          "src_endpoint.port": 40087,
+          "dst_endpoint.ip": "10.30.0.5",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 207,
+          "resp_bytes": 167,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.21",
+          "src_endpoint.port": 40088,
+          "dst_endpoint.ip": "10.30.0.12",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 208,
+          "resp_bytes": 168,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.22",
+          "src_endpoint.port": 40089,
+          "dst_endpoint.ip": "10.30.0.19",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 209,
+          "resp_bytes": 169,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.23",
+          "src_endpoint.port": 40090,
+          "dst_endpoint.ip": "10.30.0.26",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 210,
+          "resp_bytes": 170,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.24",
+          "src_endpoint.port": 40091,
+          "dst_endpoint.ip": "10.31.0.5",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 211,
+          "resp_bytes": 171,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.25",
+          "src_endpoint.port": 40092,
+          "dst_endpoint.ip": "10.31.0.12",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 212,
+          "resp_bytes": 172,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.26",
+          "src_endpoint.port": 40093,
+          "dst_endpoint.ip": "10.31.0.19",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 213,
+          "resp_bytes": 173,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.27",
+          "src_endpoint.port": 40094,
+          "dst_endpoint.ip": "10.31.0.26",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 214,
+          "resp_bytes": 174,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.28",
+          "src_endpoint.port": 40095,
+          "dst_endpoint.ip": "10.10.0.5",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 215,
+          "resp_bytes": 175,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.1",
+          "src_endpoint.port": 40096,
+          "dst_endpoint.ip": "10.10.0.12",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 216,
+          "resp_bytes": 176,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.2",
+          "src_endpoint.port": 40097,
+          "dst_endpoint.ip": "10.10.0.19",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 217,
+          "resp_bytes": 177,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.3",
+          "src_endpoint.port": 40098,
+          "dst_endpoint.ip": "10.10.0.26",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 218,
+          "resp_bytes": 178,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.4",
+          "src_endpoint.port": 40099,
+          "dst_endpoint.ip": "10.20.0.1",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 219,
+          "resp_bytes": 179,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.5",
+          "src_endpoint.port": 40100,
+          "dst_endpoint.ip": "10.20.0.8",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 220,
+          "resp_bytes": 180,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.6",
+          "src_endpoint.port": 40101,
+          "dst_endpoint.ip": "10.30.0.7",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 221,
+          "resp_bytes": 181,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.7",
+          "src_endpoint.port": 40102,
+          "dst_endpoint.ip": "10.30.0.14",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 222,
+          "resp_bytes": 182,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.8",
+          "src_endpoint.port": 40103,
+          "dst_endpoint.ip": "10.30.0.21",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 223,
+          "resp_bytes": 183,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.9",
+          "src_endpoint.port": 40104,
+          "dst_endpoint.ip": "10.30.0.28",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 224,
+          "resp_bytes": 184,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.10",
+          "src_endpoint.port": 40105,
+          "dst_endpoint.ip": "10.31.0.7",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 225,
+          "resp_bytes": 185,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.11",
+          "src_endpoint.port": 40106,
+          "dst_endpoint.ip": "10.31.0.14",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 226,
+          "resp_bytes": 186,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.12",
+          "src_endpoint.port": 40107,
+          "dst_endpoint.ip": "10.31.0.21",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 227,
+          "resp_bytes": 187,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.13",
+          "src_endpoint.port": 40108,
+          "dst_endpoint.ip": "10.31.0.28",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 228,
+          "resp_bytes": 188,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.14",
+          "src_endpoint.port": 40109,
+          "dst_endpoint.ip": "10.10.0.7",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 229,
+          "resp_bytes": 189,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.15",
+          "src_endpoint.port": 40110,
+          "dst_endpoint.ip": "10.10.0.14",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 230,
+          "resp_bytes": 190,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.16",
+          "src_endpoint.port": 40111,
+          "dst_endpoint.ip": "10.10.0.21",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 231,
+          "resp_bytes": 191,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.17",
+          "src_endpoint.port": 40112,
+          "dst_endpoint.ip": "10.10.0.28",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 232,
+          "resp_bytes": 192,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.18",
+          "src_endpoint.port": 40113,
+          "dst_endpoint.ip": "10.20.0.3",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 233,
+          "resp_bytes": 193,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.19",
+          "src_endpoint.port": 40114,
+          "dst_endpoint.ip": "10.30.0.2",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 234,
+          "resp_bytes": 194,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.20",
+          "src_endpoint.port": 40115,
+          "dst_endpoint.ip": "10.30.0.9",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 235,
+          "resp_bytes": 195,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.21",
+          "src_endpoint.port": 40116,
+          "dst_endpoint.ip": "10.30.0.16",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 236,
+          "resp_bytes": 196,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.22",
+          "src_endpoint.port": 40117,
+          "dst_endpoint.ip": "10.30.0.23",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 237,
+          "resp_bytes": 197,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.23",
+          "src_endpoint.port": 40118,
+          "dst_endpoint.ip": "10.31.0.2",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 238,
+          "resp_bytes": 198,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.24",
+          "src_endpoint.port": 40119,
+          "dst_endpoint.ip": "10.31.0.9",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 239,
+          "resp_bytes": 199,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.25",
+          "src_endpoint.port": 40120,
+          "dst_endpoint.ip": "10.31.0.16",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 240,
+          "resp_bytes": 200,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.26",
+          "src_endpoint.port": 40121,
+          "dst_endpoint.ip": "10.31.0.23",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 241,
+          "resp_bytes": 201,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.27",
+          "src_endpoint.port": 40122,
+          "dst_endpoint.ip": "10.10.0.2",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 242,
+          "resp_bytes": 202,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.28",
+          "src_endpoint.port": 40123,
+          "dst_endpoint.ip": "10.10.0.9",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 243,
+          "resp_bytes": 203,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.29",
+          "src_endpoint.port": 40124,
+          "dst_endpoint.ip": "10.10.0.16",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 244,
+          "resp_bytes": 204,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.30",
+          "src_endpoint.port": 40125,
+          "dst_endpoint.ip": "10.10.0.23",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 245,
+          "resp_bytes": 205,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.31",
+          "src_endpoint.port": 40126,
+          "dst_endpoint.ip": "10.10.0.30",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 246,
+          "resp_bytes": 206,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.10.0.32",
+          "src_endpoint.port": 40127,
+          "dst_endpoint.ip": "10.20.0.5",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 247,
+          "resp_bytes": 207,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.1",
+          "src_endpoint.port": 40128,
+          "dst_endpoint.ip": "10.30.0.4",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 248,
+          "resp_bytes": 208,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.2",
+          "src_endpoint.port": 40129,
+          "dst_endpoint.ip": "10.30.0.11",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 249,
+          "resp_bytes": 209,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.3",
+          "src_endpoint.port": 40130,
+          "dst_endpoint.ip": "10.30.0.18",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 250,
+          "resp_bytes": 210,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.4",
+          "src_endpoint.port": 40131,
+          "dst_endpoint.ip": "10.30.0.25",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 251,
+          "resp_bytes": 211,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.5",
+          "src_endpoint.port": 40132,
+          "dst_endpoint.ip": "10.31.0.4",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 252,
+          "resp_bytes": 212,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.6",
+          "src_endpoint.port": 40133,
+          "dst_endpoint.ip": "10.31.0.11",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 253,
+          "resp_bytes": 213,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.7",
+          "src_endpoint.port": 40134,
+          "dst_endpoint.ip": "10.31.0.18",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 254,
+          "resp_bytes": 214,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.20.0.8",
+          "src_endpoint.port": 40135,
+          "dst_endpoint.ip": "10.31.0.25",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 255,
+          "resp_bytes": 215,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.1",
+          "src_endpoint.port": 40136,
+          "dst_endpoint.ip": "10.10.0.4",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 256,
+          "resp_bytes": 216,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.2",
+          "src_endpoint.port": 40137,
+          "dst_endpoint.ip": "10.10.0.11",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 257,
+          "resp_bytes": 217,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.3",
+          "src_endpoint.port": 40138,
+          "dst_endpoint.ip": "10.10.0.18",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 258,
+          "resp_bytes": 218,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.4",
+          "src_endpoint.port": 40139,
+          "dst_endpoint.ip": "10.10.0.25",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 259,
+          "resp_bytes": 219,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.5",
+          "src_endpoint.port": 40140,
+          "dst_endpoint.ip": "10.10.0.32",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 260,
+          "resp_bytes": 220,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.6",
+          "src_endpoint.port": 40141,
+          "dst_endpoint.ip": "10.20.0.7",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 261,
+          "resp_bytes": 221,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.7",
+          "src_endpoint.port": 40142,
+          "dst_endpoint.ip": "10.30.0.6",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 262,
+          "resp_bytes": 222,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.8",
+          "src_endpoint.port": 40143,
+          "dst_endpoint.ip": "10.30.0.13",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 263,
+          "resp_bytes": 223,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.9",
+          "src_endpoint.port": 40144,
+          "dst_endpoint.ip": "10.30.0.20",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 264,
+          "resp_bytes": 224,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.10",
+          "src_endpoint.port": 40145,
+          "dst_endpoint.ip": "10.30.0.27",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 265,
+          "resp_bytes": 225,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.11",
+          "src_endpoint.port": 40146,
+          "dst_endpoint.ip": "10.31.0.6",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 266,
+          "resp_bytes": 226,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.12",
+          "src_endpoint.port": 40147,
+          "dst_endpoint.ip": "10.31.0.13",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 267,
+          "resp_bytes": 227,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.13",
+          "src_endpoint.port": 40148,
+          "dst_endpoint.ip": "10.31.0.20",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 268,
+          "resp_bytes": 228,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.14",
+          "src_endpoint.port": 40149,
+          "dst_endpoint.ip": "10.31.0.27",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 269,
+          "resp_bytes": 229,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.15",
+          "src_endpoint.port": 40150,
+          "dst_endpoint.ip": "10.10.0.6",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 270,
+          "resp_bytes": 230,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.16",
+          "src_endpoint.port": 40151,
+          "dst_endpoint.ip": "10.10.0.13",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 271,
+          "resp_bytes": 231,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.17",
+          "src_endpoint.port": 40152,
+          "dst_endpoint.ip": "10.10.0.20",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 272,
+          "resp_bytes": 232,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.18",
+          "src_endpoint.port": 40153,
+          "dst_endpoint.ip": "10.10.0.27",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 273,
+          "resp_bytes": 233,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.19",
+          "src_endpoint.port": 40154,
+          "dst_endpoint.ip": "10.20.0.2",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 274,
+          "resp_bytes": 234,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.20",
+          "src_endpoint.port": 40155,
+          "dst_endpoint.ip": "10.30.0.1",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 275,
+          "resp_bytes": 235,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.21",
+          "src_endpoint.port": 40156,
+          "dst_endpoint.ip": "10.30.0.8",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 276,
+          "resp_bytes": 236,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.22",
+          "src_endpoint.port": 40157,
+          "dst_endpoint.ip": "10.30.0.15",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 277,
+          "resp_bytes": 237,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.23",
+          "src_endpoint.port": 40158,
+          "dst_endpoint.ip": "10.30.0.22",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 278,
+          "resp_bytes": 238,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.24",
+          "src_endpoint.port": 40159,
+          "dst_endpoint.ip": "10.31.0.1",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 279,
+          "resp_bytes": 239,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.25",
+          "src_endpoint.port": 40160,
+          "dst_endpoint.ip": "10.31.0.8",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 280,
+          "resp_bytes": 240,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.26",
+          "src_endpoint.port": 40161,
+          "dst_endpoint.ip": "10.31.0.15",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 281,
+          "resp_bytes": 241,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.27",
+          "src_endpoint.port": 40162,
+          "dst_endpoint.ip": "10.31.0.22",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 282,
+          "resp_bytes": 242,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.30.0.28",
+          "src_endpoint.port": 40163,
+          "dst_endpoint.ip": "10.10.0.1",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 283,
+          "resp_bytes": 243,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.1",
+          "src_endpoint.port": 40164,
+          "dst_endpoint.ip": "10.10.0.8",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 284,
+          "resp_bytes": 244,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.2",
+          "src_endpoint.port": 40165,
+          "dst_endpoint.ip": "10.10.0.15",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 285,
+          "resp_bytes": 245,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.3",
+          "src_endpoint.port": 40166,
+          "dst_endpoint.ip": "10.10.0.22",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 286,
+          "resp_bytes": 246,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.4",
+          "src_endpoint.port": 40167,
+          "dst_endpoint.ip": "10.10.0.29",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 287,
+          "resp_bytes": 247,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.5",
+          "src_endpoint.port": 40168,
+          "dst_endpoint.ip": "10.20.0.4",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 288,
+          "resp_bytes": 248,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.6",
+          "src_endpoint.port": 40169,
+          "dst_endpoint.ip": "10.30.0.3",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 289,
+          "resp_bytes": 249,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.7",
+          "src_endpoint.port": 40170,
+          "dst_endpoint.ip": "10.30.0.10",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 290,
+          "resp_bytes": 250,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.8",
+          "src_endpoint.port": 40171,
+          "dst_endpoint.ip": "10.30.0.17",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 291,
+          "resp_bytes": 251,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.9",
+          "src_endpoint.port": 40172,
+          "dst_endpoint.ip": "10.30.0.24",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 292,
+          "resp_bytes": 252,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.10",
+          "src_endpoint.port": 40173,
+          "dst_endpoint.ip": "10.31.0.3",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 293,
+          "resp_bytes": 253,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.11",
+          "src_endpoint.port": 40174,
+          "dst_endpoint.ip": "10.31.0.10",
+          "dst_endpoint.port": 80,
+          "service.name": "http",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 294,
+          "resp_bytes": 254,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.12",
+          "src_endpoint.port": 40175,
+          "dst_endpoint.ip": "10.31.0.17",
+          "dst_endpoint.port": 53,
+          "service.name": "dns",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 295,
+          "resp_bytes": 255,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.13",
+          "src_endpoint.port": 40176,
+          "dst_endpoint.ip": "10.31.0.24",
+          "dst_endpoint.port": 502,
+          "service.name": "modbus",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 296,
+          "resp_bytes": 256,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.14",
+          "src_endpoint.port": 40177,
+          "dst_endpoint.ip": "10.10.0.3",
+          "dst_endpoint.port": 102,
+          "service.name": "s7comm",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 297,
+          "resp_bytes": 257,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.15",
+          "src_endpoint.port": 40178,
+          "dst_endpoint.ip": "10.10.0.10",
+          "dst_endpoint.port": 123,
+          "service.name": "ntp",
+          "connection_info.protocol_name": "udp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 298,
+          "resp_bytes": 258,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        },
+        {
+          "src_endpoint.ip": "10.31.0.16",
+          "src_endpoint.port": 40179,
+          "dst_endpoint.ip": "10.10.0.17",
+          "dst_endpoint.port": 22,
+          "service.name": "ssh",
+          "connection_info.protocol_name": "tcp",
+          "connection_info.direction_name": null,
+          "duration": 0.1,
+          "orig_bytes": 299,
+          "resp_bytes": 259,
+          "state": "SF",
+          "history": "ShADadFf",
+          "success": true
+        }
+      ]
+    },
+    "suspicious_outbound_connections_panel": [
+      {
+        "src_endpoint.ip": "10.10.0.21",
+        "dst_endpoint.ip": "10.30.0.16",
+        "dst_endpoint.port": 502,
+        "service.name": "modbus",
+        "count": 2
+      },
+      {
+        "src_endpoint.ip": "10.10.0.30",
+        "dst_endpoint.ip": "10.10.0.23",
+        "dst_endpoint.port": 22,
+        "service.name": "ssh",
+        "count": 3
+      },
+      {
+        "src_endpoint.ip": "10.20.0.7",
+        "dst_endpoint.ip": "10.31.0.18",
+        "dst_endpoint.port": 502,
+        "service.name": "modbus",
+        "count": 4
+      },
+      {
+        "src_endpoint.ip": "10.30.0.8",
+        "dst_endpoint.ip": "10.30.0.13",
+        "dst_endpoint.port": 22,
+        "service.name": "ssh",
+        "count": 5
+      },
+      {
+        "src_endpoint.ip": "10.30.0.17",
+        "dst_endpoint.ip": "10.10.0.20",
+        "dst_endpoint.port": 502,
+        "service.name": "modbus",
+        "count": 6
+      },
+      {
+        "src_endpoint.ip": "10.30.0.26",
+        "dst_endpoint.ip": "10.31.0.15",
+        "dst_endpoint.port": 22,
+        "service.name": "ssh",
+        "count": 7
+      },
+      {
+        "src_endpoint.ip": "10.31.0.7",
+        "dst_endpoint.ip": "10.30.0.10",
+        "dst_endpoint.port": 502,
+        "service.name": "modbus",
+        "count": 8
+      },
+      {
+        "src_endpoint.ip": "10.31.0.16",
+        "dst_endpoint.ip": "10.10.0.17",
+        "dst_endpoint.port": 22,
+        "service.name": "ssh",
+        "count": 9
+      }
+    ],
+    "ot_cross_segment_lines_panel": {
+      "lines": [],
+      "subnet_pair_counts": [],
+      "dst_subnet_counts": [],
+      "ot_device_counts": []
+    },
+    "ot_devices": [
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.1"
+        ],
+        "ipv4_ips": [
+          "10.30.0.1"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.2"
+        ],
+        "ipv4_ips": [
+          "10.30.0.2"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.3"
+        ],
+        "ipv4_ips": [
+          "10.30.0.3"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.4"
+        ],
+        "ipv4_ips": [
+          "10.30.0.4"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.5"
+        ],
+        "ipv4_ips": [
+          "10.30.0.5"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.6"
+        ],
+        "ipv4_ips": [
+          "10.30.0.6"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.7"
+        ],
+        "ipv4_ips": [
+          "10.30.0.7"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.8"
+        ],
+        "ipv4_ips": [
+          "10.30.0.8"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.9"
+        ],
+        "ipv4_ips": [
+          "10.30.0.9"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.10"
+        ],
+        "ipv4_ips": [
+          "10.30.0.10"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.11"
+        ],
+        "ipv4_ips": [
+          "10.30.0.11"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.12"
+        ],
+        "ipv4_ips": [
+          "10.30.0.12"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.13"
+        ],
+        "ipv4_ips": [
+          "10.30.0.13"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.14"
+        ],
+        "ipv4_ips": [
+          "10.30.0.14"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.15"
+        ],
+        "ipv4_ips": [
+          "10.30.0.15"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.16"
+        ],
+        "ipv4_ips": [
+          "10.30.0.16"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.17"
+        ],
+        "ipv4_ips": [
+          "10.30.0.17"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.18"
+        ],
+        "ipv4_ips": [
+          "10.30.0.18"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.19"
+        ],
+        "ipv4_ips": [
+          "10.30.0.19"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.20"
+        ],
+        "ipv4_ips": [
+          "10.30.0.20"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.21"
+        ],
+        "ipv4_ips": [
+          "10.30.0.21"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.22"
+        ],
+        "ipv4_ips": [
+          "10.30.0.22"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.23"
+        ],
+        "ipv4_ips": [
+          "10.30.0.23"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.24"
+        ],
+        "ipv4_ips": [
+          "10.30.0.24"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.25"
+        ],
+        "ipv4_ips": [
+          "10.30.0.25"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.26"
+        ],
+        "ipv4_ips": [
+          "10.30.0.26"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.27"
+        ],
+        "ipv4_ips": [
+          "10.30.0.27"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.30.0.28"
+        ],
+        "ipv4_ips": [
+          "10.30.0.28"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.30.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.1"
+        ],
+        "ipv4_ips": [
+          "10.31.0.1"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.2"
+        ],
+        "ipv4_ips": [
+          "10.31.0.2"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.3"
+        ],
+        "ipv4_ips": [
+          "10.31.0.3"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.4"
+        ],
+        "ipv4_ips": [
+          "10.31.0.4"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.5"
+        ],
+        "ipv4_ips": [
+          "10.31.0.5"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.6"
+        ],
+        "ipv4_ips": [
+          "10.31.0.6"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.7"
+        ],
+        "ipv4_ips": [
+          "10.31.0.7"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.8"
+        ],
+        "ipv4_ips": [
+          "10.31.0.8"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.9"
+        ],
+        "ipv4_ips": [
+          "10.31.0.9"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.10"
+        ],
+        "ipv4_ips": [
+          "10.31.0.10"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.11"
+        ],
+        "ipv4_ips": [
+          "10.31.0.11"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.12"
+        ],
+        "ipv4_ips": [
+          "10.31.0.12"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.13"
+        ],
+        "ipv4_ips": [
+          "10.31.0.13"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.14"
+        ],
+        "ipv4_ips": [
+          "10.31.0.14"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.15"
+        ],
+        "ipv4_ips": [
+          "10.31.0.15"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.16"
+        ],
+        "ipv4_ips": [
+          "10.31.0.16"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.17"
+        ],
+        "ipv4_ips": [
+          "10.31.0.17"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.18"
+        ],
+        "ipv4_ips": [
+          "10.31.0.18"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.19"
+        ],
+        "ipv4_ips": [
+          "10.31.0.19"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.20"
+        ],
+        "ipv4_ips": [
+          "10.31.0.20"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.21"
+        ],
+        "ipv4_ips": [
+          "10.31.0.21"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.22"
+        ],
+        "ipv4_ips": [
+          "10.31.0.22"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.23"
+        ],
+        "ipv4_ips": [
+          "10.31.0.23"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.24"
+        ],
+        "ipv4_ips": [
+          "10.31.0.24"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.25"
+        ],
+        "ipv4_ips": [
+          "10.31.0.25"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.26"
+        ],
+        "ipv4_ips": [
+          "10.31.0.26"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.27"
+        ],
+        "ipv4_ips": [
+          "10.31.0.27"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "modbus"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.31.0.28"
+        ],
+        "ipv4_ips": [
+          "10.31.0.28"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.31.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "s7comm"
+        ],
+        "sent_services": [],
+        "is_ot": true,
+        "is_edge": false
+      }
+    ],
+    "it_devices": [
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.1"
+        ],
+        "ipv4_ips": [
+          "10.10.0.1"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.2"
+        ],
+        "ipv4_ips": [
+          "10.10.0.2"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.3"
+        ],
+        "ipv4_ips": [
+          "10.10.0.3"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.4"
+        ],
+        "ipv4_ips": [
+          "10.10.0.4"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.5"
+        ],
+        "ipv4_ips": [
+          "10.10.0.5"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.6"
+        ],
+        "ipv4_ips": [
+          "10.10.0.6"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.7"
+        ],
+        "ipv4_ips": [
+          "10.10.0.7"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.8"
+        ],
+        "ipv4_ips": [
+          "10.10.0.8"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.9"
+        ],
+        "ipv4_ips": [
+          "10.10.0.9"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.10"
+        ],
+        "ipv4_ips": [
+          "10.10.0.10"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.11"
+        ],
+        "ipv4_ips": [
+          "10.10.0.11"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.12"
+        ],
+        "ipv4_ips": [
+          "10.10.0.12"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.13"
+        ],
+        "ipv4_ips": [
+          "10.10.0.13"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.14"
+        ],
+        "ipv4_ips": [
+          "10.10.0.14"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.15"
+        ],
+        "ipv4_ips": [
+          "10.10.0.15"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.16"
+        ],
+        "ipv4_ips": [
+          "10.10.0.16"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.17"
+        ],
+        "ipv4_ips": [
+          "10.10.0.17"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.18"
+        ],
+        "ipv4_ips": [
+          "10.10.0.18"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.19"
+        ],
+        "ipv4_ips": [
+          "10.10.0.19"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.20"
+        ],
+        "ipv4_ips": [
+          "10.10.0.20"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.21"
+        ],
+        "ipv4_ips": [
+          "10.10.0.21"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.22"
+        ],
+        "ipv4_ips": [
+          "10.10.0.22"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.23"
+        ],
+        "ipv4_ips": [
+          "10.10.0.23"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.24"
+        ],
+        "ipv4_ips": [
+          "10.10.0.24"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.25"
+        ],
+        "ipv4_ips": [
+          "10.10.0.25"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.26"
+        ],
+        "ipv4_ips": [
+          "10.10.0.26"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.27"
+        ],
+        "ipv4_ips": [
+          "10.10.0.27"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.28"
+        ],
+        "ipv4_ips": [
+          "10.10.0.28"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.29"
+        ],
+        "ipv4_ips": [
+          "10.10.0.29"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.30"
+        ],
+        "ipv4_ips": [
+          "10.10.0.30"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.31"
+        ],
+        "ipv4_ips": [
+          "10.10.0.31"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.10.0.32"
+        ],
+        "ipv4_ips": [
+          "10.10.0.32"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.10.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "http"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": false
+      }
+    ],
+    "edge_devices": [
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.20.0.1"
+        ],
+        "ipv4_ips": [
+          "10.20.0.1"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "dns"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": true
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.20.0.2"
+        ],
+        "ipv4_ips": [
+          "10.20.0.2"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "dns"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": true
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.20.0.3"
+        ],
+        "ipv4_ips": [
+          "10.20.0.3"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "dns"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": true
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.20.0.4"
+        ],
+        "ipv4_ips": [
+          "10.20.0.4"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "dns"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": true
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.20.0.5"
+        ],
+        "ipv4_ips": [
+          "10.20.0.5"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "dns"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": true
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.20.0.6"
+        ],
+        "ipv4_ips": [
+          "10.20.0.6"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "dns"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": true
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.20.0.7"
+        ],
+        "ipv4_ips": [
+          "10.20.0.7"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "dns"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": true
+      },
+      {
+        "manufacturer": "Regression Labs",
+        "mac": null,
+        "ip_addresses": [
+          "10.20.0.8"
+        ],
+        "ipv4_ips": [
+          "10.20.0.8"
+        ],
+        "ipv6_ips": [],
+        "subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv4_subnets": [
+          "10.20.0.0/24"
+        ],
+        "ipv6_subnets": [],
+        "incoming_services": [
+          "dns"
+        ],
+        "sent_services": [],
+        "is_ot": false,
+        "is_edge": true
+      }
+    ]
+  },
+  "arch_insights": {
+    "detection_context_snapshot": {
+      "name": "Dense topology regression context",
+      "assets": [
+        {
+          "id": "asset-10-10-0-1",
+          "ip": "10.10.0.1",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-2",
+          "ip": "10.10.0.2",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-3",
+          "ip": "10.10.0.3",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-4",
+          "ip": "10.10.0.4",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-5",
+          "ip": "10.10.0.5",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-6",
+          "ip": "10.10.0.6",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-7",
+          "ip": "10.10.0.7",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-8",
+          "ip": "10.10.0.8",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-9",
+          "ip": "10.10.0.9",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-10",
+          "ip": "10.10.0.10",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-11",
+          "ip": "10.10.0.11",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-12",
+          "ip": "10.10.0.12",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-13",
+          "ip": "10.10.0.13",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-14",
+          "ip": "10.10.0.14",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-15",
+          "ip": "10.10.0.15",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-16",
+          "ip": "10.10.0.16",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-17",
+          "ip": "10.10.0.17",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-18",
+          "ip": "10.10.0.18",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-19",
+          "ip": "10.10.0.19",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-20",
+          "ip": "10.10.0.20",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-21",
+          "ip": "10.10.0.21",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-22",
+          "ip": "10.10.0.22",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-23",
+          "ip": "10.10.0.23",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-24",
+          "ip": "10.10.0.24",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-25",
+          "ip": "10.10.0.25",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-26",
+          "ip": "10.10.0.26",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-27",
+          "ip": "10.10.0.27",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-28",
+          "ip": "10.10.0.28",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-29",
+          "ip": "10.10.0.29",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-30",
+          "ip": "10.10.0.30",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-31",
+          "ip": "10.10.0.31",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-10-0-32",
+          "ip": "10.10.0.32",
+          "role": "IT",
+          "segment": "10.10.0.0/24",
+          "purdueLevel": "5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-20-0-1",
+          "ip": "10.20.0.1",
+          "role": "Network",
+          "segment": "10.20.0.0/24",
+          "purdueLevel": "3.5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-20-0-2",
+          "ip": "10.20.0.2",
+          "role": "Network",
+          "segment": "10.20.0.0/24",
+          "purdueLevel": "3.5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-20-0-3",
+          "ip": "10.20.0.3",
+          "role": "Network",
+          "segment": "10.20.0.0/24",
+          "purdueLevel": "3.5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-20-0-4",
+          "ip": "10.20.0.4",
+          "role": "Network",
+          "segment": "10.20.0.0/24",
+          "purdueLevel": "3.5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-20-0-5",
+          "ip": "10.20.0.5",
+          "role": "Network",
+          "segment": "10.20.0.0/24",
+          "purdueLevel": "3.5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-20-0-6",
+          "ip": "10.20.0.6",
+          "role": "Network",
+          "segment": "10.20.0.0/24",
+          "purdueLevel": "3.5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-20-0-7",
+          "ip": "10.20.0.7",
+          "role": "Network",
+          "segment": "10.20.0.0/24",
+          "purdueLevel": "3.5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-20-0-8",
+          "ip": "10.20.0.8",
+          "role": "Network",
+          "segment": "10.20.0.0/24",
+          "purdueLevel": "3.5",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-1",
+          "ip": "10.30.0.1",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-2",
+          "ip": "10.30.0.2",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-3",
+          "ip": "10.30.0.3",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-4",
+          "ip": "10.30.0.4",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-5",
+          "ip": "10.30.0.5",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-6",
+          "ip": "10.30.0.6",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-7",
+          "ip": "10.30.0.7",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-8",
+          "ip": "10.30.0.8",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-9",
+          "ip": "10.30.0.9",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-10",
+          "ip": "10.30.0.10",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-11",
+          "ip": "10.30.0.11",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-12",
+          "ip": "10.30.0.12",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-13",
+          "ip": "10.30.0.13",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-14",
+          "ip": "10.30.0.14",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-15",
+          "ip": "10.30.0.15",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-16",
+          "ip": "10.30.0.16",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-17",
+          "ip": "10.30.0.17",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-18",
+          "ip": "10.30.0.18",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-19",
+          "ip": "10.30.0.19",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-20",
+          "ip": "10.30.0.20",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-21",
+          "ip": "10.30.0.21",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-22",
+          "ip": "10.30.0.22",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-23",
+          "ip": "10.30.0.23",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-24",
+          "ip": "10.30.0.24",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-25",
+          "ip": "10.30.0.25",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-26",
+          "ip": "10.30.0.26",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-27",
+          "ip": "10.30.0.27",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-30-0-28",
+          "ip": "10.30.0.28",
+          "role": "OT",
+          "segment": "10.30.0.0/24",
+          "purdueLevel": "2",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-1",
+          "ip": "10.31.0.1",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-2",
+          "ip": "10.31.0.2",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-3",
+          "ip": "10.31.0.3",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-4",
+          "ip": "10.31.0.4",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-5",
+          "ip": "10.31.0.5",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-6",
+          "ip": "10.31.0.6",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-7",
+          "ip": "10.31.0.7",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-8",
+          "ip": "10.31.0.8",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-9",
+          "ip": "10.31.0.9",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-10",
+          "ip": "10.31.0.10",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-11",
+          "ip": "10.31.0.11",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-12",
+          "ip": "10.31.0.12",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-13",
+          "ip": "10.31.0.13",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-14",
+          "ip": "10.31.0.14",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-15",
+          "ip": "10.31.0.15",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-16",
+          "ip": "10.31.0.16",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-17",
+          "ip": "10.31.0.17",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-18",
+          "ip": "10.31.0.18",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-19",
+          "ip": "10.31.0.19",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-20",
+          "ip": "10.31.0.20",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-21",
+          "ip": "10.31.0.21",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-22",
+          "ip": "10.31.0.22",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-23",
+          "ip": "10.31.0.23",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-24",
+          "ip": "10.31.0.24",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-25",
+          "ip": "10.31.0.25",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-26",
+          "ip": "10.31.0.26",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-27",
+          "ip": "10.31.0.27",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        },
+        {
+          "id": "asset-10-31-0-28",
+          "ip": "10.31.0.28",
+          "role": "OT",
+          "segment": "10.31.0.0/24",
+          "purdueLevel": "1",
+          "source": "regression",
+          "confidence": "high"
+        }
+      ],
+      "segments": [
+        {
+          "id": "it",
+          "name": "IT",
+          "cidr": "10.10.0.0/24",
+          "role": "IT",
+          "purdueLevel": "5"
+        },
+        {
+          "id": "edge",
+          "name": "Edge",
+          "cidr": "10.20.0.0/24",
+          "role": "Network",
+          "purdueLevel": "3.5"
+        },
+        {
+          "id": "ot-a",
+          "name": "OT A",
+          "cidr": "10.30.0.0/24",
+          "role": "OT",
+          "purdueLevel": "2"
+        },
+        {
+          "id": "ot-b",
+          "name": "OT B",
+          "cidr": "10.31.0.0/24",
+          "role": "OT",
+          "purdueLevel": "1"
+        }
+      ]
+    },
+    "detector_findings": [
+      {
+        "module_id": "topology_dense_regression",
+        "severity": "high",
+        "title": "Dense topology regression finding 1",
+        "summary": "Synthetic finding used only for topology interaction regression.",
+        "confidence": "high",
+        "detection_basis": "synthetic regression fixture",
+        "devices": [
+          "10.10.0.6",
+          "10.30.0.7"
+        ],
+        "services": [
+          "ssh"
+        ],
+        "connection_pairs": [
+          {
+            "source": "10.10.0.6",
+            "destination": "10.30.0.7",
+            "port": 22,
+            "protocol": "ssh"
+          }
+        ],
+        "flows": [],
+        "tags": [
+          "regression",
+          "topology"
+        ]
+      },
+      {
+        "module_id": "topology_dense_regression",
+        "severity": "medium",
+        "title": "Dense topology regression finding 2",
+        "summary": "Synthetic finding used only for topology interaction regression.",
+        "confidence": "high",
+        "detection_basis": "synthetic regression fixture",
+        "devices": [
+          "10.10.0.17",
+          "10.10.0.28"
+        ],
+        "services": [
+          "ntp"
+        ],
+        "connection_pairs": [
+          {
+            "source": "10.10.0.17",
+            "destination": "10.10.0.28",
+            "port": 123,
+            "protocol": "ntp"
+          }
+        ],
+        "flows": [],
+        "tags": [
+          "regression",
+          "topology"
+        ]
+      },
+      {
+        "module_id": "topology_dense_regression",
+        "severity": "medium",
+        "title": "Dense topology regression finding 3",
+        "summary": "Synthetic finding used only for topology interaction regression.",
+        "confidence": "high",
+        "detection_basis": "synthetic regression fixture",
+        "devices": [
+          "10.10.0.28",
+          "10.10.0.9"
+        ],
+        "services": [
+          "s7comm"
+        ],
+        "connection_pairs": [
+          {
+            "source": "10.10.0.28",
+            "destination": "10.10.0.9",
+            "port": 102,
+            "protocol": "s7comm"
+          }
+        ],
+        "flows": [],
+        "tags": [
+          "regression",
+          "topology"
+        ]
+      },
+      {
+        "module_id": "topology_dense_regression",
+        "severity": "high",
+        "title": "Dense topology regression finding 4",
+        "summary": "Synthetic finding used only for topology interaction regression.",
+        "confidence": "high",
+        "detection_basis": "synthetic regression fixture",
+        "devices": [
+          "10.20.0.7",
+          "10.31.0.18"
+        ],
+        "services": [
+          "modbus"
+        ],
+        "connection_pairs": [
+          {
+            "source": "10.20.0.7",
+            "destination": "10.31.0.18",
+            "port": 502,
+            "protocol": "modbus"
+          }
+        ],
+        "flows": [],
+        "tags": [
+          "regression",
+          "topology"
+        ]
+      },
+      {
+        "module_id": "topology_dense_regression",
+        "severity": "medium",
+        "title": "Dense topology regression finding 5",
+        "summary": "Synthetic finding used only for topology interaction regression.",
+        "confidence": "high",
+        "detection_basis": "synthetic regression fixture",
+        "devices": [
+          "10.30.0.10",
+          "10.30.0.27"
+        ],
+        "services": [
+          "dns"
+        ],
+        "connection_pairs": [
+          {
+            "source": "10.30.0.10",
+            "destination": "10.30.0.27",
+            "port": 53,
+            "protocol": "dns"
+          }
+        ],
+        "flows": [],
+        "tags": [
+          "regression",
+          "topology"
+        ]
+      },
+      {
+        "module_id": "topology_dense_regression",
+        "severity": "medium",
+        "title": "Dense topology regression finding 6",
+        "summary": "Synthetic finding used only for topology interaction regression.",
+        "confidence": "high",
+        "detection_basis": "synthetic regression fixture",
+        "devices": [
+          "10.30.0.21",
+          "10.30.0.8"
+        ],
+        "services": [
+          "http"
+        ],
+        "connection_pairs": [
+          {
+            "source": "10.30.0.21",
+            "destination": "10.30.0.8",
+            "port": 80,
+            "protocol": "http"
+          }
+        ],
+        "flows": [],
+        "tags": [
+          "regression",
+          "topology"
+        ]
+      },
+      {
+        "module_id": "topology_dense_regression",
+        "severity": "high",
+        "title": "Dense topology regression finding 7",
+        "summary": "Synthetic finding used only for topology interaction regression.",
+        "confidence": "high",
+        "detection_basis": "synthetic regression fixture",
+        "devices": [
+          "10.31.0.4",
+          "10.10.0.29"
+        ],
+        "services": [
+          "ssh"
+        ],
+        "connection_pairs": [
+          {
+            "source": "10.31.0.4",
+            "destination": "10.10.0.29",
+            "port": 22,
+            "protocol": "ssh"
+          }
+        ],
+        "flows": [],
+        "tags": [
+          "regression",
+          "topology"
+        ]
+      },
+      {
+        "module_id": "topology_dense_regression",
+        "severity": "medium",
+        "title": "Dense topology regression finding 8",
+        "summary": "Synthetic finding used only for topology interaction regression.",
+        "confidence": "high",
+        "detection_basis": "synthetic regression fixture",
+        "devices": [
+          "10.31.0.15",
+          "10.10.0.10"
+        ],
+        "services": [
+          "ntp"
+        ],
+        "connection_pairs": [
+          {
+            "source": "10.31.0.15",
+            "destination": "10.10.0.10",
+            "port": 123,
+            "protocol": "ntp"
+          }
+        ],
+        "flows": [],
+        "tags": [
+          "regression",
+          "topology"
+        ]
+      },
+      {
+        "module_id": "topology_dense_regression",
+        "severity": "medium",
+        "title": "Dense topology regression finding 9",
+        "summary": "Synthetic finding used only for topology interaction regression.",
+        "confidence": "high",
+        "detection_basis": "synthetic regression fixture",
+        "devices": [
+          "10.31.0.26",
+          "10.31.0.19"
+        ],
+        "services": [
+          "s7comm"
+        ],
+        "connection_pairs": [
+          {
+            "source": "10.31.0.26",
+            "destination": "10.31.0.19",
+            "port": 102,
+            "protocol": "s7comm"
+          }
+        ],
+        "flows": [],
+        "tags": [
+          "regression",
+          "topology"
+        ]
+      },
+      {
+        "module_id": "topology_dense_regression",
+        "severity": "high",
+        "title": "Dense topology regression finding 10",
+        "summary": "Synthetic finding used only for topology interaction regression.",
+        "confidence": "high",
+        "detection_basis": "synthetic regression fixture",
+        "devices": [
+          "10.10.0.9",
+          "10.30.0.28"
+        ],
+        "services": [
+          "modbus"
+        ],
+        "connection_pairs": [
+          {
+            "source": "10.10.0.9",
+            "destination": "10.30.0.28",
+            "port": 502,
+            "protocol": "modbus"
+          }
+        ],
+        "flows": [],
+        "tags": [
+          "regression",
+          "topology"
+        ]
+      },
+      {
+        "module_id": "topology_dense_regression",
+        "severity": "medium",
+        "title": "Dense topology regression finding 11",
+        "summary": "Synthetic finding used only for topology interaction regression.",
+        "confidence": "high",
+        "detection_basis": "synthetic regression fixture",
+        "devices": [
+          "10.10.0.20",
+          "10.30.0.9"
+        ],
+        "services": [
+          "dns"
+        ],
+        "connection_pairs": [
+          {
+            "source": "10.10.0.20",
+            "destination": "10.30.0.9",
+            "port": 53,
+            "protocol": "dns"
+          }
+        ],
+        "flows": [],
+        "tags": [
+          "regression",
+          "topology"
+        ]
+      },
+      {
+        "module_id": "topology_dense_regression",
+        "severity": "medium",
+        "title": "Dense topology regression finding 12",
+        "summary": "Synthetic finding used only for topology interaction regression.",
+        "confidence": "high",
+        "detection_basis": "synthetic regression fixture",
+        "devices": [
+          "10.10.0.31",
+          "10.10.0.30"
+        ],
+        "services": [
+          "http"
+        ],
+        "connection_pairs": [
+          {
+            "source": "10.10.0.31",
+            "destination": "10.10.0.30",
+            "port": 80,
+            "protocol": "http"
+          }
+        ],
+        "flows": [],
+        "tags": [
+          "regression",
+          "topology"
+        ]
+      }
+    ]
+  },
+  "section_notes": {}
+}

@@ -25,7 +25,7 @@
   background: #eff6fb;
   border: 1px solid #bcd4e6;
   color: #1a4480;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   max-width: 100%;
   overflow-wrap: anywhere;
 }

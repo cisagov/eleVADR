@@ -62,7 +62,8 @@
     "lint": "eslint . --max-warnings=0",
     "start": "vite",
     "test": "vitest run",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "preview": "vite preview"
   },
   "tool": {
     "elevadr": {

@@ -1,0 +1,1035 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { ElevadrReport, Device } from "../../types/Report";
+import { InvestigationFilter, SelectedEntity } from "../../types/Investigation";
+import "./NetworkTopology.css";
+
+type DeviceType = "OT" | "IT" | "Edge" | "Unknown";
+type Node = {
+  id: string;
+  type: DeviceType;
+  x: number;
+  y: number;
+  degree: number;
+  manufacturer?: string | null;
+  services: string[];
+  subnet: string;
+  findingCount: number;
+  roleGroup: string;
+  purdueLevel: string;
+};
+type Edge = {
+  id: string;
+  source: string;
+  target: string;
+  service: string;
+  count: number;
+  suspicious: boolean;
+  findingRelated: boolean;
+};
+type Point = { x: number; y: number };
+type Viewport = { x: number; y: number; scale: number };
+type LabelMode = "minimal" | "full" | "off";
+type LayoutMode = "class" | "subnet" | "role" | "purdue";
+export type NetworkTopologyState = {
+  preset: "simple" | "risk" | "full";
+  layoutMode: LayoutMode;
+  labelMode: LabelMode;
+  suspiciousOnly: boolean;
+  findingOnly: boolean;
+  hideIsolated: boolean;
+  neighborsOnly: boolean;
+  focusedNodeId: string | null;
+  viewport: Viewport;
+  positions: Record<string, Point>;
+};
+type GroupRegion = { key: string; label: string; x: number; y: number; width: number; height: number; count: number };
+
+const WIDTH = 1040;
+const HEIGHT = 610;
+const MIN_ZOOM = 0.45;
+const MAX_ZOOM = 2.8;
+const STATE_PERSIST_DELAY_MS = 180;
+const EDGE_LIMITS = { simple: 45, risk: 100, full: 140 } as const;
+const NODE_LIMITS = { simple: 55, risk: 90, full: 150 } as const;
+
+function deviceIps(device: Device): string[] {
+  return device.ip_addresses || device.ipv4_ips || [];
+}
+
+function classify(ip: string, report: ElevadrReport): { type: DeviceType; device?: Device } {
+  const groups: [DeviceType, Device[]][] = [
+    ["OT", report.modules.ot_devices],
+    ["IT", report.modules.it_devices],
+    ["Edge", report.modules.edge_devices],
+  ];
+  for (const [type, devices] of groups) {
+    const device = devices.find((item) => deviceIps(item).includes(ip));
+    if (device) return { type, device };
+  }
+  return { type: "Unknown" };
+}
+
+function serviceList(device?: Device): string[] {
+  if (!device) return [];
+  return [...new Set([...(device.incoming_services || []), ...(device.sent_services || [])])].filter(Boolean);
+}
+
+function defaultPosition(type: DeviceType, index: number, total: number): Point {
+  const columns: Record<DeviceType, { x: number; y: number; spread: number }> = {
+    IT: { x: 185, y: 285, spread: 215 },
+    Edge: { x: 520, y: 285, spread: 190 },
+    OT: { x: 855, y: 285, spread: 215 },
+    Unknown: { x: 520, y: 505, spread: 120 },
+  };
+  const base = columns[type];
+  const safeTotal = Math.max(total, 1);
+  const angle = (Math.PI * 2 * index) / safeTotal - Math.PI / 2;
+  const radius = Math.min(base.spread, 42 + safeTotal * 8);
+  return {
+    x: base.x + Math.cos(angle) * radius,
+    y: base.y + Math.sin(angle) * radius * 0.72,
+  };
+}
+
+interface Props {
+  report: ElevadrReport;
+  filters: InvestigationFilter[];
+  onFilter: (filter: InvestigationFilter) => void;
+  onSelect: (entity: SelectedEntity) => void;
+  onStateChange?: (state: NetworkTopologyState) => void;
+}
+
+const DEFAULT_VIEWPORT: Viewport = { x: 0, y: 0, scale: 1 };
+
+const NetworkTopology: React.FC<Props> = ({ report, filters, onFilter, onSelect, onStateChange }) => {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const cardRef = useRef<HTMLElement | null>(null);
+  const dragRef = useRef<{ id: string; moved: boolean; startClientX: number; startClientY: number } | null>(null);
+  const panRef = useRef<{ startX: number; startY: number; viewport: Viewport; moved: boolean } | null>(null);
+
+  const [labelMode, setLabelMode] = useState<LabelMode>("minimal");
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [suspiciousOnly, setSuspiciousOnly] = useState(false);
+  const [findingOnly, setFindingOnly] = useState(false);
+  const [hideIsolated, setHideIsolated] = useState(true);
+  const [neighborsOnly, setNeighborsOnly] = useState(false);
+  const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
+  const [focusedEdgeId, setFocusedEdgeId] = useState<string | null>(null);
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>("class");
+  const [preset, setPreset] = useState<"simple" | "risk" | "full">("simple");
+  const [positions, setPositions] = useState<Record<string, Point>>({});
+  const [viewport, setViewport] = useState<Viewport>(DEFAULT_VIEWPORT);
+  const hydratedStateKeyRef = useRef<string>("");
+  const skipNextPersistenceRef = useRef(false);
+  const printViewportRef = useRef<Viewport | null>(null);
+  const persistenceTimerRef = useRef<number | null>(null);
+  const latestStateRef = useRef<NetworkTopologyState | null>(null);
+  const latestStorageKeyRef = useRef("");
+  const pointerFrameRef = useRef<number | null>(null);
+  const pendingPointerRef = useRef<{ clientX: number; clientY: number; rectWidth: number; rectHeight: number } | null>(null);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [legendOpen, setLegendOpen] = useState(true);
+
+  const graphStateStorageKey = `elevadr-topology-state:${report.report_id || "report"}`;
+
+  useEffect(() => {
+    if (hydratedStateKeyRef.current === graphStateStorageKey) return;
+    hydratedStateKeyRef.current = graphStateStorageKey;
+    skipNextPersistenceRef.current = true;
+    try {
+      const raw = localStorage.getItem(graphStateStorageKey);
+      if (!raw) {
+        setPreset("simple");
+        setLayoutMode("class");
+        setLabelMode("minimal");
+        setSuspiciousOnly(false);
+        setFindingOnly(false);
+        setHideIsolated(true);
+        setNeighborsOnly(false);
+        setFocusedNodeId(null);
+        setFocusedEdgeId(null);
+        setPositions({});
+        setViewport(DEFAULT_VIEWPORT);
+        return;
+      }
+      const saved = JSON.parse(raw) as Partial<NetworkTopologyState>;
+      if (saved.preset === "simple" || saved.preset === "risk" || saved.preset === "full") setPreset(saved.preset);
+      if (saved.layoutMode === "class" || saved.layoutMode === "subnet" || saved.layoutMode === "role" || saved.layoutMode === "purdue") setLayoutMode(saved.layoutMode);
+      if (saved.labelMode === "minimal" || saved.labelMode === "full" || saved.labelMode === "off") setLabelMode(saved.labelMode);
+      if (typeof saved.suspiciousOnly === "boolean") setSuspiciousOnly(saved.suspiciousOnly);
+      if (typeof saved.findingOnly === "boolean") setFindingOnly(saved.findingOnly);
+      if (typeof saved.hideIsolated === "boolean") setHideIsolated(saved.hideIsolated);
+      if (typeof saved.neighborsOnly === "boolean") setNeighborsOnly(saved.neighborsOnly);
+      if (typeof saved.focusedNodeId === "string" || saved.focusedNodeId === null) setFocusedNodeId(saved.focusedNodeId ?? null);
+      if (saved.viewport && Number.isFinite(saved.viewport.x) && Number.isFinite(saved.viewport.y) && Number.isFinite(saved.viewport.scale)) {
+        setViewport({ x: saved.viewport.x!, y: saved.viewport.y!, scale: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, saved.viewport.scale!)) });
+      }
+      if (saved.positions && typeof saved.positions === "object") setPositions(saved.positions);
+    } catch { /* Ignore malformed or unavailable local persistence. */ }
+  }, [graphStateStorageKey]);
+
+  useEffect(() => {
+    const state: NetworkTopologyState = { preset, layoutMode, labelMode, suspiciousOnly, findingOnly, hideIsolated, neighborsOnly, focusedNodeId, viewport, positions };
+    latestStateRef.current = state;
+    latestStorageKeyRef.current = graphStateStorageKey;
+    if (skipNextPersistenceRef.current) {
+      skipNextPersistenceRef.current = false;
+      onStateChange?.(state);
+      return;
+    }
+    if (persistenceTimerRef.current !== null) window.clearTimeout(persistenceTimerRef.current);
+    persistenceTimerRef.current = window.setTimeout(() => {
+      try { localStorage.setItem(graphStateStorageKey, JSON.stringify(state)); } catch { /* Local persistence unavailable. */ }
+      onStateChange?.(state);
+      persistenceTimerRef.current = null;
+    }, STATE_PERSIST_DELAY_MS);
+    return () => {
+      if (persistenceTimerRef.current !== null) {
+        window.clearTimeout(persistenceTimerRef.current);
+        persistenceTimerRef.current = null;
+      }
+    };
+  }, [graphStateStorageKey, preset, layoutMode, labelMode, suspiciousOnly, findingOnly, hideIsolated, neighborsOnly, focusedNodeId, viewport, positions, onStateChange]);
+
+  const findingIndex = useMemo(() => {
+    const deviceCounts = new Map<string, number>();
+    const pairs = new Set<string>();
+    const raw = report.arch_insights?.detector_findings;
+    if (!Array.isArray(raw)) return { deviceCounts, pairs };
+    const addDevice = (value: unknown) => {
+      const ip = typeof value === "string" ? value.trim() : "";
+      if (ip) deviceCounts.set(ip, (deviceCounts.get(ip) || 0) + 1);
+    };
+    raw.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+      const item = entry as Record<string, unknown>;
+      if (Array.isArray(item.devices)) item.devices.forEach(addDevice);
+      if (Array.isArray(item.connection_pairs)) {
+        item.connection_pairs.forEach((rawPair) => {
+          if (!rawPair || typeof rawPair !== "object") return;
+          const pair = rawPair as Record<string, unknown>;
+          const source = String(pair.source || pair.src || pair["src_endpoint.ip"] || "");
+          const target = String(pair.destination || pair.dst || pair["dst_endpoint.ip"] || "");
+          if (source && target) { pairs.add(`${source}|${target}`); addDevice(source); addDevice(target); }
+        });
+      }
+      if (Array.isArray(item.flows)) {
+        item.flows.forEach((rawFlow) => {
+          if (!rawFlow || typeof rawFlow !== "object") return;
+          const flow = rawFlow as Record<string, unknown>;
+          const source = String(flow.source || flow.src || flow["src_endpoint.ip"] || "");
+          const target = String(flow.destination || flow.dst || flow["dst_endpoint.ip"] || "");
+          if (source && target) { pairs.add(`${source}|${target}`); addDevice(source); addDevice(target); }
+        });
+      }
+    });
+    return { deviceCounts, pairs };
+  }, [report]);
+
+  const rawEdges = useMemo<Edge[]>(() => {
+    const suspicious = new Set(
+      report.modules.suspicious_outbound_connections_panel.map(
+        (item) => `${item["src_endpoint.ip"]}|${item["dst_endpoint.ip"]}|${item["service.name"]}`,
+      ),
+    );
+    const edgeMap = new Map<string, Edge>();
+    const add = (source: string, target: string, service: string, count: number) => {
+      if (!source || !target || source === target) return;
+      const normalizedService = service || "Unknown service";
+      const id = `${source}|${target}|${normalizedService}`;
+      const prior = edgeMap.get(id);
+      edgeMap.set(id, {
+        id,
+        source,
+        target,
+        service: normalizedService,
+        count: (prior?.count || 0) + Math.max(1, count || 1),
+        suspicious: Boolean(prior?.suspicious) || suspicious.has(id),
+        findingRelated: Boolean(prior?.findingRelated) || findingIndex.pairs.has(`${source}|${target}`),
+      });
+    };
+
+    report.modules.ot_cross_segment_lines_panel.lines.forEach((item) =>
+      add(item["src_endpoint.ip"], item["dst_endpoint.ip"], item["service.name"], item.count),
+    );
+    report.modules.suspicious_outbound_connections_panel.forEach((item) =>
+      add(item["src_endpoint.ip"], item["dst_endpoint.ip"], item["service.name"], item.count),
+    );
+    report.modules.connection_success_panel.connections.slice(0, 1500).forEach((item) => {
+      if (item["src_endpoint.ip"] && item["dst_endpoint.ip"]) {
+        const service = item["service.name"] || item["connection_info.protocol_name"] || (item["dst_endpoint.port"] ? `Port ${item["dst_endpoint.port"]}` : "Connection");
+        add(item["src_endpoint.ip"]!, item["dst_endpoint.ip"]!, service, 1);
+      }
+    });
+
+    return [...edgeMap.values()].sort((a, b) => b.count - a.count).slice(0, 180);
+  }, [report, findingIndex]);
+
+  const services = useMemo(
+    () => [...new Set<string>(rawEdges.map((edge) => edge.service))].sort((a, b) => a.localeCompare(b)).slice(0, 60),
+    [rawEdges],
+  );
+
+  const deviceIndex = useMemo(() => {
+    const index = new Map<string, { type: DeviceType; device: Device }>();
+    const groups: [DeviceType, Device[]][] = [["OT", report.modules.ot_devices], ["IT", report.modules.it_devices], ["Edge", report.modules.edge_devices]];
+    groups.forEach(([type, devices]) => devices.forEach((device) => deviceIps(device).forEach((ip) => index.set(ip, { type, device }))));
+    return index;
+  }, [report]);
+
+  const activeService = filters.find((filter) => filter.key === "service")?.value || "all";
+  const selectedClass = filters.find((filter) => filter.key === "deviceClass")?.value || "all";
+  const selectedIp = filters.find((filter) => filter.key === "ip")?.value;
+  const selectedSubnet = filters.find((filter) => filter.key === "subnet")?.value;
+
+  const edges = useMemo(() => {
+    return rawEdges
+      .filter((edge) => {
+        if (activeService !== "all" && edge.service !== activeService) return false;
+        if (selectedIp && edge.source !== selectedIp && edge.target !== selectedIp) return false;
+        if (selectedSubnet) {
+          const sourceDevice = deviceIndex.get(edge.source)?.device;
+          const targetDevice = deviceIndex.get(edge.target)?.device;
+          const sourceSubnet = (sourceDevice?.subnets || sourceDevice?.ipv4_subnets || [])[0];
+          const targetSubnet = (targetDevice?.subnets || targetDevice?.ipv4_subnets || [])[0];
+          if (sourceSubnet !== selectedSubnet && targetSubnet !== selectedSubnet) return false;
+        }
+        if (selectedClass !== "all") {
+          const sourceType = deviceIndex.get(edge.source)?.type || "Unknown";
+          const targetType = deviceIndex.get(edge.target)?.type || "Unknown";
+          if (sourceType !== selectedClass && targetType !== selectedClass) return false;
+        }
+        if (suspiciousOnly && !edge.suspicious) return false;
+        if (findingOnly && !edge.findingRelated && !edge.suspicious) return false;
+        return true;
+      })
+      .slice(0, EDGE_LIMITS[preset]);
+  }, [rawEdges, activeService, selectedIp, selectedSubnet, selectedClass, suspiciousOnly, findingOnly, deviceIndex, preset]);
+
+
+  const contextArchitecture = useMemo(() => {
+    const snapshot = report.arch_insights?.detection_context_snapshot;
+    if (!snapshot || typeof snapshot !== "object") return { assets: [] as Record<string, unknown>[], segments: [] as Record<string, unknown>[] };
+    const record = snapshot as Record<string, unknown>;
+    const assets = Array.isArray(record.assets) ? record.assets.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object") : [];
+    const segments = Array.isArray(record.segments) ? record.segments.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object") : [];
+    return { assets, segments };
+  }, [report]);
+
+  const contextLookup = useMemo(() => {
+    const assetsByIp = new Map<string, Record<string, unknown>>();
+    contextArchitecture.assets.forEach((asset) => {
+      const values = [asset.ip, ...(Array.isArray(asset.ips) ? asset.ips : [])].map(String).filter(Boolean);
+      values.forEach((ip) => assetsByIp.set(ip, asset));
+    });
+    const segmentsByKey = new Map<string, Record<string, unknown>>();
+    contextArchitecture.segments.forEach((segment) => {
+      [segment.cidr, segment.id, segment.name].map(String).filter(Boolean).forEach((key) => segmentsByKey.set(key, segment));
+    });
+    return { assetsByIp, segmentsByKey };
+  }, [contextArchitecture]);
+
+  const architectureFor = (ip: string, type: DeviceType, subnet: string) => {
+    const asset = contextLookup.assetsByIp.get(ip);
+    const segmentName = asset ? String(asset.segment || asset.segmentId || "") : "";
+    const segment = contextLookup.segmentsByKey.get(subnet) || (segmentName ? contextLookup.segmentsByKey.get(segmentName) : undefined);
+    const rawRole = String(asset?.role || segment?.role || "").trim().toLowerCase();
+    const roleGroup = rawRole === "ot" ? "OT" : rawRole === "it" ? "IT" : rawRole === "dmz" ? "DMZ" : rawRole === "infrastructure" ? "Network" : type === "Edge" ? "Network" : type;
+    const rawPurdue = String(asset?.purdueLevel || asset?.purdue_level || segment?.purdueLevel || segment?.purdue_level || "").trim();
+    const purdueLevel = rawPurdue ? (rawPurdue.toLowerCase().startsWith("level") ? rawPurdue : `Level ${rawPurdue}`) : "Unassigned";
+    return { roleGroup: roleGroup || "Unknown", purdueLevel };
+  };
+
+  const baseNodes = useMemo<Omit<Node, "x" | "y">[]>(() => {
+    const degree = new Map<string, number>();
+    const knownIds = new Set<string>();
+    edges.forEach((edge) => {
+      degree.set(edge.source, (degree.get(edge.source) || 0) + edge.count);
+      degree.set(edge.target, (degree.get(edge.target) || 0) + edge.count);
+      knownIds.add(edge.source);
+      knownIds.add(edge.target);
+    });
+    [report.modules.ot_devices, report.modules.it_devices, report.modules.edge_devices].forEach((devices) =>
+      devices.forEach((device) => deviceIps(device).forEach((ip) => knownIds.add(ip))),
+    );
+
+    const limit = NODE_LIMITS[preset];
+    return [...knownIds]
+      .filter((id) => {
+        const observedDegree = degree.get(id) || 0;
+        if (hideIsolated && observedDegree === 0) return false;
+        if (selectedIp && id !== selectedIp && observedDegree === 0) return false;
+        const info = deviceIndex.get(id) || { type: "Unknown" as DeviceType, device: undefined };
+        if (selectedClass !== "all" && info.type !== selectedClass && observedDegree === 0) return false;
+        const subnet = (info.device?.subnets || info.device?.ipv4_subnets || [])[0];
+        if (selectedSubnet && subnet !== selectedSubnet && observedDegree === 0) return false;
+        if (activeService !== "all" && !serviceList(info.device).includes(activeService) && observedDegree === 0) return false;
+        return true;
+      })
+      .sort((a, b) => (degree.get(b) || 0) - (degree.get(a) || 0) || a.localeCompare(b))
+      .slice(0, limit)
+      .map((id) => {
+        const info = deviceIndex.get(id) || { type: "Unknown" as DeviceType, device: undefined };
+        const subnet = (info.device?.subnets || info.device?.ipv4_subnets || ["Unknown subnet"])[0] || "Unknown subnet";
+        const architecture = architectureFor(id, info.type, subnet);
+        return {
+          id,
+          type: info.type,
+          degree: degree.get(id) || 0,
+          manufacturer: info.device?.manufacturer,
+          services: serviceList(info.device),
+          subnet,
+          findingCount: findingIndex.deviceCounts.get(id) || 0,
+          roleGroup: architecture.roleGroup,
+          purdueLevel: architecture.purdueLevel,
+        };
+      });
+  }, [edges, report, findingIndex, hideIsolated, preset, selectedIp, selectedClass, selectedSubnet, activeService, contextArchitecture, contextLookup, deviceIndex]);
+
+  const focusedNeighborIds = useMemo(() => {
+    if (!focusedNodeId) return null;
+    const ids = new Set<string>([focusedNodeId]);
+    edges.forEach((edge) => {
+      if (edge.source === focusedNodeId) ids.add(edge.target);
+      if (edge.target === focusedNodeId) ids.add(edge.source);
+    });
+    return ids;
+  }, [edges, focusedNodeId]);
+
+  const groupKeyFor = (node: Omit<Node, "x" | "y"> | Node): string => {
+    if (layoutMode === "subnet") return node.subnet;
+    if (layoutMode === "role") return node.roleGroup;
+    if (layoutMode === "purdue") return node.purdueLevel;
+    return node.type;
+  };
+
+  const groupedPosition = (index: number, total: number, groupIndex: number, groupTotal: number): Point => {
+    const columns = Math.max(1, Math.ceil(Math.sqrt(groupTotal)));
+    const rows = Math.max(1, Math.ceil(groupTotal / columns));
+    const col = groupIndex % columns;
+    const row = Math.floor(groupIndex / columns);
+    const centerX = columns === 1 ? WIDTH / 2 : 120 + col * (800 / Math.max(1, columns - 1));
+    const centerY = rows === 1 ? HEIGHT / 2 : 120 + row * (360 / Math.max(1, rows - 1));
+    const angle = (Math.PI * 2 * index) / Math.max(1, total);
+    const radius = Math.min(90, 26 + total * 5);
+    return { x: centerX + Math.cos(angle) * radius, y: centerY + Math.sin(angle) * radius };
+  };
+
+  const layoutPosition = (node: Omit<Node, "x" | "y">, index: number, total: number, groupIndex = 0, groupTotal = 1): Point => {
+    if (layoutMode === "class") return defaultPosition(node.type, index, total);
+    return groupedPosition(index, total, groupIndex, groupTotal);
+  };
+
+  useEffect(() => {
+    setPositions((current) => {
+      const next = { ...current };
+      if (layoutMode === "class") {
+        const grouped = new Map<DeviceType, Omit<Node, "x" | "y">[]>();
+        baseNodes.forEach((node) => { const bucket = grouped.get(node.type); if (bucket) bucket.push(node); else grouped.set(node.type, [node]); });
+        grouped.forEach((items) => items.forEach((node, index) => { if (!next[node.id]) next[node.id] = layoutPosition(node, index, items.length); }));
+      } else {
+        const grouped = new Map<string, Omit<Node, "x" | "y">[]>();
+        baseNodes.forEach((node) => { const key = groupKeyFor(node); const bucket = grouped.get(key); if (bucket) bucket.push(node); else grouped.set(key, [node]); });
+        const groups = [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
+        groups.forEach(([, items], groupIndex) => items.forEach((node, index) => { if (!next[node.id]) next[node.id] = layoutPosition(node, index, items.length, groupIndex, groups.length); }));
+      }
+      return next;
+    });
+  }, [baseNodes, layoutMode]);
+
+  const nodes = useMemo<Node[]>(() => {
+    const query = search.trim().toLowerCase();
+    return baseNodes.map((node) => ({ ...node, ...(positions[node.id] || { x: WIDTH / 2, y: HEIGHT / 2 }) })).filter((node) => {
+      if (neighborsOnly && focusedNeighborIds && !focusedNeighborIds.has(node.id)) return false;
+      if (!query) return true;
+      return (
+        node.id.toLowerCase().includes(query) ||
+        (node.manufacturer || "").toLowerCase().includes(query) ||
+        node.services.some((service) => service.toLowerCase().includes(query))
+      );
+    });
+  }, [baseNodes, positions, search, neighborsOnly, focusedNeighborIds]);
+
+  useEffect(() => {
+    if (focusedNodeId && !baseNodes.some((node) => node.id === focusedNodeId)) {
+      setFocusedNodeId(null);
+      setNeighborsOnly(false);
+    }
+    const validNodeIds = new Set(baseNodes.map((node) => node.id));
+    setPositions((current) => Object.fromEntries(Object.entries(current).filter(([id]) => validNodeIds.has(id))));
+  }, [baseNodes, focusedNodeId]);
+
+  const nodeMap = useMemo(() => new Map(nodes.map((node) => [node.id, node])), [nodes]);
+  const visibleEdges = useMemo(
+    () => edges.filter((edge) => nodeMap.has(edge.source) && nodeMap.has(edge.target)),
+    [edges, nodeMap],
+  );
+  const groupRegions = useMemo<GroupRegion[]>(() => {
+    if (layoutMode === "class") return [];
+    const grouped = new Map<string, Node[]>();
+    nodes.forEach((node) => { const key = groupKeyFor(node); const bucket = grouped.get(key); if (bucket) bucket.push(node); else grouped.set(key, [node]); });
+    return [...grouped.entries()].map(([key, members]) => {
+      const xs = members.map((node) => node.x);
+      const ys = members.map((node) => node.y);
+      const paddingX = 64, paddingTop = 48, paddingBottom = 52;
+      const minX = Math.max(14, Math.min(...xs) - paddingX), maxX = Math.min(WIDTH - 14, Math.max(...xs) + paddingX);
+      const minY = Math.max(14, Math.min(...ys) - paddingTop), maxY = Math.min(HEIGHT - 14, Math.max(...ys) + paddingBottom);
+      const label = layoutMode === "subnet" ? key : layoutMode === "role" ? `${key} role` : key === "Unassigned" ? "Purdue unassigned" : `Purdue ${key}`;
+      return { key, label, x: minX, y: minY, width: Math.max(118, maxX - minX), height: Math.max(92, maxY - minY), count: members.length };
+    });
+  }, [layoutMode, nodes]);
+
+  const maxDegree = Math.max(1, ...nodes.map((node) => node.degree));
+
+  const graphPoint = (clientX: number, clientY: number): Point => {
+    const svg = svgRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    const rect = svg.getBoundingClientRect();
+    const localX = ((clientX - rect.left) / rect.width) * WIDTH;
+    const localY = ((clientY - rect.top) / rect.height) * HEIGHT;
+    return {
+      x: (localX - viewport.x) / viewport.scale,
+      y: (localY - viewport.y) / viewport.scale,
+    };
+  };
+
+  const inspectEdge = (edge: Edge) => {
+    if (dragRef.current?.moved) return;
+    setFocusedEdgeId(edge.id);
+    setFocusedNodeId(null);
+    onSelect({ type: "connection", id: edge.id });
+  };
+
+  const inspectNode = (node: Node) => {
+    if (dragRef.current?.moved) return;
+    setFocusedNodeId(node.id);
+    setFocusedEdgeId(null);
+    onSelect({ type: "device", id: node.id });
+  };
+
+  const focusedNode = focusedNodeId ? nodeMap.get(focusedNodeId) : undefined;
+  const focusedEdge = focusedEdgeId ? visibleEdges.find((edge) => edge.id === focusedEdgeId) : undefined;
+  const neighborIds = useMemo(() => {
+    if (!focusedNodeId) return new Set<string>();
+    const peers = new Set<string>([focusedNodeId]);
+    visibleEdges.forEach((edge) => {
+      if (edge.source === focusedNodeId) peers.add(edge.target);
+      if (edge.target === focusedNodeId) peers.add(edge.source);
+    });
+    return peers;
+  }, [focusedNodeId, visibleEdges]);
+  const focusedPeerCount = Math.max(0, neighborIds.size - (focusedNodeId ? 1 : 0));
+
+  const clearGraphSelection = () => { setFocusedNodeId(null); setFocusedEdgeId(null); setNeighborsOnly(false); };
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      const active = document.activeElement as HTMLElement | null;
+      if (active && (active.tagName === "INPUT" || active.tagName === "SELECT" || active.tagName === "TEXTAREA")) return;
+      clearGraphSelection();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+  const filterFocusedDevice = () => {
+    if (!focusedNode) return;
+    onFilter({ key: "ip", value: focusedNode.id, label: "Device" });
+  };
+  const filterFocusedService = () => {
+    if (!focusedEdge) return;
+    onFilter({ key: "service", value: focusedEdge.service, label: "Service" });
+  };
+  const focusedDeviceFilterActive = Boolean(focusedNode && filters.some((filter) => filter.key === "ip" && filter.value === focusedNode.id));
+  const focusedServiceFilterActive = Boolean(focusedEdge && filters.some((filter) => filter.key === "service" && filter.value === focusedEdge.service));
+  useEffect(() => {
+    const syncFullScreen = () => setIsFullScreen(document.fullscreenElement === cardRef.current);
+    document.addEventListener("fullscreenchange", syncFullScreen);
+    syncFullScreen();
+    return () => document.removeEventListener("fullscreenchange", syncFullScreen);
+  }, []);
+  const toggleFullScreen = async () => {
+    const element = cardRef.current;
+    if (!element) return;
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await element.requestFullscreen();
+    } catch { /* Fullscreen may be blocked by the browser or embedding context. */ }
+  };
+
+  const resetGraphView = () => {
+    setPreset("simple");
+    setLayoutMode("class");
+    setLabelMode("minimal");
+    setSuspiciousOnly(false);
+    setFindingOnly(false);
+    setHideIsolated(true);
+    setNeighborsOnly(false);
+    setFocusedNodeId(null);
+    setFocusedEdgeId(null);
+    setSearch("");
+    setPositions({});
+    setViewport(DEFAULT_VIEWPORT);
+  };
+
+  const clearGraphRefinements = () => {
+    setSearch("");
+    setSuspiciousOnly(false);
+    setFindingOnly(false);
+    setNeighborsOnly(false);
+    setFocusedNodeId(null);
+    setFocusedEdgeId(null);
+  };
+
+  const zoomBy = (factor: number) => {
+    setViewport((current) => ({ ...current, scale: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, current.scale * factor)) }));
+  };
+
+  const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
+    // Let ordinary wheel/trackpad gestures scroll the report.
+    // Graph zoom is deliberate: Ctrl/Command + wheel only.
+    if (!event.ctrlKey && !event.metaKey) return;
+    event.preventDefault();
+    const factor = event.deltaY > 0 ? 0.9 : 1.1;
+    const nextScale = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, viewport.scale * factor));
+    const rect = event.currentTarget.getBoundingClientRect();
+    const px = ((event.clientX - rect.left) / rect.width) * WIDTH;
+    const py = ((event.clientY - rect.top) / rect.height) * HEIGHT;
+    const worldX = (px - viewport.x) / viewport.scale;
+    const worldY = (py - viewport.y) / viewport.scale;
+    setViewport({
+      scale: nextScale,
+      x: px - worldX * nextScale,
+      y: py - worldY * nextScale,
+    });
+  };
+
+  const handleCanvasPointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
+    if ((event.target as Element).closest(".topology-node, .topology-edge")) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    panRef.current = { startX: event.clientX, startY: event.clientY, viewport, moved: false };
+    setIsInteracting(true);
+  };
+
+  const handleCanvasPointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (!dragRef.current && !panRef.current) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    pendingPointerRef.current = { clientX: event.clientX, clientY: event.clientY, rectWidth: rect.width, rectHeight: rect.height };
+    if (pointerFrameRef.current !== null) return;
+    pointerFrameRef.current = window.requestAnimationFrame(() => {
+      const pending = pendingPointerRef.current;
+      pointerFrameRef.current = null;
+      if (!pending) return;
+      if (dragRef.current) {
+        const dxClient = pending.clientX - dragRef.current.startClientX;
+        const dyClient = pending.clientY - dragRef.current.startClientY;
+        if (!dragRef.current.moved && Math.hypot(dxClient, dyClient) < 5) return;
+        const svg = svgRef.current;
+        if (!svg) return;
+        const svgRect = svg.getBoundingClientRect();
+        const localX = ((pending.clientX - svgRect.left) / svgRect.width) * WIDTH;
+        const localY = ((pending.clientY - svgRect.top) / svgRect.height) * HEIGHT;
+        const point = { x: (localX - viewport.x) / viewport.scale, y: (localY - viewport.y) / viewport.scale };
+        const id = dragRef.current.id;
+        dragRef.current.moved = true;
+        setIsInteracting(true);
+        setPositions((current) => ({ ...current, [id]: point }));
+        return;
+      }
+      if (panRef.current) {
+        const dxClient = pending.clientX - panRef.current.startX;
+        const dyClient = pending.clientY - panRef.current.startY;
+        if (!panRef.current.moved && Math.hypot(dxClient, dyClient) < 5) return;
+        panRef.current.moved = true;
+        const dx = (dxClient / pending.rectWidth) * WIDTH;
+        const dy = (dyClient / pending.rectHeight) * HEIGHT;
+        setViewport({ ...panRef.current.viewport, x: panRef.current.viewport.x + dx, y: panRef.current.viewport.y + dy });
+      }
+    });
+  };
+
+  const handleCanvasPointerUp = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    const backgroundClick = Boolean(panRef.current && !panRef.current.moved);
+    panRef.current = null;
+    pendingPointerRef.current = null;
+    if (pointerFrameRef.current !== null) { window.cancelAnimationFrame(pointerFrameRef.current); pointerFrameRef.current = null; }
+    setIsInteracting(false);
+    if (backgroundClick) clearGraphSelection();
+    window.setTimeout(() => { dragRef.current = null; }, 0);
+  };
+
+  const beginNodeDrag = (event: React.PointerEvent<SVGCircleElement>, node: Node) => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragRef.current = { id: node.id, moved: false, startClientX: event.clientX, startClientY: event.clientY };
+  };
+
+  const finishNodeDrag = (event: React.PointerEvent<SVGCircleElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    dragRef.current = null;
+    pendingPointerRef.current = null;
+    if (pointerFrameRef.current !== null) {
+      window.cancelAnimationFrame(pointerFrameRef.current);
+      pointerFrameRef.current = null;
+    }
+    setIsInteracting(false);
+  };
+
+  const fittedViewport = (): Viewport | null => {
+    if (!nodes.length) return null;
+    const xs = nodes.map((node) => node.x), ys = nodes.map((node) => node.y);
+    const minX = Math.min(...xs) - 70, maxX = Math.max(...xs) + 70, minY = Math.min(...ys) - 70, maxY = Math.max(...ys) + 70;
+    const scale = Math.min(1.8, Math.max(MIN_ZOOM, Math.min(WIDTH / Math.max(1, maxX - minX), HEIGHT / Math.max(1, maxY - minY)) * 0.92));
+    return { scale, x: WIDTH / 2 - ((minX + maxX) / 2) * scale, y: HEIGHT / 2 - ((minY + maxY) / 2) * scale };
+  };
+
+  const fitToView = () => {
+    const next = fittedViewport();
+    if (next) setViewport(next);
+  };
+
+  const focusNodeNeighborhood = (node: Node) => {
+    inspectNode(node);
+    const ids = new Set<string>([node.id]);
+    visibleEdges.forEach((edge) => {
+      if (edge.source === node.id) ids.add(edge.target);
+      if (edge.target === node.id) ids.add(edge.source);
+    });
+    const points = [...ids].map((id) => nodeMap.get(id)).filter((item): item is Node => Boolean(item));
+    if (!points.length) return;
+    const xs = points.map((item) => item.x);
+    const ys = points.map((item) => item.y);
+    const minX = Math.min(...xs) - 90, maxX = Math.max(...xs) + 90;
+    const minY = Math.min(...ys) - 90, maxY = Math.max(...ys) + 90;
+    const scale = Math.min(2.2, Math.max(MIN_ZOOM, Math.min(WIDTH / Math.max(1, maxX - minX), HEIGHT / Math.max(1, maxY - minY)) * 0.88));
+    setViewport({ scale, x: WIDTH / 2 - ((minX + maxX) / 2) * scale, y: HEIGHT / 2 - ((minY + maxY) / 2) * scale });
+  };
+
+  useEffect(() => {
+    const beforePrint = () => {
+      printViewportRef.current = viewport;
+      const next = fittedViewport();
+      if (next) setViewport(next);
+    };
+    const afterPrint = () => {
+      if (printViewportRef.current) setViewport(printViewportRef.current);
+      printViewportRef.current = null;
+    };
+    window.addEventListener("beforeprint", beforePrint);
+    window.addEventListener("afterprint", afterPrint);
+    return () => { window.removeEventListener("beforeprint", beforePrint); window.removeEventListener("afterprint", afterPrint); };
+  }, [viewport, nodes]);
+
+  useEffect(() => () => {
+    if (pointerFrameRef.current !== null) window.cancelAnimationFrame(pointerFrameRef.current);
+    if (persistenceTimerRef.current !== null) window.clearTimeout(persistenceTimerRef.current);
+    if (latestStateRef.current && latestStorageKeyRef.current) {
+      try { localStorage.setItem(latestStorageKeyRef.current, JSON.stringify(latestStateRef.current)); } catch { /* Local persistence unavailable. */ }
+    }
+  }, []);
+
+  const exportSvg = () => {
+    if (!svgRef.current) return;
+    const clone = svgRef.current.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    const metadata = document.createElementNS("http://www.w3.org/2000/svg", "metadata");
+    metadata.textContent = JSON.stringify({
+      report_id: report.report_id,
+      graph_view: { preset, layoutMode, labelMode, suspiciousOnly, findingOnly, hideIsolated, neighborsOnly, focusedNodeId, viewport },
+      active_investigation_filters: filters,
+    });
+    clone.insertBefore(metadata, clone.firstChild);
+    const blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `elevadr-topology-${report.report_id}.svg`; link.click(); URL.revokeObjectURL(url);
+  };
+
+  const suspiciousCount = visibleEdges.filter((edge) => edge.suspicious).length;
+  const findingRelatedCount = visibleEdges.filter((edge) => edge.findingRelated || edge.suspicious).length;
+  const nodeBudgetReached = baseNodes.length >= NODE_LIMITS[preset];
+  const edgeBudgetReached = edges.length >= EDGE_LIMITS[preset] && rawEdges.length > edges.length;
+  const displayLimited = nodeBudgetReached || edgeBudgetReached;
+  const applyPreset = (next: "simple" | "risk" | "full") => {
+    setPreset(next);
+    setNeighborsOnly(false);
+    if (next === "simple") { setSuspiciousOnly(false); setFindingOnly(false); setHideIsolated(true); setLabelMode("minimal"); setLayoutMode("class"); }
+    if (next === "risk") { setSuspiciousOnly(false); setFindingOnly(true); setHideIsolated(true); setLabelMode("minimal"); setLayoutMode("class"); }
+    if (next === "full") { setSuspiciousOnly(false); setFindingOnly(false); setHideIsolated(false); setLabelMode("full"); }
+    setPositions({});
+    setViewport(DEFAULT_VIEWPORT);
+    clearGraphSelection();
+  };
+
+
+  return (
+    <section className="topology-card" ref={cardRef} aria-label="Network topology visualization">
+      {displayLimited && (
+        <div className="topology-performance-note" role="status">
+          Dense topology: showing the highest-activity {nodes.length} devices and {visibleEdges.length} links for responsive interaction. Use filters, Findings, or Selected + neighbors to narrow the view.
+        </div>
+      )}
+
+      <div className="topology-toolbar topology-toolbar-option1">
+        <div className="topology-toolbar-group topology-filter-group" aria-label="Topology filters and display options">
+          <label className="topology-search">
+            <span>Find</span>
+            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Device or service…" />
+          </label>
+          <label>
+            <span>Service</span>
+            <select value={activeService} onChange={(event) => {
+              const value = event.target.value;
+              const current = filters.find((filter) => filter.key === "service");
+              if (value === "all") { if (current) onFilter(current); }
+              else onFilter({ key: "service", value, label: "Service" });
+            }}>
+              <option value="all">All observed</option>
+              {activeService !== "all" && !services.includes(activeService) && <option value={activeService}>{activeService}</option>}
+              {services.map((service) => <option key={service}>{service}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Device class</span>
+            <select value={selectedClass} onChange={(event) => {
+              const value = event.target.value;
+              const current = filters.find((filter) => filter.key === "deviceClass");
+              if (value === "all") { if (current) onFilter(current); }
+              else onFilter({ key: "deviceClass", value, label: "Class" });
+            }}>
+              <option value="all">All classes</option><option>OT</option><option>IT</option><option value="Edge">Network</option><option>Unknown</option>
+            </select>
+          </label>
+          <label className="topology-view-mode">
+            <span>View</span>
+            <select
+              value={preset === "risk" ? "findings" : layoutMode === "subnet" ? "subnet" : layoutMode === "role" ? "role" : layoutMode === "purdue" ? "purdue" : "communication"}
+              onChange={(event) => {
+                const value = event.target.value;
+                if (value === "communication") applyPreset("simple");
+                else if (value === "findings") applyPreset("risk");
+                else if (value === "subnet" || value === "role" || value === "purdue") {
+                  setPreset("full");
+                  setFindingOnly(false);
+                  setLayoutMode(value);
+                  setPositions({});
+                }
+              }}
+              aria-label="Topology view"
+            >
+              <option value="communication">Communication</option>
+              <option value="subnet">Subnet</option>
+              <option value="role">Role</option>
+              <option value="purdue">Purdue</option>
+              <option value="findings">Findings</option>
+            </select>
+          </label>
+          <label className="topology-label-mode">
+            <span>Labels</span>
+            <select value={labelMode} onChange={(event) => setLabelMode(event.target.value as LabelMode)} aria-label="Topology label density">
+              <option value="minimal">Minimal</option>
+              <option value="full">Full</option>
+              <option value="off">Off</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="topology-toolbar-bottom-row">
+          <div className="topology-toolbar-group topology-refinement-group" aria-label="Topology visibility refinements">
+            <label className={findingOnly ? "active" : ""}><input type="checkbox" checked={findingOnly} onChange={(event) => setFindingOnly(event.target.checked)} /> Finding-related</label>
+            <label className={suspiciousOnly ? "active" : ""}><input type="checkbox" checked={suspiciousOnly} onChange={(event) => setSuspiciousOnly(event.target.checked)} /> Suspicious</label>
+            <label className={hideIsolated ? "active" : ""}><input type="checkbox" checked={hideIsolated} onChange={(event) => setHideIsolated(event.target.checked)} /> Hide isolated</label>
+            <label className={neighborsOnly ? "active" : ""}><input type="checkbox" checked={neighborsOnly} disabled={!focusedNodeId} onChange={(event) => setNeighborsOnly(event.target.checked)} /> Selected + neighbors</label>
+          </div>
+
+          <div className="topology-zoom-controls" aria-label="Topology actions">
+            <button type="button" onClick={() => zoomBy(0.85)} aria-label="Zoom out" title="Zoom out">−</button>
+            <button type="button" onClick={() => zoomBy(1.18)} aria-label="Zoom in" title="Zoom in">+</button>
+            <button type="button" onClick={fitToView}>Fit</button>
+            <button type="button" onClick={resetGraphView} aria-label="Reset graph view" title="Reset graph-only view settings without changing report filters">Reset</button>
+            <button type="button" onClick={toggleFullScreen} aria-pressed={isFullScreen}>{isFullScreen ? "Exit full screen" : "Full screen"}</button>
+            <button type="button" onClick={exportSvg}>Export SVG</button>
+          </div>
+        </div>
+      </div>
+
+      {(focusedNode || focusedEdge) && (
+        <div className="topology-selection-bar" role="status" aria-live="polite">
+          <div>
+            <strong>{focusedNode ? `Device ${focusedNode.id}` : `${focusedEdge!.source} → ${focusedEdge!.target}`}</strong>
+            <span>{focusedNode ? `${focusedNode.type} · ${focusedPeerCount} connected peer${focusedPeerCount === 1 ? "" : "s"} · ${focusedNode.findingCount} finding${focusedNode.findingCount === 1 ? "" : "s"}` : `${focusedEdge!.service} · ${focusedEdge!.count.toLocaleString()} observation${focusedEdge!.count === 1 ? "" : "s"}${focusedEdge!.findingRelated || focusedEdge!.suspicious ? " · finding-related" : ""}`}</span>
+          </div>
+          <div className="topology-selection-actions">
+            <button
+              type="button"
+              className="topology-filter-action"
+              onClick={focusedNode ? filterFocusedDevice : filterFocusedService}
+              aria-pressed={focusedNode ? focusedDeviceFilterActive : focusedServiceFilterActive}
+              title={focusedNode
+                ? `${focusedDeviceFilterActive ? "Remove" : "Apply"} device filter: ${focusedNode.id}`
+                : `${focusedServiceFilterActive ? "Remove" : "Apply"} service filter: ${focusedEdge?.service || "service"}`}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7v5l-4 2v-7L4 5Z" /></svg>
+              {focusedNode
+                ? `${focusedDeviceFilterActive ? "Remove" : "Filter"} device`
+                : `${focusedServiceFilterActive ? "Remove" : "Filter"} service`}
+            </button>
+            <button type="button" onClick={clearGraphSelection}>Clear selection</button>
+          </div>
+        </div>
+      )}
+
+      {nodes.length ? (
+        <div className="topology-canvas">
+          <svg
+            ref={svgRef}
+            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+            preserveAspectRatio="xMidYMid meet"
+            onWheel={handleWheel}
+            onPointerDown={handleCanvasPointerDown}
+            onPointerMove={handleCanvasPointerMove}
+            onPointerUp={handleCanvasPointerUp}
+            onPointerCancel={handleCanvasPointerUp}
+            role="img"
+            aria-label={`Interactive network topology with ${nodes.length} devices and ${visibleEdges.length} communication links`}
+          >
+            <defs>
+              <marker id="topology-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8ca8b7" /></marker>
+              <marker id="topology-arrow-finding" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#397b9d" /></marker>
+              <marker id="topology-arrow-suspicious" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b65349" /></marker>
+              <marker id="topology-arrow-focused" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#005ea8" /></marker>
+              <filter id="node-shadow" x="-60%" y="-60%" width="220%" height="220%"><feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.16" /></filter>
+            </defs>
+            <g transform={`translate(${viewport.x} ${viewport.y}) scale(${viewport.scale})`}>
+              {layoutMode === "class" && <g className="topology-zone-labels" aria-hidden="true">
+                <text x="185" y="46">IT</text><text x="520" y="46">EDGE / TRANSIT</text><text x="855" y="46">OT</text>
+              </g>}
+              {layoutMode !== "class" && <g className={`topology-group-regions topology-group-${layoutMode}`} aria-hidden="true">
+                {groupRegions.map((region) => (
+                  <g key={region.key} className="topology-subnet-region topology-group-region">
+                    <rect x={region.x} y={region.y} width={region.width} height={region.height} rx="14" />
+                    {labelMode !== "off" && (
+                      <g className="topology-subnet-label topology-group-label" transform={`translate(${region.x + 12} ${region.y + 17})`}>
+                        <text>{region.label}</text>
+                        <text className="topology-subnet-count" x={Math.min(region.width - 24, Math.max(76, region.label.length * 6.5 + 12))}>{region.count} device{region.count === 1 ? "" : "s"}</text>
+                      </g>
+                    )}
+                  </g>
+                ))}
+              </g>}
+              {visibleEdges.map((edge) => {
+                const source = nodeMap.get(edge.source)!;
+                const target = nodeMap.get(edge.target)!;
+                const midX = (source.x + target.x) / 2;
+                const midY = (source.y + target.y) / 2;
+                const width = Math.min(4.5, 1 + Math.log10(edge.count + 1) * 1.05);
+                const crossSubnet = source.subnet !== target.subnet;
+                const crossRole = source.roleGroup !== target.roleGroup;
+                const crossPurdue = source.purdueLevel !== target.purdueLevel;
+                const crossBoundary = layoutMode === "subnet" ? crossSubnet : layoutMode === "role" ? crossRole : layoutMode === "purdue" ? crossPurdue : false;
+                const marker = focusedEdgeId === edge.id
+                  ? "url(#topology-arrow-focused)"
+                  : edge.suspicious
+                    ? "url(#topology-arrow-suspicious)"
+                    : edge.findingRelated
+                      ? "url(#topology-arrow-finding)"
+                      : "url(#topology-arrow)";
+                return (
+                  <g
+                    key={edge.id}
+                    className={`topology-edge ${edge.suspicious ? "suspicious" : ""} ${edge.findingRelated ? "finding-related" : ""} ${crossBoundary ? "cross-boundary" : ""} ${focusedEdgeId === edge.id ? "focused" : ""} ${focusedNodeId && edge.source !== focusedNodeId && edge.target !== focusedNodeId ? "dimmed" : ""} ${focusedEdgeId && focusedEdgeId !== edge.id ? "dimmed" : ""}`}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={(event) => { event.stopPropagation(); inspectEdge(edge); }}
+                    onMouseEnter={() => setHoveredEdgeId(edge.id)}
+                    onMouseLeave={() => setHoveredEdgeId((current) => current === edge.id ? null : current)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${edge.source} to ${edge.target}, ${edge.service}, ${edge.count} observations`}
+                    onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); inspectEdge(edge); } }}
+                  >
+                    <line className="topology-edge-hit" x1={source.x} y1={source.y} x2={target.x} y2={target.y} strokeWidth={Math.max(16, width + 12)} />
+                    <line className="topology-edge-visible" x1={source.x} y1={source.y} x2={target.x} y2={target.y} strokeWidth={width} markerEnd={marker} />
+                    {!isInteracting && (labelMode === "full" || (labelMode === "minimal" && (hoveredEdgeId === edge.id || focusedEdgeId === edge.id))) && (
+                      <g className="topology-edge-label" transform={`translate(${midX} ${midY})`}>
+                        <rect x={-Math.min(72, edge.service.length * 3.6 + 10)} y="-8" width={Math.min(144, edge.service.length * 7.2 + 20)} height="16" rx="7" />
+                        <text textAnchor="middle" dominantBaseline="central">{edge.service.length > 18 ? `${edge.service.slice(0, 17)}…` : edge.service}</text>
+                      </g>
+                    )}
+                    <title>{edge.service} • {edge.count.toLocaleString()} observations{edge.suspicious ? " • suspicious" : ""}</title>
+                  </g>
+                );
+              })}
+              {nodes.map((node) => {
+                const radius = 12 + Math.min(10, (node.degree / maxDegree) * 10);
+                return (
+                  <g
+                    key={node.id}
+                    className={`topology-node node-${node.type.toLowerCase()} ${selectedIp === node.id ? "selected" : ""} ${focusedNodeId === node.id ? "focused" : ""} ${focusedNodeId && !neighborIds.has(node.id) ? "dimmed" : ""} ${focusedEdge && node.id !== focusedEdge.source && node.id !== focusedEdge.target ? "dimmed" : ""} ${node.findingCount ? "finding-related" : ""}`}
+                    transform={`translate(${node.x} ${node.y})`}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={(event) => { event.stopPropagation(); inspectNode(node); }}
+                    onDoubleClick={(event) => { event.stopPropagation(); focusNodeNeighborhood(node); }}
+                    onMouseEnter={() => setHoveredNodeId(node.id)}
+                    onMouseLeave={() => setHoveredNodeId((current) => current === node.id ? null : current)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${node.type} device ${node.id}`}
+                    onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); inspectNode(node); } }}
+                  >
+                    <circle className="node-hit" r={radius + 8} />
+                    <circle className="node-halo" r={radius + 5} />
+                    <circle className="node-ring" r={radius} filter="url(#node-shadow)" />
+                    <circle className="node-core" r={Math.max(4.5, radius * 0.36)} />
+                    <text className="node-type" y="3" textAnchor="middle">{node.type === "Unknown" ? "?" : node.type.charAt(0)}</text>
+                    <circle
+                      className="node-drag-handle"
+                      cx={radius + 5}
+                      cy={radius + 5}
+                      r="6"
+                      role="button"
+                      aria-label={`Move device ${node.id}`}
+                      onPointerDown={(event) => beginNodeDrag(event, node)}
+                      onPointerUp={finishNodeDrag}
+                      onPointerCancel={finishNodeDrag}
+                      onClick={(event) => { event.preventDefault(); event.stopPropagation(); }}
+                    />
+                    {node.findingCount > 0 && <g className="topology-finding-marker" transform={`translate(${radius - 2} ${-radius + 2})`} aria-hidden="true"><circle r="6"/><text y="2.6" textAnchor="middle">!</text></g>}
+                    {!isInteracting && (labelMode === "full" || (labelMode === "minimal" && (hoveredNodeId === node.id || focusedNodeId === node.id || selectedIp === node.id))) && (
+                      <g className="topology-node-label" transform={`translate(0 ${radius + 18})`}>
+                        <rect x="-48" y="-11" width="96" height="21" rx="8" />
+                        <text textAnchor="middle" dominantBaseline="central">{node.id}</text>
+                      </g>
+                    )}
+                    <title>{node.type} • {node.id}{node.manufacturer ? ` • ${node.manufacturer}` : ""} • ${node.subnet} • ${node.roleGroup} • ${node.purdueLevel} • ${node.degree.toLocaleString()} observations${node.findingCount ? ` • ${node.findingCount} finding${node.findingCount === 1 ? "" : "s"}` : ""}</title>
+                  </g>
+                );
+              })}
+            </g>
+          </svg>
+
+          <div className={`topology-legend ${legendOpen ? "expanded" : "collapsed"}`}>
+            <button type="button" className="topology-legend-toggle" aria-expanded={legendOpen} onClick={() => setLegendOpen((open) => !open)}>
+              <span>Legend</span><span aria-hidden="true">{legendOpen ? "−" : "+"}</span>
+            </button>
+            {legendOpen && <div className="topology-legend-items">
+              <span><i className="legend-role legend-ot" />OT</span><span><i className="legend-role legend-it" />IT</span><span><i className="legend-role legend-edge" />Network</span><span><i className="legend-role legend-unknown" />Unknown</span><span><i className="legend-finding" />Finding-related</span><span><i className="legend-suspicious" />Suspicious outbound</span>{layoutMode !== "class" && <span><i className="legend-cross-subnet" />Cross-{layoutMode === "subnet" ? "subnet" : layoutMode === "role" ? "role" : "Purdue"}</span>}
+              <span className="legend-hint">Click = details · drag handle = move · double-click = focus · funnel = filter · drag background = pan · Ctrl/⌘ + wheel = zoom · Esc = clear</span>
+            </div>}
+          </div>
+        </div>
+      ) : (
+        <div className="topology-empty" role="status">
+          <strong>{search.trim() ? "No topology matches this search." : findingOnly ? "No finding-related topology is visible." : suspiciousOnly ? "No suspicious outbound topology is visible." : neighborsOnly ? "No selected-neighbor topology is visible." : "No topology matches the current filters."}</strong>
+          <span>{search.trim() || findingOnly || suspiciousOnly || neighborsOnly ? "Clear the topology refinements to return to the current report view." : "Clear the investigation filters or load a report with endpoint communication data."}</span>
+          {(search.trim() || findingOnly || suspiciousOnly || neighborsOnly) && <button type="button" onClick={clearGraphRefinements}>Clear topology refinements</button>}
+        </div>
+      )}
+    </section>
+  );
+};
+
+export default NetworkTopology;

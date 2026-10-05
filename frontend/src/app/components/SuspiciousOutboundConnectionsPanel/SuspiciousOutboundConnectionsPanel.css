@@ -25,13 +25,13 @@
 }
 
 .ip-cell {
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
   white-space: nowrap;
 }
 
 .port-cell {
-  font-family: "Roboto Mono", monospace;
+  font-family: var(--font-mono);
   text-align: center;
   font-weight: 600;
 }
@@ -60,7 +60,7 @@
   margin-top: 1rem;
   text-align: right;
   color: #71767a;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
 }
 
 @media (max-width: 768px) {
@@ -69,10 +69,10 @@
   }
 
   .scrollable-table-container {
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
   }
 
   .ip-cell {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
   }
 }

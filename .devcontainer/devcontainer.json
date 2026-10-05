@@ -51,6 +51,5 @@
   ],
   "name": "EleVADR",
   "postCreateCommand": "bash .devcontainer/post-create.sh",
-  "postStartCommand": "bash .devcontainer/docker-socket-permissions.sh",
   "workspaceFolder": "/workspace"
 }

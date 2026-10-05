@@ -27,7 +27,7 @@
 
 .service-name-cell {
   font-weight: 700;
-  font-family: "Roboto Mono", monospace;
+  font-family: var(--font-mono);
   width: 15%;
   white-space: normal;
 }
@@ -39,7 +39,7 @@
 
 .category-cell {
   width: 20%;
-  font-size: 0.9rem;
+  font-size: var(--text-base);
   line-height: 1.4;
 }
 
@@ -66,7 +66,7 @@
   margin-top: 1rem;
   text-align: right;
   color: #71767a;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
 }
 
 @media (max-width: 768px) {
@@ -79,7 +79,7 @@
   }
 
   .scrollable-table-container {
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
   }
 
   .service-name-cell,

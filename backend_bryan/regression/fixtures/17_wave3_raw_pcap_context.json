@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 3,
+  "id": "regression-17-wave3-raw-pcap",
+  "name": "Regression 17 - Raw PCAP Wave 3 Validation",
+  "captureScope": {
+    "internalOtOnlyExpected": true,
+    "dedicatedOtSensor": true,
+    "ipv4OnlyExpected": true
+  },
+  "scan": {},
+  "segments": [
+    {
+      "id": "seg-ot",
+      "name": "OT Control",
+      "cidr": "10.170.0.0/24",
+      "role": "OT",
+      "purdueLevel": "Level 1",
+      "addressing": "static",
+      "dhcpAllowed": false,
+      "ipv6Allowed": false
+    }
+  ],
+  "assets": [
+    {
+      "ip": "10.170.0.30",
+      "hostname": "SERVICE-PLC",
+      "assetType": "PLC",
+      "role": "OT",
+      "source": "user"
+    },
+    {
+      "ip": "10.170.0.40",
+      "hostname": "POLL-PLC",
+      "assetType": "PLC",
+      "role": "OT",
+      "source": "user"
+    },
+    {
+      "ip": "10.170.0.50",
+      "hostname": "JITTER-PLC",
+      "assetType": "PLC",
+      "role": "OT",
+      "source": "user"
+    }
+  ],
+  "infrastructure": [
+    {"kind": "management", "value": "10.170.0.5"}
+  ],
+  "communicationPairs": [],
+  "allowedHosts": [],
+  "allowedSegmentPairs": [],
+  "approvedExternalDestinations": [],
+  "authorizedControlActions": [],
+  "modulePolicies": {
+    "encrypted_session_fingerprint_change": {
+      "baseline_seconds": 120,
+      "minimum_baseline_observations": 3
+    },
+    "remote_access_session_anomaly": {
+      "baseline_seconds": 120,
+      "minimum_new_targets": 2,
+      "remote_access_ports": [3389]
+    },
+    "service_disappearance_replacement": {
+      "baseline_seconds": 120,
+      "minimum_baseline_observations": 3,
+      "ot_hosts": ["10.170.0.30"]
+    },
+    "polling_cadence_disruption": {
+      "baseline_seconds": 120,
+      "minimum_baseline_observations": 5,
+      "interval_change_ratio": 0.5
+    },
+    "controller_communication_jitter": {
+      "baseline_seconds": 120,
+      "minimum_baseline_observations": 6,
+      "jitter_multiplier": 3.0,
+      "minimum_post_jitter_ratio": 0.2,
+      "controller_hosts": ["10.170.0.50"]
+    }
+  },
+  "selectedModules": [
+    "encrypted_session_fingerprint_change",
+    "remote_access_session_anomaly",
+    "service_disappearance_replacement",
+    "polling_cadence_disruption",
+    "controller_communication_jitter"
+  ]
+}

@@ -1,6 +1,6 @@
 # Use the official Zeek image as the base. This guarantees all native dependencies,
 # C++ components, libnode, and libuv are perfect and pre-linked.
-FROM docker.io/zeek/zeek:8.0.5
+FROM docker.io/zeek/zeek:9.0.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1

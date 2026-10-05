@@ -32,7 +32,7 @@
 }
 
 .data-label {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: #555;
   margin-bottom: 8px;
   display: flex;
@@ -41,7 +41,7 @@
 }
 
 .data-value {
-  font-size: 24px;
+  font-size: var(--text-2xl);
   font-weight: bold;
   color: #333;
 }
@@ -52,4 +52,52 @@
 
 .data-value-warning {
   color: #b50909; /* USWDS Red */
+}
+.data-item-button{width:100%;font:inherit;cursor:pointer}.panel-count-disclaimer{margin:10px 0 0;padding:9px 12px;border-top:1px solid var(--shell-border);color:var(--shell-muted);font-size:var(--text-xs);line-height:1.45}
+
+.data-item-warning {
+  border-color: #b50909;
+}
+
+.data-item-warning:hover {
+  border-color: #b50909;
+}
+
+.asset-inventory-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 10px;
+  padding: 9px 0 0;
+  border-top: 1px solid var(--shell-border);
+}
+
+.asset-inventory-meta-row .panel-count-disclaimer {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border-top: 0;
+}
+
+.asset-inventory-footer-action {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0;
+  border-top: 0;
+}
+
+@media (max-width: 680px) {
+  .asset-inventory-meta-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .asset-inventory-footer-action .section-action-button {
+    width: 100%;
+    justify-content: center;
+  }
 }

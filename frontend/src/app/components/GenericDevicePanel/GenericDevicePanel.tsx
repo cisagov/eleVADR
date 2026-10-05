@@ -80,7 +80,7 @@ const GenericDevicePanel: React.FC<GenericDevicePanelProps> = ({
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span>{title}</span>
           <InfoTooltip
-            text={`A list of all identified ${deviceType} devices on the network.`}
+            text={`A list of all identified ${deviceType === "Edge" ? "Network" : deviceType} devices on the network.`}
           />
         </div>
       }
@@ -91,7 +91,7 @@ const GenericDevicePanel: React.FC<GenericDevicePanelProps> = ({
         data={data}
         filterable={true}
         filterPlaceholder={`Search by IP or Manufacturer...`}
-        emptyMessage={`No ${deviceType} devices detected`}
+        emptyMessage={`No ${deviceType === "Edge" ? "Network" : deviceType} devices detected`}
       />
     </Panel>
   );

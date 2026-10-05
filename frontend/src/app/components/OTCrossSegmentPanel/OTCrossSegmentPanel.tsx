@@ -12,10 +12,15 @@ import SortableTable, { Column } from "../SortableTable/SortableTable";
 import DetailModal from "../DetailModal/DetailModal";
 import { useDrilldown } from "../../hooks/useDrilldown";
 import { fetchCrossSegmentDrilldown } from "../../services/drilldownService";
+import PivotValue from "../PivotValue/PivotValue";
+import { InvestigationFilter, SelectedEntity } from "../../types/Investigation";
 
 interface OTCrossSegmentPanelProps {
   data?: OTcrossSegmentLinesPanel | null;
   reportId: ElevadrReport["report_id"];
+  filters?: InvestigationFilter[];
+  onFilter?: (filter: InvestigationFilter) => void;
+  onSelect?: (entity: SelectedEntity) => void;
 }
 
 const formatIpForDisplay = (ip?: string | null): string => {
@@ -29,6 +34,9 @@ const formatIpForDisplay = (ip?: string | null): string => {
 const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
   data,
   reportId,
+  filters = [],
+  onFilter,
+  onSelect,
 }) => {
   const drilldown = useDrilldown(
     ({ src_subnet, dst_subnet }: { src_subnet: string; dst_subnet: string }) =>
@@ -87,7 +95,6 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
         <section
           style={{ display: "flex", flexDirection: "column", gap: "8px" }}
         >
-          <div style={{ fontWeight: 600 }}>Subnet Pair Breakdown</div>
           <SortableTable<unknown, OTSubnetPairCount>
             columns={
               [
@@ -126,6 +133,9 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
             }
             data={payload.subnet_pair_counts}
             filterable={true}
+            filterHeader={
+              <div style={{ fontWeight: 600 }}>Subnet Pair Breakdown</div>
+            }
             filterPlaceholder="Filter by subnet..."
             emptyMessage="No Results"
           />
@@ -134,7 +144,6 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
         <section
           style={{ display: "flex", flexDirection: "column", gap: "8px" }}
         >
-          <div style={{ fontWeight: 600 }}>Destination Subnet Breakdown</div>
           <SortableTable
             columns={
               [
@@ -153,6 +162,9 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
             }
             data={payload.dst_subnet_counts}
             filterable={true}
+            filterHeader={
+              <div style={{ fontWeight: 600 }}>Destination Subnet Breakdown</div>
+            }
             filterPlaceholder="Filter by destination subnet..."
             emptyMessage="No Results"
           />
@@ -161,11 +173,10 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
         <section
           style={{ display: "flex", flexDirection: "column", gap: "8px" }}
         >
-          <div style={{ fontWeight: 600 }}>Per-OT Device Flow Count</div>
           <SortableTable
             columns={
               [
-                { key: "src_device_ip", label: "OT Device IP", sortable: true },
+                { key: "src_device_ip", label: "OT Device IP", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "ip", value: String(value), label: "Device" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
                 {
                   key: "count",
                   label: "Cross-Segment Flow Count",
@@ -175,7 +186,11 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
               ] satisfies Column[]
             }
             data={payload.ot_device_counts}
+            onRowClick={(row) => { if (row.src_device_ip) onSelect?.({ type: "device", id: row.src_device_ip }); }}
             filterable={true}
+            filterHeader={
+              <div style={{ fontWeight: 600 }}>Per-OT Device Flow Count</div>
+            }
             filterPlaceholder="Filter by OT device..."
             emptyMessage="No Results"
           />
@@ -184,7 +199,6 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
         <section
           style={{ display: "flex", flexDirection: "column", gap: "8px" }}
         >
-          <div style={{ fontWeight: 600 }}>Communications (All)</div>
           <SortableTable<unknown, OTActivityCrossSegmentLine>
             columns={
               [
@@ -192,10 +206,10 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                   key: "src_endpoint.ip",
                   label: "Source IP",
                   sortable: true,
-                  render: (value: unknown) =>
-                    formatIpForDisplay(
-                      typeof value === "string" ? value : null,
-                    ),
+                  render: (value: unknown) => {
+                    const ip = formatIpForDisplay(typeof value === "string" ? value : null);
+                    return ip !== "Unknown" && onFilter ? <PivotValue filter={{ key: "ip", value: ip, label: "Device" }} filters={filters} onFilter={onFilter}>{ip}</PivotValue> : ip;
+                  },
                 },
                 {
                   key: "dst_endpoint.ip",
@@ -213,10 +227,10 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                     const destinationPort =
                       row["dst_endpoint.port"] ?? "Unknown";
 
-                    return <span>{`${destinationIp}:${destinationPort}`}</span>;
+                    return <span>{destinationIp !== "Unknown" && onFilter ? <PivotValue filter={{ key: "ip", value: destinationIp, label: "Device" }} filters={filters} onFilter={onFilter}>{destinationIp}</PivotValue> : destinationIp}:{destinationPort !== "Unknown" && onFilter ? <PivotValue filter={{ key: "port", value: String(destinationPort), label: "Port" }} filters={filters} onFilter={onFilter}>{String(destinationPort)}</PivotValue> : String(destinationPort)}</span>;
                   },
                 },
-                { key: "service.name", label: "Service", sortable: true },
+                { key: "service.name", label: "Service", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "service", value: String(value), label: "Service" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
                 {
                   key: "count",
                   label: "Count",
@@ -226,7 +240,16 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
               ] satisfies Column<unknown, OTActivityCrossSegmentLine>[]
             }
             data={payload.lines}
+            onRowClick={(row) => {
+              const src = row["src_endpoint.ip"];
+              const dst = row["dst_endpoint.ip"];
+              const service = row["service.name"] || `Port ${row["dst_endpoint.port"] ?? "—"}`;
+              if (src && dst) onSelect?.({ type: "connection", id: `${src}|${dst}|${service}` });
+            }}
             filterable={true}
+            filterHeader={
+              <div style={{ fontWeight: 600 }}>Communications (All)</div>
+            }
             filterPlaceholder="Filter by IP/service..."
             emptyMessage="No Results"
           />
@@ -248,35 +271,13 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
         {!drilldown.isLoading && !drilldown.error && (
           <SortableTable
             columns={[
-              { key: "src_endpoint.ip", label: "Source IP", sortable: true },
-              {
-                key: "src_endpoint.subnet",
-                label: "Source Subnet",
-                sortable: true,
-              },
-              {
-                key: "src_endpoint.port",
-                label: "Src Port",
-                sortable: true,
-                align: "right",
-              },
-              {
-                key: "dst_endpoint.ip",
-                label: "Destination IP",
-                sortable: true,
-              },
-              {
-                key: "dst_endpoint.subnet",
-                label: "Destination Subnet",
-                sortable: true,
-              },
-              {
-                key: "dst_endpoint.port",
-                label: "Dst Port",
-                sortable: true,
-                align: "right",
-              },
-              { key: "service.name", label: "Service", sortable: true },
+              { key: "src_endpoint.ip", label: "Source IP", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "ip", value: String(value), label: "Device" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
+              { key: "src_endpoint.subnet", label: "Source Subnet", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "subnet", value: String(value), label: "Subnet" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
+              { key: "src_endpoint.port", label: "Src Port", sortable: true, align: "right", render: (value) => value != null && onFilter ? <PivotValue filter={{ key: "port", value: String(value), label: "Port" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
+              { key: "dst_endpoint.ip", label: "Destination IP", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "ip", value: String(value), label: "Device" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
+              { key: "dst_endpoint.subnet", label: "Destination Subnet", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "subnet", value: String(value), label: "Subnet" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
+              { key: "dst_endpoint.port", label: "Dst Port", sortable: true, align: "right", render: (value) => value != null && onFilter ? <PivotValue filter={{ key: "port", value: String(value), label: "Port" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
+              { key: "service.name", label: "Service", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "service", value: String(value), label: "Service" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
               {
                 key: "connection_info.protocol_name",
                 label: "Protocol",
@@ -287,7 +288,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                 label: "Direction",
                 sortable: true,
               },
-              { key: "state", label: "State", sortable: true },
+              { key: "state", label: "State", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "zeekState", value: String(value), label: "Zeek State" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
               {
                 key: "success",
                 label: "Success",

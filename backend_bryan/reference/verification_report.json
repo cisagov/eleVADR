@@ -1,0 +1,31 @@
+{
+  "architecture": "simplified frontend/backend contract",
+  "requestContract": "elevadr.detection-context.analysis.v1",
+  "responseContract": "elevadr.detection-context.analysis-response.v1",
+  "profileSchema": 3,
+  "backendBryanTests": {
+    "passed": 31,
+    "failed": 0
+  },
+  "detectorRegistry": {
+    "expected": 65,
+    "observed": 65
+  },
+  "frontendTranspilation": {
+    "filesChecked": 64,
+    "errors": 0
+  },
+  "httpReferenceRoundTrip": {
+    "httpStatus": 200,
+    "analysisStatus": "completed",
+    "requestedModules": 1,
+    "completedModules": 1,
+    "findingCount": 1,
+    "fixture": "reference/e2e/rogue_finding_request.json"
+  },
+  "productionBackendModified": false,
+  "realDataFixtures": {
+    "knownFinding": "unknown_rogue_devices: 1 finding for 10.0.0.99",
+    "contextSuppression": "0 findings after 10.0.0.99 is added to asset inventory"
+  }
+}

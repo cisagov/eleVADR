@@ -1,0 +1,65 @@
+.pivot-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
+  vertical-align: baseline;
+}
+
+/* Zeek state codes are compact identifiers; keep them visually emphasized like IP/service pivots. */
+.pivot-value[data-pivot-key="zeekState"] {
+  font-weight: 800;
+}
+
+.pivot-value-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pivot-value-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  padding: 1px;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: #0b628e;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateX(-2px);
+  transition: opacity .12s ease, transform .12s ease, background-color .12s ease;
+}
+
+.pivot-value-icon svg { width: 100%; height: 100%; fill: currentColor; }
+
+.pivot-value:hover .pivot-value-icon,
+.pivot-value:focus-within .pivot-value-icon,
+.pivot-value-active .pivot-value-icon {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.pivot-value-active .pivot-value-label {
+  font-weight: 800;
+}
+
+.pivot-value-icon:hover,
+.pivot-value-icon:focus-visible {
+  outline: none;
+  background: rgba(11, 110, 153, .10);
+  box-shadow: 0 0 0 2px rgba(11, 110, 153, .14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pivot-value-label,
+  .pivot-value-icon { transition: none; }
+}

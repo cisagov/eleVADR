@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import "./InfoTooltip.css";
 
 interface InfoTooltipProps {
@@ -6,68 +7,71 @@ interface InfoTooltipProps {
 }
 
 const InfoTooltip: React.FC<InfoTooltipProps> = ({ text }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
+  const tooltipId = useId();
 
   useEffect(() => {
-    if (isVisible && buttonRef.current && tooltipRef.current) {
-      const buttonRect = buttonRef.current.getBoundingClientRect();
-      const tooltipRect = tooltipRef.current.getBoundingClientRect();
-      const tooltipWidth = tooltipRect.width;
-      const gap = 8;
-      const padding = 10;
+    if (!isOpen) return;
 
-      // Position to the left of the button
-      let left = buttonRect.left - gap;
-      const top = buttonRect.top + buttonRect.height / 2;
-
-      // Check if there's enough space on the left
-      if (left - tooltipWidth < padding) {
-        // Not enough space on left, position to the right instead
-        left = buttonRect.right + gap;
-        setTooltipStyle({
-          left: `${left}px`,
-          top: `${top}px`,
-          transform: "translateY(-50%)",
-        });
-      } else {
-        // Position to the left
-        setTooltipStyle({
-          left: `${left}px`,
-          top: `${top}px`,
-          transform: "translate(-100%, -50%)",
-        });
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
       }
-    }
-  }, [isVisible]);
+    };
 
-  return (
-    <div className="info-tooltip-container">
-      <button
-        ref={buttonRef}
-        className="info-tooltip-button"
-        onMouseEnter={() => setIsVisible(true)}
-        onMouseLeave={() => setIsVisible(false)}
-        onFocus={() => setIsVisible(true)}
-        onBlur={() => setIsVisible(false)}
-        aria-label="Information"
-        type="button"
-      >
-        ⓘ
-      </button>
-      {isVisible && (
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const tooltip = isOpen && typeof document !== "undefined"
+    ? createPortal(
         <div
-          ref={tooltipRef}
+          id={tooltipId}
           className="info-tooltip-content"
-          style={tooltipStyle}
           role="tooltip"
         >
           {text}
-        </div>
-      )}
-    </div>
+        </div>,
+        document.body,
+      )
+    : null;
+
+  return (
+    <>
+      <div ref={containerRef} className="info-tooltip-container">
+        <button
+          ref={buttonRef}
+          className="info-tooltip-button"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setIsOpen((current) => !current);
+          }}
+          aria-label="Information"
+          aria-expanded={isOpen}
+          aria-controls={isOpen ? tooltipId : undefined}
+          type="button"
+        >
+          <span className="info-tooltip-glyph" aria-hidden="true">i</span>
+        </button>
+      </div>
+      {tooltip}
+    </>
   );
 };
 

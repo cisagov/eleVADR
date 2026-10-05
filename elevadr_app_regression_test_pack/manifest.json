@@ -1,0 +1,66 @@
+{
+  "cases": [
+    {
+      "name": "01_mixed_ot_baseline",
+      "pcap": "01_mixed_ot_baseline.pcap",
+      "report": "01_mixed_ot_baseline.json",
+      "report_id": "elevadr-20260929T035005Z-4321a108",
+      "finding_count": 5,
+      "modules_with_findings": [
+        "cross_purdue_level_traffic",
+        "deprecated_insecure_services_protocols",
+        "ot_protocol_exposure",
+        "unknown_rogue_devices"
+      ],
+      "detection_context": "01_mixed_ot_baseline_context.json"
+    },
+    {
+      "name": "02_legacy_high_risk",
+      "pcap": "02_legacy_high_risk.pcap",
+      "report": "02_legacy_high_risk.json",
+      "report_id": "elevadr-20260929T035005Z-7697a6e7",
+      "finding_count": 18,
+      "modules_with_findings": [
+        "brute_force_authentication",
+        "cleartext_credentials",
+        "cross_purdue_level_traffic",
+        "database_service_exposed",
+        "deprecated_insecure_services_protocols",
+        "deprecated_vpn_protocol",
+        "irc_traffic_detected",
+        "netbios_smbv1_exposure",
+        "protocol_unexpected_high_risk_port",
+        "remote_access_tool_exposure",
+        "unknown_rogue_devices"
+      ],
+      "detection_context": "02_legacy_high_risk_context.json"
+    },
+    {
+      "name": "03_outbound_ipv6_quic_icmp",
+      "pcap": "03_outbound_ipv6_quic_icmp.pcap",
+      "report": "03_outbound_ipv6_quic_icmp.json",
+      "report_id": "elevadr-20260929T050013Z-3d1e2ad7",
+      "finding_count": 11,
+      "modules_with_findings": [
+        "cross_purdue_level_traffic",
+        "deprecated_insecure_services_protocols",
+        "http_user_agent_anomalies",
+        "icmp_data_channel",
+        "internet_exposed_ics",
+        "ipv6_traffic_ot",
+        "large_outbound_http_uploads",
+        "new_ot_conversation_pair",
+        "ot_outbound_internet_any_protocol",
+        "quic_ot_segments",
+        "unusual_outbound_data_volume"
+      ],
+      "detection_context": "03_outbound_ipv6_quic_icmp_context.json",
+      "expected_regression_signals": {
+        "icmp_data_channel": "12 independently timed uniform ICMP echo records should produce a finding",
+        "large_outbound_http_uploads": "12 MiB HTTP POST exceeds the default 10 MiB threshold",
+        "quic_ot_segments": "QUIC protocol-log evidence on UDP/443 should produce a finding",
+        "ipv6_traffic_ot": "IPv6 Modbus traffic violates the explicit IPv4-only OT expectation"
+      }
+    }
+  ]
+}

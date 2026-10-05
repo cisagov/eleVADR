@@ -1,0 +1,595 @@
+/*
+ * DHS/CISA visual theme for the customer-approved eleVADR layout.
+ *
+ * This file is intentionally an override layer. It changes visual treatment,
+ * control states, and accessibility affordances without replacing the existing
+ * titlebar/sidebar/content layout or implying that eleVADR is an official site.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* CISA/DHS and USWDS-aligned role tokens. */
+  --cisa-navy: #002b47;
+  --cisa-blue-dark: #1a4480;
+  --cisa-blue: #005ea2;
+  --cisa-blue-bright: #0078ae;
+  --cisa-blue-light: #d9e8f6;
+  --cisa-blue-lightest: #eef7fb;
+  --dhs-red: #c41230;
+  --dhs-red-dark: #8b0a03;
+  --usa-accent-cool: #00bde3;
+  --usa-accent-warm: #fa9441;
+  --usa-focus: #005ea2;
+  --usa-success: #2e8540;
+  --usa-warning: #e5a000;
+  --usa-error: #b50909;
+
+  --usa-ink: #1b1b1b;
+  --usa-base-dark: #565c65;
+  --usa-base: #71767a;
+  --usa-base-light: #a9aeb1;
+  --usa-base-lighter: #dfe1e2;
+  --usa-base-lightest: #f0f0f0;
+  --usa-surface: #ffffff;
+  --usa-canvas: #f7f9fa;
+
+  --theme-canvas: var(--usa-canvas);
+  --theme-surface: var(--usa-surface);
+  --theme-surface-subtle: var(--cisa-blue-lightest);
+  --theme-text: var(--usa-ink);
+  --theme-muted: var(--usa-base-dark);
+  --theme-border: #c9c9c9;
+  --theme-input-border: #5c5c5c;
+  --theme-link: var(--cisa-blue);
+  --theme-radius: 0.125rem;
+  --theme-shadow: 0 1px 2px rgb(0 43 71 / 12%);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --theme-canvas: #111820;
+  --theme-surface: #1d2935;
+  --theme-surface-subtle: #23384a;
+  --theme-text: #f5f8fa;
+  --theme-muted: #c9d3dc;
+  --theme-border: #63798b;
+  --theme-input-border: #a9bac8;
+  --theme-link: #97d4ea;
+  --theme-shadow: none;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--theme-canvas);
+  color: var(--theme-text);
+  font-family: "Source Sans Pro", "Public Sans", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Bypass block for keyboard users. */
+.skip-link {
+  position: fixed;
+  z-index: 10000;
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.75rem 1rem;
+  transform: translateY(-160%);
+  border: 2px solid #ffffff;
+  border-radius: var(--theme-radius);
+  background: var(--cisa-navy);
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+#main-content:focus {
+  outline: 0;
+}
+
+/* Consistent high-visibility CISA-blue focus ring. */
+:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]):focus-visible {
+  outline: 0.25rem solid var(--usa-focus) !important;
+  outline-offset: 0.125rem !important;
+  box-shadow: 0 0 0 0.125rem var(--usa-ink) !important;
+}
+
+/* Existing masthead dimensions and content positions are intentionally kept. */
+.titlebar {
+  border-bottom: 0.25rem solid var(--usa-accent-cool) !important;
+  background: var(--cisa-navy) !important;
+  box-shadow: none !important;
+}
+
+.cisa-branding {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.cisa-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0 !important;
+  outline: 0;
+  object-fit: contain;
+}
+
+.brand-name {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+}
+
+.brand-subtitle,
+.titlebar-status {
+  color: #d9e8f6 !important;
+}
+
+.titlebar-report-chip {
+  border-color: rgb(255 255 255 / 45%) !important;
+  border-radius: var(--theme-radius) !important;
+  background: rgb(255 255 255 / 8%) !important;
+  color: #ffffff !important;
+}
+
+.top-action-button,
+.mobile-menu-button {
+  min-height: 2.5rem;
+  border: 0 !important;
+  border-radius: var(--theme-radius) !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.top-action-button:hover,
+.mobile-menu-button:hover {
+  background: rgb(255 255 255 / 14%) !important;
+}
+
+.top-action-button .nav-icon,
+.mobile-menu-button .nav-icon,
+.sidebar-collapse-button .nav-icon,
+.sidebar-nav-icon .nav-icon,
+.empty-state-icon .nav-icon,
+.report-badge .nav-icon {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.status-dot {
+  border: 1px solid currentColor;
+}
+
+.status-dot.ready {
+  background: var(--usa-success) !important;
+}
+
+.status-dot.idle {
+  background: var(--usa-base-light) !important;
+}
+
+/* Sidebar structure, width, collapse behavior, and mobile behavior are preserved. */
+.sidebar {
+  border-right: 1px solid var(--theme-border) !important;
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+}
+
+.sidebar-topline,
+.sidebar-footer {
+  border-color: var(--theme-border) !important;
+}
+
+.sidebar-topline {
+  justify-content: flex-end !important;
+  padding-left: 0 !important;
+}
+
+.sidebar-is-collapsed .sidebar-topline {
+  justify-content: center !important;
+}
+
+.sidebar-heading,
+.sidebar-footer,
+.sidebar-collapse-button {
+  color: var(--theme-muted) !important;
+}
+
+.sidebar-nav button {
+  min-height: 2.75rem !important;
+  border-radius: 0 !important;
+  border-left: 0.25rem solid transparent !important;
+  color: var(--theme-text) !important;
+  font-weight: 600 !important;
+}
+
+.sidebar-nav button:hover {
+  background: var(--usa-base-lightest) !important;
+  color: var(--cisa-navy) !important;
+}
+
+:root[data-theme="dark"] .sidebar-nav button:hover {
+  background: #2d4253 !important;
+  color: #ffffff !important;
+}
+
+.sidebar-nav button.active,
+.sidebar-nav button[aria-current="location"] {
+  border-left-color: var(--cisa-blue-bright) !important;
+  background: var(--cisa-blue-light) !important;
+  color: var(--cisa-navy) !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+:root[data-theme="dark"] .sidebar-nav button.active,
+:root[data-theme="dark"] .sidebar-nav button[aria-current="location"] {
+  background: #294e69 !important;
+  color: #ffffff !important;
+}
+
+.sidebar-count {
+  border: 1px solid currentColor !important;
+  border-radius: 999px !important;
+}
+
+.app-main {
+  background: var(--theme-canvas) !important;
+  color: var(--theme-text);
+}
+
+.page-heading {
+  border-bottom: 1px solid var(--theme-border);
+  padding-bottom: 1.25rem;
+}
+
+.page-heading h1,
+.section-heading h2,
+.section-heading > div > span,
+.subsection-label {
+  color: var(--cisa-navy) !important;
+  font-weight: 800 !important;
+}
+
+:root[data-theme="dark"] .page-heading h1,
+:root[data-theme="dark"] .section-heading h2,
+:root[data-theme="dark"] .section-heading > div > span,
+:root[data-theme="dark"] .subsection-label {
+  color: #d9e8f6 !important;
+}
+
+.page-description,
+.eyebrow,
+.section-heading small,
+.table-summary {
+  color: var(--theme-muted) !important;
+}
+
+.section-heading {
+  border-bottom: 1px solid var(--theme-border);
+  padding-bottom: 0.625rem;
+}
+
+.section-chip,
+.report-badge,
+.entity-type,
+.severity-badge {
+  border-radius: var(--theme-radius) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* Flat, bordered government application surfaces. */
+:where(
+  .panel,
+  .report-guide,
+  .security-overview,
+  .findings-panel,
+  .network-topology,
+  .activity-timeline,
+  .status-container,
+  .report-detail-block,
+  .upload-container
+) {
+  border-color: var(--theme-border) !important;
+  border-radius: var(--theme-radius) !important;
+  background: var(--theme-surface) !important;
+  color: var(--theme-text);
+  box-shadow: var(--theme-shadow) !important;
+}
+
+/* Recognizable links that do not rely on color alone. */
+.app-shell a:not(.skip-link),
+.help-drawer a,
+.entity-drawer a,
+.json-drawer a {
+  color: var(--theme-link);
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.15em;
+}
+
+/* Controls follow USWDS geometry while retaining existing component behavior. */
+:where(
+  .app-shell,
+  .help-drawer,
+  .entity-drawer,
+  .json-drawer,
+  .detail-modal,
+  .tour-card
+) button {
+  border-radius: var(--theme-radius) !important;
+}
+
+:where(
+  .secondary-action,
+  .section-help-button,
+  .chart-link,
+  .inspect-button,
+  .findings-export,
+  .show-more-findings,
+  .report-toolbar-actions button
+) {
+  min-height: 2.5rem !important;
+  padding: 0.5rem 0.75rem !important;
+  border: 2px solid var(--cisa-blue) !important;
+  border-radius: var(--theme-radius) !important;
+  background: var(--theme-surface) !important;
+  color: var(--theme-link) !important;
+  font-weight: 700 !important;
+}
+
+:where(
+  .secondary-action,
+  .section-help-button,
+  .chart-link,
+  .inspect-button,
+  .findings-export,
+  .show-more-findings,
+  .report-toolbar-actions button
+):hover {
+  background: var(--theme-surface-subtle) !important;
+  color: var(--cisa-navy) !important;
+}
+
+.view-mode-toggle {
+  border-color: var(--cisa-blue) !important;
+  border-radius: var(--theme-radius) !important;
+}
+
+.view-mode-toggle button {
+  min-height: 2.5rem;
+  color: var(--theme-link) !important;
+  font-weight: 700 !important;
+}
+
+.view-mode-toggle button.active,
+.view-mode-toggle button[aria-pressed="true"] {
+  background: var(--cisa-blue) !important;
+  color: #ffffff !important;
+}
+
+button:disabled,
+button[aria-disabled="true"] {
+  border-color: #c9c9c9 !important;
+  background: #c9c9c9 !important;
+  color: #565c65 !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+
+/* Form controls: square corners, explicit borders, visible states. */
+:where(.app-shell, .help-drawer, .entity-drawer, .json-drawer)
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+  min-height: 2.5rem !important;
+  padding: 0.5rem 0.625rem !important;
+  border: 1px solid var(--theme-input-border) !important;
+  border-radius: 0 !important;
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  font: inherit;
+  box-shadow: none !important;
+}
+
+:where(.app-shell, .help-drawer, .entity-drawer, .json-drawer)
+  :where(input, select, textarea):disabled {
+  border-color: var(--usa-base-light) !important;
+  background: var(--usa-base-lightest) !important;
+  color: var(--usa-base-dark) !important;
+  opacity: 1 !important;
+}
+
+:where(.app-shell, .help-drawer, .entity-drawer)
+  :where(input[type="checkbox"], input[type="radio"]) {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  accent-color: var(--cisa-blue);
+}
+
+.unified-dropzone {
+  border: 2px dashed var(--usa-base) !important;
+  border-radius: 0 !important;
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  box-shadow: none !important;
+}
+
+.unified-dropzone:hover,
+.unified-dropzone:focus-within {
+  border-color: var(--cisa-blue) !important;
+  background: var(--theme-surface-subtle) !important;
+}
+
+/* The input already supplies the search boundary; avoid a redundant frame. */
+.report-search,
+.report-search:focus-within {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Information affordance: button chrome is removed; the inner glyph supplies the circled “i”. */
+.info-tooltip-button,
+.info-tooltip-button:hover,
+.info-tooltip-button:focus,
+.info-tooltip-button:focus-visible {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: var(--theme-link) !important;
+}
+
+.info-tooltip-glyph {
+  border-color: currentColor !important;
+}
+
+.info-tooltip-button:hover .info-tooltip-glyph,
+.info-tooltip-button:focus-visible .info-tooltip-glyph {
+  background: var(--theme-surface-subtle) !important;
+  color: var(--cisa-blue-dark) !important;
+}
+
+:root[data-theme="dark"] .info-tooltip-button:hover .info-tooltip-glyph,
+:root[data-theme="dark"] .info-tooltip-button:focus-visible .info-tooltip-glyph {
+  color: #ffffff !important;
+}
+
+/* Tables use persistent structure and do not rely on zebra striping alone. */
+.scrollable-table-container,
+.findings-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--theme-border);
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-shell table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--theme-surface);
+  color: var(--theme-text);
+}
+
+.app-shell th {
+  background: var(--usa-base-lightest) !important;
+  color: var(--usa-ink) !important;
+  font-weight: 700 !important;
+}
+
+:root[data-theme="dark"] .app-shell th {
+  background: #34495a !important;
+  color: #ffffff !important;
+}
+
+.app-shell th,
+.app-shell td {
+  padding: 0.625rem 0.75rem !important;
+  border-bottom: 1px solid var(--theme-border) !important;
+  vertical-align: top;
+}
+
+.app-shell tbody tr:nth-child(even) {
+  background: var(--theme-surface-subtle);
+}
+
+.app-shell tbody tr:hover {
+  background: var(--cisa-blue-light) !important;
+  color: var(--usa-ink);
+}
+
+.table-sort-button {
+  width: 100%;
+  min-height: 2rem !important;
+  padding: 0.125rem 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  text-align: inherit;
+  justify-content: flex-start;
+}
+
+/* Severity and status colors retain text/shape reinforcement. */
+.error-container,
+.status-container:has(.error-details) {
+  border-left: 0.5rem solid var(--usa-error) !important;
+}
+
+.loading-container .loading-text {
+  font-weight: 700;
+}
+
+:where(.detail-modal, .help-drawer, .entity-drawer, .json-drawer, .tour-card) {
+  border-radius: var(--theme-radius) !important;
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  box-shadow: 0 1rem 2rem rgb(0 0 0 / 30%) !important;
+}
+
+:where(.detail-modal-overlay, .help-backdrop, .entity-drawer-backdrop, .json-drawer-backdrop, .tour-backdrop) {
+  background: rgb(0 0 0 / 55%) !important;
+}
+
+@media (forced-colors: active) {
+  .titlebar,
+  .sidebar,
+  .panel,
+  .report-guide,
+  .security-overview,
+  .findings-panel,
+  .network-topology {
+    forced-color-adjust: auto;
+  }
+
+  .sidebar-nav button.active,
+  .sidebar-nav button[aria-current="location"] {
+    border-left: 0.25rem solid Highlight !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .cisa-branding {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .cisa-logo {
+    filter: none !important;
+  }
+
+  .titlebar {
+    border-bottom-color: #000000 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:elevadr:detection-context:analysis-response:v1",
+  "title": "DetectionAnalysisResponse v1",
+  "type": "object",
+  "required": ["contractVersion", "status", "summary", "moduleResults", "errors"],
+  "additionalProperties": false,
+  "properties": {
+    "contractVersion": { "const": "elevadr.detection-context.analysis-response.v1" },
+    "status": { "enum": ["completed", "partial", "failed"] },
+    "summary": {
+      "type": "object",
+      "required": ["requestedModules", "completedModules", "failedModules", "findingCount"],
+      "properties": {
+        "requestedModules": { "type": "integer", "minimum": 0 },
+        "completedModules": { "type": "integer", "minimum": 0 },
+        "failedModules": { "type": "integer", "minimum": 0 },
+        "findingCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "moduleResults": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["module_id", "findings", "metrics", "evidence", "warnings"]
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "path": { "type": "string" },
+          "moduleId": { "type": "string" }
+        }
+      }
+    }
+  }
+}

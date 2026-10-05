@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import "./OTServices.css";
 import Panel from "../Panel/Panel";
 import SortableTable, { Column } from "../SortableTable/SortableTable";
@@ -16,10 +16,15 @@ import DrilldownTable, {
   OtServiceRow,
 } from "../DrilldownTable/DrilldownTable";
 import PivotFilterBar from "../PivotFilterBar/PivotFilterBar";
+import { InvestigationFilter, SelectedEntity } from "../../types/Investigation";
+import PivotValue from "../PivotValue/PivotValue";
 
 interface OTServicesProps {
   data: OTService[];
   reportId: string;
+  filters?: InvestigationFilter[];
+  onFilter?: (filter: InvestigationFilter) => void;
+  onSelect?: (entity: SelectedEntity) => void;
 }
 
 const buildConnectionPivotColumns = (
@@ -170,7 +175,7 @@ const buildConnectionPivotColumns = (
   connectionDetailColumns[12],
 ];
 
-const OTServices: React.FC<OTServicesProps> = ({ data, reportId }) => {
+const OTServices: React.FC<OTServicesProps> = ({ data, reportId, filters = [], onFilter, onSelect }) => {
   const servicesDrilldown = usePivotDrilldown(
     (filters: Record<string, string | number | boolean | null | undefined>) =>
       fetchFilteredServices(reportId, filters),
@@ -180,6 +185,11 @@ const OTServices: React.FC<OTServicesProps> = ({ data, reportId }) => {
       fetchFilteredConnections(reportId, filters),
   );
   const tableData = buildOtServiceRows(data);
+  const visibleTableData = useMemo(() => tableData.filter((row) => filters.every((filter) => {
+    if (filter.key === "service") return row.name === filter.value;
+    if (filter.key === "risk") return row.riskCategoryList.some((risk) => risk.toLowerCase().includes(filter.value.toLowerCase()));
+    return true;
+  })), [data, filters]);
 
   const openServiceConnections = async (serviceName: string) => {
     await connectionsDrilldown.open({ service_name: serviceName, limit: 500 });
@@ -199,16 +209,14 @@ const OTServices: React.FC<OTServicesProps> = ({ data, reportId }) => {
         </div>
       ),
       sortable: true,
-      clickable: true,
-      onClick: (value) => openServiceConnections(String(value)),
-      render: (value) => (
-        <button
-          type="button"
-          className="clickable-service-link service-name-cell clickable-cell-text"
-        >
-          {String(value ?? "")}
-        </button>
-      ),
+      render: (value) => {
+        const name = String(value ?? "");
+        return onFilter && name ? (
+          <PivotValue filter={{ key: "service", value: name, label: "Service" }} filters={filters} onFilter={onFilter}>
+            <span className="service-name-cell">{name}</span>
+          </PivotValue>
+        ) : <span className="service-name-cell">{name}</span>;
+      },
     },
     {
       key: "description",
@@ -289,14 +297,15 @@ const OTServices: React.FC<OTServicesProps> = ({ data, reportId }) => {
       title={
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span>OT Services</span>
-          <InfoTooltip text="Industrial protocols and OT-specific services detected with security descriptions and risk assessments. Click services, risk categories, or drilldown rows to continue pivoting." />
+          <InfoTooltip text="Industrial protocols and OT-specific services detected with security descriptions and risk assessments. Click a service row to inspect details. Hover the service name to reveal a funnel; click the funnel to filter by that service." />
         </div>
       }
       isEmpty={isEmpty}
     >
       <SortableTable
         columns={columns}
-        data={tableData}
+        data={visibleTableData}
+        onRowClick={(row) => onSelect?.({ type: "service", id: row.name })}
         filterable={true}
         filterPlaceholder="Search by name, description, or category..."
         emptyMessage="No Results"

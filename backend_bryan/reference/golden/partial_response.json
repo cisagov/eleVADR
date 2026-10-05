@@ -1,0 +1,47 @@
+{
+  "contractVersion": "elevadr.detection-context.analysis-response.v1",
+  "errors": [
+    {
+      "code": "unknown_module",
+      "message": "Unknown detector module: not_a_real_module",
+      "moduleId": "not_a_real_module",
+      "path": "profile.selectedModules"
+    }
+  ],
+  "moduleResults": [
+    {
+      "evidence": {
+        "inspected_logs": [
+          "conn"
+        ],
+        "notes": [
+          "Both endpoints must be globally routable according to Python IP address classification; RFC1918/private, loopback, link-local, multicast, documentation, and other special-use addresses are excluded.",
+          "A finding indicates capture-scope or routing-policy drift. It does not by itself prove malicious activity, compromise, or that either public endpoint is an ICS device.",
+          "Possible causes include sensor placement changes, SPAN/TAP misconfiguration, NAT visibility, transit traffic, VPN termination, or unexpected Internet-facing communications."
+        ],
+        "policy": {
+          "internal_ics_only_expected": true,
+          "min_flows": 3
+        }
+      },
+      "findings": [],
+      "metrics": {
+        "distinct_public_pairs": 0,
+        "public_to_public_connections_observed": 0,
+        "public_to_public_findings": 0,
+        "public_to_public_policy_violations": 0,
+        "skipped_allowlisted": 0,
+        "skipped_no_internal_only_policy": 0
+      },
+      "module_id": "public_to_public_traffic",
+      "warnings": []
+    }
+  ],
+  "status": "partial",
+  "summary": {
+    "completedModules": 1,
+    "failedModules": 1,
+    "findingCount": 0,
+    "requestedModules": 2
+  }
+}

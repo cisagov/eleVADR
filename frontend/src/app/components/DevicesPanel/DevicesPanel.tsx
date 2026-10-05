@@ -1,357 +1,138 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Panel from "../Panel/Panel";
 import SortableTable, { Column } from "../SortableTable/SortableTable";
-import { Device, ServiceConnectionDetail } from "../../types/Report";
+import { Device } from "../../types/Report";
 import InfoTooltip from "../InfoTooltip/InfoTooltip";
-import DetailModal from "../DetailModal/DetailModal";
-import { usePivotDrilldown } from "../../hooks/usePivotDrilldown";
-import {
-  fetchFilteredConnections,
-  fetchFilteredDevices,
-} from "../../services/drilldownService";
-import DrilldownTable, {
-  connectionDetailColumns,
-} from "../DrilldownTable/DrilldownTable";
-import PivotFilterBar from "../PivotFilterBar/PivotFilterBar";
+import PivotValue from "../PivotValue/PivotValue";
+import { InvestigationFilter, SelectedEntity } from "../../types/Investigation";
 
 interface DevicesPanelProps {
   otDevices: Device[];
   itDevices: Device[];
   edgeDevices: Device[];
   reportId: string;
+  filters?: InvestigationFilter[];
+  onFilter?: (filter: InvestigationFilter) => void;
+  onSelect?: (entity: SelectedEntity) => void;
 }
 
-const renderIpAddresses = (_value: unknown, row: Device) => {
-  const ips = [...(row.ipv4_ips || []), ...(row.ipv6_ips || [])];
-  return ips.length > 0 ? ips.join(", ") : "N/A";
-};
-
 const buildDeviceColumns = (
-  onManufacturerClick: (manufacturer: string) => void,
-  onSubnetClick: (subnet: string) => void,
-  onIncomingServiceClick: (service: string) => void,
-  onSentServiceClick: (service: string) => void,
-): Column<unknown, Device>[] => [
-  {
-    key: "manufacturer",
-    label: (
-      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-        <span>Manufacturer</span>
-        <InfoTooltip text="The manufacturer of the device, identified via MAC address lookup." />
-      </div>
-    ),
-    sortable: true,
-    clickable: true,
-    onClick: (value) => {
-      if (value) onManufacturerClick(String(value));
-    },
-    render: (value) => (
-      <button
-        type="button"
-        className="clickable-service-link clickable-cell-text"
-      >
-        {String(value ?? "Unknown")}
-      </button>
-    ),
-  },
-  {
-    key: "ip_addresses",
-    label: (
-      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-        <span>IP Address(es)</span>
-        <InfoTooltip text="The IP address(es) of the device." />
-      </div>
-    ),
-    sortable: true,
-    render: renderIpAddresses,
-  },
-  {
-    key: "subnets",
-    label: (
-      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-        <span>Subnet(s)</span>
-        <InfoTooltip text="The subnet(s) the device belongs to." />
-      </div>
-    ),
-    sortable: true,
-    render: (_value: unknown, row: Device) => {
-      const subnets = [
-        ...(row.ipv4_subnets || []),
-        ...(row.ipv6_subnets || []),
-      ];
-      if (subnets.length === 0) return "N/A";
-      return (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-          {subnets.map((subnet) => (
-            <button
-              key={subnet}
-              type="button"
-              className="clickable-service-link clickable-cell-text"
-              onClick={(event) => {
-                event.stopPropagation();
-                onSubnetClick(subnet);
-              }}
-            >
-              {subnet}
-            </button>
-          ))}
-        </div>
-      );
-    },
-  },
-  {
-    key: "incoming_services",
-    label: (
-      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-        <span>Incoming Services</span>
-        <InfoTooltip text="Services that the device is receiving." />
-      </div>
-    ),
-    sortable: true,
-    render: (_value: unknown, row: Device) => {
-      const services = row.incoming_services || [];
-      if (services.length === 0) return "N/A";
-      return (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-          {services.map((service) => (
-            <button
-              key={service}
-              type="button"
-              className="clickable-service-link clickable-cell-text"
-              onClick={(event) => {
-                event.stopPropagation();
-                onIncomingServiceClick(service);
-              }}
-            >
-              {service}
-            </button>
-          ))}
-        </div>
-      );
-    },
-  },
-  {
-    key: "sent_services",
-    label: (
-      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-        <span>Sent Services</span>
-        <InfoTooltip text="Services that the device is sending." />
-      </div>
-    ),
-    sortable: true,
-    render: (_value: unknown, row: Device) => {
-      const services = row.sent_services || [];
-      if (services.length === 0) return "N/A";
-      return (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-          {services.map((service) => (
-            <button
-              key={service}
-              type="button"
-              className="clickable-service-link clickable-cell-text"
-              onClick={(event) => {
-                event.stopPropagation();
-                onSentServiceClick(service);
-              }}
-            >
-              {service}
-            </button>
-          ))}
-        </div>
-      );
-    },
-  },
-];
+  filters: InvestigationFilter[],
+  onFilter?: (filter: InvestigationFilter) => void,
+): Column<unknown, Device>[] => {
+  const pivot = (value: string, filter: InvestigationFilter, strong = false) =>
+    onFilter ? (
+      <PivotValue filter={filter} filters={filters} onFilter={onFilter}>
+        {strong ? <strong>{value}</strong> : value}
+      </PivotValue>
+    ) : (strong ? <strong>{value}</strong> : <>{value}</>);
+  const pivots = (values: string[], key: InvestigationFilter["key"], label: string) => {
+    const unique = values.filter((value, index, items) => value && items.indexOf(value) === index);
+    if (!unique.length) return <>N/A</>;
+    return (
+      <span className="device-pivot-list">
+        {unique.map((value, index) => (
+          <React.Fragment key={`${key}-${value}`}>
+            {index > 0 ? ", " : null}
+            {pivot(value, { key, value, label })}
+          </React.Fragment>
+        ))}
+      </span>
+    );
+  };
 
-const buildConnectionPivotColumns = (
-  onPivot: (
-    filters: Record<string, string | number | boolean | null | undefined>,
-  ) => void,
-): Column<unknown, ServiceConnectionDetail>[] => [
-  {
-    ...connectionDetailColumns[0],
-    clickable: true,
-    onClick: (value) => {
-      if (value) onPivot({ src_ip: String(value) });
+  return [
+    {
+      key: "manufacturer",
+      label: (
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          <span>Manufacturer</span>
+          <InfoTooltip text="The manufacturer of the device, identified via MAC address lookup." />
+        </div>
+      ),
+      sortable: true,
+      render: (value) => {
+        const manufacturer = String(value ?? "Unknown");
+        return pivot(manufacturer, { key: "manufacturer", value: manufacturer, label: "Manufacturer" }, true);
+      },
     },
-    render: (value) => (
-      <button
-        type="button"
-        className="clickable-service-link clickable-cell-text"
-      >
-        {String(value ?? "Unknown")}
-      </button>
-    ),
-  },
-  {
-    ...connectionDetailColumns[1],
-    clickable: true,
-    onClick: (value) => {
-      if (value) onPivot({ src_subnet: String(value) });
+    {
+      key: "ip_addresses",
+      label: (
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          <span>IP Address(es)</span>
+          <InfoTooltip text="The IP address(es) of the device." />
+        </div>
+      ),
+      sortable: true,
+      render: (_value: unknown, row: Device) => pivots([...(row.ip_addresses || []), ...(row.ipv4_ips || []), ...(row.ipv6_ips || [])], "ip", "Device"),
     },
-    render: (value) => (
-      <button
-        type="button"
-        className="clickable-service-link clickable-cell-text"
-      >
-        {String(value ?? "Unknown")}
-      </button>
-    ),
-  },
-  {
-    ...connectionDetailColumns[2],
-    clickable: true,
-    onClick: (_value, row: ServiceConnectionDetail) => {
-      const manufacturer = row["src_device.manufacturer"];
-      if (manufacturer) onPivot({ manufacturer: String(manufacturer) });
+    {
+      key: "subnets",
+      label: (
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          <span>Subnet(s)</span>
+          <InfoTooltip text="The subnet(s) the device belongs to." />
+        </div>
+      ),
+      sortable: true,
+      render: (_value: unknown, row: Device) => pivots([...(row.subnets || []), ...(row.ipv4_subnets || []), ...(row.ipv6_subnets || [])], "subnet", "Subnet"),
     },
-    render: (value) => (
-      <button
-        type="button"
-        className="clickable-service-link clickable-cell-text"
-      >
-        {String(value ?? "Unknown")}
-      </button>
-    ),
-  },
-  connectionDetailColumns[3],
-  {
-    ...connectionDetailColumns[4],
-    clickable: true,
-    onClick: (value) => {
-      if (value) onPivot({ dst_ip: String(value) });
+    {
+      key: "incoming_services",
+      label: (
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          <span>Incoming Services</span>
+          <InfoTooltip text="Services that the device is receiving." />
+        </div>
+      ),
+      sortable: true,
+      render: (_value: unknown, row: Device) => pivots(row.incoming_services || [], "service", "Service"),
     },
-    render: (value) => (
-      <button
-        type="button"
-        className="clickable-service-link clickable-cell-text"
-      >
-        {String(value ?? "Unknown")}
-      </button>
-    ),
-  },
-  {
-    ...connectionDetailColumns[5],
-    clickable: true,
-    onClick: (value) => {
-      if (value) onPivot({ dst_subnet: String(value) });
+    {
+      key: "sent_services",
+      label: (
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          <span>Sent Services</span>
+          <InfoTooltip text="Services that the device is sending." />
+        </div>
+      ),
+      sortable: true,
+      render: (_value: unknown, row: Device) => pivots(row.sent_services || [], "service", "Service"),
     },
-    render: (value) => (
-      <button
-        type="button"
-        className="clickable-service-link clickable-cell-text"
-      >
-        {String(value ?? "Unknown")}
-      </button>
-    ),
-  },
-  {
-    ...connectionDetailColumns[6],
-    clickable: true,
-    onClick: (_value, row: ServiceConnectionDetail) => {
-      const manufacturer = row["dst_device.manufacturer"];
-      if (manufacturer) onPivot({ manufacturer: String(manufacturer) });
-    },
-    render: (value) => (
-      <button
-        type="button"
-        className="clickable-service-link clickable-cell-text"
-      >
-        {String(value ?? "Unknown")}
-      </button>
-    ),
-  },
-  connectionDetailColumns[7],
-  {
-    ...connectionDetailColumns[8],
-    clickable: true,
-    onClick: (value) => {
-      if (value) onPivot({ service_name: String(value) });
-    },
-    render: (value) => (
-      <button
-        type="button"
-        className="clickable-service-link clickable-cell-text"
-      >
-        {String(value ?? "Unknown")}
-      </button>
-    ),
-  },
-  connectionDetailColumns[9],
-  {
-    ...connectionDetailColumns[10],
-    clickable: true,
-    onClick: (value) => {
-      if (value) onPivot({ direction: String(value) });
-    },
-    render: (value) => (
-      <button
-        type="button"
-        className="clickable-service-link clickable-cell-text"
-      >
-        {String(value ?? "Unknown")}
-      </button>
-    ),
-  },
-  {
-    ...connectionDetailColumns[11],
-    clickable: true,
-    onClick: (value) => {
-      if (value) onPivot({ connection_state: String(value) });
-    },
-    render: (value) => (
-      <button
-        type="button"
-        className="clickable-service-link clickable-cell-text"
-      >
-        {String(value ?? "Unknown")}
-      </button>
-    ),
-  },
-  connectionDetailColumns[12],
-];
+  ];
+};
 
 const DevicesPanel: React.FC<DevicesPanelProps> = ({
   otDevices,
   itDevices,
   edgeDevices,
-  reportId,
+  reportId: _reportId,
+  filters = [],
+  onFilter,
+  onSelect,
 }) => {
-  const deviceDrilldown = usePivotDrilldown(
-    (filters: Record<string, string | number | boolean | null | undefined>) =>
-      fetchFilteredDevices(reportId, filters),
-  );
-  const connectionDrilldown = usePivotDrilldown(
-    (filters: Record<string, string | number | boolean | null | undefined>) =>
-      fetchFilteredConnections(reportId, filters),
-  );
+  const deviceColumns = buildDeviceColumns(filters, onFilter);
 
-  const handleManufacturerClick = async (manufacturer: string) => {
-    await deviceDrilldown.open({ manufacturer });
+  const filterDevices = (items: Device[], className: string) => items.filter((device) => filters.every((filter) => {
+    if (filter.key === "deviceClass") return className === filter.value;
+    if (filter.key === "ip") return [...(device.ip_addresses || []), ...(device.ipv4_ips || []), ...(device.ipv6_ips || [])].includes(filter.value);
+    if (filter.key === "service") return [...(device.incoming_services || []), ...(device.sent_services || [])].includes(filter.value);
+    if (filter.key === "subnet") return [...(device.subnets || []), ...(device.ipv4_subnets || []), ...(device.ipv6_subnets || [])].includes(filter.value);
+    if (filter.key === "manufacturer") return (device.manufacturer || "Unknown") === filter.value;
+    return true;
+  }));
+  const visibleOtDevices = useMemo(() => filterDevices(otDevices, "OT"), [otDevices, filters]);
+  const visibleItDevices = useMemo(() => filterDevices(itDevices, "IT"), [itDevices, filters]);
+  const visibleEdgeDevices = useMemo(() => filterDevices(edgeDevices, "Network"), [edgeDevices, filters]);
+  const primaryDeviceIp = (device: Device) => [...(device.ip_addresses || []), ...(device.ipv4_ips || []), ...(device.ipv6_ips || [])][0];
+
+  const inspectDevice = (device: Device) => {
+    const ip = primaryDeviceIp(device);
+    if (!ip) return;
+    onSelect?.({ type: "device", id: ip });
   };
 
-  const handleSubnetClick = async (subnet: string) => {
-    await connectionDrilldown.open({ subnet, limit: 500 });
-  };
-
-  const handleIncomingServiceClick = async (serviceName: string) => {
-    await connectionDrilldown.open({ service_name: serviceName, limit: 500 });
-  };
-
-  const handleSentServiceClick = async (serviceName: string) => {
-    await connectionDrilldown.open({ service_name: serviceName, limit: 500 });
-  };
-
-  const deviceColumns = buildDeviceColumns(
-    handleManufacturerClick,
-    handleSubnetClick,
-    handleIncomingServiceClick,
-    handleSentServiceClick,
-  );
-
-  const connectionColumns = buildConnectionPivotColumns((filters) => {
-    void connectionDrilldown.pivot(filters);
-  });
 
   const isEmpty =
     otDevices.length === 0 &&
@@ -363,7 +144,7 @@ const DevicesPanel: React.FC<DevicesPanelProps> = ({
       title={
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span>Devices</span>
-          <InfoTooltip text="A comprehensive list of all identified devices, categorized by type (OT, IT, Edge). Click manufacturers, subnets, or services to inspect related records and continue pivoting from the results." />
+          <InfoTooltip text="A comprehensive list of all identified devices, categorized by type (OT, IT, Network). Click a device row to open full device details. Filterable values show a small funnel on hover; click the funnel to filter without opening the details drawer." />
         </div>
       }
       isEmpty={isEmpty}
@@ -373,16 +154,19 @@ const DevicesPanel: React.FC<DevicesPanelProps> = ({
           id="ot-devices-panel"
           style={{ display: "flex", flexDirection: "column", gap: "8px" }}
         >
-          <h3 className="section-subtitle">
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span>OT Devices</span>
-              <InfoTooltip text="Operational Technology (OT) devices detected on the network." />
-            </div>
-          </h3>
           <SortableTable
             columns={deviceColumns}
-            data={otDevices}
+            data={visibleOtDevices}
+            onRowClick={inspectDevice}
             filterable={true}
+            filterHeader={
+              <h3 className="section-subtitle">
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>OT Devices</span>
+                  <InfoTooltip text="Operational Technology (OT) devices detected on the network." />
+                </div>
+              </h3>
+            }
             filterPlaceholder="Search OT devices..."
             emptyMessage="No Results"
           />
@@ -392,16 +176,19 @@ const DevicesPanel: React.FC<DevicesPanelProps> = ({
           id="it-devices-panel"
           style={{ display: "flex", flexDirection: "column", gap: "8px" }}
         >
-          <h3 className="section-subtitle">
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span>IT Devices</span>
-              <InfoTooltip text="Information Technology (IT) devices detected on the network." />
-            </div>
-          </h3>
           <SortableTable
             columns={deviceColumns}
-            data={itDevices}
+            data={visibleItDevices}
+            onRowClick={inspectDevice}
             filterable={true}
+            filterHeader={
+              <h3 className="section-subtitle">
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>IT Devices</span>
+                  <InfoTooltip text="Information Technology (IT) devices detected on the network." />
+                </div>
+              </h3>
+            }
             filterPlaceholder="Search IT devices..."
             emptyMessage="No Results"
           />
@@ -411,87 +198,28 @@ const DevicesPanel: React.FC<DevicesPanelProps> = ({
           id="edge-devices-panel"
           style={{ display: "flex", flexDirection: "column", gap: "8px" }}
         >
-          <h3 className="section-subtitle">
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span>Edge Devices</span>
-              <InfoTooltip text="Edge devices detected on the network, typically those communicating with external networks." />
-            </div>
-          </h3>
           <SortableTable
             columns={deviceColumns}
-            data={edgeDevices}
+            data={visibleEdgeDevices}
+            onRowClick={inspectDevice}
             filterable={true}
-            filterPlaceholder="Search Edge devices..."
+            filterHeader={
+              <h3 className="section-subtitle">
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>Network Devices</span>
+                  <InfoTooltip text="Network devices detected on the network, typically those communicating with external networks." />
+                </div>
+              </h3>
+            }
+            filterPlaceholder="Search Network devices..."
             emptyMessage="No Results"
           />
         </section>
       </div>
 
-      <DetailModal
-        isOpen={Boolean(deviceDrilldown.selectedFilters)}
-        title="Filtered Devices"
-        onClose={deviceDrilldown.close}
-      >
-        {deviceDrilldown.isLoading && <p>Loading matching devices...</p>}
-        {deviceDrilldown.error && <p>{deviceDrilldown.error}</p>}
-        {!deviceDrilldown.isLoading && !deviceDrilldown.error && (
-          <>
-            <PivotFilterBar
-              filters={deviceDrilldown.selectedFilters}
-              onRemoveFilter={(key) => {
-                void deviceDrilldown.removeFilter(key);
-              }}
-            />
-            <DrilldownTable
-              columns={buildDeviceColumns(
-                (manufacturer) => void deviceDrilldown.pivot({ manufacturer }),
-                (subnet) =>
-                  void connectionDrilldown.open({ subnet, limit: 500 }),
-                (service) =>
-                  void connectionDrilldown.open({
-                    service_name: service,
-                    limit: 500,
-                  }),
-                (service) =>
-                  void connectionDrilldown.open({
-                    service_name: service,
-                    limit: 500,
-                  }),
-              )}
-              data={deviceDrilldown.data?.devices || []}
-              filterPlaceholder="Search matching devices..."
-              emptyMessage="No matching devices found"
-            />
-          </>
-        )}
-      </DetailModal>
 
-      <DetailModal
-        isOpen={Boolean(connectionDrilldown.selectedFilters)}
-        title="Filtered Connections"
-        onClose={connectionDrilldown.close}
-      >
-        {connectionDrilldown.isLoading && (
-          <p>Loading matching connections...</p>
-        )}
-        {connectionDrilldown.error && <p>{connectionDrilldown.error}</p>}
-        {!connectionDrilldown.isLoading && !connectionDrilldown.error && (
-          <>
-            <PivotFilterBar
-              filters={connectionDrilldown.selectedFilters}
-              onRemoveFilter={(key) => {
-                void connectionDrilldown.removeFilter(key);
-              }}
-            />
-            <DrilldownTable
-              columns={connectionColumns}
-              data={connectionDrilldown.data?.connections || []}
-              filterPlaceholder="Search matching connections..."
-              emptyMessage="No matching connections found"
-            />
-          </>
-        )}
-      </DetailModal>
+
+
     </Panel>
   );
 };

@@ -1,0 +1,83 @@
+{
+  "contractVersion": "elevadr.detection-context.analysis-response.v1",
+  "errors": [],
+  "moduleResults": [
+    {
+      "evidence": {
+        "inspected_logs": [
+          "conn"
+        ],
+        "notes": [
+          "Both endpoints must be globally routable according to Python IP address classification; RFC1918/private, loopback, link-local, multicast, documentation, and other special-use addresses are excluded.",
+          "A finding indicates capture-scope or routing-policy drift. It does not by itself prove malicious activity, compromise, or that either public endpoint is an ICS device.",
+          "Possible causes include sensor placement changes, SPAN/TAP misconfiguration, NAT visibility, transit traffic, VPN termination, or unexpected Internet-facing communications."
+        ],
+        "policy": {
+          "internal_ics_only_expected": true,
+          "min_flows": 3
+        }
+      },
+      "findings": [],
+      "metrics": {
+        "distinct_public_pairs": 0,
+        "public_to_public_connections_observed": 0,
+        "public_to_public_findings": 0,
+        "public_to_public_policy_violations": 0,
+        "skipped_allowlisted": 0,
+        "skipped_no_internal_only_policy": 0
+      },
+      "module_id": "public_to_public_traffic",
+      "warnings": []
+    },
+    {
+      "evidence": {
+        "asset_inventory_format": {
+          "assets": [
+            {
+              "ips": [
+                "10.10.1.20"
+              ],
+              "macs": [
+                "00:11:22:33:44:55"
+              ],
+              "name": "PLC-01"
+            }
+          ]
+        },
+        "asset_inventory_loaded": true,
+        "asset_inventory_source": "detection_context_profile",
+        "comparison": {
+          "ip_comparison_enabled": true,
+          "mac_comparison_enabled": true
+        },
+        "inspected_logs": [],
+        "inventory_records": 1,
+        "notes": [
+          "Only local/private connection endpoints are compared for IP-based rogue-device detection unless Zeek explicitly marks an endpoint as local.",
+          "MAC-based mismatches are higher confidence than IP-only mismatches.",
+          "If the inventory contains no MAC addresses, MAC comparison is skipped; if it contains no IP addresses, IP comparison is skipped.",
+          "Dynamic addressing, NAT, stale inventories, virtualization, and temporary maintenance devices can produce legitimate mismatches."
+        ]
+      },
+      "findings": [],
+      "metrics": {
+        "inventory_ip_addresses": 1,
+        "inventory_mac_addresses": 1,
+        "observed_local_ip_addresses": 0,
+        "observed_mac_addresses": 0,
+        "unknown_ip_addresses": 0,
+        "unknown_mac_addresses": 0,
+        "unknown_or_rogue_devices": 0
+      },
+      "module_id": "unknown_rogue_devices",
+      "warnings": []
+    }
+  ],
+  "status": "completed",
+  "summary": {
+    "completedModules": 2,
+    "failedModules": 0,
+    "findingCount": 0,
+    "requestedModules": 2
+  }
+}

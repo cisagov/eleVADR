@@ -54,8 +54,8 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Run Analysis" }));
 
     // ---- UI that appears after a successful analysis -------------
-    expect(await screen.findByText("Executive Summary")).toBeInTheDocument();
-    expect(screen.getByText("Service Panel")).toBeInTheDocument();
+    expect(await screen.findByText("Executive summary")).toBeInTheDocument();
+    expect(screen.getByText("Environment Overview")).toBeInTheDocument();
     expect(screen.getByText("Service Count")).toBeInTheDocument();
 
     const alertElement = screen.getByText(/Detected/i);
@@ -91,7 +91,7 @@ describe("App", () => {
       await screen.findByText("Unsupported report version"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/this report uses schema version "1.9.0"/i),
+      screen.getByText(/this report is version "1.9.0"/i),
     ).toBeInTheDocument();
   });
 
