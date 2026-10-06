@@ -338,7 +338,24 @@ class Analyzer:
         ip_map = ip_map[~ip_map["ip"].isin(["0.0.0.0", "::"])]
 
         if ip_map.empty:
-            self.endpoints_df = pd.DataFrame().set_index(pd.Index([], name="device.mac"))
+            # Report consumers still need the endpoint schema when no eligible
+            # IP/MAC pairs were observed (for example, broadcast-only captures).
+            self.endpoints_df = pd.DataFrame(
+                columns=[
+                    "device.ipv4_ips",
+                    "device.ipv6_ips",
+                    "device.ipv4_subnets",
+                    "device.ipv6_subnets",
+                    "device.incoming_services",
+                    "device.sent_services",
+                    "device.incoming_ports",
+                    "device.sent_ports",
+                    "device.manufacturer",
+                    "device.is_ot",
+                    "device.is_edge",
+                ],
+                index=pd.Index([], name="device.mac"),
+            ).astype({"device.is_ot": bool, "device.is_edge": bool})
             return
 
         # Filter traffic to exclude unspecified IPs
@@ -526,6 +543,8 @@ class Analyzer:
     def ot_cross_segment_communication_count(self) -> int:
         """Count OT devices communicating across network segments."""
         ot_macs = set(self.endpoints_df[self.endpoints_df["device.is_ot"]].index)
+        if not ot_macs:
+            return 0
         cross_segment_traffic = self._cross_segment_traffic_df()
         cross_segment_macs = set(
             pd.concat(
