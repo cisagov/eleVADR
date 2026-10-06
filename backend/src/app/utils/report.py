@@ -140,7 +140,7 @@ class DevicePanelModule(ReportModule):
             {
                 "hosts": total endpoint count,
                 "ot_hosts": OT\u2011marked endpoint count,
-                "it_hosts": IT\u2011only endpoint count,
+                "it_hosts": endpoint count excluding OT and edge devices,
                 "edge_hosts": edge\u2011marked endpoint count,
                 "ot_cross_segment": count of OT cross\u2011segment communications
             }
@@ -153,7 +153,7 @@ class DevicePanelModule(ReportModule):
         return {
             "hosts": len(self.endpoints_df),
             "ot_hosts": len(ot_hosts),
-            "it_hosts": max(len(it_hosts) - len(edge_hosts), 0),
+            "it_hosts": len(it_hosts),
             "edge_hosts": len(edge_hosts),
             "ot_cross_segment": self.analyzer.ot_cross_segment_communication_count(),
         }
