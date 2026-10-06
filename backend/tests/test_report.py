@@ -312,7 +312,7 @@ class TestDevicePanelModule:
 
         assert data["hosts"] == 5
         assert data["ot_hosts"] == 2
-        assert data["it_hosts"] == 1  # One non-OT, non-Edge
+        assert data["it_hosts"] == 2  # Two non-OT, non-edge devices
         assert data["edge_hosts"] == 1
         assert data["ot_cross_segment"] == 5
         mock_analyzer.ot_cross_segment_communication_count.assert_called_once()
