@@ -66,8 +66,14 @@ html {
 body {
   background: var(--theme-canvas);
   color: var(--theme-text);
-  font-family: "Source Sans Pro", "Public Sans", system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    "Source Sans Pro",
+    "Public Sans",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
 /* Bypass block for keyboard users. */
@@ -95,7 +101,16 @@ body {
 }
 
 /* Consistent high-visibility CISA-blue focus ring. */
-:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]):focus-visible {
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [role="button"],
+  [tabindex]
+):focus-visible {
   outline: 0.25rem solid var(--usa-focus) !important;
   outline-offset: 0.125rem !important;
   box-shadow: 0 0 0 0.125rem var(--usa-ink) !important;
@@ -326,13 +341,14 @@ body {
 
 /* Controls follow USWDS geometry while retaining existing component behavior. */
 :where(
-  .app-shell,
-  .help-drawer,
-  .entity-drawer,
-  .json-drawer,
-  .detail-modal,
-  .tour-card
-) button {
+    .app-shell,
+    .help-drawer,
+    .entity-drawer,
+    .json-drawer,
+    .detail-modal,
+    .tour-card
+  )
+  button {
   border-radius: var(--theme-radius) !important;
 }
 
@@ -395,7 +411,11 @@ button[aria-disabled="true"] {
 
 /* Form controls: square corners, explicit borders, visible states. */
 :where(.app-shell, .help-drawer, .entity-drawer, .json-drawer)
-  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+  :where(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    select,
+    textarea
+  ) {
   min-height: 2.5rem !important;
   padding: 0.5rem 0.625rem !important;
   border: 1px solid var(--theme-input-border) !important;
@@ -465,7 +485,9 @@ button[aria-disabled="true"] {
 }
 
 :root[data-theme="dark"] .info-tooltip-button:hover .info-tooltip-glyph,
-:root[data-theme="dark"] .info-tooltip-button:focus-visible .info-tooltip-glyph {
+:root[data-theme="dark"]
+  .info-tooltip-button:focus-visible
+  .info-tooltip-glyph {
   color: #ffffff !important;
 }
 
@@ -539,7 +561,13 @@ button[aria-disabled="true"] {
   box-shadow: 0 1rem 2rem rgb(0 0 0 / 30%) !important;
 }
 
-:where(.detail-modal-overlay, .help-backdrop, .entity-drawer-backdrop, .json-drawer-backdrop, .tour-backdrop) {
+:where(
+  .detail-modal-overlay,
+  .help-backdrop,
+  .entity-drawer-backdrop,
+  .json-drawer-backdrop,
+  .tour-backdrop
+) {
   background: rgb(0 0 0 / 55%) !important;
 }
 

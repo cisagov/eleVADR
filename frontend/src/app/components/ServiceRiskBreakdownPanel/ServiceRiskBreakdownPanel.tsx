@@ -69,13 +69,19 @@ const CustomTooltip = ({
               <li key={idx}>
                 {onFilter ? (
                   <PivotValue
-                    filter={{ key: "service", value: service, label: "Service" }}
+                    filter={{
+                      key: "service",
+                      value: service,
+                      label: "Service",
+                    }}
                     filters={filters}
                     onFilter={onFilter}
                   >
                     {service}
                   </PivotValue>
-                ) : service}
+                ) : (
+                  service
+                )}
               </li>
             ))}
           </ul>
@@ -125,7 +131,18 @@ const ServiceRiskBreakdownPanel: React.FC<ServiceRiskBreakdownPanelProps> = ({
       key: "service",
       label: "Service",
       sortable: true,
-      render: (value) => value && onFilter ? <PivotValue filter={{ key: "service", value: String(value), label: "Service" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? ""),
+      render: (value) =>
+        value && onFilter ? (
+          <PivotValue
+            filter={{ key: "service", value: String(value), label: "Service" }}
+            filters={filters}
+            onFilter={onFilter}
+          >
+            {String(value)}
+          </PivotValue>
+        ) : (
+          String(value ?? "")
+        ),
     },
   ];
 
@@ -133,17 +150,103 @@ const ServiceRiskBreakdownPanel: React.FC<ServiceRiskBreakdownPanelProps> = ({
     string | number | boolean | string[] | null,
     ServiceConnectionDetail
   >[] = [
-    { key: "src_endpoint.ip", label: "Source IP", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "ip", value: String(value), label: "Device" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
-    { key: "src_endpoint.port", label: "Src Port", sortable: true, align: "right", render: (value) => value != null && onFilter ? <PivotValue filter={{ key: "port", value: String(value), label: "Port" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
-    { key: "dst_endpoint.ip", label: "Destination IP", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "ip", value: String(value), label: "Device" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
-    { key: "dst_endpoint.port", label: "Dst Port", sortable: true, align: "right", render: (value) => value != null && onFilter ? <PivotValue filter={{ key: "port", value: String(value), label: "Port" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
+    {
+      key: "src_endpoint.ip",
+      label: "Source IP",
+      sortable: true,
+      render: (value) =>
+        value && onFilter ? (
+          <PivotValue
+            filter={{ key: "ip", value: String(value), label: "Device" }}
+            filters={filters}
+            onFilter={onFilter}
+          >
+            {String(value)}
+          </PivotValue>
+        ) : (
+          String(value ?? "—")
+        ),
+    },
+    {
+      key: "src_endpoint.port",
+      label: "Src Port",
+      sortable: true,
+      align: "right",
+      render: (value) =>
+        value != null && onFilter ? (
+          <PivotValue
+            filter={{ key: "port", value: String(value), label: "Port" }}
+            filters={filters}
+            onFilter={onFilter}
+          >
+            {String(value)}
+          </PivotValue>
+        ) : (
+          String(value ?? "—")
+        ),
+    },
+    {
+      key: "dst_endpoint.ip",
+      label: "Destination IP",
+      sortable: true,
+      render: (value) =>
+        value && onFilter ? (
+          <PivotValue
+            filter={{ key: "ip", value: String(value), label: "Device" }}
+            filters={filters}
+            onFilter={onFilter}
+          >
+            {String(value)}
+          </PivotValue>
+        ) : (
+          String(value ?? "—")
+        ),
+    },
+    {
+      key: "dst_endpoint.port",
+      label: "Dst Port",
+      sortable: true,
+      align: "right",
+      render: (value) =>
+        value != null && onFilter ? (
+          <PivotValue
+            filter={{ key: "port", value: String(value), label: "Port" }}
+            filters={filters}
+            onFilter={onFilter}
+          >
+            {String(value)}
+          </PivotValue>
+        ) : (
+          String(value ?? "—")
+        ),
+    },
     { key: "connection_info.protocol_name", label: "Protocol", sortable: true },
     {
       key: "connection_info.direction_name",
       label: "Direction",
       sortable: true,
     },
-    { key: "state", label: "State", sortable: true, render: (value) => value && onFilter ? <PivotValue filter={{ key: "zeekState", value: String(value), label: "Zeek State" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
+    {
+      key: "state",
+      label: "State",
+      sortable: true,
+      render: (value) =>
+        value && onFilter ? (
+          <PivotValue
+            filter={{
+              key: "zeekState",
+              value: String(value),
+              label: "Zeek State",
+            }}
+            filters={filters}
+            onFilter={onFilter}
+          >
+            {String(value)}
+          </PivotValue>
+        ) : (
+          String(value ?? "—")
+        ),
+    },
     { key: "history", label: "History", sortable: true },
     {
       key: "success",
@@ -192,7 +295,15 @@ const ServiceRiskBreakdownPanel: React.FC<ServiceRiskBreakdownPanelProps> = ({
                 tick={{ fontSize: 12 }}
               />
               {/* FIX: Pass the data prop to the external CustomTooltip component */}
-              <Tooltip content={<CustomTooltip data={data} filters={filters} onFilter={onFilter} />} />
+              <Tooltip
+                content={
+                  <CustomTooltip
+                    data={data}
+                    filters={filters}
+                    onFilter={onFilter}
+                  />
+                }
+              />
               <Bar dataKey="count">
                 {chartData.map((_, index) => (
                   <Cell
@@ -216,7 +327,9 @@ const ServiceRiskBreakdownPanel: React.FC<ServiceRiskBreakdownPanelProps> = ({
             filterable={true}
             filterHeader={
               <h3 className="section-subtitle">
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
                   <span>Risk Category Services</span>
                   <InfoTooltip text="A detailed list of services grouped by their assigned risk category." />
                 </div>

@@ -1,52 +1,397 @@
 export type AdvancedFieldType = "boolean" | "number" | "string" | "json";
-export interface AdvancedPolicyField { key:string; type:AdvancedFieldType; }
-export interface AdvancedPolicySchema { moduleId:string; fields:AdvancedPolicyField[]; }
+export interface AdvancedPolicyField {
+  key: string;
+  type: AdvancedFieldType;
+}
+export interface AdvancedPolicySchema {
+  moduleId: string;
+  fields: AdvancedPolicyField[];
+}
 
 export const ADVANCED_POLICY_SCHEMAS: AdvancedPolicySchema[] = [
-  {"moduleId":"arp_l2_reconnaissance","fields":[{"key":"window_seconds","type":"number"},{"key":"minimum_targets","type":"number"},{"key":"ignored_sources","type":"json"}]},
-  {"moduleId":"dns_source_drift","fields":[{"key":"baseline_seconds","type":"number"},{"key":"trusted_resolvers","type":"json"}]},
-  {"moduleId":"ntp_source_drift","fields":[{"key":"baseline_seconds","type":"number"},{"key":"trusted_servers","type":"json"}]},
-  {"moduleId":"tcp_reset_abort_surge","fields":[{"key":"window_seconds","type":"number"},{"key":"minimum_events","type":"number"},{"key":"minimum_failure_ratio","type":"number"}]},
-  {"moduleId":"unexpected_multicast_behavior","fields":[{"key":"allowed_groups","type":"json"},{"key":"minimum_flows","type":"number"}]},
-  {"moduleId":"arp_ip_mac_identity_change","fields":[{"key":"change_window_seconds","type":"number"},{"key":"ignored_ips","type":"json"}]},
-  {"moduleId":"engineering_workstation_control_burst","fields":[{"key":"window_seconds","type":"number"},{"key":"minimum_operations","type":"number"},{"key":"engineering_hosts","type":"json"},{"key":"authorized_paths","type":"json"}]},
-  {"moduleId":"ot_protocol_role_reversal","fields":[{"key":"baseline_seconds","type":"number"},{"key":"minimum_baseline_responder_events","type":"number"},{"key":"protocols","type":"json"}]},
-  {"moduleId":"plc_rtu_peer_change","fields":[{"key":"baseline_seconds","type":"number"},{"key":"controller_hosts","type":"json"},{"key":"ignored_hosts","type":"json"},{"key":"allowed_pairs","type":"json"}]},
-  {"moduleId":"unexpected_dhcp_server","fields":[{"key":"expected_servers","type":"json"}]},
-  {"moduleId":"bacnet_discovery_anomalies","fields":[{"key":"allowed_discovery_sources","type":"json"}]},
-  {"moduleId":"codesys_runtime_exposure","fields":[{"key":"additional_runtime_tcp_ports","type":"json"},{"key":"additional_runtime_udp_ports","type":"json"},{"key":"gateway_tcp_ports","type":"json"},{"key":"report_gateway","type":"boolean"},{"key":"allowed_hosts","type":"json"},{"key":"allowed_pairs","type":"json"},{"key":"expected_engineering_hosts","type":"json"},{"key":"expected_runtime_hosts","type":"json"}]},
-  {"moduleId":"control_system_enterprise_non_dmz","fields":[{"key":"ot_hosts","type":"json"},{"key":"enterprise_hosts","type":"json"},{"key":"non_ot_hosts","type":"json"},{"key":"dmz_hosts","type":"json"},{"key":"allowed_pairs","type":"json"},{"key":"allowed_segment_pairs","type":"json"},{"key":"require_observed_communication","type":"boolean"}]},
-  {"moduleId":"cross_purdue_level_traffic","fields":[{"key":"allowed_direct_pairs","type":"json"}]},
-  {"moduleId":"database_service_exposed","fields":[{"key":"database_ports","type":"json"},{"key":"allowed_hosts","type":"json"},{"key":"allowed_pairs","type":"json"},{"key":"allowed_segment_pairs","type":"json"},{"key":"allowed_public_sources","type":"json"},{"key":"ignored_databases","type":"json"},{"key":"require_established_external","type":"boolean"},{"key":"report_cross_segment","type":"boolean"},{"key":"report_external","type":"boolean"}]},
-  {"moduleId":"deprecated_vpn_protocol","fields":[{"key":"correlation_window_seconds","type":"number"},{"key":"allowed_hosts","type":"json"},{"key":"allowed_pairs","type":"json"},{"key":"report_pptp_control_only","type":"boolean"},{"key":"report_l2tp_without_ipsec","type":"boolean"}]},
-  {"moduleId":"enip_cip_write_session_abuses","fields":[{"key":"allowed_write_paths","type":"json"}]},
-  {"moduleId":"excessive_broadcast_multicast_ot","fields":[{"key":"ignored_services","type":"json"},{"key":"ignored_destinations","type":"json"}]},
-  {"moduleId":"iccp_tase2_detected","fields":[{"key":"allowed_hosts","type":"json"},{"key":"allowed_pairs","type":"json"},{"key":"expected_control_center_pairs","type":"json"}]},
-  {"moduleId":"ics_protocol_error_spike","fields":[{"key":"baseline_seconds","type":"number"},{"key":"window_seconds","type":"number"},{"key":"min_events_per_window","type":"number"},{"key":"min_errors_per_window","type":"number"},{"key":"min_error_ratio","type":"number"},{"key":"baseline_multiplier","type":"number"},{"key":"min_baseline_events","type":"number"},{"key":"group_by_peer_pair","type":"boolean"},{"key":"allowed_hosts","type":"json"},{"key":"allowed_pairs","type":"json"}]},
-  {"moduleId":"ics_write_operations","fields":[{"key":"allowed_function_codes","type":"json"},{"key":"allowed_paths","type":"json"}]},
-  {"moduleId":"internet_exposed_ics","fields":[{"key":"ics_hosts","type":"json"},{"key":"dmz_hosts","type":"json"},{"key":"allowed_external_destinations","type":"json"},{"key":"allowed_pairs","type":"json"},{"key":"admin_ports","type":"json"},{"key":"admin_services","type":"json"},{"key":"require_established_admin","type":"boolean"}]},
-  {"moduleId":"ipv6_traffic_ot","fields":[{"key":"ipv4_only_expected","type":"boolean"},{"key":"scope_all_connections","type":"boolean"},{"key":"allowed_ipv6","type":"json"},{"key":"ot_ipv6_prefixes","type":"json"},{"key":"ot_ipv6_hosts","type":"json"}]},
-  {"moduleId":"irc_traffic_detected","fields":[{"key":"standard_ports","type":"json"},{"key":"allowed_hosts","type":"json"},{"key":"allowed_pairs","type":"json"}]},
-  {"moduleId":"netbios_smbv1_exposure","fields":[{"key":"allowed_hosts","type":"json"},{"key":"allowed_pairs","type":"json"},{"key":"allowed_segment_pairs","type":"json"},{"key":"require_established_external","type":"boolean"},{"key":"report_cross_segment","type":"boolean"},{"key":"report_external","type":"boolean"}]},
-  {"moduleId":"new_ot_conversation_pair","fields":[{"key":"ot_hosts","type":"json"},{"key":"ignored_hosts","type":"json"},{"key":"allowed_pairs","type":"json"}]},
-  {"moduleId":"niagara_fox_detected","fields":[{"key":"allowed_hosts","type":"json"},{"key":"allowed_pairs","type":"json"}]},
-  {"moduleId":"ntp_internet_multi_dest_ot","fields":[{"key":"min_external_servers","type":"number"}]},
-  {"moduleId":"ot_asset_gone_silent","fields":[{"key":"ot_hosts","type":"json"},{"key":"ignored_hosts","type":"json"},{"key":"allowed_pairs","type":"json"},{"key":"ignored_services","type":"json"}]},
-  {"moduleId":"ot_external_dns_resolver","fields":[{"key":"ot_hosts","type":"json"},{"key":"control_system_hosts","type":"json"},{"key":"treat_unclassified_private_as_external","type":"boolean"},{"key":"enforce_trusted_resolvers_only","type":"boolean"},{"key":"min_queries","type":"number"}]},
-  {"moduleId":"ot_outbound_internet_any_protocol","fields":[{"key":"ot_hosts","type":"json"},{"key":"control_system_hosts","type":"json"},{"key":"allowed_external_destinations","type":"json"},{"key":"allowed_pairs","type":"json"},{"key":"ignored_services","type":"json"},{"key":"ignored_ports","type":"json"},{"key":"require_observed_communication","type":"boolean"},{"key":"min_flows","type":"number"}]},
-  {"moduleId":"plc_program_logic_firmware_update","fields":[{"key":"additional_modbus_function_codes","type":"json"},{"key":"cip_firmware_service_codes","type":"json"},{"key":"allowed_hosts","type":"json"},{"key":"allowed_pairs","type":"json"}]},
-  {"moduleId":"public_to_public_traffic","fields":[{"key":"internal_ics_only_expected","type":"boolean"},{"key":"allowed_public_networks","type":"json"},{"key":"allowed_public_hosts","type":"json"},{"key":"allowed_pairs","type":"json"},{"key":"min_flows","type":"number"}]},
-  {"moduleId":"quic_ot_segments","fields":[{"key":"allowed_ips","type":"json"},{"key":"allowed_segments","type":"json"},{"key":"enable_udp443_heuristic","type":"boolean"}]},
-  {"moduleId":"remote_access_tool_exposure","fields":[{"key":"tool_ports","type":"json"},{"key":"allowed_hosts","type":"json"},{"key":"allowed_pairs","type":"json"},{"key":"ignored_tools","type":"json"},{"key":"require_established_external","type":"boolean"}]},
-  {"moduleId":"rogue_dhcp_static_ot","fields":[{"key":"expected_servers","type":"json"},{"key":"offer_window_seconds","type":"number"},{"key":"static_segments","type":"json"}]},
-  {"moduleId":"s7comm_unauthorized_write_stop","fields":[{"key":"allowed_paths","type":"json"}]},
-  {"moduleId":"snmp_write_ot_devices","fields":[{"key":"target_hosts","type":"json"},{"key":"managed_hosts","type":"json"},{"key":"writable_communities","type":"json"},{"key":"allowed_managers","type":"json"},{"key":"allowed_pairs","type":"json"},{"key":"report_writable_community_access","type":"boolean"},{"key":"min_set_operations","type":"number"}]},
-  {"moduleId":"vlan_tag_mismatch_double_tag","fields":[{"key":"allowed_vlan_ids","type":"json"},{"key":"allowed_double_tag_pairs","type":"json"}]},
-  {"moduleId":"weird_protocol_violations","fields":[{"key":"reason","type":"json"},{"key":"noise_reason","type":"json"}]},
-  {"moduleId":"encrypted_session_fingerprint_change","fields":[{"key":"baseline_seconds","type":"number"},{"key":"minimum_baseline_observations","type":"number"},{"key":"ignored_hosts","type":"json"}]},
-  {"moduleId":"remote_access_session_anomaly","fields":[{"key":"baseline_seconds","type":"number"},{"key":"minimum_new_targets","type":"number"},{"key":"remote_access_ports","type":"json"},{"key":"authorized_sources","type":"json"}]},
-  {"moduleId":"service_disappearance_replacement","fields":[{"key":"baseline_seconds","type":"number"},{"key":"minimum_baseline_observations","type":"number"},{"key":"ot_hosts","type":"json"}]},
-  {"moduleId":"polling_cadence_disruption","fields":[{"key":"baseline_seconds","type":"number"},{"key":"minimum_baseline_observations","type":"number"},{"key":"interval_change_ratio","type":"number"}]},
-  {"moduleId":"controller_communication_jitter","fields":[{"key":"baseline_seconds","type":"number"},{"key":"minimum_baseline_observations","type":"number"},{"key":"jitter_multiplier","type":"number"},{"key":"minimum_post_jitter_ratio","type":"number"},{"key":"controller_hosts","type":"json"}]},
+  {
+    moduleId: "arp_l2_reconnaissance",
+    fields: [
+      { key: "window_seconds", type: "number" },
+      { key: "minimum_targets", type: "number" },
+      { key: "ignored_sources", type: "json" },
+    ],
+  },
+  {
+    moduleId: "dns_source_drift",
+    fields: [
+      { key: "baseline_seconds", type: "number" },
+      { key: "trusted_resolvers", type: "json" },
+    ],
+  },
+  {
+    moduleId: "ntp_source_drift",
+    fields: [
+      { key: "baseline_seconds", type: "number" },
+      { key: "trusted_servers", type: "json" },
+    ],
+  },
+  {
+    moduleId: "tcp_reset_abort_surge",
+    fields: [
+      { key: "window_seconds", type: "number" },
+      { key: "minimum_events", type: "number" },
+      { key: "minimum_failure_ratio", type: "number" },
+    ],
+  },
+  {
+    moduleId: "unexpected_multicast_behavior",
+    fields: [
+      { key: "allowed_groups", type: "json" },
+      { key: "minimum_flows", type: "number" },
+    ],
+  },
+  {
+    moduleId: "arp_ip_mac_identity_change",
+    fields: [
+      { key: "change_window_seconds", type: "number" },
+      { key: "ignored_ips", type: "json" },
+    ],
+  },
+  {
+    moduleId: "engineering_workstation_control_burst",
+    fields: [
+      { key: "window_seconds", type: "number" },
+      { key: "minimum_operations", type: "number" },
+      { key: "engineering_hosts", type: "json" },
+      { key: "authorized_paths", type: "json" },
+    ],
+  },
+  {
+    moduleId: "ot_protocol_role_reversal",
+    fields: [
+      { key: "baseline_seconds", type: "number" },
+      { key: "minimum_baseline_responder_events", type: "number" },
+      { key: "protocols", type: "json" },
+    ],
+  },
+  {
+    moduleId: "plc_rtu_peer_change",
+    fields: [
+      { key: "baseline_seconds", type: "number" },
+      { key: "controller_hosts", type: "json" },
+      { key: "ignored_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+    ],
+  },
+  {
+    moduleId: "unexpected_dhcp_server",
+    fields: [{ key: "expected_servers", type: "json" }],
+  },
+  {
+    moduleId: "bacnet_discovery_anomalies",
+    fields: [{ key: "allowed_discovery_sources", type: "json" }],
+  },
+  {
+    moduleId: "codesys_runtime_exposure",
+    fields: [
+      { key: "additional_runtime_tcp_ports", type: "json" },
+      { key: "additional_runtime_udp_ports", type: "json" },
+      { key: "gateway_tcp_ports", type: "json" },
+      { key: "report_gateway", type: "boolean" },
+      { key: "allowed_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+      { key: "expected_engineering_hosts", type: "json" },
+      { key: "expected_runtime_hosts", type: "json" },
+    ],
+  },
+  {
+    moduleId: "control_system_enterprise_non_dmz",
+    fields: [
+      { key: "ot_hosts", type: "json" },
+      { key: "enterprise_hosts", type: "json" },
+      { key: "non_ot_hosts", type: "json" },
+      { key: "dmz_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+      { key: "allowed_segment_pairs", type: "json" },
+      { key: "require_observed_communication", type: "boolean" },
+    ],
+  },
+  {
+    moduleId: "cross_purdue_level_traffic",
+    fields: [{ key: "allowed_direct_pairs", type: "json" }],
+  },
+  {
+    moduleId: "database_service_exposed",
+    fields: [
+      { key: "database_ports", type: "json" },
+      { key: "allowed_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+      { key: "allowed_segment_pairs", type: "json" },
+      { key: "allowed_public_sources", type: "json" },
+      { key: "ignored_databases", type: "json" },
+      { key: "require_established_external", type: "boolean" },
+      { key: "report_cross_segment", type: "boolean" },
+      { key: "report_external", type: "boolean" },
+    ],
+  },
+  {
+    moduleId: "deprecated_vpn_protocol",
+    fields: [
+      { key: "correlation_window_seconds", type: "number" },
+      { key: "allowed_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+      { key: "report_pptp_control_only", type: "boolean" },
+      { key: "report_l2tp_without_ipsec", type: "boolean" },
+    ],
+  },
+  {
+    moduleId: "enip_cip_write_session_abuses",
+    fields: [{ key: "allowed_write_paths", type: "json" }],
+  },
+  {
+    moduleId: "excessive_broadcast_multicast_ot",
+    fields: [
+      { key: "ignored_services", type: "json" },
+      { key: "ignored_destinations", type: "json" },
+    ],
+  },
+  {
+    moduleId: "iccp_tase2_detected",
+    fields: [
+      { key: "allowed_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+      { key: "expected_control_center_pairs", type: "json" },
+    ],
+  },
+  {
+    moduleId: "ics_protocol_error_spike",
+    fields: [
+      { key: "baseline_seconds", type: "number" },
+      { key: "window_seconds", type: "number" },
+      { key: "min_events_per_window", type: "number" },
+      { key: "min_errors_per_window", type: "number" },
+      { key: "min_error_ratio", type: "number" },
+      { key: "baseline_multiplier", type: "number" },
+      { key: "min_baseline_events", type: "number" },
+      { key: "group_by_peer_pair", type: "boolean" },
+      { key: "allowed_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+    ],
+  },
+  {
+    moduleId: "ics_write_operations",
+    fields: [
+      { key: "allowed_function_codes", type: "json" },
+      { key: "allowed_paths", type: "json" },
+    ],
+  },
+  {
+    moduleId: "internet_exposed_ics",
+    fields: [
+      { key: "ics_hosts", type: "json" },
+      { key: "dmz_hosts", type: "json" },
+      { key: "allowed_external_destinations", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+      { key: "admin_ports", type: "json" },
+      { key: "admin_services", type: "json" },
+      { key: "require_established_admin", type: "boolean" },
+    ],
+  },
+  {
+    moduleId: "ipv6_traffic_ot",
+    fields: [
+      { key: "ipv4_only_expected", type: "boolean" },
+      { key: "scope_all_connections", type: "boolean" },
+      { key: "allowed_ipv6", type: "json" },
+      { key: "ot_ipv6_prefixes", type: "json" },
+      { key: "ot_ipv6_hosts", type: "json" },
+    ],
+  },
+  {
+    moduleId: "irc_traffic_detected",
+    fields: [
+      { key: "standard_ports", type: "json" },
+      { key: "allowed_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+    ],
+  },
+  {
+    moduleId: "netbios_smbv1_exposure",
+    fields: [
+      { key: "allowed_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+      { key: "allowed_segment_pairs", type: "json" },
+      { key: "require_established_external", type: "boolean" },
+      { key: "report_cross_segment", type: "boolean" },
+      { key: "report_external", type: "boolean" },
+    ],
+  },
+  {
+    moduleId: "new_ot_conversation_pair",
+    fields: [
+      { key: "ot_hosts", type: "json" },
+      { key: "ignored_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+    ],
+  },
+  {
+    moduleId: "niagara_fox_detected",
+    fields: [
+      { key: "allowed_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+    ],
+  },
+  {
+    moduleId: "ntp_internet_multi_dest_ot",
+    fields: [{ key: "min_external_servers", type: "number" }],
+  },
+  {
+    moduleId: "ot_asset_gone_silent",
+    fields: [
+      { key: "ot_hosts", type: "json" },
+      { key: "ignored_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+      { key: "ignored_services", type: "json" },
+    ],
+  },
+  {
+    moduleId: "ot_external_dns_resolver",
+    fields: [
+      { key: "ot_hosts", type: "json" },
+      { key: "control_system_hosts", type: "json" },
+      { key: "treat_unclassified_private_as_external", type: "boolean" },
+      { key: "enforce_trusted_resolvers_only", type: "boolean" },
+      { key: "min_queries", type: "number" },
+    ],
+  },
+  {
+    moduleId: "ot_outbound_internet_any_protocol",
+    fields: [
+      { key: "ot_hosts", type: "json" },
+      { key: "control_system_hosts", type: "json" },
+      { key: "allowed_external_destinations", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+      { key: "ignored_services", type: "json" },
+      { key: "ignored_ports", type: "json" },
+      { key: "require_observed_communication", type: "boolean" },
+      { key: "min_flows", type: "number" },
+    ],
+  },
+  {
+    moduleId: "plc_program_logic_firmware_update",
+    fields: [
+      { key: "additional_modbus_function_codes", type: "json" },
+      { key: "cip_firmware_service_codes", type: "json" },
+      { key: "allowed_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+    ],
+  },
+  {
+    moduleId: "public_to_public_traffic",
+    fields: [
+      { key: "internal_ics_only_expected", type: "boolean" },
+      { key: "allowed_public_networks", type: "json" },
+      { key: "allowed_public_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+      { key: "min_flows", type: "number" },
+    ],
+  },
+  {
+    moduleId: "quic_ot_segments",
+    fields: [
+      { key: "allowed_ips", type: "json" },
+      { key: "allowed_segments", type: "json" },
+      { key: "enable_udp443_heuristic", type: "boolean" },
+    ],
+  },
+  {
+    moduleId: "remote_access_tool_exposure",
+    fields: [
+      { key: "tool_ports", type: "json" },
+      { key: "allowed_hosts", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+      { key: "ignored_tools", type: "json" },
+      { key: "require_established_external", type: "boolean" },
+    ],
+  },
+  {
+    moduleId: "rogue_dhcp_static_ot",
+    fields: [
+      { key: "expected_servers", type: "json" },
+      { key: "offer_window_seconds", type: "number" },
+      { key: "static_segments", type: "json" },
+    ],
+  },
+  {
+    moduleId: "s7comm_unauthorized_write_stop",
+    fields: [{ key: "allowed_paths", type: "json" }],
+  },
+  {
+    moduleId: "snmp_write_ot_devices",
+    fields: [
+      { key: "target_hosts", type: "json" },
+      { key: "managed_hosts", type: "json" },
+      { key: "writable_communities", type: "json" },
+      { key: "allowed_managers", type: "json" },
+      { key: "allowed_pairs", type: "json" },
+      { key: "report_writable_community_access", type: "boolean" },
+      { key: "min_set_operations", type: "number" },
+    ],
+  },
+  {
+    moduleId: "vlan_tag_mismatch_double_tag",
+    fields: [
+      { key: "allowed_vlan_ids", type: "json" },
+      { key: "allowed_double_tag_pairs", type: "json" },
+    ],
+  },
+  {
+    moduleId: "weird_protocol_violations",
+    fields: [
+      { key: "reason", type: "json" },
+      { key: "noise_reason", type: "json" },
+    ],
+  },
+  {
+    moduleId: "encrypted_session_fingerprint_change",
+    fields: [
+      { key: "baseline_seconds", type: "number" },
+      { key: "minimum_baseline_observations", type: "number" },
+      { key: "ignored_hosts", type: "json" },
+    ],
+  },
+  {
+    moduleId: "remote_access_session_anomaly",
+    fields: [
+      { key: "baseline_seconds", type: "number" },
+      { key: "minimum_new_targets", type: "number" },
+      { key: "remote_access_ports", type: "json" },
+      { key: "authorized_sources", type: "json" },
+    ],
+  },
+  {
+    moduleId: "service_disappearance_replacement",
+    fields: [
+      { key: "baseline_seconds", type: "number" },
+      { key: "minimum_baseline_observations", type: "number" },
+      { key: "ot_hosts", type: "json" },
+    ],
+  },
+  {
+    moduleId: "polling_cadence_disruption",
+    fields: [
+      { key: "baseline_seconds", type: "number" },
+      { key: "minimum_baseline_observations", type: "number" },
+      { key: "interval_change_ratio", type: "number" },
+    ],
+  },
+  {
+    moduleId: "controller_communication_jitter",
+    fields: [
+      { key: "baseline_seconds", type: "number" },
+      { key: "minimum_baseline_observations", type: "number" },
+      { key: "jitter_multiplier", type: "number" },
+      { key: "minimum_post_jitter_ratio", type: "number" },
+      { key: "controller_hosts", type: "json" },
+    ],
+  },
 ];
-export const ADVANCED_POLICY_SCHEMA_BY_MODULE = Object.fromEntries(ADVANCED_POLICY_SCHEMAS.map((x)=>[x.moduleId,x])) as Record<string,AdvancedPolicySchema>;
+export const ADVANCED_POLICY_SCHEMA_BY_MODULE = Object.fromEntries(
+  ADVANCED_POLICY_SCHEMAS.map((x) => [x.moduleId, x]),
+) as Record<string, AdvancedPolicySchema>;

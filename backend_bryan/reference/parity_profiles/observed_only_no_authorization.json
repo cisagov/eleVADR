@@ -1,34 +1,72 @@
 {
-  "schemaVersion": 3,
-  "id": "parity-observed_only_no_authorization",
-  "name": "Observed Only No Authorization",
-  "description": "",
-  "updatedAt": "2026-09-21T00:00:00.000Z",
-  "selectedModules": [],
-  "scan": {
-    "filesScanned": 4,
-    "recordsParsed": 1250,
-    "logTypes": {
-      "conn": 1000,
-      "s7comm": 200,
-      "dhcp": 50
-    },
-    "warnings": [],
-    "dhcpAssignmentsObserved": 8,
-    "ipv6AddressesObserved": 2
-  },
+  "allowedHosts": [],
+  "allowedSegmentPairs": [],
+  "approvedExternalDestinations": [],
+  "assets": [
+    {
+      "assetType": "PLC",
+      "confidence": "high",
+      "hostname": "PLC-1",
+      "id": "a1",
+      "ip": "10.10.1.20",
+      "macAddresses": [
+        "00:11:22:33:44:55"
+      ],
+      "ports": [
+        102
+      ],
+      "role": "OT",
+      "segment": "Observed Control",
+      "services": [
+        "s7comm"
+      ],
+      "source": "zeek"
+    }
+  ],
+  "authorizedControlActions": [],
   "captureScope": {
-    "internalIcsOnlyExpected": false,
     "dedicatedOtSensor": false,
+    "internalIcsOnlyExpected": false,
     "ipv4OnlyExpected": false
   },
+  "communicationPairs": [
+    {
+      "confidence": "high",
+      "description": "observed only",
+      "destinationIp": "10.10.1.20",
+      "destinationPort": 102,
+      "id": "cp-1",
+      "protocol": "s7comm",
+      "service": "s7comm",
+      "source": "zeek",
+      "sourceIp": "10.10.1.10"
+    }
+  ],
+  "description": "",
+  "id": "parity-observed_only_no_authorization",
+  "infrastructure": [],
+  "modulePolicies": {},
+  "name": "Observed Only No Authorization",
+  "scan": {
+    "dhcpAssignmentsObserved": 8,
+    "filesScanned": 4,
+    "ipv6AddressesObserved": 2,
+    "logTypes": {
+      "conn": 1000,
+      "dhcp": 50,
+      "s7comm": 200
+    },
+    "recordsParsed": 1250,
+    "warnings": []
+  },
+  "schemaVersion": 3,
   "segments": [
     {
+      "addressing": "unknown",
+      "cidr": "10.10.0.0/16",
+      "confidence": "high",
       "id": "seg-1",
       "name": "Observed Control",
-      "cidr": "10.10.0.0/16",
-      "role": "ot",
-      "addressing": "unknown",
       "observedDhcp": true,
       "observedOtProtocols": [
         "s7comm",
@@ -37,48 +75,10 @@
       "observedVlanIds": [
         120
       ],
-      "source": "zeek",
-      "confidence": "high"
+      "role": "ot",
+      "source": "zeek"
     }
   ],
-  "assets": [
-    {
-      "id": "a1",
-      "ip": "10.10.1.20",
-      "hostname": "PLC-1",
-      "macAddresses": [
-        "00:11:22:33:44:55"
-      ],
-      "assetType": "PLC",
-      "role": "OT",
-      "segment": "Observed Control",
-      "services": [
-        "s7comm"
-      ],
-      "ports": [
-        102
-      ],
-      "source": "zeek",
-      "confidence": "high"
-    }
-  ],
-  "infrastructure": [],
-  "communicationPairs": [
-    {
-      "id": "cp-1",
-      "sourceIp": "10.10.1.10",
-      "destinationIp": "10.10.1.20",
-      "protocol": "s7comm",
-      "destinationPort": 102,
-      "service": "s7comm",
-      "description": "observed only",
-      "source": "zeek",
-      "confidence": "high"
-    }
-  ],
-  "allowedHosts": [],
-  "allowedSegmentPairs": [],
-  "approvedExternalDestinations": [],
-  "authorizedControlActions": [],
-  "modulePolicies": {}
+  "selectedModules": [],
+  "updatedAt": "2026-09-21T00:00:00.000Z"
 }

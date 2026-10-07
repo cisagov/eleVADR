@@ -94,9 +94,15 @@ const SortableTable = <T = unknown, R extends object = object>({
     return result;
   }, [data, filter, sortColumn, sortDirection, columns, filterable]);
 
-  const pageCount = Math.max(1, Math.ceil(filteredAndSortedData.length / pageSize));
+  const pageCount = Math.max(
+    1,
+    Math.ceil(filteredAndSortedData.length / pageSize),
+  );
   const safePage = Math.min(page, pageCount - 1);
-  const visibleData = filteredAndSortedData.slice(safePage * pageSize, safePage * pageSize + pageSize);
+  const visibleData = filteredAndSortedData.slice(
+    safePage * pageSize,
+    safePage * pageSize + pageSize,
+  );
 
   const getSortIcon = (columnKey: string) => {
     if (sortColumn !== columnKey) {
@@ -110,8 +116,8 @@ const SortableTable = <T = unknown, R extends object = object>({
 
   return (
     <div className="sortable-table-wrapper">
-      {filterable && (
-        filterHeader ? (
+      {filterable &&
+        (filterHeader ? (
           <div className="table-filter-header">
             <div className="table-filter-header-title">{filterHeader}</div>
             <label className="table-filter-inline">
@@ -121,25 +127,28 @@ const SortableTable = <T = unknown, R extends object = object>({
                 type="text"
                 placeholder={filterPlaceholder}
                 value={filter}
-                onChange={(e) => { setFilter(e.target.value); setPage(0); }}
+                onChange={(e) => {
+                  setFilter(e.target.value);
+                  setPage(0);
+                }}
               />
             </label>
           </div>
         ) : (
           <div className="table-filter-section">
-            <label className="usa-label">
-              Filter:
-            </label>
+            <label className="usa-label">Filter:</label>
             <input
               className="usa-input"
               type="text"
               placeholder={filterPlaceholder}
               value={filter}
-              onChange={(e) => { setFilter(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setFilter(e.target.value);
+                setPage(0);
+              }}
             />
           </div>
-        )
-      )}
+        ))}
 
       <div className="scrollable-table-container">
         <table className="usa-table usa-table--striped usa-table--sortable">
@@ -226,12 +235,48 @@ const SortableTable = <T = unknown, R extends object = object>({
 
       {filteredAndSortedData.length > 0 && (
         <div className="table-summary table-pagination">
-          <span>Showing {safePage * pageSize + 1}–{Math.min((safePage + 1) * pageSize, filteredAndSortedData.length)} of {filteredAndSortedData.length}{filterable && filteredAndSortedData.length !== data.length ? ` matching (${data.length} total)` : ""}</span>
+          <span>
+            Showing {safePage * pageSize + 1}–
+            {Math.min((safePage + 1) * pageSize, filteredAndSortedData.length)}{" "}
+            of {filteredAndSortedData.length}
+            {filterable && filteredAndSortedData.length !== data.length
+              ? ` matching (${data.length} total)`
+              : ""}
+          </span>
           <div className="table-pagination-controls">
-            <label>Rows <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}><option value={25}>25</option><option value={50}>50</option><option value={100}>100</option></select></label>
-            <button type="button" disabled={safePage === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}>Previous</button>
-            <span>Page {safePage + 1} of {pageCount}</span>
-            <button type="button" disabled={safePage >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Next</button>
+            <label>
+              Rows{" "}
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(0);
+                }}
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              disabled={safePage === 0}
+              onClick={() => setPage((value) => Math.max(0, value - 1))}
+            >
+              Previous
+            </button>
+            <span>
+              Page {safePage + 1} of {pageCount}
+            </span>
+            <button
+              type="button"
+              disabled={safePage >= pageCount - 1}
+              onClick={() =>
+                setPage((value) => Math.min(pageCount - 1, value + 1))
+              }
+            >
+              Next
+            </button>
           </div>
         </div>
       )}

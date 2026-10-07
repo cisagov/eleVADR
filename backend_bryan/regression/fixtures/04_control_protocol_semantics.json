@@ -1,63 +1,177 @@
 {
-  "name": "Dataset 04 - Explicit Control/Discovery Semantics",
   "description": "Normalized protocol-log fixture exercising explicit state-changing OT evidence without allowing observed traffic to become authorization.",
-  "metadata": {
-    "segments": [
-      {"name": "Engineering", "cidr": "10.40.10.0/24", "role": "IT", "purdue_level": "Level 4"},
-      {"name": "Control", "cidr": "10.40.0.0/24", "role": "OT", "purdue_level": "Level 1"}
-    ],
-    "asset_inventory": [
-      {"ip": "10.40.0.10", "role": "PLC"},
-      {"ip": "10.40.0.20", "role": "PLC"},
-      {"ip": "10.40.0.30", "role": "PLC"},
-      {"ip": "10.40.0.40", "role": "managed switch"}
-    ],
-    "ics_write_policy": {
-      "allowed_paths": [{"protocol": "modbus", "source": "10.40.10.50", "destination": "10.40.0.10", "allowed_function_codes": [6]}]
-    },
-    "s7comm_control_policy": {
-      "allowed_paths": [{"source": "10.40.10.50", "destination": "10.40.0.20", "allowed_function_codes": [5]}]
-    },
-    "enip_cip_policy": {
-      "allowed_write_paths": [{"source": "10.40.10.50", "destination": "10.40.0.30", "allowed_service_codes": [77]}]
-    },
-    "snmp_write_policy": {
-      "target_hosts": ["10.40.0.40"],
-      "allowed_managers": ["10.40.10.50"]
-    },
-    "bacnet_discovery_policy": {
-      "window_seconds": 60,
-      "who_is_threshold": 5,
-      "i_am_threshold": 50,
-      "allowed_discovery_sources": ["10.40.10.50"]
-    }
-  },
-  "logs": {
-    "modbus": [
-      {"timestamp": 1000.0, "source_ip": "10.40.10.99", "source_port": 50000, "destination_ip": "10.40.0.10", "destination_port": 502, "function_code": 6}
-    ],
-    "s7comm": [
-      {"timestamp": 1001.0, "source_ip": "10.40.10.99", "source_port": 50001, "destination_ip": "10.40.0.20", "destination_port": 102, "function_code": 5}
-    ],
-    "enip": [
-      {"timestamp": 1002.0, "source_ip": "10.40.10.99", "source_port": 50002, "destination_ip": "10.40.0.30", "destination_port": 44818, "cip_service": 77, "success": true}
-    ],
-    "snmp": [
-      {"timestamp": 1003.0, "source_ip": "10.40.10.99", "source_port": 50003, "destination_ip": "10.40.0.40", "destination_port": 161, "version": 2, "community": "private", "set_requests": 1}
-    ],
-    "bacnet": [
-      {"timestamp": 1010.0, "source_ip": "10.40.10.99", "destination_ip": "10.40.0.255", "destination_port": 47808, "function": "Who-Is"},
-      {"timestamp": 1011.0, "source_ip": "10.40.10.99", "destination_ip": "10.40.0.255", "destination_port": 47808, "function": "Who-Is"},
-      {"timestamp": 1012.0, "source_ip": "10.40.10.99", "destination_ip": "10.40.0.255", "destination_port": 47808, "function": "Who-Is"},
-      {"timestamp": 1013.0, "source_ip": "10.40.10.99", "destination_ip": "10.40.0.255", "destination_port": 47808, "function": "Who-Is"},
-      {"timestamp": 1014.0, "source_ip": "10.40.10.99", "destination_ip": "10.40.0.255", "destination_port": 47808, "function": "Who-Is"}
-    ]
-  },
   "expectations": {
+    "bacnet_discovery_anomalies": 2,
+    "enip_cip_write_session_abuses": 1,
     "ics_write_operations": 1,
     "s7comm_unauthorized_write_stop": 1,
-    "enip_cip_write_session_abuses": 1,
-    "snmp_write_ot_devices": 1,
-    "bacnet_discovery_anomalies": 2
-  }
+    "snmp_write_ot_devices": 1
+  },
+  "logs": {
+    "bacnet": [
+      {
+        "destination_ip": "10.40.0.255",
+        "destination_port": 47808,
+        "function": "Who-Is",
+        "source_ip": "10.40.10.99",
+        "timestamp": 1010.0
+      },
+      {
+        "destination_ip": "10.40.0.255",
+        "destination_port": 47808,
+        "function": "Who-Is",
+        "source_ip": "10.40.10.99",
+        "timestamp": 1011.0
+      },
+      {
+        "destination_ip": "10.40.0.255",
+        "destination_port": 47808,
+        "function": "Who-Is",
+        "source_ip": "10.40.10.99",
+        "timestamp": 1012.0
+      },
+      {
+        "destination_ip": "10.40.0.255",
+        "destination_port": 47808,
+        "function": "Who-Is",
+        "source_ip": "10.40.10.99",
+        "timestamp": 1013.0
+      },
+      {
+        "destination_ip": "10.40.0.255",
+        "destination_port": 47808,
+        "function": "Who-Is",
+        "source_ip": "10.40.10.99",
+        "timestamp": 1014.0
+      }
+    ],
+    "enip": [
+      {
+        "cip_service": 77,
+        "destination_ip": "10.40.0.30",
+        "destination_port": 44818,
+        "source_ip": "10.40.10.99",
+        "source_port": 50002,
+        "success": true,
+        "timestamp": 1002.0
+      }
+    ],
+    "modbus": [
+      {
+        "destination_ip": "10.40.0.10",
+        "destination_port": 502,
+        "function_code": 6,
+        "source_ip": "10.40.10.99",
+        "source_port": 50000,
+        "timestamp": 1000.0
+      }
+    ],
+    "s7comm": [
+      {
+        "destination_ip": "10.40.0.20",
+        "destination_port": 102,
+        "function_code": 5,
+        "source_ip": "10.40.10.99",
+        "source_port": 50001,
+        "timestamp": 1001.0
+      }
+    ],
+    "snmp": [
+      {
+        "community": "private",
+        "destination_ip": "10.40.0.40",
+        "destination_port": 161,
+        "set_requests": 1,
+        "source_ip": "10.40.10.99",
+        "source_port": 50003,
+        "timestamp": 1003.0,
+        "version": 2
+      }
+    ]
+  },
+  "metadata": {
+    "asset_inventory": [
+      {
+        "ip": "10.40.0.10",
+        "role": "PLC"
+      },
+      {
+        "ip": "10.40.0.20",
+        "role": "PLC"
+      },
+      {
+        "ip": "10.40.0.30",
+        "role": "PLC"
+      },
+      {
+        "ip": "10.40.0.40",
+        "role": "managed switch"
+      }
+    ],
+    "bacnet_discovery_policy": {
+      "allowed_discovery_sources": [
+        "10.40.10.50"
+      ],
+      "i_am_threshold": 50,
+      "who_is_threshold": 5,
+      "window_seconds": 60
+    },
+    "enip_cip_policy": {
+      "allowed_write_paths": [
+        {
+          "allowed_service_codes": [
+            77
+          ],
+          "destination": "10.40.0.30",
+          "source": "10.40.10.50"
+        }
+      ]
+    },
+    "ics_write_policy": {
+      "allowed_paths": [
+        {
+          "allowed_function_codes": [
+            6
+          ],
+          "destination": "10.40.0.10",
+          "protocol": "modbus",
+          "source": "10.40.10.50"
+        }
+      ]
+    },
+    "s7comm_control_policy": {
+      "allowed_paths": [
+        {
+          "allowed_function_codes": [
+            5
+          ],
+          "destination": "10.40.0.20",
+          "source": "10.40.10.50"
+        }
+      ]
+    },
+    "segments": [
+      {
+        "cidr": "10.40.10.0/24",
+        "name": "Engineering",
+        "purdue_level": "Level 4",
+        "role": "IT"
+      },
+      {
+        "cidr": "10.40.0.0/24",
+        "name": "Control",
+        "purdue_level": "Level 1",
+        "role": "OT"
+      }
+    ],
+    "snmp_write_policy": {
+      "allowed_managers": [
+        "10.40.10.50"
+      ],
+      "target_hosts": [
+        "10.40.0.40"
+      ]
+    }
+  },
+  "name": "Dataset 04 - Explicit Control/Discovery Semantics"
 }

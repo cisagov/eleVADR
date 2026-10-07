@@ -1,9 +1,243 @@
 {
-  "schemaVersion": 3,
-  "id": "regression-context-01-mixed-ot-baseline",
-  "name": "Regression 01 - Mixed OT Baseline",
+  "allowedHosts": [],
+  "allowedSegmentPairs": [],
+  "approvedExternalDestinations": [],
+  "assets": [
+    {
+      "assetType": "engineering workstation",
+      "confidence": "high",
+      "hostname": "eng-ws-01",
+      "id": "a01-eng",
+      "ip": "10.10.0.10",
+      "macAddresses": [
+        "02:00:00:00:10:10"
+      ],
+      "ports": [
+        53,
+        123,
+        502,
+        80
+      ],
+      "purdueLevel": "Level 3",
+      "reason": "Known asset in companion regression-test context.",
+      "role": "engineering",
+      "segment": "Engineering & Services",
+      "services": [
+        "dns",
+        "ntp",
+        "modbus",
+        "http"
+      ],
+      "source": "imported"
+    },
+    {
+      "assetType": "infrastructure server",
+      "confidence": "high",
+      "hostname": "ot-dns-01",
+      "id": "a01-dns",
+      "ip": "10.10.0.53",
+      "macAddresses": [
+        "02:00:00:00:10:53"
+      ],
+      "ports": [
+        53
+      ],
+      "purdueLevel": "Level 3",
+      "reason": "Known asset in companion regression-test context.",
+      "role": "dns",
+      "segment": "Engineering & Services",
+      "services": [
+        "dns"
+      ],
+      "source": "imported"
+    },
+    {
+      "assetType": "infrastructure server",
+      "confidence": "high",
+      "hostname": "ot-ntp-01",
+      "id": "a01-ntp",
+      "ip": "10.10.0.123",
+      "macAddresses": [
+        "02:00:00:00:10:7b"
+      ],
+      "ports": [
+        123
+      ],
+      "purdueLevel": "Level 3",
+      "reason": "Known asset in companion regression-test context.",
+      "role": "ntp",
+      "segment": "Engineering & Services",
+      "services": [
+        "ntp"
+      ],
+      "source": "imported"
+    },
+    {
+      "assetType": "PLC",
+      "confidence": "high",
+      "hostname": "plc-01",
+      "id": "a01-plc",
+      "ip": "10.20.0.20",
+      "macAddresses": [
+        "02:00:00:00:20:20"
+      ],
+      "ports": [
+        502
+      ],
+      "purdueLevel": "Level 1",
+      "reason": "Known asset in companion regression-test context.",
+      "role": "ot controller",
+      "segment": "OT Control",
+      "services": [
+        "modbus"
+      ],
+      "source": "imported"
+    },
+    {
+      "assetType": "HMI",
+      "confidence": "high",
+      "hostname": "hmi-01",
+      "id": "a01-hmi",
+      "ip": "10.20.0.30",
+      "macAddresses": [
+        "02:00:00:00:20:30"
+      ],
+      "ports": [
+        80
+      ],
+      "purdueLevel": "Level 2",
+      "reason": "Known asset in companion regression-test context.",
+      "role": "ot operator station",
+      "segment": "OT Control",
+      "services": [
+        "http"
+      ],
+      "source": "imported"
+    }
+  ],
+  "authorizedControlActions": [],
+  "captureScope": {
+    "dedicatedOtSensor": true,
+    "internalIcsOnlyExpected": true,
+    "ipv4OnlyExpected": true
+  },
+  "communicationPairs": [
+    {
+      "confidence": "high",
+      "description": "Observed/expected communication in companion test capture.",
+      "destinationIp": "10.10.0.53",
+      "destinationPort": 53,
+      "id": "p01-dns",
+      "protocol": "udp",
+      "service": "dns",
+      "source": "imported",
+      "sourceIp": "10.10.0.10"
+    },
+    {
+      "confidence": "high",
+      "description": "Observed/expected communication in companion test capture.",
+      "destinationIp": "10.10.0.123",
+      "destinationPort": 123,
+      "id": "p01-ntp",
+      "protocol": "udp",
+      "service": "ntp",
+      "source": "imported",
+      "sourceIp": "10.10.0.10"
+    },
+    {
+      "confidence": "high",
+      "description": "Observed/expected communication in companion test capture.",
+      "destinationIp": "10.20.0.20",
+      "destinationPort": 502,
+      "id": "p01-modbus",
+      "protocol": "tcp",
+      "service": "modbus",
+      "source": "imported",
+      "sourceIp": "10.10.0.10"
+    },
+    {
+      "confidence": "high",
+      "description": "Observed/expected communication in companion test capture.",
+      "destinationIp": "10.20.0.30",
+      "destinationPort": 80,
+      "id": "p01-http",
+      "protocol": "tcp",
+      "service": "http",
+      "source": "imported",
+      "sourceIp": "10.10.0.10"
+    }
+  ],
   "description": "Companion Detection Context for 01_mixed_ot_baseline.pcap. Defines the engineering/services and OT-control segments, trusted DNS/NTP, and known assets without authorizing control writes.",
-  "updatedAt": "2026-09-29T04:30:00.000Z",
+  "id": "regression-context-01-mixed-ot-baseline",
+  "infrastructure": [
+    {
+      "confidence": "high",
+      "id": "i01-dns",
+      "kind": "dns",
+      "label": "Trusted OT DNS",
+      "reason": "Expected trusted infrastructure for this test case.",
+      "source": "user",
+      "value": "10.10.0.53"
+    },
+    {
+      "confidence": "high",
+      "id": "i01-ntp",
+      "kind": "ntp",
+      "label": "Trusted OT NTP",
+      "reason": "Expected trusted infrastructure for this test case.",
+      "source": "user",
+      "value": "10.10.0.123"
+    }
+  ],
+  "modulePolicies": {},
+  "name": "Regression 01 - Mixed OT Baseline",
+  "scan": {
+    "fileNames": [
+      "01_mixed_ot_baseline.pcap"
+    ],
+    "filesScanned": 0,
+    "logTypes": {},
+    "recordsParsed": 0,
+    "selectedFileCount": 1,
+    "sourceLabel": "Companion context for 01_mixed_ot_baseline.pcap",
+    "warnings": [
+      "Synthetic regression companion profile; PCAP Context Discovery may add observed facts when loaded."
+    ]
+  },
+  "schemaVersion": 3,
+  "segments": [
+    {
+      "addressing": "static",
+      "cidr": "10.10.0.0/24",
+      "confidence": "high",
+      "dhcpAllowed": false,
+      "id": "seg-01-eng",
+      "ipv6Allowed": false,
+      "name": "Engineering & Services",
+      "purdueLevel": "Level 3",
+      "reason": "Companion regression-test context.",
+      "role": "it",
+      "source": "imported",
+      "vlanId": 10
+    },
+    {
+      "addressing": "static",
+      "cidr": "10.20.0.0/24",
+      "confidence": "high",
+      "dhcpAllowed": false,
+      "id": "seg-01-ot",
+      "ipv6Allowed": false,
+      "name": "OT Control",
+      "observedOtProtocols": [
+        "modbus"
+      ],
+      "purdueLevel": "Level 2",
+      "reason": "Companion regression-test context.",
+      "role": "ot",
+      "source": "imported",
+      "vlanId": 20
+    }
+  ],
   "selectedModules": [
     "bacnet_discovery_anomalies",
     "beaconing_c2_communication",
@@ -66,239 +300,5 @@
     "weak_broken_tls_ssl",
     "weird_protocol_violations"
   ],
-  "scan": {
-    "sourceLabel": "Companion context for 01_mixed_ot_baseline.pcap",
-    "selectedFileCount": 1,
-    "fileNames": [
-      "01_mixed_ot_baseline.pcap"
-    ],
-    "filesScanned": 0,
-    "recordsParsed": 0,
-    "logTypes": {},
-    "warnings": [
-      "Synthetic regression companion profile; PCAP Context Discovery may add observed facts when loaded."
-    ]
-  },
-  "captureScope": {
-    "internalIcsOnlyExpected": true,
-    "dedicatedOtSensor": true,
-    "ipv4OnlyExpected": true
-  },
-  "segments": [
-    {
-      "id": "seg-01-eng",
-      "name": "Engineering & Services",
-      "cidr": "10.10.0.0/24",
-      "role": "it",
-      "purdueLevel": "Level 3",
-      "vlanId": 10,
-      "addressing": "static",
-      "dhcpAllowed": false,
-      "ipv6Allowed": false,
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Companion regression-test context."
-    },
-    {
-      "id": "seg-01-ot",
-      "name": "OT Control",
-      "cidr": "10.20.0.0/24",
-      "role": "ot",
-      "purdueLevel": "Level 2",
-      "vlanId": 20,
-      "addressing": "static",
-      "dhcpAllowed": false,
-      "ipv6Allowed": false,
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Companion regression-test context.",
-      "observedOtProtocols": [
-        "modbus"
-      ]
-    }
-  ],
-  "assets": [
-    {
-      "id": "a01-eng",
-      "ip": "10.10.0.10",
-      "hostname": "eng-ws-01",
-      "macAddresses": [
-        "02:00:00:00:10:10"
-      ],
-      "assetType": "engineering workstation",
-      "role": "engineering",
-      "segment": "Engineering & Services",
-      "purdueLevel": "Level 3",
-      "services": [
-        "dns",
-        "ntp",
-        "modbus",
-        "http"
-      ],
-      "ports": [
-        53,
-        123,
-        502,
-        80
-      ],
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Known asset in companion regression-test context."
-    },
-    {
-      "id": "a01-dns",
-      "ip": "10.10.0.53",
-      "hostname": "ot-dns-01",
-      "macAddresses": [
-        "02:00:00:00:10:53"
-      ],
-      "assetType": "infrastructure server",
-      "role": "dns",
-      "segment": "Engineering & Services",
-      "purdueLevel": "Level 3",
-      "services": [
-        "dns"
-      ],
-      "ports": [
-        53
-      ],
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Known asset in companion regression-test context."
-    },
-    {
-      "id": "a01-ntp",
-      "ip": "10.10.0.123",
-      "hostname": "ot-ntp-01",
-      "macAddresses": [
-        "02:00:00:00:10:7b"
-      ],
-      "assetType": "infrastructure server",
-      "role": "ntp",
-      "segment": "Engineering & Services",
-      "purdueLevel": "Level 3",
-      "services": [
-        "ntp"
-      ],
-      "ports": [
-        123
-      ],
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Known asset in companion regression-test context."
-    },
-    {
-      "id": "a01-plc",
-      "ip": "10.20.0.20",
-      "hostname": "plc-01",
-      "macAddresses": [
-        "02:00:00:00:20:20"
-      ],
-      "assetType": "PLC",
-      "role": "ot controller",
-      "segment": "OT Control",
-      "purdueLevel": "Level 1",
-      "services": [
-        "modbus"
-      ],
-      "ports": [
-        502
-      ],
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Known asset in companion regression-test context."
-    },
-    {
-      "id": "a01-hmi",
-      "ip": "10.20.0.30",
-      "hostname": "hmi-01",
-      "macAddresses": [
-        "02:00:00:00:20:30"
-      ],
-      "assetType": "HMI",
-      "role": "ot operator station",
-      "segment": "OT Control",
-      "purdueLevel": "Level 2",
-      "services": [
-        "http"
-      ],
-      "ports": [
-        80
-      ],
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Known asset in companion regression-test context."
-    }
-  ],
-  "infrastructure": [
-    {
-      "id": "i01-dns",
-      "kind": "dns",
-      "value": "10.10.0.53",
-      "label": "Trusted OT DNS",
-      "source": "user",
-      "confidence": "high",
-      "reason": "Expected trusted infrastructure for this test case."
-    },
-    {
-      "id": "i01-ntp",
-      "kind": "ntp",
-      "value": "10.10.0.123",
-      "label": "Trusted OT NTP",
-      "source": "user",
-      "confidence": "high",
-      "reason": "Expected trusted infrastructure for this test case."
-    }
-  ],
-  "communicationPairs": [
-    {
-      "id": "p01-dns",
-      "sourceIp": "10.10.0.10",
-      "destinationIp": "10.10.0.53",
-      "protocol": "udp",
-      "description": "Observed/expected communication in companion test capture.",
-      "source": "imported",
-      "confidence": "high",
-      "destinationPort": 53,
-      "service": "dns"
-    },
-    {
-      "id": "p01-ntp",
-      "sourceIp": "10.10.0.10",
-      "destinationIp": "10.10.0.123",
-      "protocol": "udp",
-      "description": "Observed/expected communication in companion test capture.",
-      "source": "imported",
-      "confidence": "high",
-      "destinationPort": 123,
-      "service": "ntp"
-    },
-    {
-      "id": "p01-modbus",
-      "sourceIp": "10.10.0.10",
-      "destinationIp": "10.20.0.20",
-      "protocol": "tcp",
-      "description": "Observed/expected communication in companion test capture.",
-      "source": "imported",
-      "confidence": "high",
-      "destinationPort": 502,
-      "service": "modbus"
-    },
-    {
-      "id": "p01-http",
-      "sourceIp": "10.10.0.10",
-      "destinationIp": "10.20.0.30",
-      "protocol": "tcp",
-      "description": "Observed/expected communication in companion test capture.",
-      "source": "imported",
-      "confidence": "high",
-      "destinationPort": 80,
-      "service": "http"
-    }
-  ],
-  "allowedHosts": [],
-  "allowedSegmentPairs": [],
-  "approvedExternalDestinations": [],
-  "authorizedControlActions": [],
-  "modulePolicies": {}
+  "updatedAt": "2026-09-29T04:30:00.000Z"
 }

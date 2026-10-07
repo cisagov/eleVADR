@@ -100,9 +100,17 @@ export interface ConnectionSuccessLine {
   "dst_endpoint.ip": string | null;
   "dst_endpoint.port": number | null;
   "dst_endpoint.subnet"?: string | null;
-  "service.name"?: string | null;
-  "connection_info.protocol_name"?: string | null;
+  "service.name": string | null;
+  "connection_info.protocol_name": string | null;
   "connection_info.direction_name"?: string | null;
+  "src_device.mac"?: string | null;
+  "src_device.manufacturer"?: string | null;
+  "src_device.is_ot"?: boolean | null;
+  "src_device.is_edge"?: boolean | null;
+  "dst_device.mac"?: string | null;
+  "dst_device.manufacturer"?: string | null;
+  "dst_device.is_ot"?: boolean | null;
+  "dst_device.is_edge"?: boolean | null;
   duration?: number | null;
   orig_bytes?: number | null;
   resp_bytes?: number | null;
@@ -148,14 +156,14 @@ export interface Device {
 
 export interface ServiceConnectionDetail {
   "src_endpoint.ip": string | null;
-  "src_endpoint.port": number | null;
+  "src_endpoint.port"?: number | null;
   "src_endpoint.subnet"?: string | null;
   "dst_endpoint.ip": string | null;
   "dst_endpoint.port": number | null;
   "dst_endpoint.subnet"?: string | null;
   "service.name": string | null;
   "connection_info.protocol_name": string | null;
-  "connection_info.direction_name": string | null;
+  "connection_info.direction_name"?: string | null;
   "src_device.mac"?: string | null;
   "src_device.manufacturer"?: string | null;
   "src_device.is_ot"?: boolean | null;

@@ -9,7 +9,7 @@ import {
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
 describe("drilldownService", () => {
-  /* Reset any spies/mocks before each test so they don’t leak between cases */
+  /* Reset any spies/mocks before each test so they donâ€™t leak between cases */
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -31,6 +31,9 @@ describe("drilldownService", () => {
     expect(result).toEqual(responseBody);
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:8000/reports/report-123/drilldown/service/modbus%20tcp?limit=25",
+      expect.objectContaining({
+        headers: expect.any(Headers),
+      }),
     );
   });
 
@@ -54,6 +57,9 @@ describe("drilldownService", () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:8000/reports/report-123/connections?service_name=dns&success=true",
+      expect.objectContaining({
+        headers: expect.any(Headers),
+      }),
     );
   });
 

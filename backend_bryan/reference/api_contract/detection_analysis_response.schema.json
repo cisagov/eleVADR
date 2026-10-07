@@ -1,42 +1,90 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:elevadr:detection-context:analysis-response:v1",
-  "title": "DetectionAnalysisResponse v1",
-  "type": "object",
-  "required": ["contractVersion", "status", "summary", "moduleResults", "errors"],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
-    "contractVersion": { "const": "elevadr.detection-context.analysis-response.v1" },
-    "status": { "enum": ["completed", "partial", "failed"] },
-    "summary": {
-      "type": "object",
-      "required": ["requestedModules", "completedModules", "failedModules", "findingCount"],
-      "properties": {
-        "requestedModules": { "type": "integer", "minimum": 0 },
-        "completedModules": { "type": "integer", "minimum": 0 },
-        "failedModules": { "type": "integer", "minimum": 0 },
-        "findingCount": { "type": "integer", "minimum": 0 }
-      }
-    },
-    "moduleResults": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["module_id", "findings", "metrics", "evidence", "warnings"]
-      }
+    "contractVersion": {
+      "const": "elevadr.detection-context.analysis-response.v1"
     },
     "errors": {
-      "type": "array",
       "items": {
-        "type": "object",
-        "required": ["code", "message"],
         "properties": {
-          "code": { "type": "string" },
-          "message": { "type": "string" },
-          "path": { "type": "string" },
-          "moduleId": { "type": "string" }
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "moduleId": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "moduleResults": {
+      "items": {
+        "required": [
+          "module_id",
+          "findings",
+          "metrics",
+          "evidence",
+          "warnings"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "partial",
+        "failed"
+      ]
+    },
+    "summary": {
+      "properties": {
+        "completedModules": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "failedModules": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "findingCount": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "requestedModules": {
+          "minimum": 0,
+          "type": "integer"
         }
-      }
+      },
+      "required": [
+        "requestedModules",
+        "completedModules",
+        "failedModules",
+        "findingCount"
+      ],
+      "type": "object"
     }
-  }
+  },
+  "required": [
+    "contractVersion",
+    "status",
+    "summary",
+    "moduleResults",
+    "errors"
+  ],
+  "title": "DetectionAnalysisResponse v1",
+  "type": "object"
 }

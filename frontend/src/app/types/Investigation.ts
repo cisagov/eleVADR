@@ -1,4 +1,13 @@
-export type InvestigationFilterKey = "service" | "port" | "deviceClass" | "risk" | "ip" | "connection" | "subnet" | "zeekState" | "manufacturer";
+export type InvestigationFilterKey =
+  | "service"
+  | "port"
+  | "deviceClass"
+  | "risk"
+  | "ip"
+  | "connection"
+  | "subnet"
+  | "zeekState"
+  | "manufacturer";
 
 export interface InvestigationFilter {
   key: InvestigationFilterKey;

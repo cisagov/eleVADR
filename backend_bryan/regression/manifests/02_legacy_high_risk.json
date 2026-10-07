@@ -1,14 +1,40 @@
 {
-  "id": "02_legacy_high_risk",
-  "name": "Legacy services, brute force, and rogue inventory",
-  "pcap": "02_legacy_high_risk.pcap",
   "context": "02_legacy_high_risk_context.json",
-  "referenceReport": "02_legacy_high_risk.json",
   "expected": {
-    "detectorModulesRequested": 60,
+    "assertions": [],
     "detectorModulesCompleted": 60,
     "detectorModulesFailed": 0,
+    "detectorModulesRequested": 60,
+    "devicePanel": {
+      "edge_hosts": 0,
+      "hosts": 10,
+      "it_hosts": 2,
+      "ot_cross_segment": 8,
+      "ot_hosts": 8
+    },
     "findingCount": 19,
+    "moduleMetrics": {
+      "brute_force_authentication": {
+        "affected_destinations": 1,
+        "affected_sources": 1,
+        "brute_force_findings": 1
+      },
+      "new_ot_conversation_pair": {
+        "baseline_directed_pairs": 8,
+        "ot_involving_connections": 16
+      },
+      "ot_asset_gone_silent": {
+        "baseline_conversations": 9,
+        "ot_hosts_observed": 8,
+        "ot_observations": 16
+      },
+      "unknown_rogue_devices": {
+        "inventory_ip_addresses": 9,
+        "observed_local_ip_addresses": 10,
+        "unknown_ip_addresses": 1,
+        "unknown_or_rogue_devices": 1
+      }
+    },
     "modulesWithFindings": {
       "brute_force_authentication": 1,
       "cleartext_credentials": 1,
@@ -26,36 +52,10 @@
     "modulesWithoutFindings": [
       "new_ot_conversation_pair",
       "ot_asset_gone_silent"
-    ],
-    "devicePanel": {
-      "hosts": 10,
-      "ot_hosts": 8,
-      "it_hosts": 2,
-      "edge_hosts": 0,
-      "ot_cross_segment": 8
-    },
-    "assertions": [],
-    "moduleMetrics": {
-      "unknown_rogue_devices": {
-        "unknown_or_rogue_devices": 1,
-        "unknown_ip_addresses": 1,
-        "observed_local_ip_addresses": 10,
-        "inventory_ip_addresses": 9
-      },
-      "brute_force_authentication": {
-        "brute_force_findings": 1,
-        "affected_sources": 1,
-        "affected_destinations": 1
-      },
-      "new_ot_conversation_pair": {
-        "ot_involving_connections": 16,
-        "baseline_directed_pairs": 8
-      },
-      "ot_asset_gone_silent": {
-        "ot_observations": 16,
-        "ot_hosts_observed": 8,
-        "baseline_conversations": 9
-      }
-    }
-  }
+    ]
+  },
+  "id": "02_legacy_high_risk",
+  "name": "Legacy services, brute force, and rogue inventory",
+  "pcap": "02_legacy_high_risk.pcap",
+  "referenceReport": "02_legacy_high_risk.json"
 }

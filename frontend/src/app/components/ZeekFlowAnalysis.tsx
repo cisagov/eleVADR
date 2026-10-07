@@ -15,7 +15,12 @@ interface Props {
 const val = (row: ConnectionSuccessLine, key: string) =>
   String((row as unknown as Record<string, unknown>)[key] ?? "");
 
-const ZeekFlowAnalysis: React.FC<Props> = ({ report, filters, onFilter, onSelect }) => {
+const ZeekFlowAnalysis: React.FC<Props> = ({
+  report,
+  filters,
+  onFilter,
+  onSelect,
+}) => {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -33,8 +38,18 @@ const ZeekFlowAnalysis: React.FC<Props> = ({ report, filters, onFilter, onSelect
         const dstSubnet = val(row, "dst_endpoint.subnet");
         if (
           query &&
-          ![src, dst, service, row.state, row.history, srcSubnet, dstSubnet].some((x) =>
-            String(x || "").toLowerCase().includes(query.toLowerCase()),
+          ![
+            src,
+            dst,
+            service,
+            row.state,
+            row.history,
+            srcSubnet,
+            dstSubnet,
+          ].some((x) =>
+            String(x || "")
+              .toLowerCase()
+              .includes(query.toLowerCase()),
           )
         )
           return false;
@@ -46,8 +61,13 @@ const ZeekFlowAnalysis: React.FC<Props> = ({ report, filters, onFilter, onSelect
               val(row, "service.name") === f.value ||
               val(row, "connection_info.protocol_name") === f.value
             );
-          if (f.key === "subnet") return srcSubnet === f.value || dstSubnet === f.value;
-          if (f.key === "port") return val(row, "src_endpoint.port") === f.value || val(row, "dst_endpoint.port") === f.value;
+          if (f.key === "subnet")
+            return srcSubnet === f.value || dstSubnet === f.value;
+          if (f.key === "port")
+            return (
+              val(row, "src_endpoint.port") === f.value ||
+              val(row, "dst_endpoint.port") === f.value
+            );
           if (f.key === "zeekState") return String(row.state || "") === f.value;
           return true;
         });
@@ -71,7 +91,9 @@ const ZeekFlowAnalysis: React.FC<Props> = ({ report, filters, onFilter, onSelect
       <div className="zeek-flow-analysis">
         <div className="zeek-flow-toolbar">
           <p>
-            Flow-level connection records available in this report. Click a row to inspect connection details. Hover highlighted values to see the pivot control; click a highlighted value to filter the full report.
+            Flow-level connection records available in this report. Click a row
+            to inspect connection details. Hover highlighted values to see the
+            pivot control; click a highlighted value to filter the full report.
           </p>
           <label>
             <span>Filter flows</span>
@@ -98,38 +120,129 @@ const ZeekFlowAnalysis: React.FC<Props> = ({ report, filters, onFilter, onSelect
               {pageRows.map((row, index) => {
                 const src = val(row, "src_endpoint.ip");
                 const dst = val(row, "dst_endpoint.ip");
-                const namedService = val(row, "service.name") || val(row, "connection_info.protocol_name");
+                const namedService =
+                  val(row, "service.name") ||
+                  val(row, "connection_info.protocol_name");
                 const dstPort = val(row, "dst_endpoint.port");
                 const service = namedService || `Port ${dstPort || "—"}`;
                 return (
                   <tr
                     key={`${src}-${dst}-${start + index}`}
-                    onClick={() => onSelect({ type: "connection", id: `${src}|${dst}|${service}` })}
+                    onClick={() =>
+                      onSelect({
+                        type: "connection",
+                        id: `${src}|${dst}|${service}`,
+                      })
+                    }
                   >
                     <td>
                       {src ? (
                         <>
-                          <PivotValue filter={{ key: "ip", value: src, label: "Device" }} filters={filters} onFilter={onFilter}>{src}</PivotValue>
-                          {val(row, "src_endpoint.port") ? <>:<PivotValue filter={{ key: "port", value: val(row, "src_endpoint.port"), label: "Port" }} filters={filters} onFilter={onFilter}>{val(row, "src_endpoint.port")}</PivotValue></> : null}
+                          <PivotValue
+                            filter={{ key: "ip", value: src, label: "Device" }}
+                            filters={filters}
+                            onFilter={onFilter}
+                          >
+                            {src}
+                          </PivotValue>
+                          {val(row, "src_endpoint.port") ? (
+                            <>
+                              :
+                              <PivotValue
+                                filter={{
+                                  key: "port",
+                                  value: val(row, "src_endpoint.port"),
+                                  label: "Port",
+                                }}
+                                filters={filters}
+                                onFilter={onFilter}
+                              >
+                                {val(row, "src_endpoint.port")}
+                              </PivotValue>
+                            </>
+                          ) : null}
                         </>
-                      ) : "—"}
+                      ) : (
+                        "—"
+                      )}
                     </td>
                     <td>
                       {dst ? (
                         <>
-                          <PivotValue filter={{ key: "ip", value: dst, label: "Device" }} filters={filters} onFilter={onFilter}>{dst}</PivotValue>
-                          {val(row, "dst_endpoint.port") ? <>:<PivotValue filter={{ key: "port", value: val(row, "dst_endpoint.port"), label: "Port" }} filters={filters} onFilter={onFilter}>{val(row, "dst_endpoint.port")}</PivotValue></> : null}
+                          <PivotValue
+                            filter={{ key: "ip", value: dst, label: "Device" }}
+                            filters={filters}
+                            onFilter={onFilter}
+                          >
+                            {dst}
+                          </PivotValue>
+                          {val(row, "dst_endpoint.port") ? (
+                            <>
+                              :
+                              <PivotValue
+                                filter={{
+                                  key: "port",
+                                  value: val(row, "dst_endpoint.port"),
+                                  label: "Port",
+                                }}
+                                filters={filters}
+                                onFilter={onFilter}
+                              >
+                                {val(row, "dst_endpoint.port")}
+                              </PivotValue>
+                            </>
+                          ) : null}
                         </>
-                      ) : "—"}
+                      ) : (
+                        "—"
+                      )}
                     </td>
                     <td>
                       {namedService ? (
-                        <PivotValue filter={{ key: "service", value: namedService, label: "Service" }} filters={filters} onFilter={onFilter}>{namedService}</PivotValue>
+                        <PivotValue
+                          filter={{
+                            key: "service",
+                            value: namedService,
+                            label: "Service",
+                          }}
+                          filters={filters}
+                          onFilter={onFilter}
+                        >
+                          {namedService}
+                        </PivotValue>
                       ) : dstPort ? (
-                        <PivotValue filter={{ key: "port", value: dstPort, label: "Port" }} filters={filters} onFilter={onFilter}>Port {dstPort}</PivotValue>
-                      ) : "—"}
+                        <PivotValue
+                          filter={{
+                            key: "port",
+                            value: dstPort,
+                            label: "Port",
+                          }}
+                          filters={filters}
+                          onFilter={onFilter}
+                        >
+                          Port {dstPort}
+                        </PivotValue>
+                      ) : (
+                        "—"
+                      )}
                     </td>
-                    <td>{row.state ? <PivotValue filter={{ key: "zeekState", value: String(row.state), label: "Zeek State" }} filters={filters} onFilter={onFilter}>{String(row.state)}</PivotValue> : "—"}</td>
+                    <td>
+                      {row.state ? (
+                        <PivotValue
+                          filter={{
+                            key: "zeekState",
+                            value: String(row.state),
+                            label: "Zeek State",
+                          }}
+                          filters={filters}
+                          onFilter={onFilter}
+                        >
+                          {String(row.state)}
+                        </PivotValue>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td>{row.history || "—"}</td>
                     <td>{row.success ? "Successful" : "Unsuccessful"}</td>
                   </tr>
@@ -140,23 +253,39 @@ const ZeekFlowAnalysis: React.FC<Props> = ({ report, filters, onFilter, onSelect
         </div>
         <div className="zeek-flow-foot">
           <span>
-            Showing {first.toLocaleString()}–{last.toLocaleString()} of {rows.length.toLocaleString()} matching flow records.
+            Showing {first.toLocaleString()}–{last.toLocaleString()} of{" "}
+            {rows.length.toLocaleString()} matching flow records.
           </span>
           <div className="zeek-flow-pagination">
             <label>
               <span>Rows per page</span>
-              <select value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))}>
+              <select
+                value={pageSize}
+                onChange={(event) => setPageSize(Number(event.target.value))}
+              >
                 <option value={10}>10</option>
                 <option value={25}>25</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
               </select>
             </label>
-            <button type="button" onClick={() => setPage((value) => Math.max(1, value - 1))} disabled={page <= 1}>
+            <button
+              type="button"
+              onClick={() => setPage((value) => Math.max(1, value - 1))}
+              disabled={page <= 1}
+            >
               Previous
             </button>
-            <span className="zeek-flow-page">Page {page} of {totalPages}</span>
-            <button type="button" onClick={() => setPage((value) => Math.min(totalPages, value + 1))} disabled={page >= totalPages}>
+            <span className="zeek-flow-page">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                setPage((value) => Math.min(totalPages, value + 1))
+              }
+              disabled={page >= totalPages}
+            >
               Next
             </button>
           </div>

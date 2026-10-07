@@ -1,75 +1,75 @@
 {
-  "schemaVersion": 3,
-  "id": "contract-trusted_infrastructure",
-  "name": "Trusted Infrastructure",
-  "description": "",
-  "updatedAt": "2026-09-21T00:00:00.000Z",
-  "selectedModules": [],
-  "scan": {
-    "filesScanned": 0,
-    "recordsParsed": 0,
-    "logTypes": {},
-    "warnings": []
-  },
-  "captureScope": {
-    "internalIcsOnlyExpected": false,
-    "dedicatedOtSensor": false,
-    "ipv4OnlyExpected": false
-  },
-  "segments": [
-    {
-      "id": "s1",
-      "name": "Static OT",
-      "cidr": "10.40.0.0/24",
-      "role": "ot",
-      "addressing": "static",
-      "source": "user",
-      "confidence": "high"
-    }
-  ],
-  "assets": [],
-  "infrastructure": [
-    {
-      "id": "d1",
-      "kind": "dns",
-      "value": "10.0.0.53",
-      "label": "Primary DNS",
-      "source": "user",
-      "confidence": "high"
-    },
-    {
-      "id": "d2",
-      "kind": "dns",
-      "value": " 10.0.0.53 ",
-      "source": "user",
-      "confidence": "high"
-    },
-    {
-      "id": "n1",
-      "kind": "ntp",
-      "value": "10.0.0.123",
-      "source": "user",
-      "confidence": "high"
-    },
-    {
-      "id": "h1",
-      "kind": "dhcp",
-      "value": "10.0.0.5",
-      "source": "user",
-      "confidence": "high"
-    },
-    {
-      "id": "m1",
-      "kind": "management",
-      "value": "10.0.0.20",
-      "source": "user",
-      "confidence": "high"
-    }
-  ],
-  "communicationPairs": [],
   "allowedHosts": [],
   "allowedSegmentPairs": [],
   "approvedExternalDestinations": [],
+  "assets": [],
   "authorizedControlActions": [],
-  "modulePolicies": {}
+  "captureScope": {
+    "dedicatedOtSensor": false,
+    "internalIcsOnlyExpected": false,
+    "ipv4OnlyExpected": false
+  },
+  "communicationPairs": [],
+  "description": "",
+  "id": "contract-trusted_infrastructure",
+  "infrastructure": [
+    {
+      "confidence": "high",
+      "id": "d1",
+      "kind": "dns",
+      "label": "Primary DNS",
+      "source": "user",
+      "value": "10.0.0.53"
+    },
+    {
+      "confidence": "high",
+      "id": "d2",
+      "kind": "dns",
+      "source": "user",
+      "value": " 10.0.0.53 "
+    },
+    {
+      "confidence": "high",
+      "id": "n1",
+      "kind": "ntp",
+      "source": "user",
+      "value": "10.0.0.123"
+    },
+    {
+      "confidence": "high",
+      "id": "h1",
+      "kind": "dhcp",
+      "source": "user",
+      "value": "10.0.0.5"
+    },
+    {
+      "confidence": "high",
+      "id": "m1",
+      "kind": "management",
+      "source": "user",
+      "value": "10.0.0.20"
+    }
+  ],
+  "modulePolicies": {},
+  "name": "Trusted Infrastructure",
+  "scan": {
+    "filesScanned": 0,
+    "logTypes": {},
+    "recordsParsed": 0,
+    "warnings": []
+  },
+  "schemaVersion": 3,
+  "segments": [
+    {
+      "addressing": "static",
+      "cidr": "10.40.0.0/24",
+      "confidence": "high",
+      "id": "s1",
+      "name": "Static OT",
+      "role": "ot",
+      "source": "user"
+    }
+  ],
+  "selectedModules": [],
+  "updatedAt": "2026-09-21T00:00:00.000Z"
 }

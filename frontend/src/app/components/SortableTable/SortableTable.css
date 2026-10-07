@@ -15,14 +15,13 @@
   max-width: 400px;
 }
 
-
 .table-filter-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
   margin-bottom: 1rem;
-  padding-bottom: .75rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid #dfe5e8;
 }
 
@@ -34,7 +33,6 @@
   margin: 0;
 }
 
-
 .table-filter-header-title .section-subtitle {
   margin: 0;
   padding: 0;
@@ -45,7 +43,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: .75rem;
+  gap: 0.75rem;
   margin-left: auto;
   color: #1b1b1b;
   font-weight: 600;
@@ -163,7 +161,6 @@
   max-width: 100%;
 }
 
-
 .clickable-cell button:hover,
 .clickable-cell button:focus-visible,
 .clickable-service-link:hover,
@@ -190,7 +187,50 @@
     font-size: var(--text-sm);
   }
 }
-.table-pagination{display:flex!important;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.table-pagination-controls{display:flex;align-items:center;gap:7px}.table-pagination-controls label{display:flex;align-items:center;gap:5px}.table-pagination-controls select,.table-pagination-controls button{min-height:30px;padding:4px 7px;border:1px solid #cad9e3;border-radius:6px;background:var(--surface,#fff);color:var(--shell-text,#35556c);font-size:var(--text-xs)}.table-pagination-controls button{cursor:pointer;font-weight:700}.table-pagination-controls button:disabled{opacity:.45;cursor:not-allowed}@media(max-width:650px){.table-pagination-controls{width:100%;justify-content:space-between}.table-pagination-controls label{display:none}}
+.table-pagination {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.table-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.table-pagination-controls label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.table-pagination-controls select,
+.table-pagination-controls button {
+  min-height: 30px;
+  padding: 4px 7px;
+  border: 1px solid #cad9e3;
+  border-radius: 6px;
+  background: var(--surface, #fff);
+  color: var(--shell-text, #35556c);
+  font-size: var(--text-xs);
+}
+.table-pagination-controls button {
+  cursor: pointer;
+  font-weight: 700;
+}
+.table-pagination-controls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+@media (max-width: 650px) {
+  .table-pagination-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .table-pagination-controls label {
+    display: none;
+  }
+}
 
 @media (max-width: 700px) {
   .table-filter-header {
@@ -219,13 +259,36 @@
 /* Responsive table controls: never let the title/filter header force the page
    wider than the viewport. Tables themselves remain horizontally scrollable. */
 @media (max-width: 560px) {
-  .table-filter-header { gap: .65rem; margin-bottom: .75rem; padding-bottom: .6rem; }
-  .table-filter-inline { align-items: stretch; flex-direction: column; gap: .35rem; white-space: normal; }
-  .table-filter-inline .usa-input { min-height: 40px; }
-  .scrollable-table-container { max-width: 100%; -webkit-overflow-scrolling: touch; }
-  .table-summary { text-align: left; }
-  .table-pagination { align-items: stretch; flex-direction: column; }
-  .table-pagination-controls { width: 100%; flex-wrap: wrap; justify-content: flex-start; }
+  .table-filter-header {
+    gap: 0.65rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.6rem;
+  }
+  .table-filter-inline {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.35rem;
+    white-space: normal;
+  }
+  .table-filter-inline .usa-input {
+    min-height: 40px;
+  }
+  .scrollable-table-container {
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-summary {
+    text-align: left;
+  }
+  .table-pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .table-pagination-controls {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
 }
 
 /* Legacy drill-down links use the same discoverable pivot cue as PivotValue. */
@@ -240,7 +303,9 @@
   clip-path: polygon(8% 8%, 92% 8%, 61% 44%, 61% 82%, 39% 94%, 39% 44%);
   opacity: 0;
   transform: translateX(-2px);
-  transition: opacity .12s ease, transform .12s ease;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
 }
 .clickable-service-link:hover::after,
 .clickable-service-link:focus-visible::after {
@@ -278,11 +343,13 @@
   clip-path: polygon(8% 8%, 92% 8%, 61% 44%, 61% 82%, 39% 94%, 39% 44%);
   opacity: 0;
   transform: translateX(-2px);
-  transition: opacity .12s ease, transform .12s ease;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
   pointer-events: none;
 }
 .clickable-row td:hover .device-filter-hint::after,
 .clickable-row:focus-within .device-filter-hint::after {
-  opacity: .9;
+  opacity: 0.9;
   transform: translateX(0);
 }

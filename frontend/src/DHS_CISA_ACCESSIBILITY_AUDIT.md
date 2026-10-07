@@ -25,7 +25,6 @@ Run the actual deployed application through keyboard-only navigation, Windows hi
 
 Brand/logo usage and public-site content requirements (government banner, privacy/FOIA links, agency footer, etc.) still depend on the final CISA hosting and External Affairs requirements.
 
-
 ## Final QA checkpoint follow-up
 
 - Mobile report navigation now traps keyboard focus while open, closes with Escape, and restores focus to the hamburger control.

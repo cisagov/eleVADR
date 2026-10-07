@@ -1,11 +1,16 @@
 import { ADVANCED_POLICY_SCHEMA_BY_MODULE } from "./advancedPolicySchema";
 import { ALL_DETECTION_MODULES } from "./moduleCatalog";
-import { AuthorizedControlAction, DetectionConfigurationProfile } from "./types";
+import {
+  AuthorizedControlAction,
+  DetectionConfigurationProfile,
+} from "./types";
 
 export type AnalysisContextMetadata = Record<string, unknown>;
 
 /** Canonical detector metadata policy block used for modulePolicies overrides. */
-export const MODULE_POLICY_NAMESPACE: Partial<Record<(typeof ALL_DETECTION_MODULES)[number], string>> = {
+export const MODULE_POLICY_NAMESPACE: Partial<
+  Record<(typeof ALL_DETECTION_MODULES)[number], string>
+> = {
   bacnet_discovery_anomalies: "bacnet_discovery_policy",
   codesys_runtime_exposure: "codesys_runtime_policy",
   control_system_enterprise_non_dmz: "control_system_enterprise_policy",
@@ -61,16 +66,30 @@ const HOST_ALLOW_MODULES = [
   "remote_access_tool_exposure",
 ] as const;
 
-const HOST_IGNORE_MODULES = ["new_ot_conversation_pair", "new_service_emergence_ot", "ot_asset_gone_silent"] as const;
+const HOST_IGNORE_MODULES = [
+  "new_ot_conversation_pair",
+  "new_service_emergence_ot",
+  "ot_asset_gone_silent",
+] as const;
 
-const SEGMENT_PAIR_MODULES = ["control_system_enterprise_non_dmz", "database_service_exposed", "netbios_smbv1_exposure"] as const;
+const SEGMENT_PAIR_MODULES = [
+  "control_system_enterprise_non_dmz",
+  "database_service_exposed",
+  "netbios_smbv1_exposure",
+] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-function mergePolicy(metadata: AnalysisContextMetadata, key: string, patch: Record<string, unknown>): void {
-  const current = isRecord(metadata[key]) ? metadata[key] as Record<string, unknown> : {};
+function mergePolicy(
+  metadata: AnalysisContextMetadata,
+  key: string,
+  patch: Record<string, unknown>,
+): void {
+  const current = isRecord(metadata[key])
+    ? (metadata[key] as Record<string, unknown>)
+    : {};
   metadata[key] = { ...current, ...patch };
 }
 
@@ -82,8 +101,12 @@ function controlPath(action: AuthorizedControlAction): Record<string, unknown> {
   return {
     source: action.source,
     destination: action.destination,
-    ...(action.allowedOperations.length ? { allowed_operations: [...action.allowedOperations] } : {}),
-    ...(action.allowedFunctionCodes.length ? { allowed_function_codes: [...action.allowedFunctionCodes] } : {}),
+    ...(action.allowedOperations.length
+      ? { allowed_operations: [...action.allowedOperations] }
+      : {}),
+    ...(action.allowedFunctionCodes.length
+      ? { allowed_function_codes: [...action.allowedFunctionCodes] }
+      : {}),
   };
 }
 
@@ -95,7 +118,9 @@ function controlPath(action: AuthorizedControlAction): Record<string, unknown> {
  * detection_context_observations and never promoted to allowlists merely
  * because they were observed.
  */
-export function compileDetectionContextMetadata(profile: DetectionConfigurationProfile): AnalysisContextMetadata {
+export function compileDetectionContextMetadata(
+  profile: DetectionConfigurationProfile,
+): AnalysisContextMetadata {
   const metadata: AnalysisContextMetadata = {
     detection_context_schema_version: profile.schemaVersion,
     detection_context_profile_id: profile.id,
@@ -109,13 +134,22 @@ export function compileDetectionContextMetadata(profile: DetectionConfigurationP
       ...(segment.purdueLevel ? { purdue_level: segment.purdueLevel } : {}),
       ...(segment.vlanId !== undefined ? { vlan_id: segment.vlanId } : {}),
       addressing: segment.addressing,
-      ...(segment.dhcpAllowed !== undefined ? { dhcp_allowed: segment.dhcpAllowed } : {}),
-      ...(segment.ipv6Allowed !== undefined ? { ipv6_allowed: segment.ipv6Allowed, ipv4_only: segment.ipv6Allowed === false } : {}),
+      ...(segment.dhcpAllowed !== undefined
+        ? { dhcp_allowed: segment.dhcpAllowed }
+        : {}),
+      ...(segment.ipv6Allowed !== undefined
+        ? {
+            ipv6_allowed: segment.ipv6Allowed,
+            ipv4_only: segment.ipv6Allowed === false,
+          }
+        : {}),
     })),
     asset_inventory: profile.assets.map((asset) => ({
       ip: asset.ip,
       ips: asset.ip ? [asset.ip] : [],
-      ...(asset.hostname ? { hostname: asset.hostname, name: asset.hostname } : {}),
+      ...(asset.hostname
+        ? { hostname: asset.hostname, name: asset.hostname }
+        : {}),
       mac_addresses: [...asset.macAddresses],
       macs: [...asset.macAddresses],
       asset_type: asset.assetType,
@@ -131,7 +165,9 @@ export function compileDetectionContextMetadata(profile: DetectionConfigurationP
         source: pair.sourceIp,
         destination: pair.destinationIp,
         ...(pair.protocol ? { protocol: pair.protocol } : {}),
-        ...(pair.destinationPort !== undefined ? { destination_port: pair.destinationPort } : {}),
+        ...(pair.destinationPort !== undefined
+          ? { destination_port: pair.destinationPort }
+          : {}),
         ...(pair.service ? { service: pair.service } : {}),
         ...(pair.description ? { description: pair.description } : {}),
         source_kind: pair.source,
@@ -139,9 +175,15 @@ export function compileDetectionContextMetadata(profile: DetectionConfigurationP
       })),
       segments: profile.segments.map((segment) => ({
         id: segment.id,
-        ...(segment.observedDhcp !== undefined ? { dhcp_observed: segment.observedDhcp } : {}),
-        ...(segment.observedOtProtocols?.length ? { ot_protocols_observed: [...segment.observedOtProtocols] } : {}),
-        ...(segment.observedVlanIds?.length ? { vlan_ids_observed: [...segment.observedVlanIds] } : {}),
+        ...(segment.observedDhcp !== undefined
+          ? { dhcp_observed: segment.observedDhcp }
+          : {}),
+        ...(segment.observedOtProtocols?.length
+          ? { ot_protocols_observed: [...segment.observedOtProtocols] }
+          : {}),
+        ...(segment.observedVlanIds?.length
+          ? { vlan_ids_observed: [...segment.observedVlanIds] }
+          : {}),
       })),
     },
   };
@@ -150,22 +192,48 @@ export function compileDetectionContextMetadata(profile: DetectionConfigurationP
   mergePolicy(metadata, "public_to_public_policy", {
     internal_ics_only_expected: profile.captureScope.internalIcsOnlyExpected,
   });
-  const segmentIpv4Only = profile.segments.some((s) => s.role === "ot" && s.ipv6Allowed === false);
+  const segmentIpv4Only = profile.segments.some(
+    (s) => s.role === "ot" && s.ipv6Allowed === false,
+  );
   mergePolicy(metadata, "ipv6_ot_policy", {
-    ipv4_only_expected: profile.captureScope.ipv4OnlyExpected || segmentIpv4Only,
+    ipv4_only_expected:
+      profile.captureScope.ipv4OnlyExpected || segmentIpv4Only,
     scope_all_connections: profile.captureScope.ipv4OnlyExpected,
   });
 
   // Trusted infrastructure maps only to semantically corresponding detector policies.
-  const dns = nonEmpty(profile.infrastructure.filter((x) => x.kind === "dns").map((x) => x.value));
-  const ntp = nonEmpty(profile.infrastructure.filter((x) => x.kind === "ntp").map((x) => x.value));
-  const dhcp = nonEmpty(profile.infrastructure.filter((x) => x.kind === "dhcp").map((x) => x.value));
-  const management = nonEmpty(profile.infrastructure.filter((x) => x.kind === "management").map((x) => x.value));
-  if (dns.length) mergePolicy(metadata, "ot_dns_policy", { trusted_resolvers: dns });
-  if (ntp.length) mergePolicy(metadata, "ntp_ot_policy", { trusted_servers: ntp });
-  const staticSegments = nonEmpty(profile.segments.filter((x) => x.addressing === "static" || x.dhcpAllowed === false).flatMap((x) => [x.name, x.cidr]));
-  if (dhcp.length || staticSegments.length) mergePolicy(metadata, "dhcp_ot_policy", { expected_servers: dhcp, static_segments: staticSegments });
-  if (management.length) mergePolicy(metadata, "ot_certificate_policy", { management_hosts: management });
+  const dns = nonEmpty(
+    profile.infrastructure.filter((x) => x.kind === "dns").map((x) => x.value),
+  );
+  const ntp = nonEmpty(
+    profile.infrastructure.filter((x) => x.kind === "ntp").map((x) => x.value),
+  );
+  const dhcp = nonEmpty(
+    profile.infrastructure.filter((x) => x.kind === "dhcp").map((x) => x.value),
+  );
+  const management = nonEmpty(
+    profile.infrastructure
+      .filter((x) => x.kind === "management")
+      .map((x) => x.value),
+  );
+  if (dns.length)
+    mergePolicy(metadata, "ot_dns_policy", { trusted_resolvers: dns });
+  if (ntp.length)
+    mergePolicy(metadata, "ntp_ot_policy", { trusted_servers: ntp });
+  const staticSegments = nonEmpty(
+    profile.segments
+      .filter((x) => x.addressing === "static" || x.dhcpAllowed === false)
+      .flatMap((x) => [x.name, x.cidr]),
+  );
+  if (dhcp.length || staticSegments.length)
+    mergePolicy(metadata, "dhcp_ot_policy", {
+      expected_servers: dhcp,
+      static_segments: staticSegments,
+    });
+  if (management.length)
+    mergePolicy(metadata, "ot_certificate_policy", {
+      management_hosts: management,
+    });
 
   // Explicit policy lists. Generic observed communications are intentionally not mapped to allowed_pairs.
   const allowedHosts = nonEmpty(profile.allowedHosts);
@@ -180,54 +248,85 @@ export function compileDetectionContextMetadata(profile: DetectionConfigurationP
     }
   }
 
-  const allowedSegmentPairs = profile.allowedSegmentPairs.map((pair) => ({ source: pair.sourceSegment, destination: pair.destinationSegment }));
+  const allowedSegmentPairs = profile.allowedSegmentPairs.map((pair) => ({
+    source: pair.sourceSegment,
+    destination: pair.destinationSegment,
+  }));
   if (allowedSegmentPairs.length) {
     for (const moduleId of SEGMENT_PAIR_MODULES) {
       const key = MODULE_POLICY_NAMESPACE[moduleId];
-      if (key) mergePolicy(metadata, key, { allowed_segment_pairs: allowedSegmentPairs });
+      if (key)
+        mergePolicy(metadata, key, {
+          allowed_segment_pairs: allowedSegmentPairs,
+        });
     }
   }
 
   const external = nonEmpty(profile.approvedExternalDestinations);
   if (external.length) {
-    mergePolicy(metadata, "ot_outbound_internet_policy", { allowed_external_destinations: external });
-    mergePolicy(metadata, "internet_exposed_ics_policy", { allowed_external_destinations: external });
-    mergePolicy(metadata, "file_transfer_policy", { approved_external_destinations: external });
+    mergePolicy(metadata, "ot_outbound_internet_policy", {
+      allowed_external_destinations: external,
+    });
+    mergePolicy(metadata, "internet_exposed_ics_policy", {
+      allowed_external_destinations: external,
+    });
+    mergePolicy(metadata, "file_transfer_policy", {
+      approved_external_destinations: external,
+    });
   }
 
   // High-risk control authorization comes only from Authorized Control Actions.
-  const modbusDnp3 = profile.authorizedControlActions.filter((x) => x.protocol === "modbus" || x.protocol === "dnp3");
+  const modbusDnp3 = profile.authorizedControlActions.filter(
+    (x) => x.protocol === "modbus" || x.protocol === "dnp3",
+  );
   if (modbusDnp3.length) {
     mergePolicy(metadata, "ics_write_policy", {
-      allowed_paths: modbusDnp3.map((action) => ({ protocol: action.protocol, ...controlPath(action) })),
+      allowed_paths: modbusDnp3.map((action) => ({
+        protocol: action.protocol,
+        ...controlPath(action),
+      })),
     });
   }
-  const s7 = profile.authorizedControlActions.filter((x) => x.protocol === "s7comm");
-  if (s7.length) mergePolicy(metadata, "s7comm_control_policy", { allowed_paths: s7.map(controlPath) });
-  const enip = profile.authorizedControlActions.filter((x) => x.protocol === "enip");
-  if (enip.length) mergePolicy(metadata, "enip_cip_policy", {
-    allowed_write_paths: enip.map((action) => ({
-      source: action.source,
-      destination: action.destination,
-      ...(action.allowedFunctionCodes.length ? { allowed_service_codes: [...action.allowedFunctionCodes] } : {}),
-    })),
-  });
+  const s7 = profile.authorizedControlActions.filter(
+    (x) => x.protocol === "s7comm",
+  );
+  if (s7.length)
+    mergePolicy(metadata, "s7comm_control_policy", {
+      allowed_paths: s7.map(controlPath),
+    });
+  const enip = profile.authorizedControlActions.filter(
+    (x) => x.protocol === "enip",
+  );
+  if (enip.length)
+    mergePolicy(metadata, "enip_cip_policy", {
+      allowed_write_paths: enip.map((action) => ({
+        source: action.source,
+        destination: action.destination,
+        ...(action.allowedFunctionCodes.length
+          ? { allowed_service_codes: [...action.allowedFunctionCodes] }
+          : {}),
+      })),
+    });
   if (profile.authorizedControlActions.length) {
     mergePolicy(metadata, "plc_program_firmware_policy", {
       allowed_pairs: profile.authorizedControlActions.map((action) => ({
         source: action.source,
         destination: action.destination,
         protocols: [action.protocol],
-        ...(action.allowedOperations.length ? { operations: [...action.allowedOperations] } : {}),
+        ...(action.allowedOperations.length
+          ? { operations: [...action.allowedOperations] }
+          : {}),
       })),
     });
   }
 
   // Advanced overrides are explicit user policy and therefore overlay first-class compiled values.
-  for (const [moduleId, rawOverride] of Object.entries(profile.modulePolicies)) {
+  for (const [moduleId, rawOverride] of Object.entries(
+    profile.modulePolicies,
+  )) {
     if (!isRecord(rawOverride)) continue;
-    const schemaNamespace = ADVANCED_POLICY_SCHEMA_BY_MODULE[moduleId]?.namespaces?.[0];
-    const namespace = MODULE_POLICY_NAMESPACE[moduleId as keyof typeof MODULE_POLICY_NAMESPACE] || schemaNamespace;
+    const namespace =
+      MODULE_POLICY_NAMESPACE[moduleId as keyof typeof MODULE_POLICY_NAMESPACE];
     if (namespace) mergePolicy(metadata, namespace, rawOverride);
   }
 

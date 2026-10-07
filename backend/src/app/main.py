@@ -194,7 +194,7 @@ async def progress_ws(websocket: WebSocket, session_id: str) -> None:
         while True:
             get_task: Task[dict[str, object]] | None = None
             try:
-                # Wrap queue.get() as a Task — the event loop owns the coroutine.
+                # Wrap queue.get() as a Task - the event loop owns the coroutine.
                 get_task = asyncio.ensure_future(queue.get())
 
                 # asyncio.shield prevents wait_for from cancelling get_task
@@ -205,12 +205,12 @@ async def progress_ws(websocket: WebSocket, session_id: str) -> None:
                     break
 
             except TimeoutError:
-                # Timed out waiting — cancel the dangling get_task cleanly.
+                # Timed out waiting - cancel the dangling get_task cleanly.
                 if get_task and not get_task.done():
                     get_task.cancel()
                     try:
                         await get_task
-                    except asyncio.CancelledError, Exception:
+                    except (asyncio.CancelledError, Exception):
                         pass
 
                 await _send(
@@ -229,11 +229,11 @@ async def progress_ws(websocket: WebSocket, session_id: str) -> None:
                     get_task.cancel()
                     try:
                         await get_task
-                    except asyncio.CancelledError, Exception:
+                    except (asyncio.CancelledError, Exception):
                         pass
                 raise  # re-raise so the Task is marked cancelled
 
-    # Create both tasks with explicit references — no anonymous task leaks.
+    # Create both tasks with explicit references - no anonymous task leaks.
     consumer_task: Task[None] = asyncio.create_task(_consumer())
     receive_task: Task[Mapping[str, Any]] = asyncio.create_task(websocket.receive())
 
@@ -248,7 +248,7 @@ async def progress_ws(websocket: WebSocket, session_id: str) -> None:
             t.cancel()
             try:
                 await t
-            except asyncio.CancelledError, Exception:
+            except (asyncio.CancelledError, Exception):
                 pass
 
         # Re-raise any unexpected exception from the consumer.
@@ -268,13 +268,13 @@ async def progress_ws(websocket: WebSocket, session_id: str) -> None:
                 t.cancel()
                 try:
                     await t
-                except asyncio.CancelledError, Exception:
+                except (asyncio.CancelledError, Exception):
                     pass
 
         # Deregister the queue so _emit() stops routing to this session.
         _progress_queues.pop(session_id, None)
 
-        # Close socket — safe even if already closed.
+        # Close socket - safe even if already closed.
         try:
             await websocket.close()
         except Exception as exc:
@@ -385,7 +385,7 @@ def drilldown_cross_segment(
     dst_subnet: str,
     limit: ConnectionLimit = 500,
 ) -> dict[str, Any]:
-    """Return cross‑segment rows for a source‑destination subnet pair in a report."""
+    """Return cross-segment rows for a source-destination subnet pair in a report."""
     try:
         analyzer = _require_analyzer(report_id)
 

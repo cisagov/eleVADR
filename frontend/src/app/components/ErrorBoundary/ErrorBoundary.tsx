@@ -7,7 +7,10 @@ class ErrorBoundary extends React.Component<React.PropsWithChildren, State> {
   state: State = { hasError: false, message: "" };
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, message: error.message || "Unexpected frontend error" };
+    return {
+      hasError: true,
+      message: error.message || "Unexpected frontend error",
+    };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
@@ -22,7 +25,9 @@ class ErrorBoundary extends React.Component<React.PropsWithChildren, State> {
           <span>eleVADR</span>
           <h1>The report viewer encountered an error.</h1>
           <p>{this.state.message}</p>
-          <button type="button" onClick={() => window.location.reload()}>Reload viewer</button>
+          <button type="button" onClick={() => window.location.reload()}>
+            Reload viewer
+          </button>
         </div>
       </main>
     );

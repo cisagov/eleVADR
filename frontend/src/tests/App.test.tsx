@@ -1,120 +1,126 @@
-// src/__tests__/App.test.tsx
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import App from "../app/App";
 import { createMockReport } from "./reportFactory";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
-/* --------------------------------------------------------------- */
-/* Helper – creates a mock `Response` that mimics fetch’s JSON      */
-/* response.                                                       */
-/* --------------------------------------------------------------- */
-function createFetchResponse<TData>(data: TData): Response {
-  return {
-    ok: true,
-    status: 200,
-    json: async (): Promise<TData> => data,
-    text: async (): Promise<string> => JSON.stringify(data),
-  } as Response;
+vi.mock("../app/services/authService", () => ({
+  AUTH_EXPIRED_EVENT: "elevadr-auth-expired",
+  fetchAuthState: vi.fn().mockResolvedValue({
+    authEnabled: false,
+    user: {
+      id: "",
+      username: "",
+      authenticated: false,
+      role: "anonymous",
+    },
+  }),
+  login: vi.fn(),
+  logout: vi.fn(),
+  authenticatedFetch: vi.fn((input: RequestInfo | URL, init?: RequestInit) =>
+    fetch(input, init),
+  ),
+}));
+
+function reportFile(report: unknown): File {
+  return new File([JSON.stringify(report)], "report.json", {
+    type: "application/json",
+  });
 }
 
-/* --------------------------------------------------------------- */
-/* Test suite                                                       */
-/* --------------------------------------------------------------- */
 describe("App", () => {
-  // Reset any spies/mocks from previous tests
   beforeEach(() => {
-    vi.restoreAllMocks(); // same effect as jest.restoreAllMocks()
+    vi.restoreAllMocks();
   });
 
-  it("renders the initial empty state", () => {
+  it("renders the initial welcome state", async () => {
     render(<App />);
 
-    expect(screen.getByText("eleVADR Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Awaiting input...")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Run Analysis" })).toBeDisabled();
+    expect(
+      await screen.findByRole("heading", { name: "eleVADR Welcome" }),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("Open a report or packet capture"),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByLabelText("Open PCAP or JSON report"),
+    ).toBeInTheDocument();
   });
 
-  it("uploads a pcap and renders dashboard panels from backend data", async () => {
+  it("opens a JSON report and renders report content", async () => {
     const report = createMockReport();
 
-    const fetchMock = vi
-      .spyOn(globalThis, "fetch")
-      .mockResolvedValue(createFetchResponse(report));
-
     render(<App />);
 
-    // ---- simulate file upload ------------------------------------
-    const input = screen.getByLabelText("Upload PCAP for Analysis");
-    const file = new File(["pcap-bytes"], "capture.pcap", {
-      type: "application/vnd.tcpdump.pcap",
-    });
+    const input = await screen.findByLabelText("Open PCAP or JSON report");
 
-    fireEvent.change(input, { target: { files: [file] } });
-    fireEvent.click(screen.getByRole("button", { name: "Run Analysis" }));
-
-    // ---- UI that appears after a successful analysis -------------
-    expect(await screen.findByText("Executive summary")).toBeInTheDocument();
-    expect(screen.getByText("Environment Overview")).toBeInTheDocument();
-    expect(screen.getByText("Service Count")).toBeInTheDocument();
-
-    const alertElement = screen.getByText(/Detected/i);
-    expect(alertElement.textContent).toBe("Detected risky services.");
-
-    // ---- verify the fetch call ------------------------------------
-    await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledTimes(1);
-    });
-    expect(fetchMock.mock.calls[0]?.[0]).toBe(
-      "http://localhost:8000/analyze?session_id=test-session-id",
-    );
-  });
-
-  it("shows unsupported report version returned by backend", async () => {
-    const report = createMockReport({ report_version: "1.9.0" });
-
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      createFetchResponse(report),
-    );
-
-    render(<App />);
-
-    const input = screen.getByLabelText("Upload PCAP for Analysis");
     fireEvent.change(input, {
       target: {
-        files: [new File(["pcap-bytes"], "capture.pcap")],
+        files: [reportFile(report)],
       },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Run Analysis" }));
+
+    const reportNavigation = await screen.findByRole("navigation", {
+      name: "Report sections",
+    });
 
     expect(
-      await screen.findByText("Unsupported report version"),
+      within(reportNavigation).getByRole("button", { name: "Summary" }),
     ).toBeInTheDocument();
+
     expect(
-      screen.getByText(/this report is version "1.9.0"/i),
+      within(reportNavigation).getByRole("button", {
+        name: /^Findings\d+$/,
+      }),
     ).toBeInTheDocument();
   });
 
-  it("surfaces backend errors during analysis", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue({
-      ok: false,
-      status: 500,
-      text: async (): Promise<string> => "Backend exploded",
-    } as Response);
+  it("loads a v1 JSON report in compatibility mode", async () => {
+    const report = createMockReport({
+      report_version: "1.9.0",
+    });
 
     render(<App />);
 
-    const input = screen.getByLabelText("Upload PCAP for Analysis");
+    const input = await screen.findByLabelText("Open PCAP or JSON report");
+
     fireEvent.change(input, {
       target: {
-        files: [new File(["pcap-bytes"], "capture.pcap")],
+        files: [reportFile(report)],
       },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Run Analysis" }));
 
     expect(
-      await screen.findByText("Error during analysis"),
+      await screen.findByLabelText("Legacy report compatibility"),
     ).toBeInTheDocument();
-    expect(screen.getByText("Backend exploded")).toBeInTheDocument();
+
+    expect(
+      screen.getByText("Loaded in compatibility mode"),
+    ).toBeInTheDocument();
+
+    expect(screen.getByText("1.9.0")).toBeInTheDocument();
+    expect(screen.getByText("2.0.0")).toBeInTheDocument();
+  });
+
+  it("surfaces invalid JSON report errors", async () => {
+    render(<App />);
+
+    const input = await screen.findByLabelText("Open PCAP or JSON report");
+
+    const invalidReport = new File(["not-json"], "broken.json", {
+      type: "application/json",
+    });
+
+    fireEvent.change(input, {
+      target: {
+        files: [invalidReport],
+      },
+    });
+
+    expect(
+      await screen.findByText(/invalid|failed|could not/i),
+    ).toBeInTheDocument();
   });
 });

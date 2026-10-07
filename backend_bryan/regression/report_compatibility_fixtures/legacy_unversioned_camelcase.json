@@ -1,10 +1,42 @@
 {
-  "reportId": "legacy-unversioned-camel",
-  "executiveSummary": {"summary": "Unversioned camelCase compatibility fixture"},
+  "executiveSummary": {
+    "summary": "Unversioned camelCase compatibility fixture"
+  },
   "modules": {
-    "servicePanel": {"numKnownServices": 2, "numOtServices": 2},
-    "devicePanel": {"hosts": 1, "otHosts": 1},
-    "serviceRiskBreakdownPanel": {"riskCategoryCounts": {"high": 1}, "riskCategoryServices": {"high": ["modbus"]}},
-    "otDevices": [{"manufacturer": null, "ip_addresses": ["10.1.1.10"], "subnets": ["OT"], "incoming_services": ["modbus"], "sent_services": [], "is_ot": true}]
-  }
+    "devicePanel": {
+      "hosts": 1,
+      "otHosts": 1
+    },
+    "otDevices": [
+      {
+        "incoming_services": [
+          "modbus"
+        ],
+        "ip_addresses": [
+          "10.1.1.10"
+        ],
+        "is_ot": true,
+        "manufacturer": null,
+        "sent_services": [],
+        "subnets": [
+          "OT"
+        ]
+      }
+    ],
+    "servicePanel": {
+      "numKnownServices": 2,
+      "numOtServices": 2
+    },
+    "serviceRiskBreakdownPanel": {
+      "riskCategoryCounts": {
+        "high": 1
+      },
+      "riskCategoryServices": {
+        "high": [
+          "modbus"
+        ]
+      }
+    }
+  },
+  "reportId": "legacy-unversioned-camel"
 }

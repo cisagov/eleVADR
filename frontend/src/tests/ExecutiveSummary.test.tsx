@@ -1,60 +1,64 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { vi, describe, it, expect } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom";
 import ExecutiveSummary from "../app/components/ExecutiveSummary/ExecutiveSummary";
+import { createMockReport } from "./reportFactory";
 
-describe("ExecutiveSummary (Vitest)", () => {
-  it("renders priority findings with cleaned summary text", () => {
-    render(
-      <ExecutiveSummary
-        data={{
-          risky_services_alert:
-            "Detected <strong>risky</strong> services on the network.",
-        }}
-      />,
-    );
+describe("ExecutiveSummary", () => {
+  it("renders high-priority findings derived from the report", () => {
+    const report = createMockReport();
+    report.modules.suspicious_outbound_connections_panel[0].count = 20;
 
-    expect(screen.getByText("Priority Findings")).toBeInTheDocument();
-    expect(screen.getByText("Risk-Tagged Services")).toBeInTheDocument();
-    expect(screen.getByText("High")).toBeInTheDocument();
+    render(<ExecutiveSummary report={report} />);
+
+    expect(screen.getByText("High-Priority Findings")).toBeInTheDocument();
+
     expect(
-      screen.getByText("Detected risky services on the network."),
-    ).toBeInTheDocument();
+      screen.queryByText("No High or Critical findings were reported."),
+    ).not.toBeInTheDocument();
   });
 
-  it("scrolls to the mapped panel when View details is clicked", () => {
-    const target = document.createElement("div");
-    target.id = "service-risk-breakdown-panel";
-    document.body.appendChild(target);
+  it("opens a finding when Inspect is clicked", () => {
+    const report = createMockReport();
+    report.modules.suspicious_outbound_connections_panel[0].count = 20;
+    const onSelect = vi.fn();
 
-    const scrollSpy = vi.spyOn(target, "scrollIntoView");
+    render(<ExecutiveSummary report={report} onSelect={onSelect} />);
 
-    render(
-      <ExecutiveSummary
-        data={{
-          risky_services_alert: "Detected risky services.",
-        }}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "View details" }));
-
-    expect(scrollSpy).toHaveBeenCalledWith({
-      behavior: "smooth",
-      block: "start",
+    const inspectButtons = screen.getAllByRole("button", {
+      name: "Inspect",
     });
 
-    document.body.removeChild(target);
-    scrollSpy.mockRestore();
+    expect(inspectButtons.length).toBeGreaterThan(0);
+
+    fireEvent.click(inspectButtons[0]);
+
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "finding",
+      }),
+    );
   });
 
-  it("renders the priority findings empty state when no alerts are present", () => {
-    render(<ExecutiveSummary data={{}} />);
+  it("renders the empty state when no high or critical findings exist", () => {
+    const report = createMockReport({
+      executive_summary: {},
+      modules: {
+        ...createMockReport().modules,
+        service_risk_breakdown_panel: {
+          risk_category_counts: {},
+          risk_category_services: {},
+        },
+        suspicious_outbound_connections_panel: [],
+      },
+    });
 
-    expect(screen.getByText("Priority Findings")).toBeInTheDocument();
+    render(<ExecutiveSummary report={report} />);
+
     expect(
-      screen.getByText("No high-priority summary findings were reported."),
+      screen.getByText("No High or Critical findings were reported."),
     ).toBeInTheDocument();
   });
 });

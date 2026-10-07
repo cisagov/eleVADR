@@ -2,9 +2,7 @@ import React from "react";
 import "./ServiceCountPanel.css";
 import Panel from "../Panel/Panel";
 import SortableTable, { Column } from "../SortableTable/SortableTable";
-import {
-  ServiceCountPanel as ServiceCountPanelType,
-} from "../../types/Report";
+import { ServiceCountPanel as ServiceCountPanelType } from "../../types/Report";
 import InfoTooltip from "../InfoTooltip/InfoTooltip";
 import PivotValue from "../PivotValue/PivotValue";
 import { InvestigationFilter, SelectedEntity } from "../../types/Investigation";
@@ -39,9 +37,37 @@ const ServiceCountPanel: React.FC<ServiceCountPanelProps> = ({
       key: "service",
       label: "Service Name",
       sortable: true,
-      render: (value) => value && onFilter ? <PivotValue filter={{ key: "service", value: String(value), label: "Service" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? ""),
+      render: (value) =>
+        value && onFilter ? (
+          <PivotValue
+            filter={{ key: "service", value: String(value), label: "Service" }}
+            filters={filters}
+            onFilter={onFilter}
+          >
+            {String(value)}
+          </PivotValue>
+        ) : (
+          String(value ?? "")
+        ),
     },
-    { key: "port", label: "Port", sortable: true, align: "right", render: (value) => value != null && onFilter ? <PivotValue filter={{ key: "port", value: String(value), label: "Port" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? "—") },
+    {
+      key: "port",
+      label: "Port",
+      sortable: true,
+      align: "right",
+      render: (value) =>
+        value != null && onFilter ? (
+          <PivotValue
+            filter={{ key: "port", value: String(value), label: "Port" }}
+            filters={filters}
+            onFilter={onFilter}
+          >
+            {String(value)}
+          </PivotValue>
+        ) : (
+          String(value ?? "—")
+        ),
+    },
     {
       key: "connections",
       label: "Connections",
@@ -55,7 +81,18 @@ const ServiceCountPanel: React.FC<ServiceCountPanelProps> = ({
       key: "service",
       label: "Service Name",
       sortable: true,
-      render: (value) => value && onFilter ? <PivotValue filter={{ key: "service", value: String(value), label: "Service" }} filters={filters} onFilter={onFilter}>{String(value)}</PivotValue> : String(value ?? ""),
+      render: (value) =>
+        value && onFilter ? (
+          <PivotValue
+            filter={{ key: "service", value: String(value), label: "Service" }}
+            filters={filters}
+            onFilter={onFilter}
+          >
+            {String(value)}
+          </PivotValue>
+        ) : (
+          String(value ?? "")
+        ),
     },
     {
       key: "connections",
@@ -99,7 +136,9 @@ const ServiceCountPanel: React.FC<ServiceCountPanelProps> = ({
             }
             filterPlaceholder="Search known services..."
             emptyMessage="No Results"
-            onRowClick={(row) => onSelect?.({ type: "service", id: String(row.service) })}
+            onRowClick={(row) =>
+              onSelect?.({ type: "service", id: String(row.service) })
+            }
           />
         </div>
 
@@ -116,11 +155,12 @@ const ServiceCountPanel: React.FC<ServiceCountPanelProps> = ({
             }
             filterPlaceholder="Search unknown services..."
             emptyMessage="No Results"
-            onRowClick={(row) => onSelect?.({ type: "service", id: String(row.service) })}
+            onRowClick={(row) =>
+              onSelect?.({ type: "service", id: String(row.service) })
+            }
           />
         </div>
       </div>
-
     </Panel>
   );
 };

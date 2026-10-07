@@ -1,29 +1,29 @@
 /* --------------------------------------------------------------
-   Test‑setup file for Vitest + React Testing Library
+   TestÃ¢â‚¬â€˜setup file for Vitest + React Testing Library
    -------------------------------------------------------------- */
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
 declare const global: typeof globalThis; // <-- adds the missing name
 
 /* --------------------------------------------------------------
-   Global ResizeObserver mock – many UI components (MUI, charts,
+   Global ResizeObserver mock Ã¢â‚¬â€œ many UI components (MUI, charts,
    etc.) call `observe`/`unobserve`/`disconnect`.  The stub does
    nothing but satisfies the API.
    -------------------------------------------------------------- */
 global.ResizeObserver = class ResizeObserver {
   observe = () => {
-    /* no‑op */
+    /* noÃ¢â‚¬â€˜op */
   };
   unobserve = () => {
-    /* no‑op */
+    /* noÃ¢â‚¬â€˜op */
   };
   disconnect = () => {
-    /* no‑op */
+    /* noÃ¢â‚¬â€˜op */
   };
 };
 
 /* --------------------------------------------------------------
-   Minimal WebSocket mock – enough for components that open a
+   Minimal WebSocket mock Ã¢â‚¬â€œ enough for components that open a
    socket, listen for `onmessage`, and close it.
    -------------------------------------------------------------- */
 class MockWebSocket {
@@ -48,8 +48,8 @@ Object.defineProperty(globalThis, "WebSocket", {
 });
 
 /* --------------------------------------------------------------
-   Stub for `crypto.randomUUID` – the app uses it to generate a
-   session‑id for the backend request.
+   Stub for `crypto.randomUUID` Ã¢â‚¬â€œ the app uses it to generate a
+   sessionÃ¢â‚¬â€˜id for the backend request.
    -------------------------------------------------------------- */
 Object.defineProperty(globalThis, "crypto", {
   value: {
@@ -59,7 +59,7 @@ Object.defineProperty(globalThis, "crypto", {
 });
 
 /* --------------------------------------------------------------
-   Mock `window.scrollTo` – Vitest’s `vi.fn()` replaces the Jest
+   Mock `window.scrollTo` Ã¢â‚¬â€œ VitestÃ¢â‚¬â„¢s `vi.fn()` replaces the Jest
    helper.
    -------------------------------------------------------------- */
 Object.defineProperty(globalThis, "scrollTo", {
@@ -74,4 +74,31 @@ Object.defineProperty(globalThis, "scrollTo", {
 Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
   value: vi.fn(),
   writable: true,
+});
+class MockIntersectionObserver implements IntersectionObserver {
+  readonly root: Element | Document | null = null;
+  readonly rootMargin = "0px";
+  readonly scrollMargin = "0px";
+  readonly thresholds: ReadonlyArray<number> = [0];
+
+  constructor(
+    _callback: IntersectionObserverCallback,
+    _options?: IntersectionObserverInit,
+  ) {}
+
+  disconnect(): void {}
+
+  observe(_target: Element): void {}
+
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+
+  unobserve(_target: Element): void {}
+}
+
+Object.defineProperty(globalThis, "IntersectionObserver", {
+  configurable: true,
+  writable: true,
+  value: MockIntersectionObserver,
 });

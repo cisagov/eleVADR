@@ -9,9 +9,13 @@ import { DetectionConfigurationProfile } from "./types";
  * namespaces. The backend is the authoritative owner of profile ->
  * AnalysisContext.metadata compilation.
  */
-export const DETECTION_ANALYSIS_CONTRACT_VERSION = "elevadr.detection-context.analysis.v1" as const;
+export const DETECTION_ANALYSIS_CONTRACT_VERSION =
+  "elevadr.detection-context.analysis.v1" as const;
 
-export type DetectionAnalysisLogs = Record<string, Array<Record<string, unknown>>>;
+export type DetectionAnalysisLogs = Record<
+  string,
+  Array<Record<string, unknown>>
+>;
 
 export interface DetectionAnalysisRequest {
   contractVersion: typeof DETECTION_ANALYSIS_CONTRACT_VERSION;

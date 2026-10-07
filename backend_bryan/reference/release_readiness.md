@@ -8,7 +8,6 @@ The Detection Context + PCAP workflow has reached a mature synthetic-regression 
 
 The remaining work is primarily **production incorporation and operationalization**, not continued synthetic-dataset expansion.
 
-
 ## Executable release preflight
 
 Release-critical assumptions are now enforced by `python -m backend_bryan.integration.release_preflight` and run as stage 1 of the full regression gate. The preflight fails on detector/snapshot drift, incomplete calibration coverage, API schema/version drift, Zeek image drift, local launcher/API port drift, missing release artifacts, or a malformed Dataset 19 tripwire manifest.
@@ -64,8 +63,8 @@ The local reference server also exposes `GET /health` with detector count, reque
 Before production merge, the backend maintainer should port or invoke equivalent checks for:
 
 - [ ] all 75 detector modules;
-- [ ] Datasets 04–14 semantic suites;
-- [ ] live PCAP Datasets 01–03 with Zeek;
+- [ ] Datasets 04â€“14 semantic suites;
+- [ ] live PCAP Datasets 01â€“03 with Zeek;
 - [ ] frontend/backend request contract;
 - [ ] canonical report compatibility;
 - [ ] findings explainability contract;
@@ -88,7 +87,7 @@ The handoff is ready when the production backend can accept the versioned Detect
 
 ## Definition of ready for field validation
 
-After production incorporation, the next meaningful dataset should be based on a sanitized operational capture. It should be added only when it exercises behavior not already represented by Datasets 01–17.
+After production incorporation, the next meaningful dataset should be based on a sanitized operational capture. It should be added only when it exercises behavior not already represented by Datasets 01â€“17.
 
 ## Additional detector waves (75-module baseline)
 
@@ -100,4 +99,4 @@ The release-ready detector registry now includes five additional modules beyond 
 - `plc_rtu_peer_change`
 - `engineering_workstation_control_burst`
 
-The original three live PCAP regression captures remain intentionally frozen as a legacy 60-detector baseline so their historical semantic counts remain comparable. Dataset 14, registry-wide state/scale checks, the Wave 1/Wave 2/Wave 3 acceptance stages, and raw-PCAP Datasets 15–17 exercise the current 75-module registry.
+The original three live PCAP regression captures remain intentionally frozen as a legacy 60-detector baseline so their historical semantic counts remain comparable. Dataset 14, registry-wide state/scale checks, the Wave 1/Wave 2/Wave 3 acceptance stages, and raw-PCAP Datasets 15â€“17 exercise the current 75-module registry.

@@ -20,7 +20,6 @@ Wave 1 established a 65-module package contract. Wave 2 established a 70-module 
 
 Datasets 01-03 intentionally remain the original 60-detector live-PCAP baseline so historical finding counts and reference reports stay directly comparable. The standard gate labels that stage as the legacy 60-detector baseline.
 
-
 ## Raw-PCAP validation
 
 Dataset 15 (`backend_bryan/regression/dataset15_runner.py`) validates all five modules from raw Ethernet packets through the pinned Zeek runtime rather than injecting normalized detector evidence. It also protects native Zeek Modbus function-name handling (`WRITE_SINGLE_REGISTER`) and the explicit ARP runtime policy used to produce `arp.log`.

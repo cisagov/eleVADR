@@ -1,21 +1,141 @@
 /* DHS/CISA source-level accessibility hardening. Keep focus visible without adding resting borders. */
-.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
-.unified-dropzone{position:relative}
-.unified-upload-input{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;opacity:0!important;clip:auto!important;clip-path:none!important;overflow:hidden!important;white-space:normal!important;cursor:pointer!important;z-index:2!important}
-.unified-upload-input:disabled{cursor:not-allowed!important}
-.unified-dropzone:focus-within{outline:none!important;outline-offset:0!important;box-shadow:none!important}
-.unified-upload-input:focus-visible{outline:none!important;box-shadow:none!important}
-.dropzone-browse{pointer-events:none}
-.json-filter-label{font-weight:700;font-size:.875rem}
-.table-cell-action{display:inline-flex;max-width:100%;padding:.125rem .25rem;border:0;background:transparent;color:#005ea8;text-align:inherit;font:inherit;text-decoration:underline;cursor:pointer}
-.clickable-row:focus{outline:.25rem solid var(--usa-focus, #005ea2);outline-offset:-.25rem}
-.topology-toggle-group{min-width:0;margin:0;padding:.25rem .5rem .5rem;border:1px solid #dfe1e2}
-.topology-toggle-group legend{padding:0 .25rem;font-size:.8125rem;font-weight:700;color:#454545}
-.chart-accessible-actions{display:flex;flex-wrap:wrap;gap:.375rem;margin-top:.5rem}
-.chart-accessible-actions button{min-height:2rem;padding:.25rem .5rem;border:1px solid #a9aeb1;background:#fff;color:#005ea8;border-radius:.125rem;font:inherit;font-size:.8125rem;cursor:pointer}
-.chart-accessible-actions button:hover{text-decoration:underline}
-.chart-text-summary{margin:.5rem 0 0;color:#454545;font-size:.875rem;text-align:center}
-@media (forced-colors:active){.unified-dropzone:focus-within,.clickable-row:focus{outline:2px solid CanvasText!important}.chart-accessible-actions button{border:1px solid ButtonText}}
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.unified-dropzone {
+  position: relative;
+}
+.unified-upload-input {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 0 !important;
+  clip: auto !important;
+  clip-path: none !important;
+  overflow: hidden !important;
+  white-space: normal !important;
+  cursor: pointer !important;
+  z-index: 2 !important;
+}
+.unified-upload-input:disabled {
+  cursor: not-allowed !important;
+}
+.unified-dropzone:focus-within {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+.unified-upload-input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.dropzone-browse {
+  pointer-events: none;
+}
+.json-filter-label {
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+.table-cell-action {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 0.125rem 0.25rem;
+  border: 0;
+  background: transparent;
+  color: #005ea8;
+  text-align: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.clickable-row:focus {
+  outline: 0.25rem solid var(--usa-focus, #005ea2);
+  outline-offset: -0.25rem;
+}
+.topology-toggle-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0.25rem 0.5rem 0.5rem;
+  border: 1px solid #dfe1e2;
+}
+.topology-toggle-group legend {
+  padding: 0 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #454545;
+}
+.chart-accessible-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+.chart-accessible-actions button {
+  min-height: 2rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #a9aeb1;
+  background: #fff;
+  color: #005ea8;
+  border-radius: 0.125rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.chart-accessible-actions button:hover {
+  text-decoration: underline;
+}
+.chart-text-summary {
+  margin: 0.5rem 0 0;
+  color: #454545;
+  font-size: 0.875rem;
+  text-align: center;
+}
+@media (forced-colors: active) {
+  .unified-dropzone:focus-within,
+  .clickable-row:focus {
+    outline: 2px solid CanvasText !important;
+  }
+  .chart-accessible-actions button {
+    border: 1px solid ButtonText;
+  }
+}
 
-button, [role="button"], input[type="file"], input[type="checkbox"], input[type="radio"], select { min-height: 2rem; }
-.timeline-data-table{margin-top:.75rem}.timeline-data-table summary{cursor:pointer;color:#005ea8;font-weight:700}.timeline-data-table table{width:100%;margin-top:.5rem;border-collapse:collapse}.timeline-data-table th,.timeline-data-table td{padding:.5rem;border:1px solid #dfe1e2;text-align:left}.timeline-data-table thead th{background:#f0f0f0}
+button,
+[role="button"],
+input[type="file"],
+input[type="checkbox"],
+input[type="radio"],
+select {
+  min-height: 2rem;
+}
+.timeline-data-table {
+  margin-top: 0.75rem;
+}
+.timeline-data-table summary {
+  cursor: pointer;
+  color: #005ea8;
+  font-weight: 700;
+}
+.timeline-data-table table {
+  width: 100%;
+  margin-top: 0.5rem;
+  border-collapse: collapse;
+}
+.timeline-data-table th,
+.timeline-data-table td {
+  padding: 0.5rem;
+  border: 1px solid #dfe1e2;
+  text-align: left;
+}
+.timeline-data-table thead th {
+  background: #f0f0f0;
+}

@@ -37,6 +37,12 @@ export default tseslint.config(
       // Use the recommended hooks rules
       ...hooksPlugin.configs.recommended.rules,
 
+      // eleVADR intentionally synchronizes local UI state in several effects.
+      "react-hooks/set-state-in-effect": "off",
+
+      // Empty catch blocks intentionally allow service fallbacks.
+      "no-empty": ["error", { allowEmptyCatch: true }],
+
       // Example: prevent unused variables (warn instead of error)
       "@typescript-eslint/no-unused-vars": "warn",
     },

@@ -1,14 +1,39 @@
 {
-  "id": "01_mixed_ot_baseline",
-  "name": "Mixed OT baseline and context semantics",
-  "pcap": "01_mixed_ot_baseline.pcap",
   "context": "01_mixed_ot_baseline_context.json",
-  "referenceReport": "01_mixed_ot_baseline.json",
   "expected": {
-    "detectorModulesRequested": 60,
+    "assertions": [
+      {
+        "equals": "http",
+        "path": "arch_insights.detection_context_snapshot.communicationPairs.3.service"
+      }
+    ],
     "detectorModulesCompleted": 60,
     "detectorModulesFailed": 0,
+    "detectorModulesRequested": 60,
+    "devicePanel": {
+      "edge_hosts": 0,
+      "hosts": 5,
+      "it_hosts": 3,
+      "ot_cross_segment": 2,
+      "ot_hosts": 2
+    },
     "findingCount": 4,
+    "moduleMetrics": {
+      "excessive_broadcast_multicast_ot": {
+        "ot_connections_evaluated": 0
+      },
+      "new_ot_conversation_pair": {
+        "baseline_directed_pairs": 2,
+        "connections_evaluated": 4,
+        "ot_involving_connections": 2,
+        "skipped_unclassified": 2
+      },
+      "ot_asset_gone_silent": {
+        "baseline_conversations": 2,
+        "ot_hosts_observed": 2,
+        "ot_observations": 2
+      }
+    },
     "modulesWithFindings": {
       "control_system_enterprise_non_dmz": 2,
       "deprecated_insecure_services_protocols": 1,
@@ -18,35 +43,10 @@
       "new_ot_conversation_pair",
       "ot_asset_gone_silent",
       "unknown_rogue_devices"
-    ],
-    "devicePanel": {
-      "hosts": 5,
-      "ot_hosts": 2,
-      "it_hosts": 3,
-      "edge_hosts": 0,
-      "ot_cross_segment": 2
-    },
-    "assertions": [
-      {
-        "path": "arch_insights.detection_context_snapshot.communicationPairs.3.service",
-        "equals": "http"
-      }
-    ],
-    "moduleMetrics": {
-      "new_ot_conversation_pair": {
-        "connections_evaluated": 4,
-        "ot_involving_connections": 2,
-        "baseline_directed_pairs": 2,
-        "skipped_unclassified": 2
-      },
-      "ot_asset_gone_silent": {
-        "ot_observations": 2,
-        "ot_hosts_observed": 2,
-        "baseline_conversations": 2
-      },
-      "excessive_broadcast_multicast_ot": {
-        "ot_connections_evaluated": 0
-      }
-    }
-  }
+    ]
+  },
+  "id": "01_mixed_ot_baseline",
+  "name": "Mixed OT baseline and context semantics",
+  "pcap": "01_mixed_ot_baseline.pcap",
+  "referenceReport": "01_mixed_ot_baseline.json"
 }

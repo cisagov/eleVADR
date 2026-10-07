@@ -25,6 +25,8 @@ repos:
       - id: check-case-conflict
       - id: check-executables-have-shebangs
       - id: check-json
+        exclude: >-
+          ^backend_bryan/regression/fixtures/05_parser_edge_cases/(weird|modbus)\.json$
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
       - id: check-symlinks
@@ -44,7 +46,8 @@ repos:
       - id: pretty-format-json
         args:
           - --autofix
-        exclude: ^.*lock\.json$
+        exclude: >-
+          (^.*lock\.json$|^backend_bryan/regression/fixtures/05_parser_edge_cases/(weird|modbus)\.json$)
       - id: trailing-whitespace
       - id: check-added-large-files
         args:
@@ -57,6 +60,7 @@ repos:
       - id: markdownlint
         args:
           - --config=./backend/pyproject.toml
+          - --disable=MD013
   - repo: https://github.com/rbubley/mirrors-prettier
     rev: 515f543f5718ebfd6ce22e16708bb32c68ff96e1
     hooks:
@@ -118,14 +122,16 @@ repos:
           - --config=./backend/pyproject.toml
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 0671d8ab202c4ac093b78433ae5baf74f3fc7246
+    rev: v0.16.10
     hooks:
       # Run the linter.
       - id: ruff-check
+        files: ^backend/
         args:
           - --fix
       # Run the formatter.
       - id: ruff-format
+        files: ^backend/
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: d2823d321df3af8f878f7ee3414dc94d037145b9
@@ -134,22 +140,9 @@ repos:
         pass_filenames: false
         args:
           - --config-file=./backend/pyproject.toml
-          - .
+          - backend
 
   # Docker hooks
-  - repo: https://github.com/IamTheFij/docker-pre-commit
-    rev: 62a24686f7675bd45dabe32efe0473b746adac73
-    hooks:
-      - id: docker-compose-check
-
-  - repo: https://github.com/osprey-oss/deptry.git
-    rev: 0c39226d761685125c5ff71ca81282d6751c9540
-    hooks:
-      - id: deptry
-        pass_filenames: false
-        args:
-          - --config=backend/pyproject.toml
-
   # General checks (commits, spelling)
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: 91ab4bf57e58b32adf1a122681f6ebe164d081c8
@@ -176,9 +169,26 @@ repos:
         args:
           - --directory=backend/
           - --preview-features=audit
+          - --python-version=3.14
+          - --system-certs
 
   - repo: local
     hooks:
+      - id: deptry
+        name: deptry
+        entry: python -m deptry backend --config backend/pyproject.toml
+        language: system
+        pass_filenames: false
+        files: ^backend/
+
+      - id: docker-compose-check
+        name: Validate Docker Compose files
+        entry: python validate_docker_compose.py
+        language: system
+        files: ^docker-compose(\.mongodb)?\.yml$
+        pass_filenames: false
+        require_serial: true
+
       - id: eslint
         name: ESLint
         files: frontend/

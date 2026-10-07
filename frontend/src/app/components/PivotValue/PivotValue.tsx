@@ -19,8 +19,12 @@ const PivotValue: React.FC<Props> = ({
   className = "",
   stopPropagation = true,
 }) => {
-  const active = filters.some((item) => item.key === filter.key && item.value === filter.value);
-  const action = active ? "Remove report filter" : `Filter report by this ${filter.label.toLowerCase()}`;
+  const active = filters.some(
+    (item) => item.key === filter.key && item.value === filter.value,
+  );
+  const action = active
+    ? "Remove report filter"
+    : `Filter report by this ${filter.label.toLowerCase()}`;
 
   return (
     <span

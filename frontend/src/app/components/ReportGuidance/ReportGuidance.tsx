@@ -15,9 +15,21 @@ interface Props {
   ariaLabel?: string;
 }
 
-const ReportGuidance: React.FC<Props> = ({ title, children, actions = [], note, ariaLabel }) => (
-  <div className="report-guidance" role="status" aria-label={ariaLabel || title}>
-    <div className="report-guidance-icon" aria-hidden="true">i</div>
+const ReportGuidance: React.FC<Props> = ({
+  title,
+  children,
+  actions = [],
+  note,
+  ariaLabel,
+}) => (
+  <div
+    className="report-guidance"
+    role="status"
+    aria-label={ariaLabel || title}
+  >
+    <div className="report-guidance-icon" aria-hidden="true">
+      i
+    </div>
     <div className="report-guidance-content">
       <h3>{title}</h3>
       <div className="report-guidance-copy">{children}</div>
@@ -28,7 +40,11 @@ const ReportGuidance: React.FC<Props> = ({ title, children, actions = [], note, 
             <button
               key={action.label}
               type="button"
-              className={action.primary ? "report-guidance-action primary" : "report-guidance-action"}
+              className={
+                action.primary
+                  ? "report-guidance-action primary"
+                  : "report-guidance-action"
+              }
               onClick={action.onClick}
             >
               {action.label}

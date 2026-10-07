@@ -945,7 +945,7 @@ class Handler(BaseHTTPRequestHandler):
                 if len(username) > 128 or len(password) > 1024:
                     raise ValueError("Username or password exceeds the allowed length")
                 client_address = getattr(self, "client_address", None)
-                client_ip = client_address[0] if client_address else "unknown"      
+                client_ip = client_address[0] if client_address else "unknown"
                 retry_after = _login_retry_after(client_ip, username)
                 if retry_after:
                     self.send_response(429)

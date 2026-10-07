@@ -30,7 +30,6 @@ The frontend now routes both directly selected JSON reports and PCAP-generated r
 
 Dataset 04 is a normalized protocol-log semantic fixture rather than a synthetic PCAP. It deliberately supplies explicit Modbus, S7comm, EtherNet/IP/CIP, SNMP SET, and BACnet discovery evidence while authorizing a different management source. This protects the core rule that observed control traffic does not create authorization. The fixture also checks SNMP credential redaction and BACnet burst/non-BAS discovery behavior. It complements, rather than replaces, the three live PCAP/Zeek datasets.
 
-
 ## Dataset 05
 
 Dataset 05 exercises malformed/partial Zeek evidence without depending on a synthetic PCAP. Its fixture contains short and over-wide ASCII rows, invalid numeric values, malformed and non-object JSON-lines entries, a whole log missing its `#fields` header, partial Modbus records, explicit VLAN mismatch/double-tag evidence, and representative `weird.log` anomalies.
@@ -39,20 +38,17 @@ The vendored Zeek parser now isolates a malformed log instead of aborting the fu
 
 `python -m backend_bryan.regression.dataset05_runner` verifies parser diagnostics, expected `weird_protocol_violations` and `vlan_tag_mismatch_double_tag` findings, partial ICS-record retention, and that all 75 detector modules complete without exception on the degraded input.
 
-
 ## Dataset 06
 
 Dataset 06 is a deterministic threshold/boundary semantic suite. It exercises exact-threshold, one-below, one-above/window-overrun, zero-byte, sparse-baseline, timestamp-window, and unusually large integer cases without requiring Zeek. The suite currently covers `large_outbound_http_uploads`, `unusual_outbound_data_volume`, `icmp_data_channel`, `brute_force_authentication`, and `high_fan_in_out`.
 
 `python -m backend_bryan.regression.dataset06_runner` verifies that inclusive thresholds fire exactly at the configured boundary, values just below do not, 60-second windows remain inclusive at exactly 60 seconds but not beyond it, zero-byte outbound flows do not create findings, sparse outbound baselines use the absolute floor, and unusually large byte counts remain safe and produce the expected severity.
 
-
 ## Dataset 07
 
 Dataset 07 hardens temporal and cross-run behavior for the singleton detector registry. It verifies out-of-order timestamp handling, duplicate-row behavior where unique timestamps are the intended unit, exact baseline-boundary ties, directional communication-matrix semantics, repeated-run determinism, and state isolation between analyses.
 
 `python -m backend_bryan.regression.dataset07_runner` currently exercises beaconing, brute-force windows, new-service emergence, new OT conversation pairs, OT asset gone-silent cadence, and selected threshold/baseline detectors. It also runs a registry-wide isolation check across all 75 detector instances: an empty analysis result is captured, a trigger-rich context is processed, then the empty analysis is repeated and must match exactly. A final guard confirms detectors do not mutate the shared `AnalysisContext`, so one module cannot alter another module's evidence or policy view.
-
 
 ## Dataset 08
 
@@ -88,20 +84,17 @@ Dataset 08 hardens Detection Context precedence when authoritative inputs disagr
 
 `python -m backend_bryan.regression.new_detector_acceptance_runner` verifies the current 75-module registry and focused semantics for the five post-baseline detectors: ARP/IP-MAC identity change, unexpected DHCP server, OT protocol role reversal, PLC/RTU peer change, and engineering-workstation control bursts. The original live PCAP datasets 01-03 remain frozen at the original 60-detector selection for historical comparability.
 
-
 ## Dataset 15: raw-PCAP validation for the five added detectors
 
 `python -m backend_bryan.regression.dataset15_runner` runs `15_new_detector_raw_pcap.pcap` through the same PCAP -> Zeek -> Detection Context -> detector -> canonical-report path used by the reference API. The fixture includes ARP identity change, a rogue DHCP transaction, five authorized Modbus write-single-register operations from an engineering workstation, a post-baseline PLC role reversal, and a post-baseline new controller peer.
 
 The Zeek runtime loads `backend_bryan/runtime/elevadr_runtime.zeek`, which explicitly enables the built-in ARP packet analyzer and writes an `arp.log` stream consumed by the ARP/IP-MAC detector. Dataset 15 asserts that `conn.log`, `modbus.log`, `dhcp.log`, and `arp.log` are all produced from the raw PCAP and that each of the five added detectors produces the expected semantic finding. The fixture builder is `dataset15_fixture_builder.py` and uses only the Python standard library so the PCAP can be reproduced without Scapy.
 
-
 ## Dataset 16: raw-PCAP validation for Wave 2 detectors
 
 `python -m backend_bryan.regression.dataset16_runner` runs `16_wave2_raw_pcap.pcap` through the normal PCAP -> Zeek -> Detection Context -> detector -> canonical-report path. The fixture contains trusted and untrusted DNS/NTP exchanges, a 20-target ARP sweep, three separate OT multicast flows to an unapproved group, and ten responder-reset TCP connection attempts inside a 60-second window.
 
 Dataset 16 requires Zeek to produce `conn.log`, `dns.log`, `ntp.log`, and the eleVADR `arp.log`. It verifies all five Wave 2 detectors from raw packet evidence. The dataset also protects a live-integration fix in `tcp_reset_abort_surge`: the detector consumes the parser's native `zeek_state` field as well as normalized test aliases. Observed resolver/time-source/multicast traffic remains evidence only and never creates trusted infrastructure or allowed multicast policy.
-
 
 ## Dataset 17: raw-PCAP validation for Wave 3 detectors
 

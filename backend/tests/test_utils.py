@@ -53,40 +53,23 @@ def test_normalize_categories(input_categories, expected_output):
 # --- Test FilePathInfo ---
 
 
-@patch("src.app.utils.utils.os.mkdir")
-@patch("src.app.utils.utils.Path.exists", return_value=False)
-def test_filepath_info_creates_directories(mock_exists, mock_mkdir):
-    pcap_dir = "/tmp/pcap_dir"
-    zeek_dir = "/tmp/zeek_output"
-    zeek_scripts_dir = "/tmp/zeek_scripts"
-    assessor_data_dir = "/tmp/assessor_data"
+def test_filepath_info_creates_directories(tmp_path):
+    pcap_dir = tmp_path / "pcap_dir"
+    zeek_dir = tmp_path / "zeek_output"
+    zeek_scripts_dir = tmp_path / "zeek_scripts"
+    assessor_data_dir = tmp_path / "assessor_data"
 
-    # Mock Path.parent.exists for pcap_dir
-    with patch(
-        "src.app.utils.utils.Path.parent", new_callable=MagicMock
-    ) as mock_path_parent:
-        mock_path_parent.exists.return_value = False
+    FilePathInfo(
+        path_to_pcap=str(pcap_dir / "test.pcap"),
+        path_to_zeek=str(zeek_dir),
+        path_to_zeek_scripts=str(zeek_scripts_dir),
+        path_to_assessor_data=str(assessor_data_dir),
+    )
 
-        FilePathInfo(
-            path_to_pcap=f"{pcap_dir}/test.pcap",
-            path_to_zeek=zeek_dir,
-            path_to_zeek_scripts=zeek_scripts_dir,
-            path_to_assessor_data=assessor_data_dir,
-        )
-
-        expected_calls = [
-            call(zeek_dir),
-            call(zeek_scripts_dir),
-            call(assessor_data_dir),
-            call(Path(pcap_dir)),  # For the parent of pcap_path
-        ]
-        # Check that mkdir was called for each unique directory
-        mock_mkdir.assert_has_calls(expected_calls, any_order=True)
-        assert mock_mkdir.call_count == 4
-
-
-# --- Test IP Processing Functions ---
-
+    assert pcap_dir.is_dir()
+    assert zeek_dir.is_dir()
+    assert zeek_scripts_dir.is_dir()
+    assert assessor_data_dir.is_dir()
 
 @pytest.mark.parametrize(
     "ip_str, expected",

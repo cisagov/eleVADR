@@ -1,3 +1,4 @@
+---
 name: elevadr-platform
 
 services:
@@ -9,7 +10,7 @@ services:
       MONGODB_INITDB_ROOT_USERNAME: ${ELEVADR_MONGO_ROOT_USERNAME}
       MONGODB_INITDB_ROOT_PASSWORD: ${ELEVADR_MONGO_ROOT_PASSWORD}
     ports:
-      - "127.0.0.1:${ELEVADR_MONGO_PORT:-27017}:27017"
+      - 127.0.0.1:${ELEVADR_MONGO_PORT:-27017}:27017
     volumes:
       - elevadr-mongodb-data:/data/db
     healthcheck:

@@ -8,603 +8,753 @@ export interface DetectionModuleDetail {
 }
 
 export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
-  "arp_ip_mac_identity_change": {
+  arp_ip_mac_identity_change: {
     id: "arp_ip_mac_identity_change",
     name: "ARP / IP-MAC Identity Change",
-    description: "Detects ARP observations where an authoritative asset IP is claimed by an unexpected MAC address, or where one IP rapidly appears behind multiple MAC addresses.",
-    relevance: "Helps identify asset impersonation, duplicate addressing, unauthorized device replacement, or unexpected Layer-2 changes that can undermine trust in OT asset identity.",
+    description:
+      "Detects ARP observations where an authoritative asset IP is claimed by an unexpected MAC address, or where one IP rapidly appears behind multiple MAC addresses.",
+    relevance:
+      "Helps identify asset impersonation, duplicate addressing, unauthorized device replacement, or unexpected Layer-2 changes that can undermine trust in OT asset identity.",
     requiredLogs: ["arp"],
     requiredAnyLogs: [],
   },
-  "arp_l2_reconnaissance": {
+  arp_l2_reconnaissance: {
     id: "arp_l2_reconnaissance",
     name: "ARP / L2 Reconnaissance",
-    description: "Detects hosts rapidly probing many distinct IPv4 targets with ARP requests.",
-    relevance: "ARP sweeps can reveal unauthorized discovery of local devices and are often an early step before lateral movement or targeted attacks within a flat OT segment.",
+    description:
+      "Detects hosts rapidly probing many distinct IPv4 targets with ARP requests.",
+    relevance:
+      "ARP sweeps can reveal unauthorized discovery of local devices and are often an early step before lateral movement or targeted attacks within a flat OT segment.",
     requiredLogs: ["arp"],
     requiredAnyLogs: [],
   },
-  "bacnet_discovery_anomalies": {
+  bacnet_discovery_anomalies: {
     id: "bacnet_discovery_anomalies",
     name: "BACnet Who-Is/I-Am Flood or External Discovery",
-    description: "Detects abnormal BACnet Who-Is/I-Am discovery bursts and BACnet discovery activity originating from explicitly non-BAS network segments.",
-    relevance: "Unexpected BACnet discovery can expose building-automation assets and may indicate misconfiguration, unauthorized enumeration, or an attempt to map BAS devices for later control activity.",
+    description:
+      "Detects abnormal BACnet Who-Is/I-Am discovery bursts and BACnet discovery activity originating from explicitly non-BAS network segments.",
+    relevance:
+      "Unexpected BACnet discovery can expose building-automation assets and may indicate misconfiguration, unauthorized enumeration, or an attempt to map BAS devices for later control activity.",
     requiredLogs: ["bacnet"],
     requiredAnyLogs: [],
   },
-  "beaconing_c2_communication": {
+  beaconing_c2_communication: {
     id: "beaconing_c2_communication",
     name: "Beaconing / C2 Communication",
-    description: "Identifies repeated outbound connections to the same destination at consistent intervals, a behavioral pattern commonly associated with malware command-and-control check-ins.",
-    relevance: "Regular outbound callbacks can indicate malware command-and-control activity, which is especially concerning on systems expected to have stable and limited external communications.",
+    description:
+      "Identifies repeated outbound connections to the same destination at consistent intervals, a behavioral pattern commonly associated with malware command-and-control check-ins.",
+    relevance:
+      "Regular outbound callbacks can indicate malware command-and-control activity, which is especially concerning on systems expected to have stable and limited external communications.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "brute_force_authentication": {
+  brute_force_authentication: {
     id: "brute_force_authentication",
     name: "Brute Force Authentication",
-    description: "Identifies repeated authentication failures against SSH, RDP, HTTP, Kerberos, SMB/NTLM, and VNC that are consistent with automated password guessing or credential spraying.",
-    relevance: "Repeated login failures can indicate password guessing or credential spraying and may precede unauthorized access to engineering, administrative, or control-system resources.",
+    description:
+      "Identifies repeated authentication failures against SSH, RDP, HTTP, Kerberos, SMB/NTLM, and VNC that are consistent with automated password guessing or credential spraying.",
+    relevance:
+      "Repeated login failures can indicate password guessing or credential spraying and may precede unauthorized access to engineering, administrative, or control-system resources.",
     requiredLogs: [],
     requiredAnyLogs: [],
   },
-  "cleartext_credentials": {
+  cleartext_credentials: {
     id: "cleartext_credentials",
     name: "Cleartext Credentials",
-    description: "Identifies cleartext credential exposure in FTP, HTTP, SMTP, and Telnet analysis data. Password values are redacted from results.",
-    relevance: "Credentials sent without encryption can be recovered by anyone with network visibility and can enable account compromise, lateral movement, and unauthorized administrative access.",
+    description:
+      "Identifies cleartext credential exposure in FTP, HTTP, SMTP, and Telnet analysis data. Password values are redacted from results.",
+    relevance:
+      "Credentials sent without encryption can be recovered by anyone with network visibility and can enable account compromise, lateral movement, and unauthorized administrative access.",
     requiredLogs: [],
     requiredAnyLogs: [],
   },
-  "codesys_runtime_exposure": {
+  codesys_runtime_exposure: {
     id: "codesys_runtime_exposure",
     name: "CoDeSys Runtime Exposure",
-    description: "Identifies CODESYS programming/runtime and gateway communications using vendor-documented default ports or explicit service labels, with higher severity when runtime access reaches configured OT controllers from public or non-OT sources.",
-    relevance: "Exposed CODESYS programming/runtime services can provide a path to controller configuration or logic changes and should generally be limited to explicitly authorized engineering paths.",
+    description:
+      "Identifies CODESYS programming/runtime and gateway communications using vendor-documented default ports or explicit service labels, with higher severity when runtime access reaches configured OT controllers from public or non-OT sources.",
+    relevance:
+      "Exposed CODESYS programming/runtime services can provide a path to controller configuration or logic changes and should generally be limited to explicitly authorized engineering paths.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "control_system_enterprise_non_dmz": {
+  control_system_enterprise_non_dmz: {
     id: "control_system_enterprise_non_dmz",
     name: "Control System to Enterprise IT Communication (Non-DMZ)",
-    description: "Identifies direct communication between configured control-system/OT assets and enterprise or other non-OT networks when neither observed endpoint is an approved control-system DMZ intermediary.",
-    relevance: "Direct OT-to-enterprise communication can bypass intended segmentation controls and increase the chance that enterprise compromise reaches control-system assets without an industrial DMZ boundary.",
+    description:
+      "Identifies direct communication between configured control-system/OT assets and enterprise or other non-OT networks when neither observed endpoint is an approved control-system DMZ intermediary.",
+    relevance:
+      "Direct OT-to-enterprise communication can bypass intended segmentation controls and increase the chance that enterprise compromise reaches control-system assets without an industrial DMZ boundary.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "controller_communication_jitter": {
+  controller_communication_jitter: {
     id: "controller_communication_jitter",
     name: "Controller Communication Jitter",
-    description: "Detects increased timing variance in established controller communications after a baseline.",
-    relevance: "A sudden increase in controller timing variance can reveal network degradation, overloaded devices, configuration changes, or abnormal traffic affecting deterministic control communications.",
+    description:
+      "Detects increased timing variance in established controller communications after a baseline.",
+    relevance:
+      "A sudden increase in controller timing variance can reveal network degradation, overloaded devices, configuration changes, or abnormal traffic affecting deterministic control communications.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "cross_purdue_level_traffic": {
+  cross_purdue_level_traffic: {
     id: "cross_purdue_level_traffic",
     name: "Cross-Purdue-Level Traffic",
-    description: "Identifies direct communications between Purdue levels that should not communicate directly, including control levels reaching enterprise levels without an intermediate industrial DMZ.",
-    relevance: "Unexpected direct traffic across Purdue levels can indicate segmentation bypass, architectural drift, or lateral movement between zones that are intended to be separated.",
+    description:
+      "Identifies direct communications between Purdue levels that should not communicate directly, including control levels reaching enterprise levels without an intermediate industrial DMZ.",
+    relevance:
+      "Unexpected direct traffic across Purdue levels can indicate segmentation bypass, architectural drift, or lateral movement between zones that are intended to be separated.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "database_service_exposed": {
+  database_service_exposed: {
     id: "database_service_exposed",
     name: "Database Service Exposed",
-    description: "Identifies database services reachable across configured network-segment boundaries or from public Internet addresses, including MySQL, SQL Server, PostgreSQL, MongoDB, Redis, Memcached, and Elasticsearch.",
-    relevance: "Databases may contain operational, historian, credential, or configuration data; unexpected exposure increases the risk of unauthorized access, data loss, and pivoting into OT systems.",
+    description:
+      "Identifies database services reachable across configured network-segment boundaries or from public Internet addresses, including MySQL, SQL Server, PostgreSQL, MongoDB, Redis, Memcached, and Elasticsearch.",
+    relevance:
+      "Databases may contain operational, historian, credential, or configuration data; unexpected exposure increases the risk of unauthorized access, data loss, and pivoting into OT systems.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "deprecated_insecure_services_protocols": {
+  deprecated_insecure_services_protocols: {
     id: "deprecated_insecure_services_protocols",
     name: "Deprecated / Insecure Connection Services and Protocols",
-    description: "Identifies observed use of legacy, plaintext, or otherwise insecure connection services and insecure connection protocols.",
-    relevance: "Legacy and plaintext protocols often lack modern authentication or encryption, making interception, credential theft, manipulation, and unauthorized access easier.",
+    description:
+      "Identifies observed use of legacy, plaintext, or otherwise insecure connection services and insecure connection protocols.",
+    relevance:
+      "Legacy and plaintext protocols often lack modern authentication or encryption, making interception, credential theft, manipulation, and unauthorized access easier.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "deprecated_vpn_protocol": {
+  deprecated_vpn_protocol: {
     id: "deprecated_vpn_protocol",
     name: "PPTP / Deprecated VPN Protocol",
-    description: "Identifies PPTP using TCP/1723 with GRE when available, and L2TP sessions on UDP/1701 that lack correlated IKE/IPsec evidence.",
-    relevance: "Deprecated VPN protocols can rely on weak or obsolete security mechanisms and may create an avoidable remote-access path into sensitive networks.",
+    description:
+      "Identifies PPTP using TCP/1723 with GRE when available, and L2TP sessions on UDP/1701 that lack correlated IKE/IPsec evidence.",
+    relevance:
+      "Deprecated VPN protocols can rely on weak or obsolete security mechanisms and may create an avoidable remote-access path into sensitive networks.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "dns_source_drift": {
+  dns_source_drift: {
     id: "dns_source_drift",
     name: "DNS Resolver Source Drift",
-    description: "Detects OT clients that use DNS resolvers outside explicitly trusted infrastructure or change resolver after a capture baseline.",
-    relevance: "OT devices normally use a small set of approved resolvers; resolver changes can indicate misconfiguration, rogue infrastructure, traffic redirection, or compromise.",
+    description:
+      "Detects OT clients that use DNS resolvers outside explicitly trusted infrastructure or change resolver after a capture baseline.",
+    relevance:
+      "OT devices normally use a small set of approved resolvers; resolver changes can indicate misconfiguration, rogue infrastructure, traffic redirection, or compromise.",
     requiredLogs: ["dns"],
     requiredAnyLogs: [],
   },
-  "dns_tunneling_exfiltration": {
+  dns_tunneling_exfiltration: {
     id: "dns_tunneling_exfiltration",
     name: "DNS Tunneling / Exfiltration",
-    description: "Identifies DNS behavior consistent with covert tunneling or exfiltration, including encoded/high-entropy subdomains, high-payload TXT/NULL/ANY queries, and sustained NXDOMAIN-heavy query patterns.",
-    relevance: "DNS is commonly permitted through firewalls, so covert channels can use it to move data or maintain command-and-control while bypassing normal application controls.",
+    description:
+      "Identifies DNS behavior consistent with covert tunneling or exfiltration, including encoded/high-entropy subdomains, high-payload TXT/NULL/ANY queries, and sustained NXDOMAIN-heavy query patterns.",
+    relevance:
+      "DNS is commonly permitted through firewalls, so covert channels can use it to move data or maintain command-and-control while bypassing normal application controls.",
     requiredLogs: ["dns"],
     requiredAnyLogs: [],
   },
-  "encrypted_session_fingerprint_change": {
+  encrypted_session_fingerprint_change: {
     id: "encrypted_session_fingerprint_change",
     name: "Encrypted Session Fingerprint Change",
-    description: "Detects established TLS endpoint pairs whose observed TLS fingerprint changes after a capture baseline.",
-    relevance: "A change in an established TLS fingerprint can indicate software replacement, device reimaging, proxy interception, unauthorized applications, or a changed endpoint behind the same address.",
+    description:
+      "Detects established TLS endpoint pairs whose observed TLS fingerprint changes after a capture baseline.",
+    relevance:
+      "A change in an established TLS fingerprint can indicate software replacement, device reimaging, proxy interception, unauthorized applications, or a changed endpoint behind the same address.",
     requiredLogs: ["ssl"],
     requiredAnyLogs: [],
   },
-  "engineering_tools_cleartext": {
+  engineering_tools_cleartext: {
     id: "engineering_tools_cleartext",
     name: "Engineers Tools Over Clear-Text (TFTP/FTP)",
-    description: "Detects firmware or configuration material transferred using clear-text FTP or TFTP, using Zeek FTP/TFTP/file metadata rather than port-only inference.",
-    relevance: "Firmware and configuration material sent over FTP/TFTP can be intercepted or altered, creating risk to controller logic, device configuration, and engineering workflows.",
+    description:
+      "Detects firmware or configuration material transferred using clear-text FTP or TFTP, using Zeek FTP/TFTP/file metadata rather than port-only inference.",
+    relevance:
+      "Firmware and configuration material sent over FTP/TFTP can be intercepted or altered, creating risk to controller logic, device configuration, and engineering workflows.",
     requiredLogs: [],
     requiredAnyLogs: ["ftp", "tftp", "files"],
   },
-  "engineering_workstation_control_burst": {
+  engineering_workstation_control_burst: {
     id: "engineering_workstation_control_burst",
     name: "Engineering Workstation Control Burst",
-    description: "Detects bursts of control-write/programming operations from authoritative engineering workstations, including bursts on otherwise authorized paths.",
-    relevance: "A sudden burst of writes or programming actions from an engineering workstation can indicate unusual maintenance, automation mistakes, compromised credentials, or rapid unauthorized process changes.",
+    description:
+      "Detects bursts of control-write/programming operations from authoritative engineering workstations, including bursts on otherwise authorized paths.",
+    relevance:
+      "A sudden burst of writes or programming actions from an engineering workstation can indicate unusual maintenance, automation mistakes, compromised credentials, or rapid unauthorized process changes.",
     requiredLogs: [],
     requiredAnyLogs: ["modbus", "dnp3", "s7comm", "enip"],
   },
-  "enip_cip_write_session_abuses": {
+  enip_cip_write_session_abuses: {
     id: "enip_cip_write_session_abuses",
     name: "EtherNet/IP CIP Write and Session Abuses",
-    description: "Detects explicit CIP write services and excessive Forward_Open/Large_Forward_Open activity in EtherNet/IP telemetry, with optional policy checks for approved write paths.",
-    relevance: "CIP writes and abnormal session creation can directly alter PLC tags or controller state, so unexpected activity may have immediate process, safety, or availability consequences.",
+    description:
+      "Detects explicit CIP write services and excessive Forward_Open/Large_Forward_Open activity in EtherNet/IP telemetry, with optional policy checks for approved write paths.",
+    relevance:
+      "CIP writes and abnormal session creation can directly alter PLC tags or controller state, so unexpected activity may have immediate process, safety, or availability consequences.",
     requiredLogs: ["enip"],
     requiredAnyLogs: [],
   },
-  "excessive_broadcast_multicast_ot": {
+  excessive_broadcast_multicast_ot: {
     id: "excessive_broadcast_multicast_ot",
     name: "Excessive Broadcast / Multicast in OT",
-    description: "Detects unusually high broadcast or multicast traffic rates from explicitly configured OT segments/VLANs where point-to-point traffic is expected to dominate. Uses Zeek conn.log packet counts when available and falls back to flow-event rates when packet counts are unavailable.",
-    relevance: "Broadcast or multicast storms can degrade deterministic OT communications, indicate loops or misconfiguration, and sometimes accompany discovery or denial-of-service activity.",
+    description:
+      "Detects unusually high broadcast or multicast traffic rates from explicitly configured OT segments/VLANs where point-to-point traffic is expected to dominate. Uses Zeek conn.log packet counts when available and falls back to flow-event rates when packet counts are unavailable.",
+    relevance:
+      "Broadcast or multicast storms can degrade deterministic OT communications, indicate loops or misconfiguration, and sometimes accompany discovery or denial-of-service activity.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "file_extraction_sensitive_types": {
+  file_extraction_sensitive_types: {
     id: "file_extraction_sensitive_types",
     name: "File Extraction on Wire (Sensitive Types)",
-    description: "Detects executable, configuration, or archive file types observed by Zeek files.log when they are transferred to external destinations or across explicitly classified OT/IT boundaries.",
-    relevance: "Executables, configurations, and archives crossing trust boundaries can represent unauthorized software transfer, configuration leakage, malware movement, or data exfiltration.",
+    description:
+      "Detects executable, configuration, or archive file types observed by Zeek files.log when they are transferred to external destinations or across explicitly classified OT/IT boundaries.",
+    relevance:
+      "Executables, configurations, and archives crossing trust boundaries can represent unauthorized software transfer, configuration leakage, malware movement, or data exfiltration.",
     requiredLogs: ["files"],
     requiredAnyLogs: [],
   },
-  "high_fan_in_out": {
+  high_fan_in_out: {
     id: "high_fan_in_out",
     name: "High Fan-Out or Fan-In Patterns",
-    description: "Identifies bursts where one host contacts many distinct destinations (fan-out), or many distinct sources suddenly contact one newly observed destination (fan-in).",
-    relevance: "Sudden fan-out or fan-in can reveal scanning, propagation, centralized probing, compromised hosts, or a new service attracting connections outside normal OT communication patterns.",
+    description:
+      "Identifies bursts where one host contacts many distinct destinations (fan-out), or many distinct sources suddenly contact one newly observed destination (fan-in).",
+    relevance:
+      "Sudden fan-out or fan-in can reveal scanning, propagation, centralized probing, compromised hosts, or a new service attracting connections outside normal OT communication patterns.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "http_user_agent_anomalies": {
+  http_user_agent_anomalies: {
     id: "http_user_agent_anomalies",
     name: "HTTP User-Agent Anomalies",
-    description: "Identifies CLI/scripted HTTP clients and rare or missing User-Agent strings on sensitive HTTP flows using protocol telemetry and conservative baselines.",
-    relevance: "Scripted, rare, or missing HTTP client identifiers can reveal automation, unauthorized tooling, malware, or unexpected software communicating from systems with otherwise predictable behavior.",
+    description:
+      "Identifies CLI/scripted HTTP clients and rare or missing User-Agent strings on sensitive HTTP flows using protocol telemetry and conservative baselines.",
+    relevance:
+      "Scripted, rare, or missing HTTP client identifiers can reveal automation, unauthorized tooling, malware, or unexpected software communicating from systems with otherwise predictable behavior.",
     requiredLogs: ["http"],
     requiredAnyLogs: [],
   },
-  "iccp_tase2_detected": {
+  iccp_tase2_detected: {
     id: "iccp_tase2_detected",
     name: "ICCP / Inter-Control-Center Protocol",
-    description: "Identifies traffic consistent with ICCP/TASE.2, used for real-time data exchange between electric utility SCADA control centers. Explicit ICCP/TASE.2 service labels are preferred; TCP/102/OSI-on-TCP is treated conservatively because other industrial protocols also use ISO-on-TCP.",
-    relevance: "ICCP/TASE.2 links exchange operational power-system data between control centers; unexpected use can expose sensitive telemetry or indicate an unplanned control-center connection.",
+    description:
+      "Identifies traffic consistent with ICCP/TASE.2, used for real-time data exchange between electric utility SCADA control centers. Explicit ICCP/TASE.2 service labels are preferred; TCP/102/OSI-on-TCP is treated conservatively because other industrial protocols also use ISO-on-TCP.",
+    relevance:
+      "ICCP/TASE.2 links exchange operational power-system data between control centers; unexpected use can expose sensitive telemetry or indicate an unplanned control-center connection.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "icmp_data_channel": {
+  icmp_data_channel: {
     id: "icmp_data_channel",
     name: "ICMP as Data Channel",
-    description: "Identifies sustained ICMPv4 echo traffic with unusually uniform packet sizes and regular timing to external or explicitly unexpected destinations.",
-    relevance: "ICMP can bypass normal application controls and be abused for covert command-and-control or data transfer, especially when timing and packet sizes are unusually regular.",
+    description:
+      "Identifies sustained ICMPv4 echo traffic with unusually uniform packet sizes and regular timing to external or explicitly unexpected destinations.",
+    relevance:
+      "ICMP can bypass normal application controls and be abused for covert command-and-control or data transfer, especially when timing and packet sizes are unusually regular.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "ics_protocol_error_spike": {
+  ics_protocol_error_spike: {
     id: "ics_protocol_error_spike",
     name: "ICS Protocol Error / Exception Spike",
-    description: "Detects elevated rates of ICS protocol error responses, including Modbus exceptions, DNP3 IIN error indications, EtherNet/IP/CIP general-status failures, and S7 error returns.",
-    relevance: "A sudden rise in ICS exceptions can indicate malformed commands, incompatible changes, device faults, scanning, or unauthorized attempts to interact with control devices.",
+    description:
+      "Detects elevated rates of ICS protocol error responses, including Modbus exceptions, DNP3 IIN error indications, EtherNet/IP/CIP general-status failures, and S7 error returns.",
+    relevance:
+      "A sudden rise in ICS exceptions can indicate malformed commands, incompatible changes, device faults, scanning, or unauthorized attempts to interact with control devices.",
     requiredLogs: [],
     requiredAnyLogs: ["modbus", "dnp3", "enip", "s7comm"],
   },
-  "ics_write_operations": {
+  ics_write_operations: {
     id: "ics_write_operations",
     name: "Modbus/DNP3 Write Operations Outside Allowed Paths",
-    description: "Detects Modbus write operations and DNP3 write/control operations outside configured source-to-destination paths, plus protocol function codes outside an optional approved profile.",
-    relevance: "Unauthorized Modbus or DNP3 writes can directly change process values, outputs, or device behavior and therefore represent one of the highest-impact classes of OT network activity.",
+    description:
+      "Detects Modbus write operations and DNP3 write/control operations outside configured source-to-destination paths, plus protocol function codes outside an optional approved profile.",
+    relevance:
+      "Unauthorized Modbus or DNP3 writes can directly change process values, outputs, or device behavior and therefore represent one of the highest-impact classes of OT network activity.",
     requiredLogs: [],
     requiredAnyLogs: ["modbus", "dnp3"],
   },
-  "internet_exposed_ics": {
+  internet_exposed_ics: {
     id: "internet_exposed_ics",
     name: "Internet-Exposed ICS Device / External Admin to PLC/HMI",
-    description: "Identifies configured ICS assets communicating directly with public IP addresses and Internet-originated administrative access to PLC, RTU, HMI, BAS, historian, or other OT assets.",
-    relevance: "Direct Internet exposure of PLCs, HMIs, and other control assets creates a high-risk attack path by making sensitive services reachable outside intended network boundaries.",
+    description:
+      "Identifies configured ICS assets communicating directly with public IP addresses and Internet-originated administrative access to PLC, RTU, HMI, BAS, historian, or other OT assets.",
+    relevance:
+      "Direct Internet exposure of PLCs, HMIs, and other control assets creates a high-risk attack path by making sensitive services reachable outside intended network boundaries.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "ipv6_traffic_ot": {
+  ipv6_traffic_ot: {
     id: "ipv6_traffic_ot",
     name: "IPv6 Traffic in OT Environment",
-    description: "Identifies IPv6 communications observed in an OT/ICS environment that is explicitly documented as IPv4-only, including link-local, deprecated site-local, unique-local, multicast, and global IPv6.",
-    relevance: "Unexpected IPv6 can bypass IPv4-only monitoring or policy assumptions and may indicate unmanaged interfaces, rogue communications, or configuration drift in an IPv4-only environment.",
+    description:
+      "Identifies IPv6 communications observed in an OT/ICS environment that is explicitly documented as IPv4-only, including link-local, deprecated site-local, unique-local, multicast, and global IPv6.",
+    relevance:
+      "Unexpected IPv6 can bypass IPv4-only monitoring or policy assumptions and may indicate unmanaged interfaces, rogue communications, or configuration drift in an IPv4-only environment.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "irc_traffic_detected": {
+  irc_traffic_detected: {
     id: "irc_traffic_detected",
     name: "IRC Traffic Detected",
-    description: "Identifies Internet Relay Chat traffic on standard IRC ports or on non-standard ports when Zeek explicitly identifies the service as IRC.",
-    relevance: "IRC is uncommon in most OT environments and has a long history as a command-and-control channel, so its presence can indicate unauthorized software or malware communication.",
+    description:
+      "Identifies Internet Relay Chat traffic on standard IRC ports or on non-standard ports when Zeek explicitly identifies the service as IRC.",
+    relevance:
+      "IRC is uncommon in most OT environments and has a long history as a command-and-control channel, so its presence can indicate unauthorized software or malware communication.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "ja3_fingerprint_outliers": {
+  ja3_fingerprint_outliers: {
     id: "ja3_fingerprint_outliers",
     name: "JA3/JA3S Fingerprint Outliers",
-    description: "Detects rare TLS client/server JA3 or JA3S fingerprints that fall outside an established, stable fingerprint baseline for a configured network segment.",
-    relevance: "Rare TLS fingerprints can reveal new or unauthorized applications, malware, tooling changes, or endpoints behaving differently from their established encrypted-traffic baseline.",
+    description:
+      "Detects rare TLS client/server JA3 or JA3S fingerprints that fall outside an established, stable fingerprint baseline for a configured network segment.",
+    relevance:
+      "Rare TLS fingerprints can reveal new or unauthorized applications, malware, tooling changes, or endpoints behaving differently from their established encrypted-traffic baseline.",
     requiredLogs: ["ssl"],
     requiredAnyLogs: [],
   },
-  "kerberos_asrep_roastable_accounts": {
+  kerberos_asrep_roastable_accounts: {
     id: "kerberos_asrep_roastable_accounts",
     name: "Kerberos AS-REP Roastable Accounts",
-    description: "Detects Kerberos accounts explicitly observed allowing AS authentication without pre-authentication, a condition associated with AS-REP roasting.",
-    relevance: "Accounts that permit authentication without Kerberos pre-authentication are vulnerable to offline password cracking, increasing credential-compromise risk.",
+    description:
+      "Detects Kerberos accounts explicitly observed allowing AS authentication without pre-authentication, a condition associated with AS-REP roasting.",
+    relevance:
+      "Accounts that permit authentication without Kerberos pre-authentication are vulnerable to offline password cracking, increasing credential-compromise risk.",
     requiredLogs: ["kerberos"],
     requiredAnyLogs: [],
   },
-  "large_outbound_http_uploads": {
+  large_outbound_http_uploads: {
     id: "large_outbound_http_uploads",
     name: "Large Outbound POST/PUT to Unknown Hosts",
-    description: "Identifies substantial HTTP POST/PUT uploads from internal clients to external, non-approved destinations using explicit request-body length when available and conn.log orig_bytes only as a conservative fallback.",
-    relevance: "Large uploads to unknown external systems can indicate data exfiltration, unauthorized cloud transfer, or accidental disclosure of operational information.",
+    description:
+      "Identifies substantial HTTP POST/PUT uploads from internal clients to external, non-approved destinations using explicit request-body length when available and conn.log orig_bytes only as a conservative fallback.",
+    relevance:
+      "Large uploads to unknown external systems can indicate data exfiltration, unauthorized cloud transfer, or accidental disclosure of operational information.",
     requiredLogs: ["http"],
     requiredAnyLogs: [],
   },
-  "ldap_cleartext_anonymous_cross_segment": {
+  ldap_cleartext_anonymous_cross_segment: {
     id: "ldap_cleartext_anonymous_cross_segment",
     name: "LDAP Cleartext / Anonymous Bind / Cross-Segment",
-    description: "Identifies LDAP anonymous or simple binds without TLS, cleartext LDAP on port 389, and LDAP communications that cross configured network segments, including OT-to-enterprise directory queries.",
-    relevance: "Unprotected or unexpected directory queries can expose credentials and identity information, while cross-segment LDAP can create unnecessary trust paths between OT and enterprise networks.",
+    description:
+      "Identifies LDAP anonymous or simple binds without TLS, cleartext LDAP on port 389, and LDAP communications that cross configured network segments, including OT-to-enterprise directory queries.",
+    relevance:
+      "Unprotected or unexpected directory queries can expose credentials and identity information, while cross-segment LDAP can create unnecessary trust paths between OT and enterprise networks.",
     requiredLogs: [],
     requiredAnyLogs: [],
   },
-  "llmnr_nbtns_mdns_poisoning_signals": {
+  llmnr_nbtns_mdns_poisoning_signals: {
     id: "llmnr_nbtns_mdns_poisoning_signals",
     name: "LLMNR/NBT-NS/mDNS Poisoning Signals",
-    description: "Detects unusually frequent multicast/broadcast name-resolution queries and suspicious LLMNR, NBT-NS, or mDNS responder patterns that can be consistent with name-resolution poisoning.",
-    relevance: "Name-resolution poisoning can redirect systems to an attacker-controlled host, enabling credential capture, man-in-the-middle activity, or lateral movement.",
+    description:
+      "Detects unusually frequent multicast/broadcast name-resolution queries and suspicious LLMNR, NBT-NS, or mDNS responder patterns that can be consistent with name-resolution poisoning.",
+    relevance:
+      "Name-resolution poisoning can redirect systems to an attacker-controlled host, enabling credential capture, man-in-the-middle activity, or lateral movement.",
     requiredLogs: ["dns"],
     requiredAnyLogs: [],
   },
-  "netbios_smbv1_exposure": {
+  netbios_smbv1_exposure: {
     id: "netbios_smbv1_exposure",
     name: "NetBIOS / SMBv1 Exposure",
-    description: "Identifies NetBIOS traffic on ports 137-139 or explicitly evidenced SMBv1 traffic crossing configured network-segment boundaries or involving public Internet addresses.",
-    relevance: "SMBv1 and exposed NetBIOS services increase susceptibility to legacy protocol attacks, credential abuse, malware propagation, and lateral movement across network boundaries.",
+    description:
+      "Identifies NetBIOS traffic on ports 137-139 or explicitly evidenced SMBv1 traffic crossing configured network-segment boundaries or involving public Internet addresses.",
+    relevance:
+      "SMBv1 and exposed NetBIOS services increase susceptibility to legacy protocol attacks, credential abuse, malware propagation, and lateral movement across network boundaries.",
     requiredLogs: [],
     requiredAnyLogs: ["conn", "smb", "smb_mapping", "smb_files", "smb_cmd"],
   },
-  "new_ot_conversation_pair": {
+  new_ot_conversation_pair: {
     id: "new_ot_conversation_pair",
     name: "New OT Conversation Pair (Comm-Matrix Drift)",
-    description: "Builds a directed source-to-destination communication matrix during an OT baseline period and identifies new talker relationships that first appear after the baseline.",
-    relevance: "New source-destination relationships are important in stable OT networks because they can indicate maintenance changes, unauthorized access, lateral movement, or newly connected equipment.",
+    description:
+      "Builds a directed source-to-destination communication matrix during an OT baseline period and identifies new talker relationships that first appear after the baseline.",
+    relevance:
+      "New source-destination relationships are important in stable OT networks because they can indicate maintenance changes, unauthorized access, lateral movement, or newly connected equipment.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "new_service_emergence_ot": {
+  new_service_emergence_ot: {
     id: "new_service_emergence_ot",
     name: "New Service Emergence in OT (Baseline Drift)",
-    description: "Identifies services newly observed on configured OT hosts after an established baseline period, using Zeek service identification when available and protocol/port identity as a fallback.",
-    relevance: "A newly observed service on an OT asset can indicate software installation, configuration drift, unauthorized remote access, device replacement, or compromise.",
+    description:
+      "Identifies services newly observed on configured OT hosts after an established baseline period, using Zeek service identification when available and protocol/port identity as a fallback.",
+    relevance:
+      "A newly observed service on an OT asset can indicate software installation, configuration drift, unauthorized remote access, device replacement, or compromise.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "niagara_fox_detected": {
+  niagara_fox_detected: {
     id: "niagara_fox_detected",
     name: "Niagara Fox Protocol Detected",
-    description: "Identifies Tridium Niagara Fox communications on TCP/1911 and Fox-over-SSL on TCP/4911, commonly used between JACE controllers and supervisory stations in building automation systems.",
-    relevance: "Niagara Fox is used to manage building-automation systems; unexpected exposure or cross-boundary use can provide access to BAS configuration and control functions.",
+    description:
+      "Identifies Tridium Niagara Fox communications on TCP/1911 and Fox-over-SSL on TCP/4911, commonly used between JACE controllers and supervisory stations in building automation systems.",
+    relevance:
+      "Niagara Fox is used to manage building-automation systems; unexpected exposure or cross-boundary use can provide access to BAS configuration and control functions.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "ntp_internet_multi_dest_ot": {
+  ntp_internet_multi_dest_ot: {
     id: "ntp_internet_multi_dest_ot",
     name: "NTP Sourced from Internet (Multi-Dest / OT)",
-    description: "Detects OT hosts using multiple distinct globally routable NTP servers instead of a centralized trusted time source, with optional trusted-server and external-server allow-list policy.",
-    relevance: "OT devices normally use approved internal time sources; Internet or multi-destination NTP can indicate configuration drift, unnecessary external dependencies, or traffic manipulation risk.",
+    description:
+      "Detects OT hosts using multiple distinct globally routable NTP servers instead of a centralized trusted time source, with optional trusted-server and external-server allow-list policy.",
+    relevance:
+      "OT devices normally use approved internal time sources; Internet or multi-destination NTP can indicate configuration drift, unnecessary external dependencies, or traffic manipulation risk.",
     requiredLogs: ["ntp"],
     requiredAnyLogs: [],
   },
-  "ntp_source_drift": {
+  ntp_source_drift: {
     id: "ntp_source_drift",
     name: "NTP Source Drift",
-    description: "Detects NTP clients that use servers outside explicitly trusted time infrastructure or change server after a capture baseline.",
-    relevance: "A changed time source can affect event ordering, authentication, logging, and control-system coordination and may indicate rogue infrastructure or configuration changes.",
+    description:
+      "Detects NTP clients that use servers outside explicitly trusted time infrastructure or change server after a capture baseline.",
+    relevance:
+      "A changed time source can affect event ordering, authentication, logging, and control-system coordination and may indicate rogue infrastructure or configuration changes.",
     requiredLogs: ["ntp"],
     requiredAnyLogs: [],
   },
-  "ot_asset_gone_silent": {
+  ot_asset_gone_silent: {
     id: "ot_asset_gone_silent",
     name: "OT Asset Gone Silent (Loss of Expected Periodic Comms)",
-    description: "Learns regular OT host/conversation cadence during a baseline period and identifies expected periodic communications that cease for materially longer than their established interval.",
-    relevance: "An expected OT asset that stops communicating may be offline, disconnected, failed, replaced, isolated, or affected by a network/security incident.",
+    description:
+      "Learns regular OT host/conversation cadence during a baseline period and identifies expected periodic communications that cease for materially longer than their established interval.",
+    relevance:
+      "An expected OT asset that stops communicating may be offline, disconnected, failed, replaced, isolated, or affected by a network/security incident.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "ot_external_dns_resolver": {
+  ot_external_dns_resolver: {
     id: "ot_external_dns_resolver",
     name: "OT Host Using External / Internet DNS Resolver",
-    description: "Detects OT/control-system hosts sending DNS queries to public Internet resolvers or resolvers outside the configured OT boundary instead of approved internal DNS infrastructure.",
-    relevance: "External DNS bypasses internal resolver controls and visibility, potentially exposing operational names and creating a path for traffic redirection or covert communication.",
+    description:
+      "Detects OT/control-system hosts sending DNS queries to public Internet resolvers or resolvers outside the configured OT boundary instead of approved internal DNS infrastructure.",
+    relevance:
+      "External DNS bypasses internal resolver controls and visibility, potentially exposing operational names and creating a path for traffic redirection or covert communication.",
     requiredLogs: ["dns"],
     requiredAnyLogs: [],
   },
-  "ot_management_certificate_risk": {
+  ot_management_certificate_risk: {
     id: "ot_management_certificate_risk",
     name: "Certificate Long Validity / Self-Issued in OT Mgmt",
-    description: "Identifies long-validity and self-issued TLS certificates presented by configured OT management endpoints.",
-    relevance: "Weak, expired, mismatched, or otherwise risky certificates on OT management services can reduce trust in administrative sessions and make interception or impersonation easier.",
+    description:
+      "Identifies long-validity and self-issued TLS certificates presented by configured OT management endpoints.",
+    relevance:
+      "Weak, expired, mismatched, or otherwise risky certificates on OT management services can reduce trust in administrative sessions and make interception or impersonation easier.",
     requiredLogs: [],
     requiredAnyLogs: ["ssl", "x509"],
   },
-  "ot_outbound_internet_any_protocol": {
+  ot_outbound_internet_any_protocol: {
     id: "ot_outbound_internet_any_protocol",
     name: "OT Outbound Internet Connection (Any Protocol)",
-    description: "Generic egress catch-all for sessions initiated by configured OT/control-system assets toward globally routable Internet destinations, irrespective of application protocol.",
-    relevance: "Unexpected Internet communication from OT assets increases exposure to command-and-control, exfiltration, software-download, and third-party dependency risks.",
+    description:
+      "Generic egress catch-all for sessions initiated by configured OT/control-system assets toward globally routable Internet destinations, irrespective of application protocol.",
+    relevance:
+      "Unexpected Internet communication from OT assets increases exposure to command-and-control, exfiltration, software-download, and third-party dependency risks.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "ot_protocol_exposure": {
+  ot_protocol_exposure: {
     id: "ot_protocol_exposure",
     name: "OT Protocol Exposure",
-    description: "Identifies industrial control protocols observed outside configured control-system network segments, including Modbus, DNP3, EtherNet/IP, BACnet, IEC 61850 MMS, and S7comm.",
-    relevance: "Industrial protocols exposed outside their intended segments may allow unauthorized discovery, monitoring, or control of devices that often have limited built-in security.",
+    description:
+      "Identifies industrial control protocols observed outside configured control-system network segments, including Modbus, DNP3, EtherNet/IP, BACnet, IEC 61850 MMS, and S7comm.",
+    relevance:
+      "Industrial protocols exposed outside their intended segments may allow unauthorized discovery, monitoring, or control of devices that often have limited built-in security.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "ot_protocol_role_reversal": {
+  ot_protocol_role_reversal: {
     id: "ot_protocol_role_reversal",
     name: "OT Protocol Role Reversal",
-    description: "Detects hosts that are established as OT protocol responders during the baseline and later begin originating that protocol toward peers.",
-    relevance: "When a device unexpectedly changes from its normal client/server or controller/responder role, it can indicate reconfiguration, rogue services, compromise, or abnormal control behavior.",
+    description:
+      "Detects hosts that are established as OT protocol responders during the baseline and later begin originating that protocol toward peers.",
+    relevance:
+      "When a device unexpectedly changes from its normal client/server or controller/responder role, it can indicate reconfiguration, rogue services, compromise, or abnormal control behavior.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "plc_program_logic_firmware_update": {
+  plc_program_logic_firmware_update: {
     id: "plc_program_logic_firmware_update",
     name: "PLC Program / Logic Download or Firmware Update",
-    description: "Detects explicit ICS protocol operations associated with PLC program/logic transfer, firmware update, or DNP3 restart/file-transfer activity.",
-    relevance: "PLC logic or firmware changes can alter physical process behavior; unexpected update activity should be closely tied to approved maintenance and engineering actions.",
+    description:
+      "Detects explicit ICS protocol operations associated with PLC program/logic transfer, firmware update, or DNP3 restart/file-transfer activity.",
+    relevance:
+      "PLC logic or firmware changes can alter physical process behavior; unexpected update activity should be closely tied to approved maintenance and engineering actions.",
     requiredLogs: [],
     requiredAnyLogs: ["modbus", "s7comm", "enip", "dnp3"],
   },
-  "plc_rtu_peer_change": {
+  plc_rtu_peer_change: {
     id: "plc_rtu_peer_change",
     name: "PLC / RTU Peer Change",
-    description: "Detects a new communication peer involving an authoritative PLC, RTU, controller, or IED after the capture baseline.",
-    relevance: "Controllers usually communicate with a stable set of peers; a new peer may indicate a new engineering path, unauthorized access, network change, or lateral movement toward control assets.",
+    description:
+      "Detects a new communication peer involving an authoritative PLC, RTU, controller, or IED after the capture baseline.",
+    relevance:
+      "Controllers usually communicate with a stable set of peers; a new peer may indicate a new engineering path, unauthorized access, network change, or lateral movement toward control assets.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "polling_cadence_disruption": {
+  polling_cadence_disruption: {
     id: "polling_cadence_disruption",
     name: "Polling Cadence Disruption",
-    description: "Detects established periodic OT polling whose post-baseline interval shifts materially from its learned cadence.",
-    relevance: "Changes in regular polling intervals can reveal congestion, controller problems, communication faults, configuration changes, or interference with deterministic control traffic.",
+    description:
+      "Detects established periodic OT polling whose post-baseline interval shifts materially from its learned cadence.",
+    relevance:
+      "Changes in regular polling intervals can reveal congestion, controller problems, communication faults, configuration changes, or interference with deterministic control traffic.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "port_host_scanning": {
+  port_host_scanning: {
     id: "port_host_scanning",
     name: "Port / Host Scanning",
-    description: "Identifies rapid connection attempts from a single source to many ports on one host (port scan) or to many hosts on the same service/port (host sweep).",
-    relevance: "Scanning is often used to discover reachable hosts and services before exploitation and is unusual on tightly controlled OT networks outside approved maintenance activity.",
+    description:
+      "Identifies rapid connection attempts from a single source to many ports on one host (port scan) or to many hosts on the same service/port (host sweep).",
+    relevance:
+      "Scanning is often used to discover reachable hosts and services before exploitation and is unusual on tightly controlled OT networks outside approved maintenance activity.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "protocol_unexpected_high_risk_port": {
+  protocol_unexpected_high_risk_port: {
     id: "protocol_unexpected_high_risk_port",
     name: "Protocol on Unexpected / High-Risk Port",
-    description: "Identifies Zeek-recognized application protocols running on unexpected ports and traffic using ports with a strong historical association with backdoors, reverse shells, proxies, or command-and-control tooling.",
-    relevance: "Sensitive services appearing on unexpected ports can indicate tunneling, service relocation, evasive behavior, misconfiguration, or unauthorized software.",
+    description:
+      "Identifies Zeek-recognized application protocols running on unexpected ports and traffic using ports with a strong historical association with backdoors, reverse shells, proxies, or command-and-control tooling.",
+    relevance:
+      "Sensitive services appearing on unexpected ports can indicate tunneling, service relocation, evasive behavior, misconfiguration, or unauthorized software.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "public_to_public_traffic": {
+  public_to_public_traffic: {
     id: "public_to_public_traffic",
     name: "Public-to-Public Traffic in Capture",
-    description: "Identifies traffic between two globally routable IP addresses when the monitored capture is explicitly expected to contain only internal ICS/OT communications.",
-    relevance: "Public-to-public flows observed at an internal monitoring point can indicate routing or sensor-placement problems, unexpected transit traffic, or network behavior outside the intended scope.",
+    description:
+      "Identifies traffic between two globally routable IP addresses when the monitored capture is explicitly expected to contain only internal ICS/OT communications.",
+    relevance:
+      "Public-to-public flows observed at an internal monitoring point can indicate routing or sensor-placement problems, unexpected transit traffic, or network behavior outside the intended scope.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "quic_ot_segments": {
+  quic_ot_segments: {
     id: "quic_ot_segments",
     name: "QUIC in OT Segments",
-    description: "Identifies QUIC/HTTP/3 traffic involving configured OT/control segments, with explicit protocol evidence preferred over lower-confidence UDP/443 heuristics.",
-    relevance: "QUIC/HTTP3 is uncommon in deterministic OT segments and can introduce encrypted external communications that bypass expected proxy, inspection, or protocol-control assumptions.",
+    description:
+      "Identifies QUIC/HTTP/3 traffic involving configured OT/control segments, with explicit protocol evidence preferred over lower-confidence UDP/443 heuristics.",
+    relevance:
+      "QUIC/HTTP3 is uncommon in deterministic OT segments and can introduce encrypted external communications that bypass expected proxy, inspection, or protocol-control assumptions.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "rdp_nla_disabled": {
+  rdp_nla_disabled: {
     id: "rdp_nla_disabled",
     name: "Unexpected RDP with NLA Disabled",
-    description: "Identifies RDP sessions where protocol telemetry explicitly shows Network Level Authentication (NLA/CredSSP) was not used, plus lower-severity cases where NLA is explicitly not required.",
-    relevance: "RDP without Network Level Authentication exposes more of the remote desktop service before authentication and increases susceptibility to credential and pre-authentication attacks.",
+    description:
+      "Identifies RDP sessions where protocol telemetry explicitly shows Network Level Authentication (NLA/CredSSP) was not used, plus lower-severity cases where NLA is explicitly not required.",
+    relevance:
+      "RDP without Network Level Authentication exposes more of the remote desktop service before authentication and increases susceptibility to credential and pre-authentication attacks.",
     requiredLogs: ["rdp"],
     requiredAnyLogs: [],
   },
-  "remote_access_session_anomaly": {
+  remote_access_session_anomaly: {
     id: "remote_access_session_anomaly",
     name: "Remote Access Session Anomaly",
-    description: "Detects authorized remote-access sources that fan out to unusual OT targets after a baseline.",
-    relevance: "New remote-access targets or unusual fan-out can indicate compromised accounts, unauthorized administration, or an operator/tool reaching systems outside its normal scope.",
+    description:
+      "Detects authorized remote-access sources that fan out to unusual OT targets after a baseline.",
+    relevance:
+      "New remote-access targets or unusual fan-out can indicate compromised accounts, unauthorized administration, or an operator/tool reaching systems outside its normal scope.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "remote_access_tool_exposure": {
+  remote_access_tool_exposure: {
     id: "remote_access_tool_exposure",
     name: "VNC / Remote Access Tool Exposure",
-    description: "Identifies VNC, pcAnywhere, TeamViewer, AnyDesk, Radmin, and configured remote-access tools, with higher priority for traffic involving OT/ICS segments or public Internet peers.",
-    relevance: "Unexpected remote-access services can create powerful administrative pathways into OT systems and are frequently abused for lateral movement and persistence.",
+    description:
+      "Identifies VNC, pcAnywhere, TeamViewer, AnyDesk, Radmin, and configured remote-access tools, with higher priority for traffic involving OT/ICS segments or public Internet peers.",
+    relevance:
+      "Unexpected remote-access services can create powerful administrative pathways into OT systems and are frequently abused for lateral movement and persistence.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "rogue_dhcp_static_ot": {
+  rogue_dhcp_static_ot: {
     id: "rogue_dhcp_static_ot",
     name: "Rogue DHCP Server / DHCP Activity on Static OT Segment",
-    description: "Detects DHCP offers or lease activity from unapproved servers, competing offers from multiple DHCP servers, and DHCP request/offer/lease activity on explicitly static or DHCP-prohibited OT segments.",
-    relevance: "DHCP activity in a static-address OT segment can reconfigure gateways, DNS, or host addressing and may indicate a rogue server or accidental infrastructure change.",
+    description:
+      "Detects DHCP offers or lease activity from unapproved servers, competing offers from multiple DHCP servers, and DHCP request/offer/lease activity on explicitly static or DHCP-prohibited OT segments.",
+    relevance:
+      "DHCP activity in a static-address OT segment can reconfigure gateways, DNS, or host addressing and may indicate a rogue server or accidental infrastructure change.",
     requiredLogs: ["dhcp"],
     requiredAnyLogs: [],
   },
-  "s7comm_unauthorized_write_stop": {
+  s7comm_unauthorized_write_stop: {
     id: "s7comm_unauthorized_write_stop",
     name: "S7comm Unauthorized Write/Stop PLC",
-    description: "Detects explicit Siemens S7comm write/download/control operations and PLC STOP commands, with optional policy checks for approved source-to-destination control paths.",
-    relevance: "Unauthorized S7 writes or STOP commands can directly modify or halt Siemens PLC operation, creating immediate availability, process, and safety impact.",
+    description:
+      "Detects explicit Siemens S7comm write/download/control operations and PLC STOP commands, with optional policy checks for approved source-to-destination control paths.",
+    relevance:
+      "Unauthorized S7 writes or STOP commands can directly modify or halt Siemens PLC operation, creating immediate availability, process, and safety impact.",
     requiredLogs: ["s7comm"],
     requiredAnyLogs: [],
   },
-  "service_disappearance_replacement": {
+  service_disappearance_replacement: {
     id: "service_disappearance_replacement",
     name: "Service Disappearance / Replacement",
-    description: "Detects OT endpoints where a baseline service disappears and a different service appears after the baseline.",
-    relevance: "A service that disappears or is replaced on the same OT endpoint can indicate maintenance, device replacement, software changes, failure, or compromise.",
+    description:
+      "Detects OT endpoints where a baseline service disappears and a different service appears after the baseline.",
+    relevance:
+      "A service that disappears or is replaced on the same OT endpoint can indicate maintenance, device replacement, software changes, failure, or compromise.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "smb_admin_share_access": {
+  smb_admin_share_access: {
     id: "smb_admin_share_access",
     name: "SMB Admin-Share Access (IPC$/ADMIN$)",
-    description: "Identifies explicit SMB access to IPC$ or ADMIN$ and highlights repeated or multi-target patterns that can be consistent with remote administration or lateral movement.",
-    relevance: "Administrative share access can provide broad file-system reach and is commonly used for remote administration, lateral movement, software deployment, and malware propagation.",
+    description:
+      "Identifies explicit SMB access to IPC$ or ADMIN$ and highlights repeated or multi-target patterns that can be consistent with remote administration or lateral movement.",
+    relevance:
+      "Administrative share access can provide broad file-system reach and is commonly used for remote administration, lateral movement, software deployment, and malware propagation.",
     requiredLogs: [],
     requiredAnyLogs: [],
   },
-  "smb_signing_disabled_ntlmv1": {
+  smb_signing_disabled_ntlmv1: {
     id: "smb_signing_disabled_ntlmv1",
     name: "SMB Signing Disabled or NTLMv1 Detected",
-    description: "Identifies SMB sessions explicitly observed without message signing or with signing disabled/not required, and NTLM authentication records that explicitly identify NTLMv1.",
-    relevance: "Weak SMB authentication or missing signing increases exposure to credential relay, downgrade, man-in-the-middle, and legacy password attacks.",
+    description:
+      "Identifies SMB sessions explicitly observed without message signing or with signing disabled/not required, and NTLM authentication records that explicitly identify NTLMv1.",
+    relevance:
+      "Weak SMB authentication or missing signing increases exposure to credential relay, downgrade, man-in-the-middle, and legacy password attacks.",
     requiredLogs: [],
     requiredAnyLogs: [],
   },
-  "snmp_write_ot_devices": {
+  snmp_write_ot_devices: {
     id: "snmp_write_ot_devices",
     name: "SNMP Write / Set to OT Devices",
-    description: "Detects SNMP SET operations or use of explicitly configured writable SNMPv1/v2c communities against OT devices, controllers, or managed network infrastructure beyond ordinary read-only polling.",
-    relevance: "SNMP SET operations can change device configuration remotely; unexpected writes may alter network or OT device behavior outside approved management workflows.",
+    description:
+      "Detects SNMP SET operations or use of explicitly configured writable SNMPv1/v2c communities against OT devices, controllers, or managed network infrastructure beyond ordinary read-only polling.",
+    relevance:
+      "SNMP SET operations can change device configuration remotely; unexpected writes may alter network or OT device behavior outside approved management workflows.",
     requiredLogs: ["snmp"],
     requiredAnyLogs: [],
   },
-  "socks_open_proxy_behavior": {
+  socks_open_proxy_behavior: {
     id: "socks_open_proxy_behavior",
     name: "SOCKS / Open Proxy Behavior",
-    description: "Identifies hosts acting as SOCKS or HTTP CONNECT proxy endpoints using explicit protocol telemetry, without inferring proxy behavior from common ports alone.",
-    relevance: "SOCKS or open-proxy behavior can provide a covert pivot path through the environment, allowing attackers or unauthorized users to relay traffic through trusted systems.",
+    description:
+      "Identifies hosts acting as SOCKS or HTTP CONNECT proxy endpoints using explicit protocol telemetry, without inferring proxy behavior from common ports alone.",
+    relevance:
+      "SOCKS or open-proxy behavior can provide a covert pivot path through the environment, allowing attackers or unauthorized users to relay traffic through trusted systems.",
     requiredLogs: [],
     requiredAnyLogs: ["socks", "http"],
   },
-  "tcp_reset_abort_surge": {
+  tcp_reset_abort_surge: {
     id: "tcp_reset_abort_surge",
     name: "TCP Reset / Connection-Abort Surge",
-    description: "Detects bursts of reset/rejected/aborted TCP sessions against the same destination.",
-    relevance: "A surge in resets or aborted sessions can indicate network instability, overloaded devices, scanning, policy changes, active interference, or denial-of-service conditions.",
+    description:
+      "Detects bursts of reset/rejected/aborted TCP sessions against the same destination.",
+    relevance:
+      "A surge in resets or aborted sessions can indicate network instability, overloaded devices, scanning, policy changes, active interference, or denial-of-service conditions.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "tls_certificate_anomalies": {
+  tls_certificate_anomalies: {
     id: "tls_certificate_anomalies",
     name: "TLS Certificate Anomalies",
-    description: "Identifies self-signed, expired, hostname-mismatched, weak-key, and unknown/untrusted-CA TLS certificates using Zeek ssl.log and x509.log when available.",
-    relevance: "Unexpected certificate properties can indicate expired or misconfigured services, interception, device replacement, unauthorized endpoints, or weak trust management.",
+    description:
+      "Identifies self-signed, expired, hostname-mismatched, weak-key, and unknown/untrusted-CA TLS certificates using Zeek ssl.log and x509.log when available.",
+    relevance:
+      "Unexpected certificate properties can indicate expired or misconfigured services, interception, device replacement, unauthorized endpoints, or weak trust management.",
     requiredLogs: [],
     requiredAnyLogs: [],
   },
-  "tls_sni_certificate_reuse": {
+  tls_sni_certificate_reuse: {
     id: "tls_sni_certificate_reuse",
     name: "TLS SNI Mismatch / Certificate Reuse Across Hosts",
-    description: "Detects TLS sessions whose SNI/server identity does not match the presented certificate and certificates reused broadly across unrelated server hosts/domains.",
-    relevance: "Unusual reuse of the same certificate across unrelated names or destinations can indicate shared infrastructure, interception, misconfiguration, or suspicious service hosting.",
+    description:
+      "Detects TLS sessions whose SNI/server identity does not match the presented certificate and certificates reused broadly across unrelated server hosts/domains.",
+    relevance:
+      "Unusual reuse of the same certificate across unrelated names or destinations can indicate shared infrastructure, interception, misconfiguration, or suspicious service hosting.",
     requiredLogs: [],
     requiredAnyLogs: ["ssl", "x509"],
   },
-  "unexpected_dhcp_server": {
+  unexpected_dhcp_server: {
     id: "unexpected_dhcp_server",
     name: "Unexpected DHCP Server",
-    description: "Detects DHCP server responses from sources outside the explicitly configured trusted DHCP infrastructure.",
-    relevance: "An unauthorized DHCP server can redirect gateways and DNS, disrupt addressing, or intercept traffic, making it a high-impact infrastructure integrity problem.",
+    description:
+      "Detects DHCP server responses from sources outside the explicitly configured trusted DHCP infrastructure.",
+    relevance:
+      "An unauthorized DHCP server can redirect gateways and DNS, disrupt addressing, or intercept traffic, making it a high-impact infrastructure integrity problem.",
     requiredLogs: ["dhcp"],
     requiredAnyLogs: [],
   },
-  "unexpected_multicast_behavior": {
+  unexpected_multicast_behavior: {
     id: "unexpected_multicast_behavior",
     name: "Unexpected Multicast Behavior",
-    description: "Detects OT hosts initiating multicast traffic to groups outside explicitly allowed multicast destinations.",
-    relevance: "Unapproved multicast can reveal new discovery protocols, misconfiguration, chatty devices, or traffic that may degrade or expose otherwise deterministic OT segments.",
+    description:
+      "Detects OT hosts initiating multicast traffic to groups outside explicitly allowed multicast destinations.",
+    relevance:
+      "Unapproved multicast can reveal new discovery protocols, misconfiguration, chatty devices, or traffic that may degrade or expose otherwise deterministic OT segments.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "unknown_rogue_devices": {
+  unknown_rogue_devices: {
     id: "unknown_rogue_devices",
     name: "Unknown / Rogue Devices",
-    description: "Identifies locally observed IP or MAC addresses that are not present in the supplied asset inventory.",
-    relevance: "Previously unknown devices can represent unauthorized connections, unmanaged equipment, temporary contractor systems, asset-inventory gaps, or compromised infrastructure.",
+    description:
+      "Identifies locally observed IP or MAC addresses that are not present in the supplied asset inventory.",
+    relevance:
+      "Previously unknown devices can represent unauthorized connections, unmanaged equipment, temporary contractor systems, asset-inventory gaps, or compromised infrastructure.",
     requiredLogs: [],
     requiredAnyLogs: [],
   },
-  "unusual_outbound_data_volume": {
+  unusual_outbound_data_volume: {
     id: "unusual_outbound_data_volume",
     name: "Unusual Outbound Data Volume",
-    description: "Identifies connections with unusually large Zeek orig_bytes leaving local networks, especially to external destinations or across explicitly configured trust boundaries.",
-    relevance: "Unexpectedly large outbound transfers can indicate exfiltration, backups or replication outside policy, compromised hosts, or operational data leaving intended boundaries.",
+    description:
+      "Identifies connections with unusually large Zeek orig_bytes leaving local networks, especially to external destinations or across explicitly configured trust boundaries.",
+    relevance:
+      "Unexpectedly large outbound transfers can indicate exfiltration, backups or replication outside policy, compromised hosts, or operational data leaving intended boundaries.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "upnp_ssdp_igd_port_mapping": {
+  upnp_ssdp_igd_port_mapping: {
     id: "upnp_ssdp_igd_port_mapping",
     name: "UPnP / SSDP Exposure & IGD Port Mapping",
-    description: "Detects explicit UPnP Internet Gateway Device port-mapping activity and unexpected SSDP exposure while avoiding port-only inference from UDP/1900.",
-    relevance: "UPnP/SSDP and automatic port mapping can create unmanaged exposure paths and are generally inappropriate on controlled OT networks where connectivity should be explicit.",
+    description:
+      "Detects explicit UPnP Internet Gateway Device port-mapping activity and unexpected SSDP exposure while avoiding port-only inference from UDP/1900.",
+    relevance:
+      "UPnP/SSDP and automatic port mapping can create unmanaged exposure paths and are generally inappropriate on controlled OT networks where connectivity should be explicit.",
     requiredLogs: [],
     requiredAnyLogs: ["upnp", "upnp_igd", "ssdp"],
   },
-  "vlan_tag_mismatch_double_tag": {
+  vlan_tag_mismatch_double_tag: {
     id: "vlan_tag_mismatch_double_tag",
     name: "VLAN Tag Mismatch / Double-Tag Indicators",
-    description: "Detects explicit 802.1Q VLAN IDs in Zeek conn.log that fall outside configured VLAN policy, and double-tagged/Q-in-Q connections that may indicate VLAN hopping or unexpected trunk/provider tagging.",
-    relevance: "Unexpected or nested VLAN tags can indicate trunk misconfiguration, segmentation bypass attempts, VLAN hopping techniques, or traffic appearing on the wrong logical network.",
+    description:
+      "Detects explicit 802.1Q VLAN IDs in Zeek conn.log that fall outside configured VLAN policy, and double-tagged/Q-in-Q connections that may indicate VLAN hopping or unexpected trunk/provider tagging.",
+    relevance:
+      "Unexpected or nested VLAN tags can indicate trunk misconfiguration, segmentation bypass attempts, VLAN hopping techniques, or traffic appearing on the wrong logical network.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
   },
-  "weak_broken_tls_ssl": {
+  weak_broken_tls_ssl: {
     id: "weak_broken_tls_ssl",
     name: "Weak or Broken TLS/SSL",
-    description: "Identifies deprecated SSL/TLS versions, weak cipher suites, and weak certificate signature algorithms when the relevant Zeek logs are present.",
-    relevance: "Obsolete SSL/TLS versions and weak cryptography can expose management or application sessions to downgrade, interception, and decryption attacks.",
+    description:
+      "Identifies deprecated SSL/TLS versions, weak cipher suites, and weak certificate signature algorithms when the relevant Zeek logs are present.",
+    relevance:
+      "Obsolete SSL/TLS versions and weak cryptography can expose management or application sessions to downgrade, interception, and decryption attacks.",
     requiredLogs: [],
     requiredAnyLogs: [],
   },
-  "weird_protocol_violations": {
+  weird_protocol_violations: {
     id: "weird_protocol_violations",
     name: "Weird.log Protocol Violations",
-    description: "Analyzes Zeek weird.log for malformed packets, checksum anomalies, unexpected protocol states, and other protocol-specification violations.",
-    relevance: "Protocol parsing anomalies can reveal malformed traffic, implementation problems, evasion attempts, scanning, or device behavior that differs from expected protocol semantics.",
+    description:
+      "Analyzes Zeek weird.log for malformed packets, checksum anomalies, unexpected protocol states, and other protocol-specification violations.",
+    relevance:
+      "Protocol parsing anomalies can reveal malformed traffic, implementation problems, evasion attempts, scanning, or device behavior that differs from expected protocol semantics.",
     requiredLogs: ["weird"],
     requiredAnyLogs: [],
   },

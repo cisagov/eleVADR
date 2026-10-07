@@ -1,25 +1,4 @@
 {
-  "schemaVersion": 3,
-  "id": "parity-explicit_allowlists",
-  "name": "Explicit Allowlists",
-  "description": "",
-  "updatedAt": "2026-09-21T00:00:00.000Z",
-  "selectedModules": [],
-  "scan": {
-    "filesScanned": 0,
-    "recordsParsed": 0,
-    "logTypes": {},
-    "warnings": []
-  },
-  "captureScope": {
-    "internalIcsOnlyExpected": false,
-    "dedicatedOtSensor": false,
-    "ipv4OnlyExpected": false
-  },
-  "segments": [],
-  "assets": [],
-  "infrastructure": [],
-  "communicationPairs": [],
   "allowedHosts": [
     "10.50.0.10",
     " 10.50.0.10 ",
@@ -27,10 +6,10 @@
   ],
   "allowedSegmentPairs": [
     {
-      "id": "x1",
-      "sourceSegment": "Enterprise",
+      "description": "approved path",
       "destinationSegment": "Control",
-      "description": "approved path"
+      "id": "x1",
+      "sourceSegment": "Enterprise"
     }
   ],
   "approvedExternalDestinations": [
@@ -38,6 +17,27 @@
     " 198.51.100.0/24 ",
     "203.0.113.8"
   ],
+  "assets": [],
   "authorizedControlActions": [],
-  "modulePolicies": {}
+  "captureScope": {
+    "dedicatedOtSensor": false,
+    "internalIcsOnlyExpected": false,
+    "ipv4OnlyExpected": false
+  },
+  "communicationPairs": [],
+  "description": "",
+  "id": "parity-explicit_allowlists",
+  "infrastructure": [],
+  "modulePolicies": {},
+  "name": "Explicit Allowlists",
+  "scan": {
+    "filesScanned": 0,
+    "logTypes": {},
+    "recordsParsed": 0,
+    "warnings": []
+  },
+  "schemaVersion": 3,
+  "segments": [],
+  "selectedModules": [],
+  "updatedAt": "2026-09-21T00:00:00.000Z"
 }

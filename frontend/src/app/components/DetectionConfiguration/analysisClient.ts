@@ -27,7 +27,11 @@ export interface DetectionModuleFinding {
   timestamps?: Array<number | string>;
   tags?: string[];
   metadata?: Record<string, unknown>;
-  provenance?: { schema_version?: number; resolution?: string; sources?: Array<Record<string, unknown>> };
+  provenance?: {
+    schema_version?: number;
+    resolution?: string;
+    sources?: Array<Record<string, unknown>>;
+  };
   [key: string]: unknown;
 }
 
@@ -68,7 +72,8 @@ export const DEFAULT_DETECTION_ANALYSIS_ENDPOINT = "/api/v1/detection-analysis";
  * production-friendly default.
  */
 export function resolveDetectionAnalysisEndpoint(
-  configuredEndpoint: string | undefined = import.meta.env.VITE_DETECTION_ANALYSIS_URL,
+  configuredEndpoint: string | undefined = import.meta.env
+    .VITE_DETECTION_ANALYSIS_URL,
 ): string {
   const value = configuredEndpoint?.trim();
   return value || DEFAULT_DETECTION_ANALYSIS_ENDPOINT;
@@ -78,15 +83,24 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export function isDetectionAnalysisResponse(value: unknown): value is DetectionAnalysisResponse {
+export function isDetectionAnalysisResponse(
+  value: unknown,
+): value is DetectionAnalysisResponse {
   if (!isObject(value)) return false;
-  if (value.contractVersion !== DETECTION_ANALYSIS_RESPONSE_CONTRACT_VERSION) return false;
-  if (!["completed", "partial", "failed"].includes(String(value.status))) return false;
+  if (value.contractVersion !== DETECTION_ANALYSIS_RESPONSE_CONTRACT_VERSION)
+    return false;
+  if (!["completed", "partial", "failed"].includes(String(value.status)))
+    return false;
   if (!isObject(value.summary)) return false;
-  if (!Array.isArray(value.moduleResults) || !Array.isArray(value.errors)) return false;
-  return ["requestedModules", "completedModules", "failedModules", "findingCount"].every(
-    (key) => typeof value.summary[key] === "number",
-  );
+  const summary = value.summary;
+  if (!Array.isArray(value.moduleResults) || !Array.isArray(value.errors))
+    return false;
+  return [
+    "requestedModules",
+    "completedModules",
+    "failedModules",
+    "findingCount",
+  ].every((key) => typeof summary[key] === "number");
 }
 
 /**
@@ -112,11 +126,15 @@ export async function submitDetectionAnalysis(
   try {
     payload = await response.json();
   } catch {
-    throw new Error(`Analysis service returned non-JSON HTTP ${response.status}`);
+    throw new Error(
+      `Analysis service returned non-JSON HTTP ${response.status}`,
+    );
   }
 
   if (!isDetectionAnalysisResponse(payload)) {
-    throw new Error("Analysis service returned an unsupported response contract");
+    throw new Error(
+      "Analysis service returned an unsupported response contract",
+    );
   }
 
   if (!response.ok && payload.status !== "failed") {

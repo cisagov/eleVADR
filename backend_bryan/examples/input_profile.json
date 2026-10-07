@@ -1,9 +1,182 @@
 {
-  "schemaVersion": 3,
-  "id": "example-profile",
-  "name": "Backend handoff example",
+  "allowedHosts": [
+    "10.10.9.9"
+  ],
+  "allowedSegmentPairs": [
+    {
+      "destinationSegment": "Control",
+      "id": "seg-exception",
+      "sourceSegment": "Enterprise"
+    }
+  ],
+  "approvedExternalDestinations": [
+    "198.51.100.0/24"
+  ],
+  "assets": [
+    {
+      "assetType": "PLC",
+      "confidence": "high",
+      "hostname": "PLC-01",
+      "id": "asset-plc",
+      "ip": "10.10.1.20",
+      "macAddresses": [
+        "00:11:22:33:44:55"
+      ],
+      "ports": [
+        102,
+        502
+      ],
+      "purdueLevel": "Level 1",
+      "role": "OT Controller",
+      "segment": "Control",
+      "services": [
+        "modbus",
+        "s7comm"
+      ],
+      "source": "user"
+    }
+  ],
+  "authorizedControlActions": [
+    {
+      "allowedFunctionCodes": [
+        5,
+        6,
+        16
+      ],
+      "allowedOperations": [
+        "write"
+      ],
+      "destination": "10.10.1.20",
+      "id": "modbus-write",
+      "protocol": "modbus",
+      "source": "10.10.2.10"
+    },
+    {
+      "allowedFunctionCodes": [
+        "0x05"
+      ],
+      "allowedOperations": [
+        "write"
+      ],
+      "destination": "10.10.1.21",
+      "id": "s7-write",
+      "protocol": "s7comm",
+      "source": "10.10.2.11"
+    },
+    {
+      "allowedFunctionCodes": [
+        16
+      ],
+      "allowedOperations": [
+        "write"
+      ],
+      "destination": "10.10.1.22",
+      "id": "cip-write",
+      "protocol": "enip",
+      "source": "10.10.2.12"
+    }
+  ],
+  "captureScope": {
+    "dedicatedOtSensor": true,
+    "internalIcsOnlyExpected": true,
+    "ipv4OnlyExpected": true
+  },
+  "communicationPairs": [
+    {
+      "confidence": "high",
+      "destinationIp": "10.10.1.20",
+      "destinationPort": 102,
+      "id": "observed-s7",
+      "protocol": "s7comm",
+      "source": "zeek",
+      "sourceIp": "10.10.2.10"
+    }
+  ],
   "description": "Representative Detection Context v3 profile for adapter verification.",
-  "updatedAt": "2026-09-21T00:00:00Z",
+  "id": "example-profile",
+  "infrastructure": [
+    {
+      "confidence": "high",
+      "id": "dns",
+      "kind": "dns",
+      "source": "user",
+      "value": "10.10.0.53"
+    },
+    {
+      "confidence": "high",
+      "id": "ntp",
+      "kind": "ntp",
+      "source": "user",
+      "value": "10.10.0.123"
+    },
+    {
+      "confidence": "high",
+      "id": "dhcp",
+      "kind": "dhcp",
+      "source": "user",
+      "value": "10.10.0.5"
+    },
+    {
+      "confidence": "high",
+      "id": "mgmt",
+      "kind": "management",
+      "source": "user",
+      "value": "10.10.0.20"
+    }
+  ],
+  "modulePolicies": {
+    "public_to_public_traffic": {
+      "min_flows": 3
+    },
+    "snmp_write_ot_devices": {
+      "min_set_operations": 2
+    }
+  },
+  "name": "Backend handoff example",
+  "scan": {
+    "filesScanned": 4,
+    "logTypes": {
+      "conn": 1000,
+      "modbus": 100,
+      "s7comm": 100
+    },
+    "recordsParsed": 1200,
+    "warnings": []
+  },
+  "schemaVersion": 3,
+  "segments": [
+    {
+      "addressing": "static",
+      "cidr": "10.10.0.0/16",
+      "confidence": "high",
+      "dhcpAllowed": false,
+      "id": "seg-control",
+      "ipv6Allowed": false,
+      "name": "Control",
+      "observedDhcp": true,
+      "observedOtProtocols": [
+        "modbus",
+        "s7comm"
+      ],
+      "observedVlanIds": [
+        120
+      ],
+      "purdueLevel": "Level 2",
+      "role": "ot",
+      "source": "zeek",
+      "vlanId": 120
+    },
+    {
+      "addressing": "dhcp",
+      "cidr": "10.20.0.0/16",
+      "confidence": "high",
+      "id": "seg-enterprise",
+      "name": "Enterprise",
+      "purdueLevel": "Level 4",
+      "role": "it",
+      "source": "user"
+    }
+  ],
   "selectedModules": [
     "bacnet_discovery_anomalies",
     "beaconing_c2_communication",
@@ -71,178 +244,5 @@
     "plc_rtu_peer_change",
     "unexpected_dhcp_server"
   ],
-  "scan": {
-    "filesScanned": 4,
-    "recordsParsed": 1200,
-    "logTypes": {
-      "conn": 1000,
-      "modbus": 100,
-      "s7comm": 100
-    },
-    "warnings": []
-  },
-  "captureScope": {
-    "internalIcsOnlyExpected": true,
-    "dedicatedOtSensor": true,
-    "ipv4OnlyExpected": true
-  },
-  "segments": [
-    {
-      "id": "seg-control",
-      "name": "Control",
-      "cidr": "10.10.0.0/16",
-      "role": "ot",
-      "purdueLevel": "Level 2",
-      "vlanId": 120,
-      "addressing": "static",
-      "dhcpAllowed": false,
-      "ipv6Allowed": false,
-      "observedDhcp": true,
-      "observedOtProtocols": [
-        "modbus",
-        "s7comm"
-      ],
-      "observedVlanIds": [
-        120
-      ],
-      "source": "zeek",
-      "confidence": "high"
-    },
-    {
-      "id": "seg-enterprise",
-      "name": "Enterprise",
-      "cidr": "10.20.0.0/16",
-      "role": "it",
-      "purdueLevel": "Level 4",
-      "addressing": "dhcp",
-      "source": "user",
-      "confidence": "high"
-    }
-  ],
-  "assets": [
-    {
-      "id": "asset-plc",
-      "ip": "10.10.1.20",
-      "hostname": "PLC-01",
-      "macAddresses": [
-        "00:11:22:33:44:55"
-      ],
-      "assetType": "PLC",
-      "role": "OT Controller",
-      "segment": "Control",
-      "purdueLevel": "Level 1",
-      "services": [
-        "modbus",
-        "s7comm"
-      ],
-      "ports": [
-        102,
-        502
-      ],
-      "source": "user",
-      "confidence": "high"
-    }
-  ],
-  "infrastructure": [
-    {
-      "id": "dns",
-      "kind": "dns",
-      "value": "10.10.0.53",
-      "source": "user",
-      "confidence": "high"
-    },
-    {
-      "id": "ntp",
-      "kind": "ntp",
-      "value": "10.10.0.123",
-      "source": "user",
-      "confidence": "high"
-    },
-    {
-      "id": "dhcp",
-      "kind": "dhcp",
-      "value": "10.10.0.5",
-      "source": "user",
-      "confidence": "high"
-    },
-    {
-      "id": "mgmt",
-      "kind": "management",
-      "value": "10.10.0.20",
-      "source": "user",
-      "confidence": "high"
-    }
-  ],
-  "communicationPairs": [
-    {
-      "id": "observed-s7",
-      "sourceIp": "10.10.2.10",
-      "destinationIp": "10.10.1.20",
-      "protocol": "s7comm",
-      "destinationPort": 102,
-      "source": "zeek",
-      "confidence": "high"
-    }
-  ],
-  "allowedHosts": [
-    "10.10.9.9"
-  ],
-  "allowedSegmentPairs": [
-    {
-      "id": "seg-exception",
-      "sourceSegment": "Enterprise",
-      "destinationSegment": "Control"
-    }
-  ],
-  "approvedExternalDestinations": [
-    "198.51.100.0/24"
-  ],
-  "authorizedControlActions": [
-    {
-      "id": "modbus-write",
-      "protocol": "modbus",
-      "source": "10.10.2.10",
-      "destination": "10.10.1.20",
-      "allowedOperations": [
-        "write"
-      ],
-      "allowedFunctionCodes": [
-        5,
-        6,
-        16
-      ]
-    },
-    {
-      "id": "s7-write",
-      "protocol": "s7comm",
-      "source": "10.10.2.11",
-      "destination": "10.10.1.21",
-      "allowedOperations": [
-        "write"
-      ],
-      "allowedFunctionCodes": [
-        "0x05"
-      ]
-    },
-    {
-      "id": "cip-write",
-      "protocol": "enip",
-      "source": "10.10.2.12",
-      "destination": "10.10.1.22",
-      "allowedOperations": [
-        "write"
-      ],
-      "allowedFunctionCodes": [
-        16
-      ]
-    }
-  ],
-  "modulePolicies": {
-    "public_to_public_traffic": {
-      "min_flows": 3
-    },
-    "snmp_write_ot_devices": {
-      "min_set_operations": 2
-    }
-  }
+  "updatedAt": "2026-09-21T00:00:00Z"
 }

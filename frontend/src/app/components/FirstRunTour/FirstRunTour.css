@@ -1,59 +1,159 @@
-.tour-backdrop{
-  position:fixed;
-  z-index:90;
-  inset:0;
-  background:rgba(4,20,31,.14);
+.tour-backdrop {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  background: rgba(4, 20, 31, 0.14);
   /* Keep the report readable. The active section is spotlighted above this layer. */
-  backdrop-filter:none;
+  backdrop-filter: none;
 }
-.tour-card{
-  position:fixed;
-  z-index:94;
-  right:28px;
-  top:max(92px,12vh);
-  width:min(440px,calc(100vw - 32px));
-  padding:24px;
-  border:1px solid #d6e2e9;
-  border-radius:14px;
-  background:#fff;
-  box-shadow:0 18px 54px rgba(3,20,31,.28)
+.tour-card {
+  position: fixed;
+  z-index: 94;
+  right: 28px;
+  top: max(92px, 12vh);
+  width: min(440px, calc(100vw - 32px));
+  padding: 24px;
+  border: 1px solid #d6e2e9;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 18px 54px rgba(3, 20, 31, 0.28);
 }
-.tour-progress{display:flex;gap:6px;margin-bottom:18px}.tour-progress span{height:4px;flex:1;border-radius:999px;background:#dfe8ee}.tour-progress span.active,.tour-progress span.done{background:#1593c2}.tour-step{margin:0 0 7px;color:#0b6e99!important;font-size:var(--text-xs)!important;font-weight:850;letter-spacing:.09em;text-transform:uppercase}.tour-card h2{margin:0;color:#173c59;font-size:var(--text-2xl)}.tour-card>p:not(.tour-step):not(.tour-location-note){margin:10px 0 10px;color:#5f788b;line-height:1.55}.tour-location-note{margin:0 0 20px!important;color:#698399!important;font-size:var(--text-sm)!important}.tour-actions{display:flex;justify-content:space-between;gap:10px}.tour-actions>div{display:flex;gap:8px}.tour-actions button{padding:9px 13px;border:1px solid #cfdee7;border-radius:8px;background:#fff;color:#49677c;cursor:pointer}.tour-actions .tour-next{border-color:#0b6e99;background:#0b6e99;color:#fff}.tour-actions .tour-skip{border-color:transparent;color:#7890a1}
+.tour-progress {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.tour-progress span {
+  height: 4px;
+  flex: 1;
+  border-radius: 999px;
+  background: #dfe8ee;
+}
+.tour-progress span.active,
+.tour-progress span.done {
+  background: #1593c2;
+}
+.tour-step {
+  margin: 0 0 7px;
+  color: #0b6e99 !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 850;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.tour-card h2 {
+  margin: 0;
+  color: #173c59;
+  font-size: var(--text-2xl);
+}
+.tour-card > p:not(.tour-step):not(.tour-location-note) {
+  margin: 10px 0 10px;
+  color: #5f788b;
+  line-height: 1.55;
+}
+.tour-location-note {
+  margin: 0 0 20px !important;
+  color: #698399 !important;
+  font-size: var(--text-sm) !important;
+}
+.tour-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.tour-actions > div {
+  display: flex;
+  gap: 8px;
+}
+.tour-actions button {
+  padding: 9px 13px;
+  border: 1px solid #cfdee7;
+  border-radius: 8px;
+  background: #fff;
+  color: #49677c;
+  cursor: pointer;
+}
+.tour-actions .tour-next {
+  border-color: #0b6e99;
+  background: #0b6e99;
+  color: #fff;
+}
+.tour-actions .tour-skip {
+  border-color: transparent;
+  color: #7890a1;
+}
 
 /* Spotlight the section associated with the current walkthrough step. */
-.tour-highlight-target{
-  position:relative;
-  z-index:92;
-  border-radius:10px;
-  outline:3px solid rgba(21,147,194,.78);
-  outline-offset:5px;
-  box-shadow:0 0 0 8px rgba(255,255,255,.94),0 12px 38px rgba(3,20,31,.18);
+.tour-highlight-target {
+  position: relative;
+  z-index: 92;
+  border-radius: 10px;
+  outline: 3px solid rgba(21, 147, 194, 0.78);
+  outline-offset: 5px;
+  box-shadow:
+    0 0 0 8px rgba(255, 255, 255, 0.94),
+    0 12px 38px rgba(3, 20, 31, 0.18);
 }
 .dashboard-section.tour-highlight-target,
-.panel.tour-highlight-target{
-  border-radius:12px;
-  background:var(--surface,#fff);
+.panel.tour-highlight-target {
+  border-radius: 12px;
+  background: var(--surface, #fff);
 }
 /* Report sections use content-visibility:auto for long-report performance.
    Its paint containment prevents a nested spotlight (such as the topology
    panel) from escaping above the fixed tour backdrop. Relax containment only
    for the section that owns the active walkthrough target. */
-.dashboard-section.tour-highlight-host{
-  content-visibility:visible !important;
-  contain:none !important;
+.dashboard-section.tour-highlight-host {
+  content-visibility: visible !important;
+  contain: none !important;
 }
 .titlebar.tour-highlight-layer,
-.sidebar.tour-highlight-layer{
-  z-index:92;
+.sidebar.tour-highlight-layer {
+  z-index: 92;
 }
 
-:root[data-theme="dark"] .tour-card{background:#102735;border-color:#315064}:root[data-theme="dark"] .tour-card h2{color:#edf6fa}:root[data-theme="dark"] .tour-card>p:not(.tour-step){color:#b1c5d0}:root[data-theme="dark"] .tour-actions button{background:#0d2533;border-color:#315064;color:#d8e6ed}:root[data-theme="dark"] .tour-highlight-target{box-shadow:0 0 0 8px rgba(16,39,53,.96),0 12px 38px rgba(0,0,0,.42)}
-
-@media (max-width:760px){
-  .tour-card{right:16px;left:16px;top:auto;bottom:16px;width:auto;max-height:min(46vh,420px);overflow:auto}
-  .tour-highlight-target{outline-offset:3px;box-shadow:0 0 0 5px rgba(255,255,255,.94),0 10px 30px rgba(3,20,31,.18)}
+:root[data-theme="dark"] .tour-card {
+  background: #102735;
+  border-color: #315064;
+}
+:root[data-theme="dark"] .tour-card h2 {
+  color: #edf6fa;
+}
+:root[data-theme="dark"] .tour-card > p:not(.tour-step) {
+  color: #b1c5d0;
+}
+:root[data-theme="dark"] .tour-actions button {
+  background: #0d2533;
+  border-color: #315064;
+  color: #d8e6ed;
+}
+:root[data-theme="dark"] .tour-highlight-target {
+  box-shadow:
+    0 0 0 8px rgba(16, 39, 53, 0.96),
+    0 12px 38px rgba(0, 0, 0, 0.42);
 }
 
-@media (prefers-reduced-motion:reduce){
-  .tour-card,.tour-highlight-target{scroll-behavior:auto}
+@media (max-width: 760px) {
+  .tour-card {
+    right: 16px;
+    left: 16px;
+    top: auto;
+    bottom: 16px;
+    width: auto;
+    max-height: min(46vh, 420px);
+    overflow: auto;
+  }
+  .tour-highlight-target {
+    outline-offset: 3px;
+    box-shadow:
+      0 0 0 5px rgba(255, 255, 255, 0.94),
+      0 10px 30px rgba(3, 20, 31, 0.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-card,
+  .tour-highlight-target {
+    scroll-behavior: auto;
+  }
 }

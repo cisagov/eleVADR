@@ -1,76 +1,89 @@
 {
-  "schemaVersion": 3,
-  "id": "regression-15-new-detector-raw-pcap",
-  "name": "Regression 15 - Raw PCAP New Detector Validation",
-  "captureScope": {
-    "internalOtOnlyExpected": true,
-    "dedicatedOtSensor": true,
-    "ipv4OnlyExpected": true
-  },
-  "scan": {},
-  "segments": [
-    {
-      "id": "seg-ot",
-      "name": "OT Control",
-      "cidr": "10.150.0.0/24",
-      "role": "OT",
-      "purdueLevel": "Level 1",
-      "addressing": "static",
-      "dhcpAllowed": false,
-      "ipv6Allowed": false
-    }
-  ],
+  "allowedHosts": [],
+  "allowedSegmentPairs": [],
+  "approvedExternalDestinations": [],
   "assets": [
     {
-      "ip": "10.150.0.20",
-      "hostname": "PLC-20",
-      "macAddresses": ["00:11:22:33:44:55"],
       "assetType": "PLC",
+      "hostname": "PLC-20",
+      "ip": "10.150.0.20",
+      "macAddresses": [
+        "00:11:22:33:44:55"
+      ],
       "role": "OT",
       "source": "user"
     },
     {
-      "ip": "10.150.0.50",
-      "hostname": "EWS-50",
-      "macAddresses": ["00:11:22:33:44:50"],
       "assetType": "Engineering Workstation",
+      "hostname": "EWS-50",
+      "ip": "10.150.0.50",
+      "macAddresses": [
+        "00:11:22:33:44:50"
+      ],
       "role": "IT",
       "source": "user"
     }
   ],
-  "infrastructure": [
-    {"kind": "dhcp", "value": "10.150.0.2"}
-  ],
-  "communicationPairs": [],
-  "allowedHosts": [],
-  "allowedSegmentPairs": [],
-  "approvedExternalDestinations": [],
   "authorizedControlActions": [
     {
-      "protocol": "modbus",
-      "source": "10.150.0.50",
+      "allowedFunctionCodes": [
+        6
+      ],
+      "allowedOperations": [
+        "write"
+      ],
       "destination": "10.150.0.20",
-      "allowedFunctionCodes": [6],
-      "allowedOperations": ["write"]
+      "protocol": "modbus",
+      "source": "10.150.0.50"
+    }
+  ],
+  "captureScope": {
+    "dedicatedOtSensor": true,
+    "internalOtOnlyExpected": true,
+    "ipv4OnlyExpected": true
+  },
+  "communicationPairs": [],
+  "id": "regression-15-new-detector-raw-pcap",
+  "infrastructure": [
+    {
+      "kind": "dhcp",
+      "value": "10.150.0.2"
     }
   ],
   "modulePolicies": {
     "arp_ip_mac_identity_change": {
       "change_window_seconds": 30
     },
-    "ot_protocol_role_reversal": {
-      "baseline_seconds": 120,
-      "minimum_baseline_responder_events": 2,
-      "protocols": ["modbus"]
-    },
-    "plc_rtu_peer_change": {
-      "baseline_seconds": 120
-    },
     "engineering_workstation_control_burst": {
       "minimum_operations": 5,
       "window_seconds": 60
+    },
+    "ot_protocol_role_reversal": {
+      "baseline_seconds": 120,
+      "minimum_baseline_responder_events": 2,
+      "protocols": [
+        "modbus"
+      ]
+    },
+    "plc_rtu_peer_change": {
+      "baseline_seconds": 120
     }
   },
+  "name": "Regression 15 - Raw PCAP New Detector Validation",
+  "scan": {},
+  "schemaVersion": 3,
+  "segments": [
+    {
+      "addressing": "static",
+      "cidr": "10.150.0.0/24",
+      "dhcpAllowed": false,
+      "id": "seg-ot",
+      "ipv6Allowed": false,
+      "name": "OT Control",
+      "purdueLevel": "Level 1",
+      "role": "OT"
+    }
+  ],
   "selectedModules": [
     "arp_ip_mac_identity_change",
     "unexpected_dhcp_server",

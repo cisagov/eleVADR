@@ -1,35 +1,81 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://elevadr.local/schemas/elevadr-report-v2.schema.json",
-  "title": "eleVADR canonical report v2",
-  "type": "object",
-  "required": ["report_version", "report_id", "executive_summary", "modules", "arch_insights"],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
   "properties": {
-    "report_version": {"type": "string", "pattern": "^2\\."},
-    "report_id": {"type": "string", "minLength": 1},
-    "executive_summary": {"type": "object"},
-    "arch_insights": {"type": "object"},
+    "arch_insights": {
+      "type": "object"
+    },
+    "executive_summary": {
+      "type": "object"
+    },
     "modules": {
-      "type": "object",
-      "required": [
-        "service_panel", "device_panel", "service_risk_breakdown_panel", "service_count_panel",
-        "connection_success_panel", "suspicious_outbound_connections_panel", "ot_cross_segment_lines_panel",
-        "ot_devices", "it_devices", "edge_devices", "ot_services"
-      ],
       "properties": {
-        "service_panel": {"type": "object"},
-        "device_panel": {"type": "object"},
-        "service_risk_breakdown_panel": {"type": "object"},
-        "service_count_panel": {"type": "object"},
-        "connection_success_panel": {"type": "object"},
-        "suspicious_outbound_connections_panel": {"type": "array"},
-        "ot_cross_segment_lines_panel": {"type": "object"},
-        "ot_devices": {"type": "array"},
-        "it_devices": {"type": "array"},
-        "edge_devices": {"type": "array"},
-        "ot_services": {"type": "array"}
-      }
+        "connection_success_panel": {
+          "type": "object"
+        },
+        "device_panel": {
+          "type": "object"
+        },
+        "edge_devices": {
+          "type": "array"
+        },
+        "it_devices": {
+          "type": "array"
+        },
+        "ot_cross_segment_lines_panel": {
+          "type": "object"
+        },
+        "ot_devices": {
+          "type": "array"
+        },
+        "ot_services": {
+          "type": "array"
+        },
+        "service_count_panel": {
+          "type": "object"
+        },
+        "service_panel": {
+          "type": "object"
+        },
+        "service_risk_breakdown_panel": {
+          "type": "object"
+        },
+        "suspicious_outbound_connections_panel": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "service_panel",
+        "device_panel",
+        "service_risk_breakdown_panel",
+        "service_count_panel",
+        "connection_success_panel",
+        "suspicious_outbound_connections_panel",
+        "ot_cross_segment_lines_panel",
+        "ot_devices",
+        "it_devices",
+        "edge_devices",
+        "ot_services"
+      ],
+      "type": "object"
+    },
+    "report_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "report_version": {
+      "pattern": "^2\\.",
+      "type": "string"
     }
   },
-  "additionalProperties": true
+  "required": [
+    "report_version",
+    "report_id",
+    "executive_summary",
+    "modules",
+    "arch_insights"
+  ],
+  "title": "eleVADR canonical report v2",
+  "type": "object"
 }

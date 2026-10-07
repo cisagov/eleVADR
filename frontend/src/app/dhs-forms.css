@@ -44,14 +44,16 @@
 .app-shell input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 .app-shell select,
 .app-shell textarea,
-.help-drawer input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.help-drawer
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 .help-drawer select,
 .help-drawer textarea,
-.entity-drawer input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.entity-drawer
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 .entity-drawer select,
 .entity-drawer textarea {
   min-height: var(--form-control-height) !important;
-  padding: .5rem .625rem !important;
+  padding: 0.5rem 0.625rem !important;
   border: 1px solid var(--form-border) !important;
   border-radius: 0 !important;
   background: var(--form-bg) !important;
@@ -69,25 +71,30 @@
   resize: vertical;
 }
 
-.app-shell input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
+.app-shell
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
 .app-shell select:hover,
 .app-shell textarea:hover,
-.help-drawer input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover {
+.help-drawer
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover {
   border-color: var(--form-border-hover) !important;
 }
 
 /* High-visibility focus: dark blue border plus CISA-blue outer ring. */
-.app-shell input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+.app-shell
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
 .app-shell select:focus,
 .app-shell textarea:focus,
-.help-drawer input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+.help-drawer
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
 .help-drawer select:focus,
 .help-drawer textarea:focus,
-.entity-drawer input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+.entity-drawer
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
 .entity-drawer select:focus,
 .entity-drawer textarea:focus {
   border-color: var(--form-focus) !important;
-  outline: .25rem solid var(--form-focus-ring) !important;
+  outline: 0.25rem solid var(--form-focus-ring) !important;
   outline-offset: 0 !important;
   box-shadow: none !important;
 }
@@ -114,7 +121,7 @@
 .help-drawer input[type="radio"] {
   width: 1.25rem !important;
   height: 1.25rem !important;
-  margin: 0 .5rem 0 0 !important;
+  margin: 0 0.5rem 0 0 !important;
   flex: 0 0 1.25rem;
   accent-color: #005288 !important;
   cursor: pointer;
@@ -124,8 +131,8 @@
 .app-shell input[type="radio"]:focus-visible,
 .help-drawer input[type="checkbox"]:focus-visible,
 .help-drawer input[type="radio"]:focus-visible {
-  outline: .25rem solid var(--form-focus-ring) !important;
-  outline-offset: .125rem !important;
+  outline: 0.25rem solid var(--form-focus-ring) !important;
+  outline-offset: 0.125rem !important;
 }
 
 .app-shell label:has(> input[type="checkbox"]),
@@ -165,7 +172,7 @@
 /* Existing USWDS class names used in SortableTable. */
 .app-shell .usa-label {
   display: block;
-  margin: 0 0 .5rem !important;
+  margin: 0 0 0.5rem !important;
 }
 
 .app-shell .usa-input {
@@ -179,7 +186,7 @@
 .activity-toolbar > label,
 .table-filter-section,
 .help-search {
-  gap: .5rem !important;
+  gap: 0.5rem !important;
 }
 
 .findings-controls > label > span,
@@ -187,7 +194,7 @@
 .activity-toolbar > label > span,
 .help-search > span {
   color: var(--form-text) !important;
-  font-size: .9375rem !important;
+  font-size: 0.9375rem !important;
   font-weight: 700 !important;
   letter-spacing: 0 !important;
   text-transform: none !important;
@@ -196,9 +203,9 @@
 /* Compact table pagination can remain compact while matching form geometry. */
 .app-shell .table-pagination-controls select {
   min-height: 2.25rem !important;
-  padding: .375rem 2rem .375rem .5rem !important;
+  padding: 0.375rem 2rem 0.375rem 0.5rem !important;
   border-radius: 0 !important;
-  font-size: .9375rem !important;
+  font-size: 0.9375rem !important;
 }
 
 /* File input / drop target: adapt the custom workflow to a government form look. */
@@ -248,12 +255,12 @@
 }
 
 .app-shell .dropzone-types span {
-  padding: .125rem .375rem !important;
+  padding: 0.125rem 0.375rem !important;
   border: 1px solid #a9aeb1 !important;
   border-radius: 0 !important;
   background: #f0f0f0 !important;
   color: #454545 !important;
-  font-size: .875rem !important;
+  font-size: 0.875rem !important;
   font-weight: 600 !important;
   letter-spacing: 0 !important;
 }
@@ -261,7 +268,7 @@
 .app-shell .dropzone-browse,
 .app-shell .download-button {
   min-height: 2.5rem !important;
-  padding: .5rem 1rem !important;
+  padding: 0.5rem 1rem !important;
   border: 2px solid #005288 !important;
   border-radius: 0 !important;
   background: #005288 !important;
@@ -278,8 +285,8 @@
 }
 
 .app-shell .download-button:focus-visible {
-  outline: .25rem solid var(--form-focus-ring) !important;
-  outline-offset: .25rem !important;
+  outline: 0.25rem solid var(--form-focus-ring) !important;
+  outline-offset: 0.25rem !important;
 }
 
 /* Validation treatment usable by existing error containers and future form fields. */
@@ -292,7 +299,7 @@
 .app-shell input[aria-invalid="true"],
 .app-shell select[aria-invalid="true"],
 .app-shell textarea[aria-invalid="true"] {
-  border-left-width: .25rem !important;
+  border-left-width: 0.25rem !important;
 }
 
 .app-shell .error-text,
@@ -325,7 +332,9 @@
   border-color: #73b3e7 !important;
 }
 
-:root[data-theme="dark"] .app-shell .dropzone-copy strong { color: #f0f0f0 !important; }
+:root[data-theme="dark"] .app-shell .dropzone-copy strong {
+  color: #f0f0f0 !important;
+}
 :root[data-theme="dark"] .app-shell .dropzone-types span {
   background: #3d4551 !important;
   border-color: #71767a !important;
@@ -333,7 +342,9 @@
 }
 
 @media (max-width: 700px) {
-  .app-shell .unified-dropzone { padding: 1.25rem !important; }
+  .app-shell .unified-dropzone {
+    padding: 1.25rem !important;
+  }
 }
 
 /* Keep the upload target hover treatment identical before and after a report

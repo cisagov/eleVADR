@@ -1,9 +1,195 @@
 {
-  "schemaVersion": 3,
-  "id": "regression-context-03-outbound-ipv6-quic-icmp",
-  "name": "Regression 03 - Outbound IPv6 QUIC ICMP",
+  "allowedHosts": [],
+  "allowedSegmentPairs": [],
+  "approvedExternalDestinations": [],
+  "assets": [
+    {
+      "assetType": "engineering workstation",
+      "confidence": "high",
+      "hostname": "ot-ops-01",
+      "id": "a03-ops4",
+      "ip": "10.50.0.25",
+      "macAddresses": [
+        "02:00:00:00:50:25"
+      ],
+      "ports": [
+        80,
+        443
+      ],
+      "purdueLevel": "Level 3",
+      "reason": "Known asset in companion regression-test context.",
+      "role": "ot engineering",
+      "segment": "OT Operations IPv4",
+      "services": [
+        "http",
+        "quic",
+        "icmp"
+      ],
+      "source": "imported"
+    },
+    {
+      "assetType": "engineering workstation",
+      "confidence": "high",
+      "hostname": "ot-ops-01-v6",
+      "id": "a03-ops6",
+      "ip": "fd00:50::25",
+      "macAddresses": [
+        "02:00:00:00:50:25"
+      ],
+      "ports": [
+        502
+      ],
+      "purdueLevel": "Level 3",
+      "reason": "Known asset in companion regression-test context.",
+      "role": "ot engineering",
+      "segment": "Unexpected OT IPv6 Source",
+      "services": [
+        "modbus"
+      ],
+      "source": "imported"
+    },
+    {
+      "assetType": "PLC",
+      "confidence": "high",
+      "hostname": "plc-v6-01",
+      "id": "a03-plc6",
+      "ip": "fd00:60::20",
+      "macAddresses": [
+        "02:00:00:00:60:20"
+      ],
+      "ports": [
+        502
+      ],
+      "purdueLevel": "Level 1",
+      "reason": "Known asset in companion regression-test context.",
+      "role": "ot controller",
+      "segment": "Unexpected PLC IPv6",
+      "services": [
+        "modbus"
+      ],
+      "source": "imported"
+    }
+  ],
+  "authorizedControlActions": [],
+  "captureScope": {
+    "dedicatedOtSensor": true,
+    "internalIcsOnlyExpected": true,
+    "ipv4OnlyExpected": true
+  },
+  "communicationPairs": [
+    {
+      "confidence": "high",
+      "description": "Observed 12 MiB outbound HTTP POST to an unapproved public destination.",
+      "destinationIp": "1.1.1.1",
+      "destinationPort": 80,
+      "id": "p03-http",
+      "protocol": "tcp",
+      "service": "http",
+      "source": "imported",
+      "sourceIp": "10.50.0.25"
+    },
+    {
+      "confidence": "high",
+      "description": "Observed QUIC from OT to an unapproved public destination.",
+      "destinationIp": "8.8.8.8",
+      "destinationPort": 443,
+      "id": "p03-quic",
+      "protocol": "udp",
+      "service": "quic",
+      "source": "imported",
+      "sourceIp": "10.50.0.25"
+    },
+    {
+      "confidence": "high",
+      "description": "Observed independently timed periodic ICMP echo traffic to an unapproved public destination.",
+      "destinationIp": "8.8.8.8",
+      "id": "p03-icmp",
+      "protocol": "icmp",
+      "service": "icmp",
+      "source": "imported",
+      "sourceIp": "10.50.0.25"
+    },
+    {
+      "confidence": "high",
+      "description": "Observed IPv6 Modbus despite explicit IPv4-only site policy.",
+      "destinationIp": "fd00:60::20",
+      "destinationPort": 502,
+      "id": "p03-ipv6-modbus",
+      "protocol": "tcp",
+      "service": "modbus",
+      "source": "imported",
+      "sourceIp": "fd00:50::25"
+    }
+  ],
   "description": "Companion Detection Context for 03_outbound_ipv6_quic_icmp.pcap. Treats the sensor as internal OT and IPv4-only by policy while retaining observed IPv6/Modbus communication, a 12 MiB outbound HTTP upload, independently timed periodic ICMP, and leaving public destinations unapproved.",
-  "updatedAt": "2026-09-29T04:30:00.000Z",
+  "id": "regression-context-03-outbound-ipv6-quic-icmp",
+  "infrastructure": [],
+  "modulePolicies": {},
+  "name": "Regression 03 - Outbound IPv6 QUIC ICMP",
+  "scan": {
+    "fileNames": [
+      "03_outbound_ipv6_quic_icmp.pcap"
+    ],
+    "filesScanned": 0,
+    "logTypes": {},
+    "recordsParsed": 0,
+    "selectedFileCount": 1,
+    "sourceLabel": "Companion context for 03_outbound_ipv6_quic_icmp.pcap",
+    "warnings": [
+      "Synthetic regression companion profile; PCAP Context Discovery may add observed facts when loaded."
+    ]
+  },
+  "schemaVersion": 3,
+  "segments": [
+    {
+      "addressing": "static",
+      "cidr": "10.50.0.0/24",
+      "confidence": "high",
+      "dhcpAllowed": false,
+      "id": "seg-03-ot4",
+      "ipv6Allowed": false,
+      "name": "OT Operations IPv4",
+      "purdueLevel": "Level 3",
+      "reason": "Companion regression-test context.",
+      "role": "ot",
+      "source": "imported",
+      "vlanId": 50
+    },
+    {
+      "addressing": "static",
+      "cidr": "fd00:50::/64",
+      "confidence": "high",
+      "dhcpAllowed": false,
+      "id": "seg-03-ot6",
+      "ipv6Allowed": false,
+      "name": "Unexpected OT IPv6 Source",
+      "observedOtProtocols": [
+        "modbus"
+      ],
+      "purdueLevel": "Level 3",
+      "reason": "Companion regression-test context.",
+      "role": "ot",
+      "source": "imported",
+      "vlanId": 50
+    },
+    {
+      "addressing": "static",
+      "cidr": "fd00:60::/64",
+      "confidence": "high",
+      "dhcpAllowed": false,
+      "id": "seg-03-plc6",
+      "ipv6Allowed": false,
+      "name": "Unexpected PLC IPv6",
+      "observedOtProtocols": [
+        "modbus"
+      ],
+      "purdueLevel": "Level 1",
+      "reason": "Companion regression-test context.",
+      "role": "ot",
+      "source": "imported",
+      "vlanId": 60
+    }
+  ],
   "selectedModules": [
     "bacnet_discovery_anomalies",
     "beaconing_c2_communication",
@@ -66,191 +252,5 @@
     "weak_broken_tls_ssl",
     "weird_protocol_violations"
   ],
-  "scan": {
-    "sourceLabel": "Companion context for 03_outbound_ipv6_quic_icmp.pcap",
-    "selectedFileCount": 1,
-    "fileNames": [
-      "03_outbound_ipv6_quic_icmp.pcap"
-    ],
-    "filesScanned": 0,
-    "recordsParsed": 0,
-    "logTypes": {},
-    "warnings": [
-      "Synthetic regression companion profile; PCAP Context Discovery may add observed facts when loaded."
-    ]
-  },
-  "captureScope": {
-    "internalIcsOnlyExpected": true,
-    "dedicatedOtSensor": true,
-    "ipv4OnlyExpected": true
-  },
-  "segments": [
-    {
-      "id": "seg-03-ot4",
-      "name": "OT Operations IPv4",
-      "cidr": "10.50.0.0/24",
-      "role": "ot",
-      "purdueLevel": "Level 3",
-      "vlanId": 50,
-      "addressing": "static",
-      "dhcpAllowed": false,
-      "ipv6Allowed": false,
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Companion regression-test context."
-    },
-    {
-      "id": "seg-03-ot6",
-      "name": "Unexpected OT IPv6 Source",
-      "cidr": "fd00:50::/64",
-      "role": "ot",
-      "purdueLevel": "Level 3",
-      "vlanId": 50,
-      "addressing": "static",
-      "dhcpAllowed": false,
-      "ipv6Allowed": false,
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Companion regression-test context.",
-      "observedOtProtocols": [
-        "modbus"
-      ]
-    },
-    {
-      "id": "seg-03-plc6",
-      "name": "Unexpected PLC IPv6",
-      "cidr": "fd00:60::/64",
-      "role": "ot",
-      "purdueLevel": "Level 1",
-      "vlanId": 60,
-      "addressing": "static",
-      "dhcpAllowed": false,
-      "ipv6Allowed": false,
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Companion regression-test context.",
-      "observedOtProtocols": [
-        "modbus"
-      ]
-    }
-  ],
-  "assets": [
-    {
-      "id": "a03-ops4",
-      "ip": "10.50.0.25",
-      "hostname": "ot-ops-01",
-      "macAddresses": [
-        "02:00:00:00:50:25"
-      ],
-      "assetType": "engineering workstation",
-      "role": "ot engineering",
-      "segment": "OT Operations IPv4",
-      "purdueLevel": "Level 3",
-      "services": [
-        "http",
-        "quic",
-        "icmp"
-      ],
-      "ports": [
-        80,
-        443
-      ],
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Known asset in companion regression-test context."
-    },
-    {
-      "id": "a03-ops6",
-      "ip": "fd00:50::25",
-      "hostname": "ot-ops-01-v6",
-      "macAddresses": [
-        "02:00:00:00:50:25"
-      ],
-      "assetType": "engineering workstation",
-      "role": "ot engineering",
-      "segment": "Unexpected OT IPv6 Source",
-      "purdueLevel": "Level 3",
-      "services": [
-        "modbus"
-      ],
-      "ports": [
-        502
-      ],
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Known asset in companion regression-test context."
-    },
-    {
-      "id": "a03-plc6",
-      "ip": "fd00:60::20",
-      "hostname": "plc-v6-01",
-      "macAddresses": [
-        "02:00:00:00:60:20"
-      ],
-      "assetType": "PLC",
-      "role": "ot controller",
-      "segment": "Unexpected PLC IPv6",
-      "purdueLevel": "Level 1",
-      "services": [
-        "modbus"
-      ],
-      "ports": [
-        502
-      ],
-      "source": "imported",
-      "confidence": "high",
-      "reason": "Known asset in companion regression-test context."
-    }
-  ],
-  "infrastructure": [],
-  "communicationPairs": [
-    {
-      "id": "p03-http",
-      "sourceIp": "10.50.0.25",
-      "destinationIp": "1.1.1.1",
-      "protocol": "tcp",
-      "description": "Observed 12 MiB outbound HTTP POST to an unapproved public destination.",
-      "source": "imported",
-      "confidence": "high",
-      "destinationPort": 80,
-      "service": "http"
-    },
-    {
-      "id": "p03-quic",
-      "sourceIp": "10.50.0.25",
-      "destinationIp": "8.8.8.8",
-      "protocol": "udp",
-      "description": "Observed QUIC from OT to an unapproved public destination.",
-      "source": "imported",
-      "confidence": "high",
-      "destinationPort": 443,
-      "service": "quic"
-    },
-    {
-      "id": "p03-icmp",
-      "sourceIp": "10.50.0.25",
-      "destinationIp": "8.8.8.8",
-      "protocol": "icmp",
-      "description": "Observed independently timed periodic ICMP echo traffic to an unapproved public destination.",
-      "source": "imported",
-      "confidence": "high",
-      "service": "icmp"
-    },
-    {
-      "id": "p03-ipv6-modbus",
-      "sourceIp": "fd00:50::25",
-      "destinationIp": "fd00:60::20",
-      "protocol": "tcp",
-      "description": "Observed IPv6 Modbus despite explicit IPv4-only site policy.",
-      "source": "imported",
-      "confidence": "high",
-      "destinationPort": 502,
-      "service": "modbus"
-    }
-  ],
-  "allowedHosts": [],
-  "allowedSegmentPairs": [],
-  "approvedExternalDestinations": [],
-  "authorizedControlActions": [],
-  "modulePolicies": {}
+  "updatedAt": "2026-09-29T04:30:00.000Z"
 }

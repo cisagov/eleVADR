@@ -16,7 +16,9 @@ describe("report compatibility normalization", () => {
     expect(result.report.report_version).toBe("2.0.0");
     expect(result.report.modules.service_panel.num_known_services).toBe(2);
     expect(result.report.modules.ot_devices).toEqual([]);
-    expect(result.report.modules.suspicious_outbound_connections_panel).toEqual([]);
+    expect(result.report.modules.suspicious_outbound_connections_panel).toEqual(
+      [],
+    );
   });
 
   it("accepts legacy camelCase aliases and fills only structural defaults", () => {
@@ -25,7 +27,15 @@ describe("report compatibility normalization", () => {
       executiveSummary: { summary: "camel" },
       modules: {
         devicePanel: { hosts: 1, otHosts: 1 },
-        otDevices: [{ manufacturer: null, ip_addresses: ["10.0.0.10"], subnets: [], incoming_services: [], sent_services: [] }],
+        otDevices: [
+          {
+            manufacturer: null,
+            ip_addresses: ["10.0.0.10"],
+            subnets: [],
+            incoming_services: [],
+            sent_services: [],
+          },
+        ],
       },
     });
     expect(result.sourceVersion).toBe("legacy-unversioned");
@@ -35,7 +45,12 @@ describe("report compatibility normalization", () => {
   });
 
   it("rejects unsupported future major versions rather than guessing", () => {
-    expect(() => normalizeElevadrReport({ report_version: "3.0.0", modules: {}, executive_summary: {} }))
-      .toThrow(/Unsupported eleVADR report version/);
+    expect(() =>
+      normalizeElevadrReport({
+        report_version: "3.0.0",
+        modules: {},
+        executive_summary: {},
+      }),
+    ).toThrow(/Unsupported eleVADR report version/);
   });
 });

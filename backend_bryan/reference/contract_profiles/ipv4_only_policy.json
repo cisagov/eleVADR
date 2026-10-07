@@ -1,42 +1,42 @@
 {
-  "schemaVersion": 3,
-  "id": "contract-ipv4_only_policy",
-  "name": "Ipv4 Only Policy",
-  "description": "",
-  "updatedAt": "2026-09-21T00:00:00.000Z",
-  "selectedModules": [],
-  "scan": {
-    "filesScanned": 0,
-    "recordsParsed": 0,
-    "logTypes": {},
-    "warnings": []
-  },
-  "captureScope": {
-    "internalIcsOnlyExpected": true,
-    "dedicatedOtSensor": false,
-    "ipv4OnlyExpected": true
-  },
-  "segments": [
-    {
-      "id": "s1",
-      "name": "Control",
-      "cidr": "10.20.0.0/16",
-      "role": "ot",
-      "purdueLevel": "Level 2",
-      "vlanId": 220,
-      "addressing": "static",
-      "dhcpAllowed": false,
-      "ipv6Allowed": false,
-      "source": "user",
-      "confidence": "high"
-    }
-  ],
-  "assets": [],
-  "infrastructure": [],
-  "communicationPairs": [],
   "allowedHosts": [],
   "allowedSegmentPairs": [],
   "approvedExternalDestinations": [],
+  "assets": [],
   "authorizedControlActions": [],
-  "modulePolicies": {}
+  "captureScope": {
+    "dedicatedOtSensor": false,
+    "internalIcsOnlyExpected": true,
+    "ipv4OnlyExpected": true
+  },
+  "communicationPairs": [],
+  "description": "",
+  "id": "contract-ipv4_only_policy",
+  "infrastructure": [],
+  "modulePolicies": {},
+  "name": "Ipv4 Only Policy",
+  "scan": {
+    "filesScanned": 0,
+    "logTypes": {},
+    "recordsParsed": 0,
+    "warnings": []
+  },
+  "schemaVersion": 3,
+  "segments": [
+    {
+      "addressing": "static",
+      "cidr": "10.20.0.0/16",
+      "confidence": "high",
+      "dhcpAllowed": false,
+      "id": "s1",
+      "ipv6Allowed": false,
+      "name": "Control",
+      "purdueLevel": "Level 2",
+      "role": "ot",
+      "source": "user",
+      "vlanId": 220
+    }
+  ],
+  "selectedModules": [],
+  "updatedAt": "2026-09-21T00:00:00.000Z"
 }

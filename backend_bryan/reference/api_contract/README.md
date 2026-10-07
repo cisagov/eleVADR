@@ -38,7 +38,6 @@ Suggested behavior:
 
 Changing the request envelope incompatibly requires a new request `contractVersion`. Changing the response envelope incompatibly requires a new response contract version. Detector metadata changes remain backend-internal and do not require a frontend contract change unless the user-facing Detection Context schema changes.
 
-
 ## Finding provenance
 
 Findings returned by the reference analysis service include a `provenance` object identifying supporting Zeek log types, parsed record indexes, and retained field/value pairs. The same object is mirrored at `metadata.zeek_provenance` for metadata-oriented consumers. See `../finding_provenance.md`.

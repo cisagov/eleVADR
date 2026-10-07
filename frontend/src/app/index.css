@@ -1,23 +1,29 @@
-
 :root {
   /* Unified eleVADR typography scale */
-  --font-sans: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-mono: "Roboto Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  --text-xs: 0.75rem;      /* 12px - labels, metadata */
-  --text-sm: 0.8125rem;    /* 13px - compact UI and tables */
-  --text-base: 0.875rem;   /* 14px - supporting copy */
-  --text-md: 1rem;         /* 16px - standard emphasis */
-  --text-lg: 1.125rem;     /* 18px - section headings */
-  --text-xl: 1.25rem;      /* 20px - panel/drawer headings */
-  --text-2xl: 1.5rem;      /* 24px - prominent values */
-  --text-3xl: 2rem;        /* 32px - page titles / KPIs */
-  --text-4xl: 2.5rem;      /* 40px - exceptional KPI emphasis */
+  --font-sans:
+    "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono:
+    "Roboto Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --text-xs: 0.75rem; /* 12px - labels, metadata */
+  --text-sm: 0.8125rem; /* 13px - compact UI and tables */
+  --text-base: 0.875rem; /* 14px - supporting copy */
+  --text-md: 1rem; /* 16px - standard emphasis */
+  --text-lg: 1.125rem; /* 18px - section headings */
+  --text-xl: 1.25rem; /* 20px - panel/drawer headings */
+  --text-2xl: 1.5rem; /* 24px - prominent values */
+  --text-3xl: 2rem; /* 32px - page titles / KPIs */
+  --text-4xl: 2.5rem; /* 40px - exceptional KPI emphasis */
   --text-display: clamp(1.75rem, 2.4vw, 2.25rem);
   --leading-tight: 1.2;
   --leading-normal: 1.5;
 }
-* { box-sizing: border-box; }
-html { min-width: 320px; background: #f4f7fa; }
+* {
+  box-sizing: border-box;
+}
+html {
+  min-width: 320px;
+  background: #f4f7fa;
+}
 body {
   margin: 0;
   min-width: 320px;
@@ -30,8 +36,30 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #f4f7fa;
 }
-button, input, select, textarea { font: inherit; font-family: var(--font-sans); }
-button, input, select, textarea, table { letter-spacing: normal; }
-svg text { font-family: var(--font-sans); }
-button, a { -webkit-tap-highlight-color: transparent; }
-code, pre, kbd, samp { font-family: var(--font-mono); }
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  font-family: var(--font-sans);
+}
+button,
+input,
+select,
+textarea,
+table {
+  letter-spacing: normal;
+}
+svg text {
+  font-family: var(--font-sans);
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--font-mono);
+}

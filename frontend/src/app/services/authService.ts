@@ -21,7 +21,9 @@ const TOKEN_KEY = "elevadr-auth-token";
 export const AUTH_EXPIRED_EVENT = "elevadr-auth-expired";
 
 export function authApiUrl(path: string): string {
-  const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
+  const env = (
+    import.meta as ImportMeta & { env?: Record<string, string | undefined> }
+  ).env;
   const explicitBase = env?.VITE_AUTH_BASE_URL?.trim();
   if (explicitBase) return `${explicitBase.replace(/\/$/, "")}${path}`;
 
@@ -29,12 +31,16 @@ export function authApiUrl(path: string): string {
     env?.VITE_DETECTION_ANALYSIS_URL,
     env?.VITE_PCAP_ANALYSIS_URL,
     env?.VITE_PCAP_CONTEXT_DISCOVERY_URL,
-  ].map((value) => value?.trim()).find(Boolean);
+  ]
+    .map((value) => value?.trim())
+    .find(Boolean);
 
   if (configuredApi) {
     try {
       return `${new URL(configuredApi, window.location.origin).origin}${path}`;
-    } catch { /* fall through to same-origin */ }
+    } catch {
+      /* fall through to same-origin */
+    }
   }
   return path;
 }
@@ -53,10 +59,17 @@ function storeAccessToken(token: string): void {
 
 async function responseMessage(response: Response): Promise<string> {
   try {
-    const payload = await response.clone().json() as { message?: unknown; error?: unknown };
-    if (typeof payload.message === "string" && payload.message) return payload.message;
-    if (typeof payload.error === "string" && payload.error) return payload.error;
-  } catch { /* use fallback */ }
+    const payload = (await response.clone().json()) as {
+      message?: unknown;
+      error?: unknown;
+    };
+    if (typeof payload.message === "string" && payload.message)
+      return payload.message;
+    if (typeof payload.error === "string" && payload.error)
+      return payload.error;
+  } catch {
+    /* use fallback */
+  }
   return `Request failed with status ${response.status}`;
 }
 
@@ -68,21 +81,28 @@ export async function fetchAuthState(): Promise<AuthState> {
   });
   if (response.status === 401) {
     clearAccessToken();
-    return { authEnabled: true, user: { id: "", username: "", authenticated: false, role: "anonymous" } };
+    return {
+      authEnabled: true,
+      user: { id: "", username: "", authenticated: false, role: "anonymous" },
+    };
   }
   if (!response.ok) throw new Error(await responseMessage(response));
-  return await response.json() as AuthState;
+  return (await response.json()) as AuthState;
 }
 
-export async function login(username: string, password: string): Promise<AuthState> {
+export async function login(
+  username: string,
+  password: string,
+): Promise<AuthState> {
   const response = await fetch(authApiUrl("/auth/login"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
   if (!response.ok) throw new Error(await responseMessage(response));
-  const payload = await response.json() as LoginResponse;
-  if (!payload.access_token) throw new Error("Authentication response did not include an access token.");
+  const payload = (await response.json()) as LoginResponse;
+  if (!payload.access_token)
+    throw new Error("Authentication response did not include an access token.");
   storeAccessToken(payload.access_token);
   return await fetchAuthState();
 }
@@ -99,7 +119,10 @@ export async function logout(): Promise<void> {
   }
 }
 
-export async function authenticatedFetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
+export async function authenticatedFetch(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+): Promise<Response> {
   const token = getAccessToken();
   const headers = new Headers(init.headers || undefined);
   if (token) headers.set("Authorization", `Bearer ${token}`);

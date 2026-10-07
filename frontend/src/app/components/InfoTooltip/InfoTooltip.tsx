@@ -38,18 +38,15 @@ const InfoTooltip: React.FC<InfoTooltipProps> = ({ text }) => {
     };
   }, [isOpen]);
 
-  const tooltip = isOpen && typeof document !== "undefined"
-    ? createPortal(
-        <div
-          id={tooltipId}
-          className="info-tooltip-content"
-          role="tooltip"
-        >
-          {text}
-        </div>,
-        document.body,
-      )
-    : null;
+  const tooltip =
+    isOpen && typeof document !== "undefined"
+      ? createPortal(
+          <div id={tooltipId} className="info-tooltip-content" role="tooltip">
+            {text}
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
     <>
@@ -67,7 +64,9 @@ const InfoTooltip: React.FC<InfoTooltipProps> = ({ text }) => {
           aria-controls={isOpen ? tooltipId : undefined}
           type="button"
         >
-          <span className="info-tooltip-glyph" aria-hidden="true">i</span>
+          <span className="info-tooltip-glyph" aria-hidden="true">
+            i
+          </span>
         </button>
       </div>
       {tooltip}

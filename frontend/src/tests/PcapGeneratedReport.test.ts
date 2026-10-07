@@ -22,9 +22,17 @@ describe("PCAP-generated canonical report", () => {
       },
       modules: {
         ...createMockReport().modules,
-        service_risk_breakdown_panel: { risk_category_counts: {}, risk_category_services: {} },
+        service_risk_breakdown_panel: {
+          risk_category_counts: {},
+          risk_category_services: {},
+        },
         suspicious_outbound_connections_panel: [],
-        ot_cross_segment_lines_panel: { lines: [], subnet_pair_counts: [], dst_subnet_counts: [], ot_device_counts: [] },
+        ot_cross_segment_lines_panel: {
+          lines: [],
+          subnet_pair_counts: [],
+          dst_subnet_counts: [],
+          ot_device_counts: [],
+        },
       },
     });
     const findings = deriveFindings(report);
@@ -38,6 +46,8 @@ describe("PCAP-generated canonical report", () => {
       detectionBasis: "derived",
     });
     expect(findings[0].observedEvidence?.join(" ")).toContain("10.0.0.99");
-    expect(findings[0].suppressionGuidance?.join(" ")).toContain("authoritative asset inventory");
+    expect(findings[0].suppressionGuidance?.join(" ")).toContain(
+      "authoritative asset inventory",
+    );
   });
 });

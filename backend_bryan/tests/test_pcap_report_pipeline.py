@@ -13,7 +13,7 @@ def _fake_zeek(path: Path) -> Path:
     script.write_text(
         "#!/usr/bin/env python3\n"
         "from pathlib import Path\n"
-        "Path('conn.log').write_text(" 
+        "Path('conn.log').write_text("
         "'#separator \\x09\\n#unset_field -\\n#empty_field (empty)\\n'"
         "+ '#fields\\tts\\tuid\\tid.orig_h\\tid.orig_p\\tid.resp_h\\tid.resp_p\\tproto\\tservice\\tduration\\torig_bytes\\tresp_bytes\\tconn_state\\thistory\\torig_pkts\\tresp_pkts\\n'"
         "+ '1.0\\tC1\\t10.0.0.10\\t12345\\t10.0.0.20\\t502\\ttcp\\tmodbus\\t1.2\\t100\\t50\\tSF\\tShADadFf\\t3\\t2\\n', encoding='utf-8')\n"

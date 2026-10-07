@@ -9,14 +9,23 @@ const FOCUSABLE = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
-export function useDialogAccessibility<T extends HTMLElement>(isOpen: boolean, onClose: () => void): RefObject<T | null> {
+export function useDialogAccessibility<T extends HTMLElement>(
+  isOpen: boolean,
+  onClose: () => void,
+): RefObject<T | null> {
   const dialogRef = useRef<T>(null);
 
   useEffect(() => {
     if (!isOpen || !dialogRef.current) return;
     const dialog = dialogRef.current;
-    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const focusables = () => (Array.from(dialog.querySelectorAll(FOCUSABLE)) as HTMLElement[]).filter((el) => !el.hasAttribute("hidden"));
+    const previous =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const focusables = () =>
+      (Array.from(dialog.querySelectorAll(FOCUSABLE)) as HTMLElement[]).filter(
+        (el) => !el.hasAttribute("hidden"),
+      );
     const first = focusables()[0];
     window.setTimeout(() => (first ?? dialog).focus(), 0);
 

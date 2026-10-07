@@ -2,7 +2,6 @@
 
 # Standard Python Libraries
 import ipaddress
-import os
 from collections import Counter
 from enum import Enum
 from pathlib import Path
@@ -47,13 +46,12 @@ class FilePathInfo:
 
         # Create directories if they don't exist
         for path in [path_to_zeek, path_to_zeek_scripts, path_to_assessor_data]:
-            if path and not Path(path).exists():
-                os.mkdir(path)
+            if path:
+                Path(path).mkdir(parents=True, exist_ok=True)
 
         if path_to_pcap:
-            pcap_parent = Path(path_to_pcap.rsplit("/", 1)[0])
-            if not pcap_parent.exists():
-                os.mkdir(pcap_parent)
+            pcap_parent = Path(path_to_pcap).parent
+            pcap_parent.mkdir(parents=True, exist_ok=True)
 
 
 class PortType(Enum):
@@ -73,7 +71,7 @@ def is_public_ip(ip: str) -> bool:
     try:
         ip_obj = ipaddress.ip_address(ip)
         return ip_obj.is_global
-    except ValueError, AttributeError:
+    except (ValueError, AttributeError):
         return False
 
 
@@ -98,7 +96,7 @@ def connection_type_processing(ip: str) -> str | None:
             return "broadcast"
         else:
             return "unicast"
-    except ValueError, AttributeError:
+    except (ValueError, AttributeError):
         return None
 
 
@@ -107,7 +105,7 @@ def traffic_direction(row: pd.Series) -> str | None:
     try:
         src_ip = ipaddress.ip_address(row["src_endpoint.ip"])
         dst_ip = ipaddress.ip_address(row["dst_endpoint.ip"])
-    except ValueError, KeyError:
+    except (ValueError, KeyError):
         return None
 
     def _is_internal(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
@@ -160,7 +158,7 @@ def subnet_membership(
                 if src_ip_v4 != ipaddress.IPv4Address("0.0.0.0"):
                     src_network_v4 = ipaddress.IPv4Network(f"{src_ip_v4}/24", strict=False)
                     src_subnet = str(src_network_v4)
-            except ValueError, ipaddress.AddressValueError:
+            except (ValueError, ipaddress.AddressValueError):
                 pass
 
             try:
@@ -170,7 +168,7 @@ def subnet_membership(
                     dst_ip_v4 = ipaddress.IPv4Address(dst_ip_str)
                     dst_network_v4 = ipaddress.IPv4Network(f"{dst_ip_v4}/24", strict=False)
                     dst_subnet = str(dst_network_v4)
-            except ValueError, ipaddress.AddressValueError:
+            except (ValueError, ipaddress.AddressValueError):
                 pass
         elif row["connection_info.protocol_ver_id"] == 6:
             try:
@@ -183,7 +181,7 @@ def subnet_membership(
                     dst_ip_v6 = ipaddress.IPv6Address(dst_ip_str)
                     dst_network_v6 = ipaddress.IPv6Network(f"{dst_ip_v6}/64", strict=False)
                     dst_subnet = str(dst_network_v6)
-            except ValueError, ipaddress.AddressValueError:
+            except (ValueError, ipaddress.AddressValueError):
                 pass
 
     row["src_endpoint.subnet"] = src_subnet

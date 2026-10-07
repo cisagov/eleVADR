@@ -11,16 +11,31 @@ interface Props {
 const ReportGuide: React.FC<Props> = ({ report, onGoTo, onAnalystMode }) => {
   const summary = useMemo(() => {
     const risky = report.modules.service_panel.num_risky_services;
-    const suspicious = report.modules.suspicious_outbound_connections_panel.length;
+    const suspicious =
+      report.modules.suspicious_outbound_connections_panel.length;
     const crossSegment = report.modules.device_panel.ot_cross_segment;
-    const unsuccessful = report.modules.connection_success_panel.summary.unsuccessful_count;
-    const attention = Number(risky > 0) + Number(suspicious > 0) + Number(crossSegment > 0) + Number(unsuccessful > 0);
+    const unsuccessful =
+      report.modules.connection_success_panel.summary.unsuccessful_count;
+    const attention =
+      Number(risky > 0) +
+      Number(suspicious > 0) +
+      Number(crossSegment > 0) +
+      Number(unsuccessful > 0);
 
     const parts: string[] = [];
     if (risky) parts.push(`${risky} risky service${risky === 1 ? "" : "s"}`);
-    if (suspicious) parts.push(`${suspicious} suspicious outbound path${suspicious === 1 ? "" : "s"}`);
-    if (crossSegment) parts.push(`${crossSegment} OT device${crossSegment === 1 ? "" : "s"} with cross-segment activity`);
-    if (unsuccessful) parts.push(`${unsuccessful.toLocaleString()} unsuccessful connection${unsuccessful === 1 ? "" : "s"}`);
+    if (suspicious)
+      parts.push(
+        `${suspicious} suspicious outbound path${suspicious === 1 ? "" : "s"}`,
+      );
+    if (crossSegment)
+      parts.push(
+        `${crossSegment} OT device${crossSegment === 1 ? "" : "s"} with cross-segment activity`,
+      );
+    if (unsuccessful)
+      parts.push(
+        `${unsuccessful.toLocaleString()} unsuccessful connection${unsuccessful === 1 ? "" : "s"}`,
+      );
 
     return {
       attention,
@@ -31,22 +46,60 @@ const ReportGuide: React.FC<Props> = ({ report, onGoTo, onAnalystMode }) => {
   }, [report]);
 
   return (
-    <section id="start" className="report-guide scroll-target" aria-labelledby="report-guide-title">
+    <section
+      id="start"
+      className="report-guide scroll-target"
+      aria-labelledby="report-guide-title"
+    >
       <div className="report-guide-copy">
         <p className="report-guide-kicker">Start here</p>
-        <h2 id="report-guide-title">{summary.attention ? `${summary.attention} areas deserve a closer look` : "Your report at a glance"}</h2>
+        <h2 id="report-guide-title">
+          {summary.attention
+            ? `${summary.attention} areas deserve a closer look`
+            : "Your report at a glance"}
+        </h2>
         <p>{summary.sentence}</p>
-        <span className="report-guide-note">eleVADR summarizes observed evidence; validate findings against your environment and approved communication patterns.</span>
+        <span className="report-guide-note">
+          eleVADR summarizes observed evidence; validate findings against your
+          environment and approved communication patterns.
+        </span>
       </div>
       <div className="report-guide-actions" aria-label="Recommended next steps">
-        <button type="button" className="guide-action guide-action-primary" onClick={() => onGoTo("findings")}>
-          <span className="guide-action-number">1</span><span><strong>Review findings</strong><small>See what may need attention</small></span>
+        <button
+          type="button"
+          className="guide-action guide-action-primary"
+          onClick={() => onGoTo("findings")}
+        >
+          <span className="guide-action-number">1</span>
+          <span>
+            <strong>Review findings</strong>
+            <small>See what may need attention</small>
+          </span>
         </button>
-        <button type="button" className="guide-action" onClick={() => onGoTo("topology")}>
-          <span className="guide-action-number">2</span><span><strong>Explore the network</strong><small>Understand devices and communication paths</small></span>
+        <button
+          type="button"
+          className="guide-action"
+          onClick={() => onGoTo("topology")}
+        >
+          <span className="guide-action-number">2</span>
+          <span>
+            <strong>Explore the network</strong>
+            <small>Understand devices and communication paths</small>
+          </span>
         </button>
-        <button type="button" className="guide-action" onClick={() => { onAnalystMode(); window.setTimeout(() => onGoTo("assets"), 30); }}>
-          <span className="guide-action-number">3</span><span><strong>Browse assets</strong><small>Inspect devices, services, and evidence</small></span>
+        <button
+          type="button"
+          className="guide-action"
+          onClick={() => {
+            onAnalystMode();
+            window.setTimeout(() => onGoTo("assets"), 30);
+          }}
+        >
+          <span className="guide-action-number">3</span>
+          <span>
+            <strong>Browse assets</strong>
+            <small>Inspect devices, services, and evidence</small>
+          </span>
         </button>
       </div>
     </section>

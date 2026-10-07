@@ -1,28 +1,28 @@
 {
-  "schemaVersion": 3,
-  "id": "contract-minimal",
-  "name": "Minimal",
-  "description": "",
-  "updatedAt": "2026-09-21T00:00:00.000Z",
-  "selectedModules": [],
-  "scan": {
-    "filesScanned": 0,
-    "recordsParsed": 0,
-    "logTypes": {},
-    "warnings": []
-  },
-  "captureScope": {
-    "internalIcsOnlyExpected": false,
-    "dedicatedOtSensor": false,
-    "ipv4OnlyExpected": false
-  },
-  "segments": [],
-  "assets": [],
-  "infrastructure": [],
-  "communicationPairs": [],
   "allowedHosts": [],
   "allowedSegmentPairs": [],
   "approvedExternalDestinations": [],
+  "assets": [],
   "authorizedControlActions": [],
-  "modulePolicies": {}
+  "captureScope": {
+    "dedicatedOtSensor": false,
+    "internalIcsOnlyExpected": false,
+    "ipv4OnlyExpected": false
+  },
+  "communicationPairs": [],
+  "description": "",
+  "id": "contract-minimal",
+  "infrastructure": [],
+  "modulePolicies": {},
+  "name": "Minimal",
+  "scan": {
+    "filesScanned": 0,
+    "logTypes": {},
+    "recordsParsed": 0,
+    "warnings": []
+  },
+  "schemaVersion": 3,
+  "segments": [],
+  "selectedModules": [],
+  "updatedAt": "2026-09-21T00:00:00.000Z"
 }

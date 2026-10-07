@@ -1,14 +1,69 @@
 {
-  "id": "03_outbound_ipv6_quic_icmp",
-  "name": "Outbound volume, IPv6, QUIC, and ICMP channel",
-  "pcap": "03_outbound_ipv6_quic_icmp.pcap",
   "context": "03_outbound_ipv6_quic_icmp_context.json",
-  "referenceReport": "03_outbound_ipv6_quic_icmp.json",
   "expected": {
-    "detectorModulesRequested": 60,
+    "assertions": [
+      {
+        "equals": true,
+        "path": "arch_insights.detection_context_snapshot.captureScope.ipv4OnlyExpected"
+      },
+      {
+        "equals": 12,
+        "path": "arch_insights.detection_context_snapshot.communicationPairs.2.observedCount"
+      },
+      {
+        "equals": "icmp",
+        "path": "arch_insights.detection_context_snapshot.communicationPairs.2.service"
+      },
+      {
+        "equals": 1760002000.049999,
+        "path": "arch_insights.detector_results.31.evidence.baseline_start"
+      },
+      {
+        "equals": 1760002300.049999,
+        "path": "arch_insights.detector_results.31.evidence.baseline_end"
+      }
+    ],
     "detectorModulesCompleted": 60,
     "detectorModulesFailed": 0,
+    "detectorModulesRequested": 60,
+    "devicePanel": {
+      "edge_hosts": 2,
+      "hosts": 5,
+      "it_hosts": 0,
+      "ot_cross_segment": 1,
+      "ot_hosts": 3
+    },
     "findingCount": 12,
+    "moduleMetrics": {
+      "icmp_data_channel": {
+        "icmp_data_channel_findings": 1,
+        "icmp_rows_evaluated": 12
+      },
+      "ipv6_traffic_ot": {
+        "ipv6_connections_observed": 1,
+        "ipv6_findings": 1,
+        "ipv6_policy_violation_events": 1
+      },
+      "large_outbound_http_uploads": {
+        "large_outbound_http_upload_findings": 1,
+        "total_flagged_upload_bytes": 12582912
+      },
+      "new_service_emergence_ot": {
+        "baseline_services": 0,
+        "new_services": 1,
+        "post_baseline_service_groups": 1,
+        "service_drift_findings": 1
+      },
+      "quic_ot_segments": {
+        "explicit_quic_events": 1,
+        "quic_ot_findings": 1
+      },
+      "unusual_outbound_data_volume": {
+        "external_destination_findings": 1,
+        "total_flagged_orig_bytes": 12583052,
+        "unusual_outbound_volume_findings": 1
+      }
+    },
     "modulesWithFindings": {
       "cross_purdue_level_traffic": 1,
       "deprecated_insecure_services_protocols": 1,
@@ -18,73 +73,18 @@
       "ipv6_traffic_ot": 1,
       "large_outbound_http_uploads": 1,
       "new_ot_conversation_pair": 1,
+      "new_service_emergence_ot": 1,
       "ot_outbound_internet_any_protocol": 1,
       "quic_ot_segments": 1,
-      "unusual_outbound_data_volume": 1,
-      "new_service_emergence_ot": 1
+      "unusual_outbound_data_volume": 1
     },
     "modulesWithoutFindings": [
       "ot_protocol_exposure",
       "unknown_rogue_devices"
-    ],
-    "devicePanel": {
-      "hosts": 5,
-      "ot_hosts": 3,
-      "it_hosts": 0,
-      "edge_hosts": 2,
-      "ot_cross_segment": 1
-    },
-    "assertions": [
-      {
-        "path": "arch_insights.detection_context_snapshot.captureScope.ipv4OnlyExpected",
-        "equals": true
-      },
-      {
-        "path": "arch_insights.detection_context_snapshot.communicationPairs.2.observedCount",
-        "equals": 12
-      },
-      {
-        "path": "arch_insights.detection_context_snapshot.communicationPairs.2.service",
-        "equals": "icmp"
-      },
-      {
-        "path": "arch_insights.detector_results.31.evidence.baseline_start",
-        "equals": 1760002000.049999
-      },
-      {
-        "path": "arch_insights.detector_results.31.evidence.baseline_end",
-        "equals": 1760002300.049999
-      }
-    ],
-    "moduleMetrics": {
-      "icmp_data_channel": {
-        "icmp_rows_evaluated": 12,
-        "icmp_data_channel_findings": 1
-      },
-      "large_outbound_http_uploads": {
-        "large_outbound_http_upload_findings": 1,
-        "total_flagged_upload_bytes": 12582912
-      },
-      "unusual_outbound_data_volume": {
-        "unusual_outbound_volume_findings": 1,
-        "external_destination_findings": 1,
-        "total_flagged_orig_bytes": 12583052
-      },
-      "quic_ot_segments": {
-        "quic_ot_findings": 1,
-        "explicit_quic_events": 1
-      },
-      "ipv6_traffic_ot": {
-        "ipv6_connections_observed": 1,
-        "ipv6_policy_violation_events": 1,
-        "ipv6_findings": 1
-      },
-      "new_service_emergence_ot": {
-        "service_drift_findings": 1,
-        "baseline_services": 0,
-        "new_services": 1,
-        "post_baseline_service_groups": 1
-      }
-    }
-  }
+    ]
+  },
+  "id": "03_outbound_ipv6_quic_icmp",
+  "name": "Outbound volume, IPv6, QUIC, and ICMP channel",
+  "pcap": "03_outbound_ipv6_quic_icmp.pcap",
+  "referenceReport": "03_outbound_ipv6_quic_icmp.json"
 }

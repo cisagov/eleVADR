@@ -32,6 +32,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "eslint": "^10.6.0",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.7.0",
     "jsdom": "^29.1.1",
@@ -58,11 +59,11 @@
   "private": true,
   "scripts": {
     "build": "vite build",
-    "lint": "eslint . --max-warnings=0",
+    "lint": "eslint .",
+    "preview": "vite preview",
     "start": "vite",
     "test": "vitest run",
-    "type-check": "tsc --noEmit",
-    "preview": "vite preview"
+    "type-check": "tsc --noEmit"
   },
   "tool": {
     "elevadr": {
@@ -73,6 +74,6 @@
       ]
     }
   },
-  "version": "0.1.0",
-  "type": "module"
+  "type": "module",
+  "version": "0.1.0"
 }

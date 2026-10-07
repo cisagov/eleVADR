@@ -84,7 +84,7 @@
   font-size: var(--text-xs);
   font-weight: 700;
   line-height: 1.25;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   vertical-align: middle;
 }
@@ -210,21 +210,37 @@
 
 :root[data-theme="dark"] .app-shell .dashboard-section table th,
 :root[data-theme="dark"] .app-shell .dashboard-section h3.section-subtitle,
-:root[data-theme="dark"] .app-shell .dashboard-section .embedded-section-heading h3,
-:root[data-theme="dark"] .app-shell .dashboard-section .service-inventory-group-heading h3 {
+:root[data-theme="dark"]
+  .app-shell
+  .dashboard-section
+  .embedded-section-heading
+  h3,
+:root[data-theme="dark"]
+  .app-shell
+  .dashboard-section
+  .service-inventory-group-heading
+  h3 {
   color: #d9edf6;
 }
 
 :root[data-theme="dark"] .app-shell .dashboard-section table td,
 :root[data-theme="dark"] .app-shell .dashboard-section .data-label,
 :root[data-theme="dark"] .app-shell .dashboard-section .summary-label,
-:root[data-theme="dark"] .app-shell .dashboard-section .service-inventory-summary span {
+:root[data-theme="dark"]
+  .app-shell
+  .dashboard-section
+  .service-inventory-summary
+  span {
   color: #c9d6e2;
 }
 
 :root[data-theme="dark"] .app-shell .dashboard-section .data-value,
 :root[data-theme="dark"] .app-shell .dashboard-section .summary-value,
-:root[data-theme="dark"] .app-shell .dashboard-section .service-inventory-summary strong {
+:root[data-theme="dark"]
+  .app-shell
+  .dashboard-section
+  .service-inventory-summary
+  strong {
   color: #f1f7fa;
 }
 

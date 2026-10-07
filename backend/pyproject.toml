@@ -15,7 +15,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "deptry>=0.25.1",
-    "httpx2>=2.5.0",
+    "httpx2>=2.12.0",
     "pre-commit>=4.6.0",
     "pyarrow>=24.0.0",
     "pytest>=9.1.1",
@@ -50,7 +50,7 @@ platforms = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py314"
+target-version = "py313"
 extend-exclude = ["tests"]
 
 [tool.ruff.lint]
@@ -72,7 +72,7 @@ explicit_package_bases = true
 
 [tool.codespell]
 skip = "*.json,*.csv,*lock*,*.min*"
-ignore-words-list = "OT"
+ignore-words-list = "OT,ot,covert,contextA,localY,mot,THA,doubleClick"
 
 [tool.markdownlint-cli]
 default = true

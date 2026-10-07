@@ -1,31 +1,8 @@
 {
-  "detection_context_schema_version": 3,
-  "detection_context_profile_id": "example-profile",
-  "detection_context_profile_name": "Backend handoff example",
-  "segments_source": "detection_context_profile",
-  "asset_inventory_source": "detection_context_profile",
-  "segments": [
-    {
-      "name": "Control",
-      "cidr": "10.10.0.0/16",
-      "role": "ot",
-      "addressing": "static",
-      "purdue_level": "Level 2",
-      "vlan_id": 120,
-      "dhcp_allowed": false,
-      "ipv6_allowed": false,
-      "ipv4_only": true
-    },
-    {
-      "name": "Enterprise",
-      "cidr": "10.20.0.0/16",
-      "role": "it",
-      "addressing": "dhcp",
-      "purdue_level": "Level 4"
-    }
-  ],
   "asset_inventory": [
     {
+      "asset_type": "PLC",
+      "hostname": "PLC-01",
       "ip": "10.10.1.20",
       "ips": [
         "10.10.1.20"
@@ -36,47 +13,75 @@
       "macs": [
         "00:11:22:33:44:55"
       ],
-      "asset_type": "PLC",
-      "role": "OT Controller",
-      "services": [
-        "modbus",
-        "s7comm"
-      ],
+      "name": "PLC-01",
       "ports": [
         102,
         502
       ],
-      "hostname": "PLC-01",
-      "name": "PLC-01",
+      "purdue_level": "Level 1",
+      "role": "OT Controller",
       "segment": "Control",
-      "purdue_level": "Level 1"
+      "services": [
+        "modbus",
+        "s7comm"
+      ]
     }
   ],
+  "asset_inventory_source": "detection_context_profile",
+  "codesys_runtime_policy": {
+    "allowed_hosts": [
+      "10.10.9.9"
+    ]
+  },
+  "control_system_enterprise_policy": {
+    "allowed_segment_pairs": [
+      {
+        "destination": "Control",
+        "source": "Enterprise"
+      }
+    ]
+  },
+  "database_exposure_policy": {
+    "allowed_hosts": [
+      "10.10.9.9"
+    ],
+    "allowed_segment_pairs": [
+      {
+        "destination": "Control",
+        "source": "Enterprise"
+      }
+    ]
+  },
+  "deprecated_vpn_policy": {
+    "allowed_hosts": [
+      "10.10.9.9"
+    ]
+  },
   "detection_context_observations": {
+    "communications": [
+      {
+        "confidence": "high",
+        "destination": "10.10.1.20",
+        "destination_port": 102,
+        "protocol": "s7comm",
+        "source": "10.10.2.10",
+        "source_kind": "zeek"
+      }
+    ],
     "scan": {
       "filesScanned": 4,
-      "recordsParsed": 1200,
       "logTypes": {
         "conn": 1000,
         "modbus": 100,
         "s7comm": 100
       },
+      "recordsParsed": 1200,
       "warnings": []
     },
-    "communications": [
-      {
-        "source": "10.10.2.10",
-        "destination": "10.10.1.20",
-        "source_kind": "zeek",
-        "confidence": "high",
-        "protocol": "s7comm",
-        "destination_port": 102
-      }
-    ],
     "segments": [
       {
-        "id": "seg-control",
         "dhcp_observed": true,
+        "id": "seg-control",
         "ot_protocols_observed": [
           "modbus",
           "s7comm"
@@ -90,24 +95,9 @@
       }
     ]
   },
-  "public_to_public_policy": {
-    "internal_ics_only_expected": true,
-    "min_flows": 3
-  },
-  "ipv6_ot_policy": {
-    "ipv4_only_expected": true,
-    "scope_all_connections": true
-  },
-  "ot_dns_policy": {
-    "trusted_resolvers": [
-      "10.10.0.53"
-    ]
-  },
-  "ntp_ot_policy": {
-    "trusted_servers": [
-      "10.10.0.123"
-    ]
-  },
+  "detection_context_profile_id": "example-profile",
+  "detection_context_profile_name": "Backend handoff example",
+  "detection_context_schema_version": 3,
   "dhcp_ot_policy": {
     "expected_servers": [
       "10.10.0.5"
@@ -117,30 +107,20 @@
       "10.10.0.0/16"
     ]
   },
-  "ot_certificate_policy": {
-    "management_hosts": [
-      "10.10.0.20"
-    ]
-  },
-  "codesys_runtime_policy": {
-    "allowed_hosts": [
-      "10.10.9.9"
-    ]
-  },
-  "database_exposure_policy": {
-    "allowed_hosts": [
-      "10.10.9.9"
-    ],
-    "allowed_segment_pairs": [
+  "enip_cip_policy": {
+    "allowed_write_paths": [
       {
-        "source": "Enterprise",
-        "destination": "Control"
+        "allowed_service_codes": [
+          16
+        ],
+        "destination": "10.10.1.22",
+        "source": "10.10.2.12"
       }
     ]
   },
-  "deprecated_vpn_policy": {
-    "allowed_hosts": [
-      "10.10.9.9"
+  "file_transfer_policy": {
+    "approved_external_destinations": [
+      "198.51.100.0/24"
     ]
   },
   "iccp_tase2_policy": {
@@ -153,6 +133,32 @@
       "10.10.9.9"
     ]
   },
+  "ics_write_policy": {
+    "allowed_paths": [
+      {
+        "allowed_function_codes": [
+          5,
+          6,
+          16
+        ],
+        "allowed_operations": [
+          "write"
+        ],
+        "destination": "10.10.1.20",
+        "protocol": "modbus",
+        "source": "10.10.2.10"
+      }
+    ]
+  },
+  "internet_exposed_ics_policy": {
+    "allowed_external_destinations": [
+      "198.51.100.0/24"
+    ]
+  },
+  "ipv6_ot_policy": {
+    "ipv4_only_expected": true,
+    "scope_all_connections": true
+  },
   "irc_traffic_policy": {
     "allowed_hosts": [
       "10.10.9.9"
@@ -164,8 +170,8 @@
     ],
     "allowed_segment_pairs": [
       {
-        "source": "Enterprise",
-        "destination": "Control"
+        "destination": "Control",
+        "source": "Enterprise"
       }
     ]
   },
@@ -174,19 +180,9 @@
       "10.10.9.9"
     ]
   },
-  "remote_access_tool_policy": {
-    "allowed_hosts": [
-      "10.10.9.9"
-    ]
-  },
-  "ot_comm_matrix_policy": {
-    "ignored_hosts": [
-      "10.10.9.9"
-    ]
-  },
-  "service_baseline_policy": {
-    "ignored_hosts": [
-      "10.10.9.9"
+  "ntp_ot_policy": {
+    "trusted_servers": [
+      "10.10.0.123"
     ]
   },
   "ot_asset_silence_policy": {
@@ -194,12 +190,19 @@
       "10.10.9.9"
     ]
   },
-  "control_system_enterprise_policy": {
-    "allowed_segment_pairs": [
-      {
-        "source": "Enterprise",
-        "destination": "Control"
-      }
+  "ot_certificate_policy": {
+    "management_hosts": [
+      "10.10.0.20"
+    ]
+  },
+  "ot_comm_matrix_policy": {
+    "ignored_hosts": [
+      "10.10.9.9"
+    ]
+  },
+  "ot_dns_policy": {
+    "trusted_resolvers": [
+      "10.10.0.53"
     ]
   },
   "ot_outbound_internet_policy": {
@@ -207,90 +210,87 @@
       "198.51.100.0/24"
     ]
   },
-  "internet_exposed_ics_policy": {
-    "allowed_external_destinations": [
-      "198.51.100.0/24"
-    ]
-  },
-  "file_transfer_policy": {
-    "approved_external_destinations": [
-      "198.51.100.0/24"
-    ]
-  },
-  "ics_write_policy": {
-    "allowed_paths": [
+  "plc_program_firmware_policy": {
+    "allowed_pairs": [
       {
-        "protocol": "modbus",
-        "source": "10.10.2.10",
         "destination": "10.10.1.20",
-        "allowed_operations": [
+        "operations": [
           "write"
         ],
-        "allowed_function_codes": [
-          5,
-          6,
-          16
-        ]
+        "protocols": [
+          "modbus"
+        ],
+        "source": "10.10.2.10"
+      },
+      {
+        "destination": "10.10.1.21",
+        "operations": [
+          "write"
+        ],
+        "protocols": [
+          "s7comm"
+        ],
+        "source": "10.10.2.11"
+      },
+      {
+        "destination": "10.10.1.22",
+        "operations": [
+          "write"
+        ],
+        "protocols": [
+          "enip"
+        ],
+        "source": "10.10.2.12"
       }
+    ]
+  },
+  "public_to_public_policy": {
+    "internal_ics_only_expected": true,
+    "min_flows": 3
+  },
+  "remote_access_tool_policy": {
+    "allowed_hosts": [
+      "10.10.9.9"
     ]
   },
   "s7comm_control_policy": {
     "allowed_paths": [
       {
-        "source": "10.10.2.11",
-        "destination": "10.10.1.21",
+        "allowed_function_codes": [
+          "0x05"
+        ],
         "allowed_operations": [
           "write"
         ],
-        "allowed_function_codes": [
-          "0x05"
-        ]
-      }
-    ]
-  },
-  "enip_cip_policy": {
-    "allowed_write_paths": [
-      {
-        "source": "10.10.2.12",
-        "destination": "10.10.1.22",
-        "allowed_service_codes": [
-          16
-        ]
-      }
-    ]
-  },
-  "plc_program_firmware_policy": {
-    "allowed_pairs": [
-      {
-        "source": "10.10.2.10",
-        "destination": "10.10.1.20",
-        "protocols": [
-          "modbus"
-        ],
-        "operations": [
-          "write"
-        ]
-      },
-      {
-        "source": "10.10.2.11",
         "destination": "10.10.1.21",
-        "protocols": [
-          "s7comm"
-        ],
-        "operations": [
-          "write"
-        ]
-      },
-      {
-        "source": "10.10.2.12",
-        "destination": "10.10.1.22",
-        "protocols": [
-          "enip"
-        ],
-        "operations": [
-          "write"
-        ]
+        "source": "10.10.2.11"
       }
+    ]
+  },
+  "segments": [
+    {
+      "addressing": "static",
+      "cidr": "10.10.0.0/16",
+      "dhcp_allowed": false,
+      "ipv4_only": true,
+      "ipv6_allowed": false,
+      "name": "Control",
+      "purdue_level": "Level 2",
+      "role": "ot",
+      "vlan_id": 120
+    },
+    {
+      "addressing": "dhcp",
+      "cidr": "10.20.0.0/16",
+      "name": "Enterprise",
+      "purdue_level": "Level 4",
+      "role": "it"
+    }
+  ],
+  "segments_source": "detection_context_profile",
+  "service_baseline_policy": {
+    "ignored_hosts": [
+      "10.10.9.9"
     ]
   },
   "snmp_write_policy": {

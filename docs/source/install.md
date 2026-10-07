@@ -118,7 +118,7 @@ environment:
   CURL_CA_BUNDLE: ${CURL_CA_BUNDLE}
 ```
 
-## Supported local Windows platform workflow
+## Supported local Windows platform workflow ##
 
 The current authenticated local-platform workflow is documented in the [Operator Guide](operator-guide.md). On a new Windows workstation with Python 3.12+, Node.js 22.22.3+ (Node 22), npm, and Docker Desktop, run:
 

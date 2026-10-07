@@ -3,7 +3,7 @@
 This is the explicit module-ID -> `AnalysisContext.metadata` policy namespace map used by the isolated backend reference adapter.
 
 | Module ID | Policy namespace |
-|---|---|
+| --- | --- |
 | `bacnet_discovery_anomalies` | `bacnet_discovery_policy` |
 | `codesys_runtime_exposure` | `codesys_runtime_policy` |
 | `control_system_enterprise_non_dmz` | `control_system_enterprise_policy` |

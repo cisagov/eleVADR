@@ -1,3 +1,4 @@
+import { describe, expect, it, vi } from "vitest";
 import {
   DETECTION_ANALYSIS_RESPONSE_CONTRACT_VERSION,
   DEFAULT_DETECTION_ANALYSIS_ENDPOINT,
@@ -5,9 +6,7 @@ import {
   resolveDetectionAnalysisEndpoint,
   submitDetectionAnalysis,
 } from "../app/components/DetectionConfiguration/analysisClient";
-import {
-  buildDetectionAnalysisRequest,
-} from "../app/components/DetectionConfiguration/analysisRequest";
+import { buildDetectionAnalysisRequest } from "../app/components/DetectionConfiguration/analysisRequest";
 import { createEmptyProfile } from "../app/components/DetectionConfiguration/profile";
 
 function completedResponse() {
@@ -28,28 +27,37 @@ function completedResponse() {
 describe("DetectionAnalysisClient", () => {
   it("recognizes the versioned response contract", () => {
     expect(isDetectionAnalysisResponse(completedResponse())).toBe(true);
-    expect(isDetectionAnalysisResponse({ ...completedResponse(), contractVersion: "wrong" })).toBe(false);
+    expect(
+      isDetectionAnalysisResponse({
+        ...completedResponse(),
+        contractVersion: "wrong",
+      }),
+    ).toBe(false);
   });
 
-
   it("resolves a configured Vite endpoint and falls back when blank", () => {
-    expect(resolveDetectionAnalysisEndpoint(" http://127.0.0.1:8765/api/v1/detection-analysis ")).toBe(
-      "http://127.0.0.1:8765/api/v1/detection-analysis",
+    expect(
+      resolveDetectionAnalysisEndpoint(
+        " http://127.0.0.1:8765/api/v1/detection-analysis ",
+      ),
+    ).toBe("http://127.0.0.1:8765/api/v1/detection-analysis");
+    expect(resolveDetectionAnalysisEndpoint("   ")).toBe(
+      DEFAULT_DETECTION_ANALYSIS_ENDPOINT,
     );
-    expect(resolveDetectionAnalysisEndpoint("   ")).toBe(DEFAULT_DETECTION_ANALYSIS_ENDPOINT);
-    expect(resolveDetectionAnalysisEndpoint(undefined)).toBe(DEFAULT_DETECTION_ANALYSIS_ENDPOINT);
   });
 
   it("posts the normalized request through one typed boundary", async () => {
     const request = buildDetectionAnalysisRequest(createEmptyProfile());
-    const fetchImpl = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
-      expect(init?.method).toBe("POST");
-      expect(JSON.parse(String(init?.body))).toEqual(request);
-      return new Response(JSON.stringify(completedResponse()), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    });
+    const fetchImpl = vi.fn(
+      async (_url: RequestInfo | URL, init?: RequestInit) => {
+        expect(init?.method).toBe("POST");
+        expect(JSON.parse(String(init?.body))).toEqual(request);
+        return new Response(JSON.stringify(completedResponse()), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      },
+    );
 
     const result = await submitDetectionAnalysis(request, {
       endpoint: "/test-analysis",

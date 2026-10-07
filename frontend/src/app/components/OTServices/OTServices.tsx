@@ -175,7 +175,13 @@ const buildConnectionPivotColumns = (
   connectionDetailColumns[12],
 ];
 
-const OTServices: React.FC<OTServicesProps> = ({ data, reportId, filters = [], onFilter, onSelect }) => {
+const OTServices: React.FC<OTServicesProps> = ({
+  data,
+  reportId,
+  filters = [],
+  onFilter,
+  onSelect,
+}) => {
   const servicesDrilldown = usePivotDrilldown(
     (filters: Record<string, string | number | boolean | null | undefined>) =>
       fetchFilteredServices(reportId, filters),
@@ -185,11 +191,20 @@ const OTServices: React.FC<OTServicesProps> = ({ data, reportId, filters = [], o
       fetchFilteredConnections(reportId, filters),
   );
   const tableData = buildOtServiceRows(data);
-  const visibleTableData = useMemo(() => tableData.filter((row) => filters.every((filter) => {
-    if (filter.key === "service") return row.name === filter.value;
-    if (filter.key === "risk") return row.riskCategoryList.some((risk) => risk.toLowerCase().includes(filter.value.toLowerCase()));
-    return true;
-  })), [data, filters]);
+  const visibleTableData = useMemo(
+    () =>
+      tableData.filter((row) =>
+        filters.every((filter) => {
+          if (filter.key === "service") return row.name === filter.value;
+          if (filter.key === "risk")
+            return row.riskCategoryList.some((risk) =>
+              risk.toLowerCase().includes(filter.value.toLowerCase()),
+            );
+          return true;
+        }),
+      ),
+    [data, filters],
+  );
 
   const openServiceConnections = async (serviceName: string) => {
     await connectionsDrilldown.open({ service_name: serviceName, limit: 500 });
@@ -212,10 +227,16 @@ const OTServices: React.FC<OTServicesProps> = ({ data, reportId, filters = [], o
       render: (value) => {
         const name = String(value ?? "");
         return onFilter && name ? (
-          <PivotValue filter={{ key: "service", value: name, label: "Service" }} filters={filters} onFilter={onFilter}>
+          <PivotValue
+            filter={{ key: "service", value: name, label: "Service" }}
+            filters={filters}
+            onFilter={onFilter}
+          >
             <span className="service-name-cell">{name}</span>
           </PivotValue>
-        ) : <span className="service-name-cell">{name}</span>;
+        ) : (
+          <span className="service-name-cell">{name}</span>
+        );
       },
     },
     {

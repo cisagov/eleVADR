@@ -1,16 +1,43 @@
 {
-  "schema_version": 1,
-  "profile_schema_version": 3,
   "comparison": "exact structural JSON equality; object key order ignored; list order preserved",
   "fixtures": [
-    {"file": "minimal.json", "purpose": "empty/default context"},
-    {"file": "observed_only_no_authorization.json", "purpose": "Zeek observations remain facts and do not become authorization"},
-    {"file": "ipv4_only_policy.json", "purpose": "capture-scope IPv4 policy plus Purdue/VLAN/DHCP aliases and types"},
-    {"file": "ipv6_allowed_and_unknown_purdue.json", "purpose": "explicit IPv6 allowance and preserved Purdue dropdown value"},
-    {"file": "trusted_infrastructure.json", "purpose": "DNS/NTP/DHCP/management policy routing and deduplication"},
-    {"file": "explicit_allowlists.json", "purpose": "ignored hosts, segment exceptions, and external destination routing"},
-    {"file": "authorized_controls_all_protocols.json", "purpose": "Modbus, DNP3, S7comm, and EtherNet/IP/CIP authorization shapes"},
-    {"file": "advanced_overrides.json", "purpose": "supported override namespaces, precedence, and unsupported namespace isolation"},
-    {"file": "comprehensive.json", "purpose": "mixed profile regression coverage"}
-  ]
+    {
+      "file": "minimal.json",
+      "purpose": "empty/default context"
+    },
+    {
+      "file": "observed_only_no_authorization.json",
+      "purpose": "Zeek observations remain facts and do not become authorization"
+    },
+    {
+      "file": "ipv4_only_policy.json",
+      "purpose": "capture-scope IPv4 policy plus Purdue/VLAN/DHCP aliases and types"
+    },
+    {
+      "file": "ipv6_allowed_and_unknown_purdue.json",
+      "purpose": "explicit IPv6 allowance and preserved Purdue dropdown value"
+    },
+    {
+      "file": "trusted_infrastructure.json",
+      "purpose": "DNS/NTP/DHCP/management policy routing and deduplication"
+    },
+    {
+      "file": "explicit_allowlists.json",
+      "purpose": "ignored hosts, segment exceptions, and external destination routing"
+    },
+    {
+      "file": "authorized_controls_all_protocols.json",
+      "purpose": "Modbus, DNP3, S7comm, and EtherNet/IP/CIP authorization shapes"
+    },
+    {
+      "file": "advanced_overrides.json",
+      "purpose": "supported override namespaces, precedence, and unsupported namespace isolation"
+    },
+    {
+      "file": "comprehensive.json",
+      "purpose": "mixed profile regression coverage"
+    }
+  ],
+  "profile_schema_version": 3,
+  "schema_version": 1
 }
