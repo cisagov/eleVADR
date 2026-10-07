@@ -460,8 +460,9 @@ function App() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [welcomeInstructionsOpen, setWelcomeInstructionsOpen] = useState(false);
   const [platformView, setPlatformView] = useState<
-    "dashboard" | "reports" | "pcaps" | "activity" | "storage" | "account"
+    "dashboard" | "analyses" | "storage" | "administration" | "account"
   >("dashboard");
+  const [adminTab, setAdminTab] = useState<"users" | "audit">("users");
   const [tourOpen, setTourOpen] = useState(
     () => localStorage.getItem("elevadr-tour-seen") !== "1",
   );
@@ -525,6 +526,7 @@ function App() {
   const [deleteConfirmCaptureId, setDeleteConfirmCaptureId] = useState("");
   const [captureAnalyzingId, setCaptureAnalyzingId] = useState("");
   const [historyCaptureId, setHistoryCaptureId] = useState("");
+  const [captureMenuId, setCaptureMenuId] = useState("");
   const [compareReportIds, setCompareReportIds] = useState<string[]>([]);
   const [reportComparison, setReportComparison] =
     useState<ReportComparison | null>(null);
@@ -821,25 +823,94 @@ function App() {
     [retainedCaptures],
   );
 
-  const visibleSavedReports = useMemo(() => {
+  const analysisCaptureGroups = useMemo(() => {
     const query = savedReportQuery.trim().toLowerCase();
-    const rows = savedReports.filter(
-      (item) =>
-        !query ||
-        item.title.toLowerCase().includes(query) ||
-        item.sourceFilename.toLowerCase().includes(query),
+    const retainedById = new Map(
+      retainedCaptures.map((capture) => [capture.captureId, capture]),
     );
-    return [...rows].sort((a, b) => {
+    const retainedByFilename = new Map(
+      retainedCaptures.map((capture) => [capture.filename, capture]),
+    );
+    const groups = new Map<
+      string,
+      {
+        key: string;
+        filename: string;
+        capture: RetainedCaptureSummary | null;
+        analyses: SavedReportSummary[];
+      }
+    >();
+
+    for (const capture of retainedCaptures) {
+      groups.set(capture.captureId, {
+        key: capture.captureId,
+        filename: capture.filename,
+        capture,
+        analyses: [],
+      });
+    }
+
+    for (const analysis of savedReports) {
+      const retained =
+        retainedById.get(analysis.captureId) ||
+        retainedByFilename.get(analysis.sourceFilename) ||
+        null;
+      const key =
+        retained?.captureId ||
+        (analysis.sourceFilename
+          ? `source:${analysis.sourceFilename}`
+          : analysis.captureId || `report:${analysis.reportId}`);
+      const existing = groups.get(key);
+      if (existing) {
+        existing.analyses.push(analysis);
+      } else {
+        groups.set(key, {
+          key,
+          filename: analysis.sourceFilename || analysis.title || "Unknown PCAP",
+          capture: null,
+          analyses: [analysis],
+        });
+      }
+    }
+
+    const rows = [...groups.values()]
+      .map((group) => ({
+        ...group,
+        analyses: [...group.analyses].sort(
+          (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt),
+        ),
+      }))
+      .filter(
+        (group) =>
+          !query ||
+          group.filename.toLowerCase().includes(query) ||
+          group.analyses.some(
+            (analysis) =>
+              analysis.title.toLowerCase().includes(query) ||
+              analysis.sourceFilename.toLowerCase().includes(query),
+          ),
+      );
+
+    return rows.sort((a, b) => {
+      const aLatest = a.analyses[0];
+      const bLatest = b.analyses[0];
+      if (savedReportSort === "title")
+        return a.filename.localeCompare(b.filename);
       if (savedReportSort === "oldest")
-        return Date.parse(a.createdAt) - Date.parse(b.createdAt);
-      if (savedReportSort === "title") return a.title.localeCompare(b.title);
+        return (
+          Date.parse(aLatest?.createdAt || a.capture?.createdAt || "") -
+          Date.parse(bLatest?.createdAt || b.capture?.createdAt || "")
+        );
       if (savedReportSort === "findings-desc")
-        return b.findingCount - a.findingCount;
+        return (bLatest?.findingCount || 0) - (aLatest?.findingCount || 0);
       if (savedReportSort === "findings-asc")
-        return a.findingCount - b.findingCount;
-      return Date.parse(b.createdAt) - Date.parse(a.createdAt);
+        return (aLatest?.findingCount || 0) - (bLatest?.findingCount || 0);
+      return (
+        Date.parse(bLatest?.createdAt || b.capture?.createdAt || "") -
+        Date.parse(aLatest?.createdAt || a.capture?.createdAt || "")
+      );
     });
-  }, [savedReports, savedReportQuery, savedReportSort]);
+  }, [retainedCaptures, savedReports, savedReportQuery, savedReportSort]);
 
   const openSavedReport = async (reportId: string) => {
     setSavedReportsMessage("");
@@ -2597,21 +2668,11 @@ function App() {
                       {(
                         [
                           ["dashboard", "Dashboard"],
-                          ["reports", "Reports"],
-                          ["pcaps", "PCAPs"],
-                          [
-                            "activity",
-                            authState.user.role === "admin"
-                              ? "Audit"
-                              : "Activity",
-                          ],
+                          ["analyses", "Analyses"],
                           ["storage", "Storage"],
-                          [
-                            "account",
-                            authState.user.role === "admin"
-                              ? "Account & Users"
-                              : "Account",
-                          ],
+                          ...(authState.user.role === "admin"
+                            ? [["administration", "Administration"] as const]
+                            : [["account", "Account"] as const]),
                         ] as const
                       ).map(([id, label]) => (
                         <button
@@ -2646,7 +2707,7 @@ function App() {
                           aria-label="Account dashboard summary"
                         >
                           <div>
-                            <span>Saved reports</span>
+                            <span>Analyses</span>
                             <strong>{savedReports.length}</strong>
                           </div>
                           <div>
@@ -2708,37 +2769,39 @@ function App() {
                   ))}
                 {authState?.authEnabled &&
                   authState.user.authenticated &&
-                  platformView === "reports" && (
+                  platformView === "analyses" && (
                     <section
-                      className="welcome-account-panel saved-reports-panel platform-workspace-view"
-                      aria-labelledby="welcome-account-title"
+                      className="welcome-account-panel analyses-workspace platform-workspace-view"
+                      aria-labelledby="analyses-title"
                     >
-                      <div className="welcome-account-heading">
+                      <div className="welcome-account-heading analyses-heading">
                         <div>
-                          <h2 id="welcome-account-title">Saved Reports</h2>
+                          <h2 id="analyses-title">Analyses</h2>
                           <p>
-                            <strong>{authState.user.username}</strong> ·{" "}
-                            {authState.user.role}. Completed PCAP analyses are
-                            saved automatically.
+                            Work from retained captures, reopen prior analyses,
+                            re-analyze with the active Detection Context, or
+                            compare analysis results.
                           </p>
                         </div>
-                        <div className="saved-report-actions">
-                          <button
-                            type="button"
-                            className="welcome-secondary-button"
-                            onClick={() => void refreshSavedReports()}
-                          >
-                            Refresh
-                          </button>
-                        </div>
+                        <button
+                          type="button"
+                          className="welcome-secondary-button"
+                          onClick={() => {
+                            void refreshSavedReports();
+                            void refreshRetainedCaptures();
+                          }}
+                        >
+                          Refresh
+                        </button>
                       </div>
-                      {savedReports.length > 0 && (
-                        <div className="saved-report-library-tools">
+
+                      <div className="analyses-unified-toolbar">
+                        <div className="saved-report-library-tools analyses-search-tools">
                           <label>
                             <span>Search</span>
                             <input
                               type="search"
-                              placeholder="Report or PCAP name…"
+                              placeholder="Analysis or PCAP name…"
                               value={savedReportQuery}
                               onChange={(event) =>
                                 setSavedReportQuery(event.target.value)
@@ -2753,9 +2816,9 @@ function App() {
                                 setSavedReportSort(event.target.value)
                               }
                             >
-                              <option value="newest">Newest</option>
-                              <option value="oldest">Oldest</option>
-                              <option value="title">Title</option>
+                              <option value="newest">Newest activity</option>
+                              <option value="oldest">Oldest activity</option>
+                              <option value="title">PCAP name</option>
                               <option value="findings-desc">
                                 Findings: high to low
                               </option>
@@ -2765,694 +2828,469 @@ function App() {
                             </select>
                           </label>
                           <span className="saved-report-count">
-                            {visibleSavedReports.length} of{" "}
-                            {savedReports.length} reports
+                            {analysisCaptureGroups.length} PCAPs ·{" "}
+                            {savedReports.length} analyses
                           </span>
                         </div>
-                      )}
-                      {savedReportsLoading ? (
-                        <p>Loading saved reports…</p>
-                      ) : savedReports.length ? (
-                        visibleSavedReports.length ? (
-                          <div className="saved-report-list">
-                            {visibleSavedReports.map((item) => (
+                        {reportComparison ? (
+                          <div
+                            className="report-comparison analyses-inline-comparison"
+                            aria-live="polite"
+                          >
+                            <div className="comparison-heading">
+                              <div>
+                                <span className="comparison-kicker">
+                                  Analysis comparison
+                                </span>
+                                <h3>What changed?</h3>
+                              </div>
+                              <button
+                                type="button"
+                                className="welcome-secondary-button"
+                                onClick={() => setReportComparison(null)}
+                              >
+                                Close comparison
+                              </button>
+                            </div>
+                            <div className="comparison-grid">
+                              <div>
+                                <span>Findings</span>
+                                <strong>
+                                  +{reportComparison.findings.added} / -
+                                  {reportComparison.findings.removed} / ~
+                                  {reportComparison.findings.changed}
+                                </strong>
+                              </div>
+                              <div>
+                                <span>Assets</span>
+                                <strong>
+                                  +{reportComparison.assets.added} / -
+                                  {reportComparison.assets.removed} / ~
+                                  {reportComparison.assets.changed}
+                                </strong>
+                              </div>
+                              <div>
+                                <span>Services</span>
+                                <strong>
+                                  +{reportComparison.services.added} / -
+                                  {reportComparison.services.removed} / ~
+                                  {reportComparison.services.changed}
+                                </strong>
+                              </div>
+                              <div>
+                                <span>Context changes</span>
+                                <strong>
+                                  {reportComparison.contextDeltas.length}
+                                </strong>
+                              </div>
+                            </div>
+                          </div>
+                        ) : compareReportIds.length === 2 ? (
+                          <div className="analyses-compare-toolbar">
+                            <button
+                              type="button"
+                              className="welcome-secondary-button"
+                              disabled={comparisonLoading}
+                              onClick={() => void compareSelectedReports()}
+                            >
+                              {comparisonLoading
+                                ? "Comparing…"
+                                : "Compare analyses"}
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {capturesLoading || savedReportsLoading ? (
+                        <p>Loading analyses…</p>
+                      ) : analysisCaptureGroups.length ? (
+                        <div className="analysis-capture-list unified-analysis-tree">
+                          {analysisCaptureGroups.map((group) => {
+                            const retained = group.capture;
+                            const analyses = group.analyses;
+                            const latest = analyses[0];
+                            const historyOpen = historyCaptureId === group.key;
+                            const menuOpen = captureMenuId === group.key;
+                            return (
                               <article
-                                className="saved-report-row"
-                                key={item.reportId}
+                                className={`analysis-capture-card ${retained ? "" : "is-not-retained"}`}
+                                key={group.key}
                               >
                                 <div
-                                  className={`saved-report-details ${renamingReportId === item.reportId ? "" : "saved-report-open-target"}`}
-                                  role={
-                                    renamingReportId === item.reportId
-                                      ? undefined
-                                      : "button"
-                                  }
-                                  tabIndex={
-                                    renamingReportId === item.reportId
-                                      ? undefined
-                                      : 0
-                                  }
-                                  aria-label={
-                                    renamingReportId === item.reportId
-                                      ? undefined
-                                      : `Open saved report ${item.title}`
-                                  }
-                                  onClick={
-                                    renamingReportId === item.reportId
-                                      ? undefined
-                                      : () =>
-                                          void openSavedReport(item.reportId)
-                                  }
-                                  onKeyDown={
-                                    renamingReportId === item.reportId
-                                      ? undefined
-                                      : (event) => {
-                                          if (
-                                            event.key === "Enter" ||
-                                            event.key === " "
-                                          ) {
-                                            event.preventDefault();
-                                            void openSavedReport(item.reportId);
-                                          }
-                                        }
-                                  }
+                                  className="analysis-capture-main analysis-capture-toggle"
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-expanded={historyOpen}
+                                  onClick={() => {
+                                    setHistoryCaptureId(
+                                      historyOpen ? "" : group.key,
+                                    );
+                                    setCaptureMenuId("");
+                                  }}
+                                  onKeyDown={(event) => {
+                                    if (
+                                      event.key === "Enter" ||
+                                      event.key === " "
+                                    ) {
+                                      event.preventDefault();
+                                      setHistoryCaptureId(
+                                        historyOpen ? "" : group.key,
+                                      );
+                                      setCaptureMenuId("");
+                                    }
+                                  }}
                                 >
-                                  {renamingReportId === item.reportId ? (
-                                    <div className="saved-report-rename">
-                                      <input
-                                        aria-label="Report title"
-                                        maxLength={160}
-                                        value={renameDraft}
-                                        onChange={(event) =>
-                                          setRenameDraft(event.target.value)
-                                        }
-                                      />
-                                      <button
-                                        type="button"
-                                        className="saved-report-icon-button"
-                                        onClick={() =>
-                                          void saveReportRename(item.reportId)
-                                        }
-                                        aria-label={`Save renamed report ${item.title}`}
-                                        title="Save rename"
+                                  <div className="analysis-capture-copy">
+                                    <div className="analysis-capture-title-row">
+                                      <span
+                                        className="analysis-tree-chevron"
+                                        aria-hidden="true"
                                       >
-                                        <Icon name="check" />
-                                      </button>
-                                      <button
-                                        type="button"
-                                        className="saved-report-icon-button"
-                                        onClick={() => {
-                                          setRenamingReportId("");
-                                          setRenameDraft("");
-                                        }}
-                                        aria-label="Cancel rename"
-                                        title="Cancel rename"
-                                      >
-                                        <Icon name="close" />
-                                      </button>
+                                        {historyOpen ? "▾" : "▸"}
+                                      </span>
+                                      <strong>{group.filename}</strong>
                                     </div>
-                                  ) : (
-                                    <strong>{item.title}</strong>
-                                  )}
-                                  <span>
-                                    Source:{" "}
-                                    {item.sourceFilename || "Unknown PCAP"}
-                                  </span>
-                                  <span>
-                                    Saved{" "}
-                                    {new Date(item.createdAt).toLocaleString()}{" "}
-                                    · {item.findingCount} findings ·{" "}
-                                    {item.deviceCount} devices · ID{" "}
-                                    {item.reportId.slice(0, 12)}
-                                  </span>
-                                </div>
-                                {canWriteAnalysis && (
-                                  <div className="saved-report-actions saved-report-icon-actions">
-                                    <button
-                                      type="button"
-                                      className="saved-report-icon-button"
-                                      onClick={() => {
-                                        setRenamingReportId(item.reportId);
-                                        setRenameDraft(item.title);
-                                        setDeleteConfirmReportId("");
-                                      }}
-                                      aria-label={`Rename ${item.title}`}
-                                      title="Rename"
-                                    >
-                                      <Icon name="edit" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className={`saved-report-icon-button saved-report-delete ${deleteConfirmReportId === item.reportId ? "is-confirming" : ""}`}
-                                      onClick={() =>
-                                        void removeSavedReport(item.reportId)
-                                      }
-                                      aria-label={
-                                        deleteConfirmReportId === item.reportId
-                                          ? `Confirm delete ${item.title}`
-                                          : `Delete ${item.title}`
-                                      }
-                                      title={
-                                        deleteConfirmReportId === item.reportId
-                                          ? "Confirm delete"
-                                          : "Delete"
-                                      }
-                                    >
-                                      <Icon
-                                        name={
-                                          deleteConfirmReportId ===
-                                          item.reportId
-                                            ? "check"
-                                            : "trash"
-                                        }
-                                      />
-                                    </button>
-                                    {deleteConfirmReportId ===
-                                      item.reportId && (
+                                    {retained ? (
+                                      <>
+                                        <span>
+                                          Retained{" "}
+                                          {new Date(
+                                            retained.createdAt,
+                                          ).toLocaleString()}{" "}
+                                          ·{" "}
+                                          {(
+                                            retained.sizeBytes /
+                                            (1024 * 1024)
+                                          ).toFixed(1)}{" "}
+                                          MB · {analyses.length}{" "}
+                                          {analyses.length === 1
+                                            ? "analysis"
+                                            : "analyses"}
+                                        </span>
+                                        <span>
+                                          {retained.expiresAt
+                                            ? `Expires ${new Date(retained.expiresAt).toLocaleString()}`
+                                            : "No automatic expiry"}
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <span className="analysis-source-state is-unavailable">
+                                        PCAP not retained · {analyses.length}{" "}
+                                        {analyses.length === 1
+                                          ? "analysis"
+                                          : "analyses"}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div
+                                    className="analysis-capture-actions"
+                                    onClick={(event) => event.stopPropagation()}
+                                  >
+                                    {canWriteAnalysis && (
                                       <button
                                         type="button"
-                                        className="saved-report-icon-button"
-                                        onClick={() =>
-                                          setDeleteConfirmReportId("")
+                                        className="welcome-secondary-button"
+                                        disabled={
+                                          !retained ||
+                                          Boolean(captureAnalyzingId)
                                         }
-                                        aria-label="Cancel delete"
-                                        title="Cancel delete"
+                                        title={
+                                          retained
+                                            ? undefined
+                                            : "Source PCAP is not retained. Upload it again to run another analysis."
+                                        }
+                                        onClick={() => {
+                                          if (retained)
+                                            void reanalyzeRetainedCapture(
+                                              retained.captureId,
+                                            );
+                                        }}
                                       >
-                                        <Icon name="close" />
+                                        {retained &&
+                                        captureAnalyzingId ===
+                                          retained.captureId
+                                          ? "Analyzing…"
+                                          : analyses.length
+                                            ? "Re-analyze"
+                                            : "Analyze"}
                                       </button>
+                                    )}
+                                    {canWriteAnalysis && (
+                                      <div className="capture-overflow">
+                                        <button
+                                          type="button"
+                                          className="capture-overflow-trigger"
+                                          aria-label={`More actions for ${group.filename}`}
+                                          aria-expanded={menuOpen}
+                                          onClick={() =>
+                                            setCaptureMenuId(
+                                              menuOpen ? "" : group.key,
+                                            )
+                                          }
+                                        >
+                                          ⋯
+                                        </button>
+                                        {menuOpen && (
+                                          <div className="capture-overflow-menu">
+                                            {retained &&
+                                            deleteConfirmCaptureId ===
+                                              retained.captureId ? (
+                                              <div className="capture-delete-confirmation">
+                                                <strong>
+                                                  Delete retained PCAP?
+                                                </strong>
+                                                <span>
+                                                  Saved analyses will remain
+                                                  available, but re-analysis
+                                                  will require uploading the
+                                                  capture again.
+                                                </span>
+                                                <button
+                                                  type="button"
+                                                  className="is-destructive"
+                                                  onClick={() =>
+                                                    void removeRetainedCapture(
+                                                      retained.captureId,
+                                                    )
+                                                  }
+                                                >
+                                                  Delete PCAP
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  onClick={() =>
+                                                    setDeleteConfirmCaptureId(
+                                                      "",
+                                                    )
+                                                  }
+                                                >
+                                                  Cancel
+                                                </button>
+                                              </div>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                className="is-destructive"
+                                                disabled={!retained}
+                                                title={
+                                                  retained
+                                                    ? undefined
+                                                    : "This PCAP is no longer retained."
+                                                }
+                                                onClick={() => {
+                                                  if (retained)
+                                                    void removeRetainedCapture(
+                                                      retained.captureId,
+                                                    );
+                                                }}
+                                              >
+                                                Delete retained PCAP
+                                              </button>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {historyOpen && (
+                                  <div className="capture-analysis-history analysis-tree-children">
+                                    {analyses.length ? (
+                                      analyses.map((analysis, index) => {
+                                        const selected =
+                                          compareReportIds.includes(
+                                            analysis.reportId,
+                                          );
+                                        return (
+                                          <div
+                                            className={`capture-history-row analysis-tree-row ${selected ? "is-selected" : ""}`}
+                                            key={analysis.reportId}
+                                            role="button"
+                                            tabIndex={0}
+                                            onClick={() =>
+                                              void openSavedReport(
+                                                analysis.reportId,
+                                              )
+                                            }
+                                            onKeyDown={(event) => {
+                                              if (
+                                                event.key === "Enter" ||
+                                                event.key === " "
+                                              ) {
+                                                event.preventDefault();
+                                                void openSavedReport(
+                                                  analysis.reportId,
+                                                );
+                                              }
+                                            }}
+                                          >
+                                            <div
+                                              className="analysis-tree-branch"
+                                              aria-hidden="true"
+                                            />
+                                            <input
+                                              type="checkbox"
+                                              aria-label={`Select analysis from ${new Date(analysis.createdAt).toLocaleString()} for comparison`}
+                                              checked={selected}
+                                              onClick={(event) =>
+                                                event.stopPropagation()
+                                              }
+                                              onChange={() =>
+                                                toggleCompareReport(
+                                                  analysis.reportId,
+                                                )
+                                              }
+                                            />
+                                            <div className="capture-history-details">
+                                              <div className="capture-history-title">
+                                                <strong>
+                                                  {new Date(
+                                                    analysis.createdAt,
+                                                  ).toLocaleString()}
+                                                </strong>
+                                                {index === 0 && (
+                                                  <span className="analysis-current-badge">
+                                                    Current
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <span>
+                                                {analysis.findingCount} findings
+                                                · {analysis.deviceCount} devices
+                                              </span>
+                                              <span>
+                                                Saved analysis · source evidence{" "}
+                                                {retained
+                                                  ? "retained"
+                                                  : "not retained"}
+                                              </span>
+                                            </div>
+                                            {canWriteAnalysis && (
+                                              <div
+                                                className="analysis-row-actions"
+                                                onClick={(event) =>
+                                                  event.stopPropagation()
+                                                }
+                                              >
+                                                {renamingReportId ===
+                                                analysis.reportId ? (
+                                                  <div className="analysis-inline-rename">
+                                                    <input
+                                                      value={renameDraft}
+                                                      aria-label="Analysis name"
+                                                      onChange={(event) =>
+                                                        setRenameDraft(
+                                                          event.target.value,
+                                                        )
+                                                      }
+                                                      onKeyDown={(event) => {
+                                                        if (
+                                                          event.key === "Enter"
+                                                        )
+                                                          void saveReportRename(
+                                                            analysis.reportId,
+                                                          );
+                                                        if (
+                                                          event.key === "Escape"
+                                                        ) {
+                                                          setRenamingReportId(
+                                                            "",
+                                                          );
+                                                          setRenameDraft("");
+                                                        }
+                                                      }}
+                                                    />
+                                                    <button
+                                                      type="button"
+                                                      className="saved-report-icon-button"
+                                                      aria-label="Save analysis name"
+                                                      onClick={() =>
+                                                        void saveReportRename(
+                                                          analysis.reportId,
+                                                        )
+                                                      }
+                                                    >
+                                                      <Icon name="check" />
+                                                    </button>
+                                                  </div>
+                                                ) : (
+                                                  <button
+                                                    type="button"
+                                                    className="saved-report-icon-button"
+                                                    aria-label={`Rename ${analysis.title}`}
+                                                    title="Rename"
+                                                    onClick={() => {
+                                                      setRenamingReportId(
+                                                        analysis.reportId,
+                                                      );
+                                                      setRenameDraft(
+                                                        analysis.title,
+                                                      );
+                                                      setDeleteConfirmReportId(
+                                                        "",
+                                                      );
+                                                    }}
+                                                  >
+                                                    <Icon name="edit" />
+                                                  </button>
+                                                )}
+                                                <button
+                                                  type="button"
+                                                  className={`saved-report-icon-button saved-report-delete ${deleteConfirmReportId === analysis.reportId ? "is-confirming" : ""}`}
+                                                  aria-label={
+                                                    deleteConfirmReportId ===
+                                                    analysis.reportId
+                                                      ? `Confirm delete ${analysis.title}`
+                                                      : `Delete ${analysis.title}`
+                                                  }
+                                                  title={
+                                                    deleteConfirmReportId ===
+                                                    analysis.reportId
+                                                      ? "Confirm delete"
+                                                      : "Delete"
+                                                  }
+                                                  onClick={() =>
+                                                    void removeSavedReport(
+                                                      analysis.reportId,
+                                                    )
+                                                  }
+                                                >
+                                                  <Icon
+                                                    name={
+                                                      deleteConfirmReportId ===
+                                                      analysis.reportId
+                                                        ? "check"
+                                                        : "trash"
+                                                    }
+                                                  />
+                                                </button>
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })
+                                    ) : (
+                                      <p className="analysis-tree-empty">
+                                        No saved analyses are linked to this
+                                        PCAP yet.
+                                      </p>
                                     )}
                                   </div>
                                 )}
                               </article>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="saved-report-empty">
-                            No saved reports match your search.
-                          </p>
-                        )
-                      ) : (
-                        <p className="saved-report-empty">
-                          No saved reports yet. Analyze a PCAP to create your
-                          first saved report.
-                        </p>
-                      )}
-                      {savedReportsMessage && (
-                        <p className="welcome-auth-message" role="alert">
-                          {savedReportsMessage}
-                        </p>
-                      )}
-                    </section>
-                  )}
-                {authState?.authEnabled &&
-                  authState.user.authenticated &&
-                  platformView === "pcaps" && (
-                    <section
-                      className="welcome-account-panel saved-reports-panel platform-workspace-view"
-                      aria-labelledby="retained-captures-title"
-                    >
-                      <div className="welcome-account-heading">
-                        <div>
-                          <h2 id="retained-captures-title">Retained PCAPs</h2>
-                          <p>
-                            Uploaded captures are retained for your account.
-                            Re-analysis uses the currently active Analysis
-                            Context and does not require another upload.
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          className="welcome-secondary-button"
-                          onClick={() => void refreshRetainedCaptures()}
-                        >
-                          Refresh
-                        </button>
-                      </div>
-                      {capturesLoading ? (
-                        <p>Loading retained captures…</p>
-                      ) : retainedCaptures.length ? (
-                        <div className="saved-report-list">
-                          {retainedCaptures.map((item) => (
-                            <article
-                              className="saved-report-row"
-                              key={item.captureId}
-                            >
-                              <div className="saved-report-details">
-                                <strong>{item.filename}</strong>
-                                <span>
-                                  Retained{" "}
-                                  {new Date(item.createdAt).toLocaleString()} ·{" "}
-                                  {(item.sizeBytes / (1024 * 1024)).toFixed(1)}{" "}
-                                  MB · SHA-256 {item.sha256.slice(0, 12)}…
-                                  {item.expiresAt
-                                    ? ` · Expires ${new Date(item.expiresAt).toLocaleString()}`
-                                    : " · No automatic expiry"}
-                                </span>
-                                <span>
-                                  {
-                                    savedReports.filter(
-                                      (reportItem) =>
-                                        reportItem.captureId === item.captureId,
-                                    ).length
-                                  }{" "}
-                                  saved analyses
-                                </span>
-                              </div>
-                              <div className="saved-report-actions saved-report-icon-actions">
-                                <button
-                                  type="button"
-                                  className="saved-report-icon-button"
-                                  onClick={() => {
-                                    setHistoryCaptureId(
-                                      historyCaptureId === item.captureId
-                                        ? ""
-                                        : item.captureId,
-                                    );
-                                    setCompareReportIds([]);
-                                    setReportComparison(null);
-                                  }}
-                                  aria-label={
-                                    historyCaptureId === item.captureId
-                                      ? `Hide analysis history for ${item.filename}`
-                                      : `Show analysis history for ${item.filename}`
-                                  }
-                                  title={
-                                    historyCaptureId === item.captureId
-                                      ? "Hide analysis history"
-                                      : "Analysis history"
-                                  }
-                                >
-                                  <Icon name="history" />
-                                </button>
-                                {canWriteAnalysis ? (
-                                  <>
-                                    <button
-                                      type="button"
-                                      className="saved-report-icon-button"
-                                      disabled={Boolean(captureAnalyzingId)}
-                                      onClick={() =>
-                                        void reanalyzeRetainedCapture(
-                                          item.captureId,
-                                        )
-                                      }
-                                      aria-label={
-                                        captureAnalyzingId === item.captureId
-                                          ? `Analyzing ${item.filename}`
-                                          : `Analyze ${item.filename} again`
-                                      }
-                                      title={
-                                        captureAnalyzingId === item.captureId
-                                          ? "Analyzing…"
-                                          : "Analyze again"
-                                      }
-                                    >
-                                      <Icon name="refresh" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className={`saved-report-icon-button saved-report-delete ${deleteConfirmCaptureId === item.captureId ? "is-confirming" : ""}`}
-                                      onClick={() =>
-                                        void removeRetainedCapture(
-                                          item.captureId,
-                                        )
-                                      }
-                                      aria-label={
-                                        deleteConfirmCaptureId ===
-                                        item.captureId
-                                          ? `Confirm delete PCAP ${item.filename}`
-                                          : `Delete PCAP ${item.filename}`
-                                      }
-                                      title={
-                                        deleteConfirmCaptureId ===
-                                        item.captureId
-                                          ? "Confirm delete PCAP"
-                                          : "Delete PCAP"
-                                      }
-                                    >
-                                      <Icon
-                                        name={
-                                          deleteConfirmCaptureId ===
-                                          item.captureId
-                                            ? "check"
-                                            : "trash"
-                                        }
-                                      />
-                                    </button>
-                                    {deleteConfirmCaptureId ===
-                                      item.captureId && (
-                                      <button
-                                        type="button"
-                                        className="saved-report-icon-button"
-                                        onClick={() =>
-                                          setDeleteConfirmCaptureId("")
-                                        }
-                                        aria-label="Cancel PCAP delete"
-                                        title="Cancel delete"
-                                      >
-                                        <Icon name="close" />
-                                      </button>
-                                    )}
-                                  </>
-                                ) : (
-                                  <span className="saved-report-count">
-                                    Metadata only
-                                  </span>
-                                )}
-                              </div>
-                              {historyCaptureId === item.captureId && (
-                                <div className="capture-analysis-history">
-                                  <h3>Analysis history</h3>
-                                  {savedReports.filter(
-                                    (r) => r.captureId === item.captureId,
-                                  ).length ? (
-                                    <>
-                                      {savedReports
-                                        .filter(
-                                          (r) => r.captureId === item.captureId,
-                                        )
-                                        .map((r) => (
-                                          <div
-                                            className="capture-history-row"
-                                            key={r.reportId}
-                                          >
-                                            <label>
-                                              <input
-                                                type="checkbox"
-                                                checked={compareReportIds.includes(
-                                                  r.reportId,
-                                                )}
-                                                onChange={() =>
-                                                  toggleCompareReport(
-                                                    r.reportId,
-                                                  )
-                                                }
-                                              />{" "}
-                                              Compare
-                                            </label>
-                                            <div>
-                                              <strong>{r.title}</strong>
-                                              <span>
-                                                {new Date(
-                                                  r.createdAt,
-                                                ).toLocaleString()}{" "}
-                                                · {r.findingCount} findings ·{" "}
-                                                {r.deviceCount} devices
-                                              </span>
-                                            </div>
-                                            <button
-                                              type="button"
-                                              className="welcome-secondary-button"
-                                              onClick={() =>
-                                                void openSavedReport(r.reportId)
-                                              }
-                                            >
-                                              Open
-                                            </button>
-                                          </div>
-                                        ))}
-                                      <div className="capture-history-compare">
-                                        <button
-                                          type="button"
-                                          className="welcome-secondary-button"
-                                          disabled={
-                                            compareReportIds.length !== 2 ||
-                                            comparisonLoading
-                                          }
-                                          onClick={() =>
-                                            void compareSelectedReports()
-                                          }
-                                        >
-                                          {comparisonLoading
-                                            ? "Comparing…"
-                                            : "Compare selected reports"}
-                                        </button>
-                                        <span>
-                                          Select exactly two analyses from this
-                                          capture.
-                                        </span>
-                                      </div>
-                                      {reportComparison && (
-                                        <div
-                                          className="report-comparison"
-                                          aria-live="polite"
-                                        >
-                                          <h3>Report comparison</h3>
-                                          <div className="comparison-grid">
-                                            <div>
-                                              <span>Findings</span>
-                                              <strong>
-                                                +
-                                                {
-                                                  reportComparison.findings
-                                                    .added
-                                                }{" "}
-                                                / -
-                                                {
-                                                  reportComparison.findings
-                                                    .removed
-                                                }{" "}
-                                                / ~
-                                                {
-                                                  reportComparison.findings
-                                                    .changed
-                                                }
-                                              </strong>
-                                            </div>
-                                            <div>
-                                              <span>Assets</span>
-                                              <strong>
-                                                +{reportComparison.assets.added}{" "}
-                                                / -
-                                                {
-                                                  reportComparison.assets
-                                                    .removed
-                                                }{" "}
-                                                / ~
-                                                {
-                                                  reportComparison.assets
-                                                    .changed
-                                                }
-                                              </strong>
-                                            </div>
-                                            <div>
-                                              <span>Services</span>
-                                              <strong>
-                                                +
-                                                {
-                                                  reportComparison.services
-                                                    .added
-                                                }{" "}
-                                                / -
-                                                {
-                                                  reportComparison.services
-                                                    .removed
-                                                }{" "}
-                                                / ~
-                                                {
-                                                  reportComparison.services
-                                                    .changed
-                                                }
-                                              </strong>
-                                            </div>
-                                            <div>
-                                              <span>Connections</span>
-                                              <strong>
-                                                +
-                                                {
-                                                  reportComparison.connections
-                                                    .added
-                                                }{" "}
-                                                / -
-                                                {
-                                                  reportComparison.connections
-                                                    .removed
-                                                }{" "}
-                                                / ~
-                                                {
-                                                  reportComparison.connections
-                                                    .changed
-                                                }
-                                              </strong>
-                                            </div>
-                                          </div>
-                                          <details open>
-                                            <summary>
-                                              Finding changes (
-                                              {
-                                                reportComparison.findingDeltas
-                                                  .length
-                                              }
-                                              )
-                                            </summary>
-                                            {reportComparison.findingDeltas
-                                              .length ? (
-                                              <div className="comparison-detail-list">
-                                                {reportComparison.findingDeltas.map(
-                                                  (delta) => (
-                                                    <div
-                                                      className={`comparison-delta comparison-${delta.change}`}
-                                                      key={`${delta.change}:${delta.key}`}
-                                                    >
-                                                      <strong>
-                                                        {delta.change === "new"
-                                                          ? "New"
-                                                          : delta.change ===
-                                                              "resolved"
-                                                            ? "Resolved"
-                                                            : "Changed"}
-                                                        : {delta.title}
-                                                      </strong>
-                                                      {delta.moduleId && (
-                                                        <span>
-                                                          Module:{" "}
-                                                          {delta.moduleId}
-                                                        </span>
-                                                      )}
-                                                      {delta.change ===
-                                                        "changed" && (
-                                                        <span>
-                                                          Severity:{" "}
-                                                          {delta.severityBefore ||
-                                                            "—"}{" "}
-                                                          →{" "}
-                                                          {delta.severityAfter ||
-                                                            "—"}{" "}
-                                                          · Confidence:{" "}
-                                                          {delta.confidenceBefore ||
-                                                            "—"}{" "}
-                                                          →{" "}
-                                                          {delta.confidenceAfter ||
-                                                            "—"}
-                                                        </span>
-                                                      )}
-                                                      {delta.change ===
-                                                        "new" && (
-                                                        <span>
-                                                          Severity:{" "}
-                                                          {delta.severityAfter ||
-                                                            "—"}{" "}
-                                                          · Confidence:{" "}
-                                                          {delta.confidenceAfter ||
-                                                            "—"}
-                                                        </span>
-                                                      )}
-                                                      {delta.change ===
-                                                        "resolved" && (
-                                                        <span>
-                                                          Previous severity:{" "}
-                                                          {delta.severityBefore ||
-                                                            "—"}{" "}
-                                                          · Confidence:{" "}
-                                                          {delta.confidenceBefore ||
-                                                            "—"}
-                                                        </span>
-                                                      )}
-                                                    </div>
-                                                  ),
-                                                )}
-                                              </div>
-                                            ) : (
-                                              <p>
-                                                No finding-level changes
-                                                detected.
-                                              </p>
-                                            )}
-                                          </details>
-                                          <details>
-                                            <summary>
-                                              Analysis Context changes (
-                                              {
-                                                reportComparison.contextDeltas
-                                                  .length
-                                              }
-                                              )
-                                            </summary>
-                                            {reportComparison.contextDeltas
-                                              .length ? (
-                                              <div className="comparison-diff-table">
-                                                {reportComparison.contextDeltas.map(
-                                                  (delta) => (
-                                                    <div key={delta.path}>
-                                                      <code>{delta.path}</code>
-                                                      <span>
-                                                        {formatComparisonValue(
-                                                          delta.before,
-                                                        )}
-                                                      </span>
-                                                      <span aria-hidden="true">
-                                                        →
-                                                      </span>
-                                                      <span>
-                                                        {formatComparisonValue(
-                                                          delta.after,
-                                                        )}
-                                                      </span>
-                                                    </div>
-                                                  ),
-                                                )}
-                                              </div>
-                                            ) : (
-                                              <p>None detected.</p>
-                                            )}
-                                          </details>
-                                          <details>
-                                            <summary>
-                                              Module configuration changes (
-                                              {
-                                                reportComparison.moduleDeltas
-                                                  .length
-                                              }
-                                              )
-                                            </summary>
-                                            {reportComparison.moduleDeltas
-                                              .length ? (
-                                              <div className="comparison-diff-table">
-                                                {reportComparison.moduleDeltas.map(
-                                                  (delta) => (
-                                                    <div key={delta.path}>
-                                                      <code>{delta.path}</code>
-                                                      <span>
-                                                        {formatComparisonValue(
-                                                          delta.before,
-                                                        )}
-                                                      </span>
-                                                      <span aria-hidden="true">
-                                                        →
-                                                      </span>
-                                                      <span>
-                                                        {formatComparisonValue(
-                                                          delta.after,
-                                                        )}
-                                                      </span>
-                                                    </div>
-                                                  ),
-                                                )}
-                                              </div>
-                                            ) : (
-                                              <p>None detected.</p>
-                                            )}
-                                          </details>
-                                          <details>
-                                            <summary>
-                                              Runtime changes (
-                                              {
-                                                reportComparison.runtimeChanges
-                                                  .length
-                                              }
-                                              )
-                                            </summary>
-                                            <p>
-                                              {reportComparison.runtimeChanges
-                                                .length
-                                                ? reportComparison.runtimeChanges.join(
-                                                    "; ",
-                                                  )
-                                                : "None detected."}
-                                            </p>
-                                          </details>
-                                        </div>
-                                      )}
-                                    </>
-                                  ) : (
-                                    <p>
-                                      No saved analyses are linked to this
-                                      retained PCAP yet.
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-                            </article>
-                          ))}
+                            );
+                          })}
                         </div>
                       ) : (
                         <p className="saved-report-empty">
-                          No retained PCAPs yet. Upload a capture to add it to
-                          your history.
+                          No PCAPs or analyses match your search.
                         </p>
                       )}
-                      {capturesMessage && (
+
+                      {(savedReportsMessage || capturesMessage) && (
                         <p className="welcome-auth-message" role="alert">
-                          {capturesMessage}
+                          {savedReportsMessage || capturesMessage}
                         </p>
                       )}
                     </section>
@@ -3483,23 +3321,27 @@ function App() {
                       {storageSummary ? (
                         <div className="platform-dashboard-summary">
                           <div>
-                            <span>Capture storage</span>
+                            <span>
+                              {storageSummary.scope === "all"
+                                ? "Capture storage (all users)"
+                                : "My capture storage"}
+                            </span>
                             <strong>
-                              {(
-                                (storageSummary.captureBytes || 0) /
-                                (1024 * 1024)
-                              ).toFixed(1)}{" "}
-                              MB
+                              {typeof storageSummary.captureBytes === "number"
+                                ? `${(storageSummary.captureBytes / (1024 * 1024)).toFixed(1)} MB`
+                                : "Unavailable"}
                             </strong>
                           </div>
                           <div>
-                            <span>Report storage</span>
+                            <span>
+                              {storageSummary.scope === "all"
+                                ? "Report storage (all users)"
+                                : "My report storage"}
+                            </span>
                             <strong>
-                              {(
-                                (storageSummary.reportBytes || 0) /
-                                (1024 * 1024)
-                              ).toFixed(1)}{" "}
-                              MB
+                              {typeof storageSummary.reportBytes === "number"
+                                ? `${(storageSummary.reportBytes / (1024 * 1024)).toFixed(1)} MB`
+                                : "Unavailable"}
                             </strong>
                           </div>
                           <div>
@@ -3531,6 +3373,15 @@ function App() {
                               Orphan capture files detected:{" "}
                               <strong>{storageSummary.orphanFiles || 0}</strong>
                             </p>
+                            <p className="storage-scope-note">
+                              Storage totals above reflect the{" "}
+                              {storageSummary.scope === "all"
+                                ? "administrator-wide"
+                                : "current account"}{" "}
+                              summary returned by the server. The per-user
+                              totals below include all storage attributed to
+                              each account.
+                            </p>
                             {storageSummary.users?.length ? (
                               <div className="platform-user-list">
                                 {storageSummary.users.map((u) => (
@@ -3557,21 +3408,58 @@ function App() {
                                 ))}
                               </div>
                             ) : null}
-                            <div className="saved-report-actions">
-                              <button
-                                type="button"
-                                className="welcome-secondary-button"
-                                onClick={() => void runStorageCleanup(false)}
-                              >
-                                Clean expired PCAPs
-                              </button>
-                              <button
-                                type="button"
-                                className="welcome-secondary-button"
-                                onClick={() => void runStorageCleanup(true)}
-                              >
-                                Clean expired + orphan files
-                              </button>
+                            <div className="platform-storage-maintenance">
+                              <h3>Storage maintenance</h3>
+                              <p>
+                                Expired captures:{" "}
+                                {storageSummary.retentionDays
+                                  ? "Check available"
+                                  : "Retention disabled"}{" "}
+                                · Orphan files:{" "}
+                                {storageSummary.orphanFiles ?? 0}
+                              </p>
+                              <div className="saved-report-actions">
+                                <button
+                                  type="button"
+                                  className="welcome-secondary-button"
+                                  disabled={!storageSummary.retentionDays}
+                                  title={
+                                    !storageSummary.retentionDays
+                                      ? "PCAP retention is disabled"
+                                      : "Remove captures past the configured retention period"
+                                  }
+                                  onClick={() => {
+                                    if (
+                                      window.confirm(
+                                        "Delete expired retained PCAPs? Saved analyses will remain available.",
+                                      )
+                                    )
+                                      void runStorageCleanup(false);
+                                  }}
+                                >
+                                  Delete expired captures
+                                </button>
+                                <button
+                                  type="button"
+                                  className="welcome-secondary-button"
+                                  disabled={!storageSummary.orphanFiles}
+                                  title={
+                                    !storageSummary.orphanFiles
+                                      ? "No orphan capture files detected"
+                                      : "Delete orphan capture files"
+                                  }
+                                  onClick={() => {
+                                    if (
+                                      window.confirm(
+                                        "Delete orphan capture files? This cleanup also processes expired captures. Saved analyses will remain available.",
+                                      )
+                                    )
+                                      void runStorageCleanup(true);
+                                  }}
+                                >
+                                  Delete orphaned files
+                                </button>
+                              </div>
                             </div>
                           </>
                         )}
@@ -3584,7 +3472,36 @@ function App() {
                   )}
                 {authState?.authEnabled &&
                   authState.user.authenticated &&
-                  platformView === "activity" && (
+                  authState.user.role === "admin" &&
+                  platformView === "administration" && (
+                    <nav
+                      className="platform-admin-tabs"
+                      aria-label="Administration sections"
+                    >
+                      <button
+                        type="button"
+                        className={adminTab === "users" ? "is-active" : ""}
+                        onClick={() => setAdminTab("users")}
+                      >
+                        Users
+                      </button>
+                      <button
+                        type="button"
+                        className={adminTab === "audit" ? "is-active" : ""}
+                        onClick={() => {
+                          setAdminTab("audit");
+                          void refreshAuditEvents();
+                        }}
+                      >
+                        Audit Log
+                      </button>
+                    </nav>
+                  )}
+                {authState?.authEnabled &&
+                  authState.user.authenticated &&
+                  platformView === "administration" &&
+                  authState.user.role === "admin" &&
+                  adminTab === "audit" && (
                     <section
                       className="welcome-account-panel platform-activity-panel platform-workspace-view"
                       aria-labelledby="recent-activity-title"
@@ -3661,14 +3578,20 @@ function App() {
                   )}
                 {authState?.authEnabled &&
                   authState.user.authenticated &&
-                  platformView === "account" && (
+                  (platformView === "account" ||
+                    (platformView === "administration" &&
+                      adminTab === "users")) && (
                     <section
                       className="welcome-account-panel platform-account-panel platform-workspace-view"
                       aria-labelledby="account-management-title"
                     >
                       <div className="welcome-account-heading">
                         <div>
-                          <h2 id="account-management-title">Account</h2>
+                          <h2 id="account-management-title">
+                            {authState.user.role === "admin"
+                              ? "Users & Account"
+                              : "Account"}
+                          </h2>
                           <p>
                             Manage your password
                             {authState.user.role === "admin"

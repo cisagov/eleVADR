@@ -695,7 +695,23 @@ class Handler(BaseHTTPRequestHandler):
                     oid=row["ownerId"]; seen.add(oid); ru=report_usage.get(oid,{"reportCount":0,"reportBytes":0}); users.append({**row,**ru,"totalBytes":row["captureBytes"]+ru["reportBytes"]})
                 for oid,ru in report_usage.items():
                     if oid not in seen: users.append({"ownerId":oid,"username":"","captureCount":0,"captureBytes":0,"limitBytes":_AUTH_SERVICE.config.pcap_storage_limit_bytes,"remainingBytes":_AUTH_SERVICE.config.pcap_storage_limit_bytes or None,"retentionDays":_AUTH_SERVICE.config.pcap_retention_days,**ru,"totalBytes":ru["reportBytes"]})
-                self._json(200,{"scope":"all","users":users,"orphanFiles":len(_CAPTURE_STORE.find_orphans())}); return
+                self._json(
+                    200,
+                    {
+                        "scope": "all",
+                        "users": users,
+                        "captureCount": sum(u["captureCount"] for u in users),
+                        "captureBytes": sum(u["captureBytes"] for u in users),
+                        "reportCount": sum(u["reportCount"] for u in users),
+                        "reportBytes": sum(u["reportBytes"] for u in users),
+                        "totalBytes": sum(u["totalBytes"] for u in users),
+                        "limitBytes": _AUTH_SERVICE.config.pcap_storage_limit_bytes,
+                        "remainingBytes": None,
+                        "retentionDays": _AUTH_SERVICE.config.pcap_retention_days,
+                        "orphanFiles": len(_CAPTURE_STORE.find_orphans()),
+                    },
+                )
+                return
             cu=_CAPTURE_STORE.usage_for_owner(principal.user_id); ru=_REPORT_STORE.usage_for_owner(principal.user_id)
             self._json(200,{"scope":"mine",**cu,**ru,"totalBytes":cu["captureBytes"]+ru["reportBytes"]}); return
 
