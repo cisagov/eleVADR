@@ -4,15 +4,15 @@ This pack contains three synthetic PCAPs and three directly loadable canonical e
 
 ## Test cases
 
-### 01 â€” Mixed OT baseline
+### 01 — Mixed OT baseline
 
 Exercises PCAP context discovery, DNS/NTP infrastructure, Modbus observation, internal HTTP, OT/IT asset rendering, and a relatively low-noise report. Look for incorrect context inference, duplicate assets/segments, bad protocol labeling, or unexpected policy authorization.
 
-### 02 â€” Legacy / high-risk services
+### 02 — Legacy / high-risk services
 
 Exercises FTP/Telnet cleartext behavior, SMB/NetBIOS, database/VNC/PPTP/IRC port indicators, repeated failed RDP attempts, many simultaneous findings, severity/filter UI, and large result drill-down. Look for duplicate findings, poor grouping, broken filtering, layout overflow, or inconsistent friendly names.
 
-### 03 â€” Outbound + IPv6 + QUIC + ICMP
+### 03 — Outbound + IPv6 + QUIC + ICMP
 
 Exercises a 12 MiB outbound HTTP POST, QUIC/UDP 443, 12 independently timed uniform ICMP echo records, IPv6 OT traffic, IPv4-only/internal-ICS policy assumptions, external destinations, and mixed address-family rendering. The upload deliberately exceeds the detector default 10 MiB threshold, and the ICMP events are spaced 65 seconds apart so Zeek can expose independently timed connection records instead of aggregating the whole train into one row. Look for IPv6 formatting bugs, external/internal classification errors, long-running progress issues, and report provenance/export problems.
 
@@ -20,9 +20,9 @@ Exercises a 12 MiB outbound HTTP POST, QUIC/UDP 443, 12 independently timed unif
 
 Each PCAP now has a matching Detection Context v3 profile. The profiles are valid frontend profile exports and select all 60 detector modules. They intentionally describe known site context without approving the suspicious behavior that each capture is meant to exercise.
 
-- `01_mixed_ot_baseline.pcap` â†’ `01_mixed_ot_baseline_context.json`
-- `02_legacy_high_risk.pcap` â†’ `02_legacy_high_risk_context.json`
-- `03_outbound_ipv6_quic_icmp.pcap` â†’ `03_outbound_ipv6_quic_icmp_context.json`
+- `01_mixed_ot_baseline.pcap` → `01_mixed_ot_baseline_context.json`
+- `02_legacy_high_risk.pcap` → `02_legacy_high_risk_context.json`
+- `03_outbound_ipv6_quic_icmp.pcap` → `03_outbound_ipv6_quic_icmp_context.json`
 
 Suggested PCAP workflow: choose the PCAP, let Context Discovery complete, create/open a Detection Context, use **Load Profile** to load the matching `_context.json`, review the merged observations, then run the full analysis.
 

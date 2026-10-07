@@ -9,7 +9,7 @@ import {
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
 describe("drilldownService", () => {
-  /* Reset any spies/mocks before each test so they donâ€™t leak between cases */
+  /* Reset any spies/mocks before each test so they don't leak between cases */
   beforeEach(() => {
     vi.restoreAllMocks();
   });

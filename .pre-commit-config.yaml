@@ -189,6 +189,13 @@ repos:
         pass_filenames: false
         require_serial: true
 
+      - id: text-encoding-check
+        name: Validate text encoding
+        entry: python validate_text_encoding.py
+        language: system
+        pass_filenames: false
+        files: ^(frontend|backend|backend_bryan|docs|elevadr_app_regression_test_pack)/
+
       - id: eslint
         name: ESLint
         files: frontend/

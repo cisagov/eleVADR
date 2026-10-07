@@ -196,7 +196,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                         {String(value)}
                       </PivotValue>
                     ) : (
-                      String(value ?? "â€”")
+                      String(value ?? "—")
                     ),
                 },
                 {
@@ -319,7 +319,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                         {String(value)}
                       </PivotValue>
                     ) : (
-                      String(value ?? "â€”")
+                      String(value ?? "—")
                     ),
                 },
                 {
@@ -336,7 +336,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
               const dst = row["dst_endpoint.ip"];
               const service =
                 row["service.name"] ||
-                `Port ${row["dst_endpoint.port"] ?? "â€”"}`;
+                `Port ${row["dst_endpoint.port"] ?? "—"}`;
               if (src && dst)
                 onSelect?.({
                   type: "connection",
@@ -356,7 +356,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
         isOpen={Boolean(drilldown.selectedKey)}
         title={
           drilldown.selectedKey
-            ? `Cross-Segment Details: ${drilldown.selectedKey.src_subnet} â†’ ${drilldown.selectedKey.dst_subnet}`
+            ? `Cross-Segment Details: ${drilldown.selectedKey.src_subnet} → ${drilldown.selectedKey.dst_subnet}`
             : "Cross-Segment Details"
         }
         onClose={closeModal}
@@ -386,7 +386,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                       {String(value)}
                     </PivotValue>
                   ) : (
-                    String(value ?? "â€”")
+                    String(value ?? "—")
                   ),
               },
               {
@@ -407,7 +407,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                       {String(value)}
                     </PivotValue>
                   ) : (
-                    String(value ?? "â€”")
+                    String(value ?? "—")
                   ),
               },
               {
@@ -429,7 +429,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                       {String(value)}
                     </PivotValue>
                   ) : (
-                    String(value ?? "â€”")
+                    String(value ?? "—")
                   ),
               },
               {
@@ -450,7 +450,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                       {String(value)}
                     </PivotValue>
                   ) : (
-                    String(value ?? "â€”")
+                    String(value ?? "—")
                   ),
               },
               {
@@ -471,7 +471,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                       {String(value)}
                     </PivotValue>
                   ) : (
-                    String(value ?? "â€”")
+                    String(value ?? "—")
                   ),
               },
               {
@@ -493,7 +493,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                       {String(value)}
                     </PivotValue>
                   ) : (
-                    String(value ?? "â€”")
+                    String(value ?? "—")
                   ),
               },
               {
@@ -514,7 +514,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                       {String(value)}
                     </PivotValue>
                   ) : (
-                    String(value ?? "â€”")
+                    String(value ?? "—")
                   ),
               },
               {
@@ -545,7 +545,7 @@ const OTCrossSegmentPanel: React.FC<OTCrossSegmentPanelProps> = ({
                       {String(value)}
                     </PivotValue>
                   ) : (
-                    String(value ?? "â€”")
+                    String(value ?? "—")
                   ),
               },
               {

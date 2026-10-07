@@ -192,7 +192,7 @@ const ModuleContributionBadge: React.FC<{
       title={names.join("\n")}
       aria-label={`${modules.length} detection module${modules.length === 1 ? "" : "s"} contributed to this section`}
     >
-      <span aria-hidden="true">â—ˆ</span>{" "}
+      <span aria-hidden="true">◈</span>{" "}
       {modules.length === 1 ? names[0] : `${modules.length} detector modules`}
     </span>
   );
@@ -2534,7 +2534,7 @@ function App() {
                 className="welcome-account-panel auth-login-gate"
                 aria-live="polite"
               >
-                <h2>Checking authenticationâ€¦</h2>
+                <h2>Checking authentication…</h2>
                 <p>Connecting to the eleVADR backend.</p>
               </section>
             ) : authenticationRequired ? (
@@ -2577,7 +2577,7 @@ function App() {
                     className="welcome-signin-button"
                     disabled={authSubmitting}
                   >
-                    {authSubmitting ? "Signing inâ€¦" : "Sign in"}
+                    {authSubmitting ? "Signing in…" : "Sign in"}
                   </button>
                   {welcomeAuthMessage && (
                     <p className="welcome-auth-message" role="alert">
@@ -2717,7 +2717,7 @@ function App() {
                         <div>
                           <h2 id="welcome-account-title">Saved Reports</h2>
                           <p>
-                            <strong>{authState.user.username}</strong> Â·{" "}
+                            <strong>{authState.user.username}</strong> ·{" "}
                             {authState.user.role}. Completed PCAP analyses are
                             saved automatically.
                           </p>
@@ -2738,7 +2738,7 @@ function App() {
                             <span>Search</span>
                             <input
                               type="search"
-                              placeholder="Report or PCAP nameâ€¦"
+                              placeholder="Report or PCAP name…"
                               value={savedReportQuery}
                               onChange={(event) =>
                                 setSavedReportQuery(event.target.value)
@@ -2771,7 +2771,7 @@ function App() {
                         </div>
                       )}
                       {savedReportsLoading ? (
-                        <p>Loading saved reportsâ€¦</p>
+                        <p>Loading saved reports…</p>
                       ) : savedReports.length ? (
                         visibleSavedReports.length ? (
                           <div className="saved-report-list">
@@ -2861,8 +2861,8 @@ function App() {
                                   <span>
                                     Saved{" "}
                                     {new Date(item.createdAt).toLocaleString()}{" "}
-                                    Â· {item.findingCount} findings Â·{" "}
-                                    {item.deviceCount} devices Â· ID{" "}
+                                    · {item.findingCount} findings ·{" "}
+                                    {item.deviceCount} devices · ID{" "}
                                     {item.reportId.slice(0, 12)}
                                   </span>
                                 </div>
@@ -2969,7 +2969,7 @@ function App() {
                         </button>
                       </div>
                       {capturesLoading ? (
-                        <p>Loading retained capturesâ€¦</p>
+                        <p>Loading retained captures…</p>
                       ) : retainedCaptures.length ? (
                         <div className="saved-report-list">
                           {retainedCaptures.map((item) => (
@@ -2981,12 +2981,12 @@ function App() {
                                 <strong>{item.filename}</strong>
                                 <span>
                                   Retained{" "}
-                                  {new Date(item.createdAt).toLocaleString()} Â·{" "}
+                                  {new Date(item.createdAt).toLocaleString()} ·{" "}
                                   {(item.sizeBytes / (1024 * 1024)).toFixed(1)}{" "}
-                                  MB Â· SHA-256 {item.sha256.slice(0, 12)}â€¦
+                                  MB · SHA-256 {item.sha256.slice(0, 12)}…
                                   {item.expiresAt
-                                    ? ` Â· Expires ${new Date(item.expiresAt).toLocaleString()}`
-                                    : " Â· No automatic expiry"}
+                                    ? ` · Expires ${new Date(item.expiresAt).toLocaleString()}`
+                                    : " · No automatic expiry"}
                                 </span>
                                 <span>
                                   {
@@ -3042,7 +3042,7 @@ function App() {
                                       }
                                       title={
                                         captureAnalyzingId === item.captureId
-                                          ? "Analyzingâ€¦"
+                                          ? "Analyzing…"
                                           : "Analyze again"
                                       }
                                     >
@@ -3135,7 +3135,7 @@ function App() {
                                                 {new Date(
                                                   r.createdAt,
                                                 ).toLocaleString()}{" "}
-                                                Â· {r.findingCount} findings Â·{" "}
+                                                · {r.findingCount} findings ·{" "}
                                                 {r.deviceCount} devices
                                               </span>
                                             </div>
@@ -3163,7 +3163,7 @@ function App() {
                                           }
                                         >
                                           {comparisonLoading
-                                            ? "Comparingâ€¦"
+                                            ? "Comparing…"
                                             : "Compare selected reports"}
                                         </button>
                                         <span>
@@ -3293,16 +3293,16 @@ function App() {
                                                         <span>
                                                           Severity:{" "}
                                                           {delta.severityBefore ||
-                                                            "â€”"}{" "}
-                                                          â†’{" "}
+                                                            "—"}{" "}
+                                                          →{" "}
                                                           {delta.severityAfter ||
-                                                            "â€”"}{" "}
-                                                          Â· Confidence:{" "}
+                                                            "—"}{" "}
+                                                          · Confidence:{" "}
                                                           {delta.confidenceBefore ||
-                                                            "â€”"}{" "}
-                                                          â†’{" "}
+                                                            "—"}{" "}
+                                                          →{" "}
                                                           {delta.confidenceAfter ||
-                                                            "â€”"}
+                                                            "—"}
                                                         </span>
                                                       )}
                                                       {delta.change ===
@@ -3310,10 +3310,10 @@ function App() {
                                                         <span>
                                                           Severity:{" "}
                                                           {delta.severityAfter ||
-                                                            "â€”"}{" "}
-                                                          Â· Confidence:{" "}
+                                                            "—"}{" "}
+                                                          · Confidence:{" "}
                                                           {delta.confidenceAfter ||
-                                                            "â€”"}
+                                                            "—"}
                                                         </span>
                                                       )}
                                                       {delta.change ===
@@ -3321,10 +3321,10 @@ function App() {
                                                         <span>
                                                           Previous severity:{" "}
                                                           {delta.severityBefore ||
-                                                            "â€”"}{" "}
-                                                          Â· Confidence:{" "}
+                                                            "—"}{" "}
+                                                          · Confidence:{" "}
                                                           {delta.confidenceBefore ||
-                                                            "â€”"}
+                                                            "—"}
                                                         </span>
                                                       )}
                                                     </div>
@@ -3360,7 +3360,7 @@ function App() {
                                                         )}
                                                       </span>
                                                       <span aria-hidden="true">
-                                                        â†’
+                                                        →
                                                       </span>
                                                       <span>
                                                         {formatComparisonValue(
@@ -3397,7 +3397,7 @@ function App() {
                                                         )}
                                                       </span>
                                                       <span aria-hidden="true">
-                                                        â†’
+                                                        →
                                                       </span>
                                                       <span>
                                                         {formatComparisonValue(
@@ -3541,7 +3541,7 @@ function App() {
                                     <div>
                                       <strong>{u.username || u.ownerId}</strong>
                                       <span>
-                                        {u.captureCount} PCAP(s) Â·{" "}
+                                        {u.captureCount} PCAP(s) ·{" "}
                                         {u.reportCount} report(s)
                                       </span>
                                     </div>
@@ -3619,15 +3619,15 @@ function App() {
                             >
                               <div>
                                 <strong>
-                                  {event.action.replaceAll(".", " Â· ")}
+                                  {event.action.replaceAll(".", " · ")}
                                 </strong>
                                 <span>
                                   {event.actorUsername || "System"}
                                   {event.targetType
-                                    ? ` Â· ${event.targetType}`
+                                    ? ` · ${event.targetType}`
                                     : ""}
                                   {event.targetId
-                                    ? ` Â· ${event.targetId.slice(0, 12)}`
+                                    ? ` · ${event.targetId.slice(0, 12)}`
                                     : ""}
                                 </span>
                               </div>
@@ -3769,7 +3769,7 @@ function App() {
                                     <span>
                                       {user.disabled ? "Disabled" : "Active"}
                                       {user.lastLogin
-                                        ? ` Â· Last login ${new Date(user.lastLogin).toLocaleString()}`
+                                        ? ` · Last login ${new Date(user.lastLogin).toLocaleString()}`
                                         : ""}
                                     </span>
                                   </div>
@@ -3850,7 +3850,7 @@ function App() {
                 onClick={() => setWelcomeInstructionsOpen(false)}
                 aria-label="Close instructions"
               >
-                Ã—
+                ×
               </button>
             </header>
             <div className="welcome-instructions-body">
@@ -4048,7 +4048,7 @@ function App() {
                 onClick={() => setNotesOpen(false)}
                 aria-label="Close notes"
               >
-                Ã—
+                ×
               </button>
             </header>
             <div className="section-notes-body">

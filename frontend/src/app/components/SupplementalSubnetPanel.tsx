@@ -121,9 +121,9 @@ const SupplementalSubnetPanel: React.FC<Props> = ({
                         {row.subnet}
                       </PivotValue>
                     </td>
-                    <td>{row.label || "â€”"}</td>
+                    <td>{row.label || "—"}</td>
                     <td>{row.classification}</td>
-                    <td>{row.notes || "â€”"}</td>
+                    <td>{row.notes || "—"}</td>
                   </tr>
                 ))}
               </tbody>

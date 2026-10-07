@@ -221,7 +221,7 @@ const ProvenanceBadge: React.FC<{
     reason || "",
   ]
     .filter(Boolean)
-    .join(" Â· ");
+    .join(" · ");
   return (
     <ContextBadge kind={provenanceKind(source)} detail={detail || undefined} />
   );
@@ -1270,16 +1270,14 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
             onClick={requestClose}
             aria-label="Close context"
           >
-            Ã—
+            ×
           </button>
         </header>
         <div className="detection-config-toolbar">
           <label className="profile-name-field">
             <span>
               Profile Name{" "}
-              {dirty && (
-                <em className="dirty-indicator">â€¢ Unsaved changes</em>
-              )}
+              {dirty && <em className="dirty-indicator">• Unsaved changes</em>}
             </span>
             <input
               className={inputClass("name")}
@@ -1339,9 +1337,9 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                   : "Ready for analysis"}
             </strong>
             <span>
-              {completionPercent}% context complete Â· {profile.assets.length}{" "}
-              assets Â· {profile.segments.length} segments Â·{" "}
-              {profile.infrastructure.length} trusted infrastructure entries Â·{" "}
+              {completionPercent}% context complete · {profile.assets.length}{" "}
+              assets · {profile.segments.length} segments ·{" "}
+              {profile.infrastructure.length} trusted infrastructure entries ·{" "}
               {profile.authorizedControlActions.length} control authorizations
             </span>
           </div>
@@ -1556,7 +1554,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                   <>
                     <input
                       aria-label="Search network segments"
-                      placeholder="Search segmentsâ€¦"
+                      placeholder="Search segments…"
                       value={segmentQuery}
                       onChange={(e) => setSegmentQuery(e.target.value)}
                     />
@@ -1833,7 +1831,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                   <>
                     <input
                       aria-label="Search assets"
-                      placeholder="Search assetsâ€¦"
+                      placeholder="Search assets…"
                       value={assetQuery}
                       onChange={(e) => setAssetQuery(e.target.value)}
                     />
@@ -1929,7 +1927,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                             <span className="compact-evidence">
                               {[...x.services, ...x.ports.map(String)].join(
                                 ", ",
-                              ) || "â€”"}
+                              ) || "—"}
                             </span>
                           </td>
                           <td>
@@ -2013,7 +2011,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                   <>
                     <input
                       aria-label="Search trusted infrastructure"
-                      placeholder="Search infrastructureâ€¦"
+                      placeholder="Search infrastructure…"
                       value={infraQuery}
                       onChange={(e) => setInfraQuery(e.target.value)}
                     />
@@ -2177,7 +2175,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                   <>
                     <input
                       aria-label="Search communications"
-                      placeholder="Search communicationsâ€¦"
+                      placeholder="Search communications…"
                       value={pairQuery}
                       onChange={(e) => setPairQuery(e.target.value)}
                     />
@@ -2363,7 +2361,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                   <>
                     <input
                       aria-label="Search segment communication exceptions"
-                      placeholder="Search segment pairsâ€¦"
+                      placeholder="Search segment pairs…"
                       value={segmentPairQuery}
                       onChange={(e) => setSegmentPairQuery(e.target.value)}
                     />
@@ -2538,7 +2536,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                   <>
                     <input
                       aria-label="Search authorized control actions"
-                      placeholder="Search control actionsâ€¦"
+                      placeholder="Search control actions…"
                       value={controlQuery}
                       onChange={(e) => setControlQuery(e.target.value)}
                     />
@@ -2716,7 +2714,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                   <>
                     <input
                       aria-label="Search hosts ignored by detectors"
-                      placeholder="Search ignored hostsâ€¦"
+                      placeholder="Search ignored hosts…"
                       value={ignoredHostQuery}
                       onChange={(e) => setIgnoredHostQuery(e.target.value)}
                     />
@@ -2852,7 +2850,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                   <>
                     <input
                       aria-label="Search approved external destinations"
-                      placeholder="Search destinationsâ€¦"
+                      placeholder="Search destinations…"
                       value={externalQuery}
                       onChange={(e) => setExternalQuery(e.target.value)}
                     />
@@ -3506,11 +3504,11 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                         <div key={`${c.protocol}|${c.source}|${c.destination}`}>
                           <span>
                             <strong>
-                              {c.source} â†’ {c.destination}
+                              {c.source} → {c.destination}
                             </strong>
                             <small>
-                              {c.protocol.toUpperCase()} Â·{" "}
-                              {c.service || "service inferred from port"} Â·
+                              {c.protocol.toUpperCase()} ·{" "}
+                              {c.service || "service inferred from port"} ·
                               observed {c.count} time(s)
                             </small>
                           </span>
@@ -3558,7 +3556,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                       value={copySourceId}
                       onChange={(e) => setCopySourceId(e.target.value)}
                     >
-                      <option value="">Select profileâ€¦</option>
+                      <option value="">Select profile…</option>
                       {profiles
                         .filter((x) => x.id !== profile.id)
                         .map((x) => (

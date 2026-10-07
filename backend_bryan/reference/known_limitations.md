@@ -8,7 +8,7 @@ These are deliberate boundaries of the current handoff checkpoint.
 
 ## Synthetic coverage is mature, not exhaustive
 
-Datasets 01â€“19 provide broad coverage, including Dataset 19 as a four-hour site-like false-positive tripwire. Datasets 01â€“03 and Datasets 15â€“17 are raw PCAP/Zeek regression captures; Datasets 04â€“14 are deterministic semantic/robustness fixtures. Datasets 15â€“17 are intentionally synthetic packet data, so they validate packet-to-Zeek plumbing for the fifteen added detectors but do not replace field validation against sanitized operational captures.
+Datasets 01–19 provide broad coverage, including Dataset 19 as a four-hour site-like false-positive tripwire. Datasets 01–03 and Datasets 15–17 are raw PCAP/Zeek regression captures; Datasets 04–14 are deterministic semantic/robustness fixtures. Datasets 15–17 are intentionally synthetic packet data, so they validate packet-to-Zeek plumbing for the fifteen added detectors but do not replace field validation against sanitized operational captures.
 
 ## Zeek version is pinned for development reproducibility
 
