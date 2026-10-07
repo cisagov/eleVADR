@@ -1,0 +1,40 @@
+name: elevadr-platform
+
+services:
+  mongodb:
+    image: mongodb/mongodb-community-server:8.0.32-ubi9-slim
+    container_name: elevadr-mongodb
+    restart: unless-stopped
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: ${ELEVADR_MONGO_ROOT_USERNAME}
+      MONGODB_INITDB_ROOT_PASSWORD: ${ELEVADR_MONGO_ROOT_PASSWORD}
+    ports:
+      - "127.0.0.1:${ELEVADR_MONGO_PORT:-27017}:27017"
+    volumes:
+      - elevadr-mongodb-data:/data/db
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          mongosh --quiet --host 127.0.0.1 --port 27017
+          -u "$${MONGODB_INITDB_ROOT_USERNAME}"
+          -p "$${MONGODB_INITDB_ROOT_PASSWORD}"
+          --authenticationDatabase admin
+          --eval "quit(db.adminCommand({ ping: 1 }).ok ? 0 : 2)"
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - elevadr-platform-network
+
+volumes:
+  elevadr-mongodb-data:
+    name: elevadr-mongodb-data
+
+networks:
+  elevadr-platform-network:
+    name: elevadr-platform-network
+    driver: bridge

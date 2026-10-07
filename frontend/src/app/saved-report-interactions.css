@@ -1,0 +1,43 @@
+/* Saved reports: clickable report body with compact icon-only row actions. */
+.saved-report-open-target {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 4px 6px;
+  margin: -4px -6px;
+}
+.saved-report-open-target:hover { background: #eef6fa; }
+.saved-report-open-target:focus-visible {
+  outline: 2px solid #246b96;
+  outline-offset: 2px;
+}
+.saved-report-icon-actions { flex-wrap: nowrap; }
+.saved-report-icon-button {
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #005ea8;
+  cursor: pointer;
+}
+.saved-report-icon-button:hover { background: transparent; color: #003e73; }
+.saved-report-icon-button:focus-visible {
+  outline: 2px solid #246b96;
+  outline-offset: 2px;
+}
+.saved-report-icon-button .nav-icon { width: 22px; height: 22px; stroke-width: 2; }
+.saved-report-icon-button.saved-report-delete { color: #a52020; border: 0; background: transparent; }
+.saved-report-icon-button.saved-report-delete:hover { background: transparent; color: #7f1515; }
+.saved-report-icon-button.saved-report-delete.is-confirming {
+  color: #a52020;
+  border: 0;
+  background: transparent;
+}
+:root[data-theme="dark"] .saved-report-open-target:hover { background: #1a3546; }
+:root[data-theme="dark"] .saved-report-icon-button { background: transparent; border: 0; color: #9edcf4; }
+:root[data-theme="dark"] .saved-report-icon-button.saved-report-delete { background: transparent; border: 0; color: #ffd1cf; }
+:root[data-theme="dark"] .saved-report-icon-button.saved-report-delete.is-confirming { background: transparent; border: 0; color: #ff9b9b; }

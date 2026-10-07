@@ -1,3 +1,4 @@
+import { authenticatedFetch } from "./authService";
 import {
   ConnectionStateDrilldownResponse,
   CrossSegmentDrilldownResponse,
@@ -20,7 +21,7 @@ export async function fetchServiceDrilldown(
   serviceName: string,
   limit = 500,
 ): Promise<ServiceDrilldownResponse> {
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `${BACKEND_HTTP}/reports/${encodeURIComponent(reportId)}/drilldown/service/${encodeURIComponent(serviceName)}?limit=${limit}`,
   );
 
@@ -36,7 +37,7 @@ export async function fetchConnectionStateDrilldown(
   state: string,
   limit = 500,
 ): Promise<ConnectionStateDrilldownResponse> {
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `${BACKEND_HTTP}/reports/${encodeURIComponent(reportId)}/drilldown/connection-state/${encodeURIComponent(state)}?limit=${limit}`,
   );
 
@@ -63,7 +64,7 @@ export async function fetchSuspiciousOutboundDrilldown(
     limit: String(limit),
   });
 
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `${BACKEND_HTTP}/reports/${encodeURIComponent(reportId)}/drilldown/suspicious-outbound?${params.toString()}`,
   );
 
@@ -86,7 +87,7 @@ export async function fetchCrossSegmentDrilldown(
     limit: String(limit),
   });
 
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `${BACKEND_HTTP}/reports/${encodeURIComponent(reportId)}/drilldown/cross-segment?${params.toString()}`,
   );
 
@@ -109,7 +110,7 @@ export async function fetchFilteredConnections(
     }
   });
 
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `${BACKEND_HTTP}/reports/${encodeURIComponent(reportId)}/connections?${params.toString()}`,
   );
 
@@ -132,7 +133,7 @@ export async function fetchFilteredDevices(
     }
   });
 
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `${BACKEND_HTTP}/reports/${encodeURIComponent(reportId)}/devices?${params.toString()}`,
   );
 
@@ -155,7 +156,7 @@ export async function fetchFilteredServices(
     }
   });
 
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `${BACKEND_HTTP}/reports/${encodeURIComponent(reportId)}/services?${params.toString()}`,
   );
 

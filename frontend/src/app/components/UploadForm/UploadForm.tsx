@@ -14,6 +14,7 @@ import { DetectionConfigurationProfile } from "../DetectionConfiguration/types";
 import { ALL_DETECTION_MODULES } from "../DetectionConfiguration/moduleCatalog";
 import { mergeScanIntoProfile, ZeekScanResult } from "../DetectionConfiguration/zeekScanner";
 import "./UploadForm.css";
+import { authenticatedFetch } from "../../services/authService";
 
 const PCAP_ANALYSIS_URL = (() => {
   const configured = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_PCAP_ANALYSIS_URL?.trim();
@@ -62,7 +63,8 @@ const UploadForm: React.FC<UploadFormProps> = ({
   const [contextDiscovery, setContextDiscovery] = useState<ZeekScanResult | null>(null);
   const [zeekEvidenceToken, setZeekEvidenceToken] = useState<string | null>(null);
   const [zeekEvidencePcapSha256, setZeekEvidencePcapSha256] = useState<string | null>(null);
-  const [lastPcapSession, setLastPcapSession] = useState<{ file: File; evidenceToken: string; pcapSha256: string } | null>(null);
+  const [retainedCaptureId, setRetainedCaptureId] = useState<string | null>(null);
+  const [lastPcapSession, setLastPcapSession] = useState<{ file: File; evidenceToken: string; pcapSha256: string; captureId?: string | null } | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const activeJobUrlRef = useRef<string | null>(null);
   const cancelRequestedRef = useRef(false);
@@ -96,14 +98,14 @@ const UploadForm: React.FC<UploadFormProps> = ({
     }
   };
 
-  const discoverPcapContext = async (file: File): Promise<{ scan: ZeekScanResult; evidenceToken: string; pcapSha256: string }> => {
+  const discoverPcapContext = async (file: File): Promise<{ scan: ZeekScanResult; evidenceToken: string; pcapSha256: string; captureId: string | null }> => {
     setError(null);
     setIsAnalyzing?.(true);
     setProgress({ stage: "uploading", progress: 1, message: "Uploading packet capture for one-time Zeek evidence extraction…", detail: file.name });
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const response = await fetch(PCAP_CONTEXT_DISCOVERY_URL, { method: "POST", body: formData });
+      const response = await authenticatedFetch(PCAP_CONTEXT_DISCOVERY_URL, { method: "POST", body: formData });
       const text = await response.text();
       let payload: unknown;
       try { payload = JSON.parse(text); } catch { payload = null; }
@@ -123,7 +125,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
       cancelRequestedRef.current = false;
       for (;;) {
         await new Promise((resolve) => window.setTimeout(resolve, 650));
-        const statusResponse = await fetch(statusUrl, { method: "GET", cache: "no-store" });
+        const statusResponse = await authenticatedFetch(statusUrl, { method: "GET", cache: "no-store" });
         const statusText = await statusResponse.text();
         let statusPayload: unknown;
         try { statusPayload = JSON.parse(statusText); } catch { statusPayload = null; }
@@ -158,8 +160,9 @@ const UploadForm: React.FC<UploadFormProps> = ({
             ? (result as { evidence: { pcapSha256?: unknown } }).evidence
             : null;
           const pcapSha256 = evidence ? String(evidence.pcapSha256 || "") : "";
+          const captureId = "captureId" in result ? String((result as { captureId?: unknown }).captureId || "") || null : null;
           if (!evidenceToken || !pcapSha256) throw new Error("Backend did not retain complete Zeek evidence identity for detector analysis.");
-          return { scan: result as ZeekScanResult, evidenceToken, pcapSha256 };
+          return { scan: result as ZeekScanResult, evidenceToken, pcapSha256, captureId };
         }
       }
     } finally {
@@ -169,7 +172,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
     }
   };
 
-  const analyzePcap = async (file: File, profile: DetectionConfigurationProfile, evidenceToken: string | null, evidencePcapSha256: string | null): Promise<string | null> => {
+  const analyzePcap = async (file: File, profile: DetectionConfigurationProfile, evidenceToken: string | null, evidencePcapSha256: string | null, captureId: string | null = null): Promise<string | null> => {
     setError(null);
     setIsAnalyzing?.(true);
     setProgress({ stage: "preparing-analysis", progress: 1, message: evidenceToken ? "Applying Detection Context to retained Zeek evidence…" : "Uploading PCAP and Detection Context…", detail: file.name });
@@ -180,8 +183,9 @@ const UploadForm: React.FC<UploadFormProps> = ({
       if (evidenceToken) {
         formData.append("evidenceToken", evidenceToken);
         if (evidencePcapSha256) formData.append("evidencePcapSha256", evidencePcapSha256);
+        if (captureId) formData.append("captureId", captureId);
       } else formData.append("file", file);
-      const response = await fetch(PCAP_ANALYSIS_URL, { method: "POST", body: formData });
+      const response = await authenticatedFetch(PCAP_ANALYSIS_URL, { method: "POST", body: formData });
       const text = await response.text();
       let payload: unknown;
       try { payload = JSON.parse(text); } catch { payload = null; }
@@ -201,7 +205,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
       cancelRequestedRef.current = false;
       for (;;) {
         await new Promise((resolve) => window.setTimeout(resolve, 650));
-        const statusResponse = await fetch(statusUrl, { method: "GET", cache: "no-store" });
+        const statusResponse = await authenticatedFetch(statusUrl, { method: "GET", cache: "no-store" });
         const statusText = await statusResponse.text();
         let statusPayload: unknown;
         try { statusPayload = JSON.parse(statusText); } catch { statusPayload = null; }
@@ -267,7 +271,8 @@ const UploadForm: React.FC<UploadFormProps> = ({
       setContextDiscovery(discovery.scan);
       setZeekEvidenceToken(discovery.evidenceToken);
       setZeekEvidencePcapSha256(discovery.pcapSha256);
-      setLastPcapSession({ file, evidenceToken: discovery.evidenceToken, pcapSha256: discovery.pcapSha256 });
+      setRetainedCaptureId(discovery.captureId);
+      setLastPcapSession({ file, evidenceToken: discovery.evidenceToken, pcapSha256: discovery.pcapSha256, captureId: discovery.captureId });
       const stored = listProfiles();
       const active = loadActiveProfile();
       const nextId = stored.some((profile) => profile.id === active.id) ? active.id : stored[0]?.id || "";
@@ -295,7 +300,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
 
     const profile = normalizeProfile(loadActiveProfile());
     onReanalysisStatus?.("started");
-    void analyzePcap(lastPcapSession.file, profile, lastPcapSession.evidenceToken, lastPcapSession.pcapSha256)
+    void analyzePcap(lastPcapSession.file, profile, lastPcapSession.evidenceToken, lastPcapSession.pcapSha256, lastPcapSession.captureId || null)
       .then((analysisError) => {
         if (analysisError) onReanalysisStatus?.("failed", analysisError);
         else onReanalysisStatus?.("completed");
@@ -310,7 +315,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
       stage: "canceling", progress: null, message: "Canceling analysis…", detail: current?.detail ?? null, elapsedSeconds: current?.elapsedSeconds,
     }));
     try {
-      await fetch(url, { method: "DELETE" });
+      await authenticatedFetch(url, { method: "DELETE" });
     } catch {
       cancelRequestedRef.current = false;
       setError("Unable to send the cancellation request. The analysis may still be running.");
@@ -339,8 +344,9 @@ const UploadForm: React.FC<UploadFormProps> = ({
     const file = pendingPcap;
     const evidenceToken = zeekEvidenceToken;
     const evidencePcapSha256 = zeekEvidencePcapSha256;
+    const captureId = retainedCaptureId;
     setContextDialogOpen(false); setPendingPcap(null); setContextDiscovery(null);
-    void analyzePcap(file, profile, evidenceToken, evidencePcapSha256);
+    void analyzePcap(file, profile, evidenceToken, evidencePcapSha256, captureId);
   };
 
   const createNewDetectionContext = () => {

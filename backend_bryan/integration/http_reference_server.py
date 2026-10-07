@@ -1,13 +1,15 @@
 """Local stdlib reference server for eleVADR contract and PCAP analysis.
 
 This is intentionally isolated under backend_bryan. It is not production server
-code. The PCAP endpoint reads multipart requests into memory for developer use;
-a production backend should stream uploads and use its normal job framework.
+code. Multipart bodies are fed incrementally with a configurable bounded upload
+ceiling; decoded PCAP parts are still materialized for the existing analysis API.
 
 PCAP context discovery is job-based so the browser can poll real Zeek/Docker
 progress while the capture is being processed.
 """
 from __future__ import annotations
+
+from backend_bryan.auth.permissions import can_write
 
 import argparse
 import atexit
@@ -19,7 +21,8 @@ import tempfile
 import threading
 import time
 import uuid
-from email.parser import BytesParser
+from urllib.parse import parse_qs, urlsplit
+from email.parser import BytesFeedParser
 from email.policy import default
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -34,9 +37,57 @@ ANALYSIS_PATH = "/api/v1/detection-analysis"
 PCAP_PATH = "/api/v1/pcap-analysis"
 DISCOVERY_PATH = "/api/v1/pcap-context-discovery"
 HEALTH_PATH = "/health"
+AUTH_LOGIN_PATH = "/auth/login"
+AUTH_LOGOUT_PATH = "/auth/logout"
+AUTH_ME_PATH = "/auth/me"
+AUTH_PASSWORD_PATH = "/auth/password"
+USERS_PATH = "/api/v1/users"
+REPORTS_PATH = "/api/v1/reports"
+CAPTURES_PATH = "/api/v1/captures"
+AUDIT_PATH = "/api/v1/audit"
+STORAGE_PATH = "/api/v1/storage"
+CONTEXT_PROFILES_PATH = "/api/v1/context-profiles"
+
+_AUTH_SERVICE: Any = None
+_REPORT_STORE: Any = None
+_CAPTURE_STORE: Any = None
+_AUDIT_STORE: Any = None
+_CONTEXT_PROFILE_STORE: Any = None
+
+_LOGIN_RATE_LOCK = threading.Lock()
+_LOGIN_FAILURES: dict[str, list[float]] = {}
+LOGIN_WINDOW_SECONDS = 300
+LOGIN_MAX_FAILURES = 8
+
+def _login_rate_key(ip: str, username: str) -> tuple[str, str]:
+    return (f"ip:{ip}", f"user:{username.strip().lower()}")
+
+def _login_retry_after(ip: str, username: str) -> int:
+    now = time.time()
+    with _LOGIN_RATE_LOCK:
+        waits = []
+        for key in _login_rate_key(ip, username):
+            rows = [t for t in _LOGIN_FAILURES.get(key, []) if now - t < LOGIN_WINDOW_SECONDS]
+            _LOGIN_FAILURES[key] = rows
+            if len(rows) >= LOGIN_MAX_FAILURES:
+                waits.append(max(1, int(LOGIN_WINDOW_SECONDS - (now - rows[0]))))
+        return max(waits, default=0)
+
+def _record_login_failure(ip: str, username: str) -> None:
+    now = time.time()
+    with _LOGIN_RATE_LOCK:
+        for key in _login_rate_key(ip, username):
+            rows = [t for t in _LOGIN_FAILURES.get(key, []) if now - t < LOGIN_WINDOW_SECONDS]
+            rows.append(now)
+            _LOGIN_FAILURES[key] = rows
+
+def _clear_login_failures(ip: str, username: str) -> None:
+    with _LOGIN_RATE_LOCK:
+        for key in _login_rate_key(ip, username):
+            _LOGIN_FAILURES.pop(key, None)
 
 MAX_JSON_REQUEST_BYTES = 16 * 1024 * 1024
-MAX_PCAP_UPLOAD_BYTES = 1024 * 1024 * 1024
+MAX_PCAP_UPLOAD_BYTES = int(float(os.environ.get("ELEVADR_MAX_PCAP_UPLOAD_MB", "256")) * 1024 * 1024)
 MAX_UPLOAD_FILENAME_CHARS = 255
 
 
@@ -65,6 +116,20 @@ def _validated_content_length(headers: Any, maximum: int, label: str) -> int:
         raise ValueError(f"{label} exceeds the {maximum}-byte developer-server limit")
     return length
 
+
+
+def _parse_multipart_stream(rfile: Any, length: int, content_type: str) -> Any:
+    """Feed multipart request incrementally to avoid retaining a second full raw-body copy."""
+    parser = BytesFeedParser(policy=default)
+    parser.feed(f"Content-Type: {content_type}\r\nMIME-Version: 1.0\r\n\r\n".encode("utf-8"))
+    remaining = length
+    while remaining:
+        chunk = rfile.read(min(1024 * 1024, remaining))
+        if not chunk:
+            raise ValueError("PCAP upload ended before Content-Length bytes were received")
+        parser.feed(chunk)
+        remaining -= len(chunk)
+    return parser.close()
 
 def _strict_json_loads(raw: bytes) -> Any:
     text = raw.decode("utf-8")
@@ -319,6 +384,9 @@ def _run_analysis_job(
     profile: dict[str, Any],
     evidence_token: str | None = None,
     evidence_pcap_sha256: str | None = None,
+    owner_id: str | None = None,
+    owner_username: str | None = None,
+    capture_id: str | None = None,
 ) -> None:
     started = time.time()
     evidence_leased = False
@@ -361,6 +429,8 @@ def _run_analysis_job(
                 raise ValueError("PCAP analysis requires either retained Zeek evidence or a PCAP upload")
             progress("preparing-analysis", 1, "Preparing PCAP analysis…", filename)
             report = analyze_pcap_to_report(temp_path, profile, source_filename=filename, progress=progress)
+        if _REPORT_STORE is not None and owner_id and owner_username:
+            _REPORT_STORE.save(owner_id, owner_username, report, filename, capture_id=capture_id)
         _analysis_job_update(
             job_id,
             status="completed",
@@ -400,7 +470,7 @@ def _run_analysis_job(
             except OSError:
                 pass
 
-def _run_discovery_job(job_id: str, temp_path: Path, filename: str) -> None:
+def _run_discovery_job(job_id: str, temp_path: Path, filename: str, owner_id: str | None = None, owner_username: str | None = None) -> None:
     started = time.time()
     evidence_dir = Path(tempfile.mkdtemp(prefix="evidence-", dir=_ensure_evidence_cache_root()))
     evidence_registered = False
@@ -429,6 +499,9 @@ def _run_discovery_job(job_id: str, temp_path: Path, filename: str) -> None:
         token, evidence = _register_evidence(evidence_dir, filename, pcap_sha256)
         evidence_registered = True
         result["evidenceToken"] = token
+        if _CAPTURE_STORE is not None and owner_id and owner_username:
+            retained = _CAPTURE_STORE.save_bytes(owner_id, owner_username, filename, temp_path.read_bytes())
+            result["captureId"] = retained.get("captureId")
         result["evidence"] = {
             "reusable": True,
             "pcapSha256": evidence.get("pcap_sha256"),
@@ -481,16 +554,33 @@ def health_payload() -> dict[str, Any]:
         "responseContractVersion": RESPONSE_CONTRACT_VERSION,
         "zeekRuntime": describe_zeek_runtime(),
         "evidenceTtlSeconds": EVIDENCE_TTL_SECONDS,
+        "authentication": {
+            "enabled": bool(_AUTH_SERVICE and _AUTH_SERVICE.config.enabled),
+            "mode": "required" if _AUTH_SERVICE and _AUTH_SERVICE.config.enabled else "anonymous",
+        },
     }
+
+
+def _audit(action: str, result: str, principal: Any = None, target_type: str | None = None, target_id: str | None = None, metadata: dict[str, Any] | None = None) -> None:
+    if _AUDIT_STORE is None: return
+    try:
+        _AUDIT_STORE.record(action=action, result=result, actor_id=getattr(principal, "user_id", None), actor_username=getattr(principal, "username", None), target_type=target_type, target_id=target_id, metadata=metadata)
+    except Exception:
+        # Audit failure must not corrupt the primary operation in this reference server.
+        return
 
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "eleVADR-backend-bryan/3"
 
     def _cors_headers(self) -> None:
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        origin = (self.headers.get("Origin") or "").rstrip("/")
+        allowed = getattr(getattr(_AUTH_SERVICE, "config", None), "cors_origins", ("http://127.0.0.1:5173", "http://localhost:5173"))
+        if origin and origin in allowed:
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
     def _json(self, status: int, payload: Any) -> None:
         body = json.dumps(payload, separators=(",", ":")).encode("utf-8")
@@ -501,8 +591,58 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _require_authenticated_request(self) -> bool:
+        """Fail closed on protected APIs whenever authentication is enabled."""
+        if _AUTH_SERVICE is None:
+            self._json(503, {"error": "auth_unavailable", "message": "Authentication service is not initialized."})
+            return False
+        if not _AUTH_SERVICE.config.enabled:
+            return True
+        try:
+            _AUTH_SERVICE.current_principal(self.headers.get("Authorization"))
+        except (PermissionError, ValueError):
+            self._json(401, {"error": "authentication_required", "message": "A valid bearer token is required."})
+            return False
+        return True
+
+    def _current_principal(self):
+        if _AUTH_SERVICE is None:
+            return None
+        try:
+            return _AUTH_SERVICE.current_principal(self.headers.get("Authorization"))
+        except (PermissionError, ValueError):
+            return None
+
+    def _require_write_access(self) -> bool:
+        """Allow mutations/analysis only to admin and analyst accounts when auth is enabled."""
+        if _AUTH_SERVICE is None:
+            self._json(503, {"error": "auth_unavailable", "message": "Authentication service is not initialized."})
+            return False
+        if not _AUTH_SERVICE.config.enabled:
+            return True
+        principal = self._current_principal()
+        if principal is None or not principal.authenticated:
+            self._json(401, {"error": "authentication_required", "message": "A valid bearer token is required."})
+            return False
+        if not can_write(principal.role):
+            self._json(403, {"error": "read_only_forbidden", "message": "This account is read only."})
+            return False
+        return True
+
     def do_OPTIONS(self) -> None:  # noqa: N802
-        if self.path not in {ANALYSIS_PATH, PCAP_PATH, DISCOVERY_PATH, HEALTH_PATH} and not self.path.startswith(f"{DISCOVERY_PATH}/") and not self.path.startswith(f"{PCAP_PATH}/"):
+        if (
+            self.path not in {ANALYSIS_PATH, PCAP_PATH, DISCOVERY_PATH, HEALTH_PATH, AUTH_LOGIN_PATH, AUTH_LOGOUT_PATH, AUTH_ME_PATH, AUTH_PASSWORD_PATH, REPORTS_PATH, USERS_PATH}
+            and not self.path.startswith(f"{DISCOVERY_PATH}/")
+            and not self.path.startswith(f"{PCAP_PATH}/")
+            and not self.path.startswith(f"{REPORTS_PATH}/")
+            and self.path.split("?", 1)[0] != AUDIT_PATH
+            and self.path.split("?", 1)[0] != STORAGE_PATH
+            and self.path != f"{STORAGE_PATH}/cleanup"
+            and self.path != CONTEXT_PROFILES_PATH
+            and not self.path.startswith(f"{CONTEXT_PROFILES_PATH}/")
+            and self.path != CAPTURES_PATH
+            and not self.path.startswith(f"{CAPTURES_PATH}/")
+        ):
             self._json(404, {"error": "not_found"})
             return
         self.send_response(204)
@@ -514,6 +654,91 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, health_payload())
             return
 
+        if self.path == AUTH_ME_PATH:
+            if _AUTH_SERVICE is None:
+                self._json(503, {"error": "auth_unavailable", "message": "Authentication service is not initialized."})
+                return
+            try:
+                principal = _AUTH_SERVICE.current_principal(self.headers.get("Authorization"))
+            except (PermissionError, ValueError) as exc:
+                self._json(401, {"error": "authentication_required", "message": str(exc)})
+                return
+            self._json(200, {"user": principal.as_dict(), "authEnabled": _AUTH_SERVICE.config.enabled})
+            return
+
+        if not self._require_authenticated_request():
+            return
+
+        if self.path.split("?", 1)[0] == AUDIT_PATH:
+            principal = self._current_principal()
+            if principal is None or not principal.authenticated or _AUDIT_STORE is None:
+                self._json(503, {"error": "audit_store_unavailable"}); return
+            query = parse_qs(urlsplit(self.path).query); scope = (query.get("scope") or ["mine"])[0]
+            try: limit = int((query.get("limit") or ["50"])[0])
+            except ValueError: limit = 50
+            if scope == "all":
+                if principal.role != "admin": self._json(403, {"error":"admin_required","message":"Administrator access required"}); return
+                events = _AUDIT_STORE.list_all(limit)
+            else: events = _AUDIT_STORE.list_for_actor(principal.user_id, limit)
+            self._json(200, {"events": events}); return
+
+        if self.path.split("?", 1)[0] == STORAGE_PATH:
+            principal = self._current_principal()
+            if principal is None or not principal.authenticated or _CAPTURE_STORE is None or _REPORT_STORE is None:
+                self._json(503, {"error":"storage_unavailable"}); return
+            query=parse_qs(urlsplit(self.path).query); scope=(query.get("scope") or ["mine"])[0]
+            if scope == "all":
+                if principal.role != "admin": self._json(403,{"error":"admin_required","message":"Administrator access required"}); return
+                report_usage=_REPORT_STORE.usage_all(); users=[]
+                capture_rows=_CAPTURE_STORE.usage_all(); seen=set()
+                for row in capture_rows:
+                    oid=row["ownerId"]; seen.add(oid); ru=report_usage.get(oid,{"reportCount":0,"reportBytes":0}); users.append({**row,**ru,"totalBytes":row["captureBytes"]+ru["reportBytes"]})
+                for oid,ru in report_usage.items():
+                    if oid not in seen: users.append({"ownerId":oid,"username":"","captureCount":0,"captureBytes":0,"limitBytes":_AUTH_SERVICE.config.pcap_storage_limit_bytes,"remainingBytes":_AUTH_SERVICE.config.pcap_storage_limit_bytes or None,"retentionDays":_AUTH_SERVICE.config.pcap_retention_days,**ru,"totalBytes":ru["reportBytes"]})
+                self._json(200,{"scope":"all","users":users,"orphanFiles":len(_CAPTURE_STORE.find_orphans())}); return
+            cu=_CAPTURE_STORE.usage_for_owner(principal.user_id); ru=_REPORT_STORE.usage_for_owner(principal.user_id)
+            self._json(200,{"scope":"mine",**cu,**ru,"totalBytes":cu["captureBytes"]+ru["reportBytes"]}); return
+
+        if self.path == CONTEXT_PROFILES_PATH:
+            principal = self._current_principal()
+            if principal is None or not principal.authenticated or _CONTEXT_PROFILE_STORE is None:
+                self._json(503, {"error":"context_profile_store_unavailable"}); return
+            self._json(200, {"profiles": _CONTEXT_PROFILE_STORE.list_for_owner(principal.user_id)}); return
+
+        if self.path == REPORTS_PATH or self.path.startswith(f"{REPORTS_PATH}/"):
+            principal = self._current_principal()
+            if principal is None or not principal.authenticated or _REPORT_STORE is None:
+                self._json(503, {"error": "report_store_unavailable", "message": "Saved reports require authenticated platform storage."})
+                return
+            suffix = self.path[len(REPORTS_PATH):].strip("/")
+            if not suffix:
+                self._json(200, {"reports": _REPORT_STORE.list_for_owner(principal.user_id)})
+                return
+            report = _REPORT_STORE.load(principal.user_id, suffix)
+            if report is None:
+                self._json(404, {"error": "report_not_found", "message": "Saved report was not found."})
+                return
+            _audit("report.open", "success", principal, "report", suffix)
+            self._json(200, {"report": report})
+            return
+
+        if self.path == USERS_PATH:
+            principal = self._current_principal()
+            if principal is None or not principal.authenticated:
+                self._json(401, {"error": "authentication_required"}); return
+            try:
+                users = _AUTH_SERVICE.list_users(principal)
+            except PermissionError as exc:
+                self._json(403, {"error": "admin_required", "message": str(exc)}); return
+            self._json(200, {"users": users}); return
+
+        if self.path == CAPTURES_PATH:
+            principal = self._current_principal()
+            if principal is None or not principal.authenticated or _CAPTURE_STORE is None:
+                self._json(503, {"error": "capture_store_unavailable"}); return
+            self._json(200, {"captures": _CAPTURE_STORE.list_for_owner(principal.user_id)})
+            return
+
         discovery_prefix = f"{DISCOVERY_PATH}/"
         if self.path.startswith(discovery_prefix):
             job_id = self.path[len(discovery_prefix):].strip("/")
@@ -521,7 +746,11 @@ class Handler(BaseHTTPRequestHandler):
             if job is None:
                 self._json(404, {"error": "job_not_found", "message": "Unknown context-discovery job."})
                 return
-            payload = {key: value for key, value in job.items() if key not in {"createdAt", "updatedAt"}}
+            principal = self._current_principal()
+            if _AUTH_SERVICE and _AUTH_SERVICE.config.enabled and (principal is None or job.get("ownerId") != principal.user_id):
+                self._json(404, {"error": "job_not_found", "message": "Unknown context-discovery job."})
+                return
+            payload = {key: value for key, value in job.items() if key not in {"createdAt", "updatedAt", "ownerId"}}
             self._json(200, payload)
             return
 
@@ -532,7 +761,11 @@ class Handler(BaseHTTPRequestHandler):
             if job is None:
                 self._json(404, {"error": "job_not_found", "message": "Unknown PCAP-analysis job."})
                 return
-            payload = {key: value for key, value in job.items() if key not in {"createdAt", "updatedAt"}}
+            principal = self._current_principal()
+            if _AUTH_SERVICE and _AUTH_SERVICE.config.enabled and (principal is None or job.get("ownerId") != principal.user_id):
+                self._json(404, {"error": "job_not_found", "message": "Unknown PCAP-analysis job."})
+                return
+            payload = {key: value for key, value in job.items() if key not in {"createdAt", "updatedAt", "ownerId"}}
             self._json(200, payload)
             return
         self._json(404, {"error": "not_found"})
@@ -541,20 +774,18 @@ class Handler(BaseHTTPRequestHandler):
         length = _validated_content_length(self.headers, MAX_JSON_REQUEST_BYTES, "JSON request")
         return _strict_json_loads(self.rfile.read(length))
 
-    def _multipart(self) -> tuple[bytes | None, str, dict[str, Any], str | None, str | None]:
+    def _multipart(self) -> tuple[bytes | None, str, dict[str, Any], str | None, str | None, str | None]:
         content_type = self.headers.get("Content-Type", "")
         if "multipart/form-data" not in content_type:
             raise ValueError("PCAP analysis requires multipart/form-data")
         length = _validated_content_length(self.headers, MAX_PCAP_UPLOAD_BYTES, "PCAP upload")
-        raw = self.rfile.read(length)
-        message = BytesParser(policy=default).parsebytes(
-            f"Content-Type: {content_type}\r\nMIME-Version: 1.0\r\n\r\n".encode("utf-8") + raw
-        )
+        message = _parse_multipart_stream(self.rfile, length, content_type)
         pcap_bytes: bytes | None = None
         filename = "capture.pcap"
         profile: dict[str, Any] | None = None
         evidence_token: str | None = None
         evidence_pcap_sha256: str | None = None
+        capture_id: str | None = None
         for part in message.iter_parts():
             name = part.get_param("name", header="content-disposition")
             if name == "file":
@@ -567,6 +798,8 @@ class Handler(BaseHTTPRequestHandler):
                 evidence_token = (part.get_payload(decode=True) or b"").decode("utf-8", errors="strict").strip() or None
             elif name == "evidencePcapSha256":
                 evidence_pcap_sha256 = (part.get_payload(decode=True) or b"").decode("utf-8", errors="strict").strip().lower() or None
+            elif name == "captureId":
+                capture_id = (part.get_payload(decode=True) or b"").decode("utf-8", errors="strict").strip() or None
             elif name == "sourceFilename":
                 value = (part.get_payload(decode=True) or b"").decode("utf-8", errors="strict")
                 filename = _sanitize_upload_filename(value, filename)
@@ -576,26 +809,93 @@ class Handler(BaseHTTPRequestHandler):
             raise ValueError("Missing or invalid multipart field 'profile'")
         if evidence_pcap_sha256 and (len(evidence_pcap_sha256) != 64 or any(ch not in "0123456789abcdef" for ch in evidence_pcap_sha256)):
             raise ValueError("Invalid retained-evidence PCAP SHA-256")
-        return pcap_bytes, filename, profile, evidence_token, evidence_pcap_sha256
+        return pcap_bytes, filename, profile, evidence_token, evidence_pcap_sha256, capture_id
 
     def _multipart_file(self) -> tuple[bytes, str]:
         content_type = self.headers.get("Content-Type", "")
         if "multipart/form-data" not in content_type:
             raise ValueError("PCAP context discovery requires multipart/form-data")
         length = _validated_content_length(self.headers, MAX_PCAP_UPLOAD_BYTES, "PCAP upload")
-        raw = self.rfile.read(length)
-        message = BytesParser(policy=default).parsebytes(
-            f"Content-Type: {content_type}\r\nMIME-Version: 1.0\r\n\r\n".encode("utf-8") + raw
-        )
+        message = _parse_multipart_stream(self.rfile, length, content_type)
         for part in message.iter_parts():
             if part.get_param("name", header="content-disposition") == "file":
                 return part.get_payload(decode=True) or b"", _sanitize_upload_filename(part.get_filename(), "capture.pcap")
         raise ValueError("Missing multipart field 'file'")
 
+    def do_PATCH(self) -> None:  # noqa: N802
+        if not self._require_authenticated_request(): return
+        if self.path.startswith(f"{USERS_PATH}/"):
+            principal = self._current_principal(); user_id = self.path[len(USERS_PATH):].strip("/")
+            try:
+                payload = self._read_json()
+                if not isinstance(payload, dict): raise ValueError("User update must be a JSON object")
+                role = payload.get("role") if "role" in payload else None
+                disabled = payload.get("disabled") if "disabled" in payload else None
+                if disabled is not None and not isinstance(disabled, bool): raise ValueError("disabled must be boolean")
+                updated = _AUTH_SERVICE.update_user(principal, user_id, role=role, disabled=disabled)
+            except PermissionError as exc:
+                self._json(403, {"error":"admin_required","message":str(exc)}); return
+            except ValueError as exc:
+                self._json(400, {"error":"invalid_user_update","message":str(exc)}); return
+            if updated is None: self._json(404, {"error":"user_not_found"}); return
+            _audit("user.update", "success", principal, "user", user_id, {"role": role, "disabled": disabled})
+            self._json(200, {"user":updated}); return
+        if self.path.startswith(f"{REPORTS_PATH}/"):
+            if not self._require_write_access(): return
+            principal = self._current_principal(); report_id = self.path[len(REPORTS_PATH):].strip("/")
+            if principal is None or not principal.authenticated or _REPORT_STORE is None:
+                self._json(503, {"error": "report_store_unavailable"}); return
+            try:
+                payload = self._read_json(); title = payload.get("title") if isinstance(payload, dict) else None
+                if not isinstance(title, str): raise ValueError("Report title is required")
+                report = _REPORT_STORE.rename(principal.user_id, report_id, title)
+            except ValueError as exc:
+                self._json(400, {"error": "invalid_report_title", "message": str(exc)}); return
+            if report is None:
+                self._json(404, {"error": "report_not_found", "message": "Saved report was not found."}); return
+            _audit("report.rename", "success", principal, "report", report_id, {"title": title})
+            self._json(200, {"report": report}); return
+        self._json(404, {"error": "not_found"})
+
     def do_DELETE(self) -> None:  # noqa: N802
+        if not self._require_authenticated_request():
+            return
+        if not self._require_write_access():
+            return
+        if self.path.startswith(f"{CONTEXT_PROFILES_PATH}/"):
+            principal=self._current_principal(); profile_id=self.path[len(CONTEXT_PROFILES_PATH):].strip("/")
+            if principal is None or not principal.authenticated or _CONTEXT_PROFILE_STORE is None:
+                self._json(503,{"error":"context_profile_store_unavailable"}); return
+            if not _CONTEXT_PROFILE_STORE.delete(principal.user_id, profile_id): self._json(404,{"error":"context_profile_not_found"}); return
+            self._json(200,{"status":"deleted","profileId":profile_id}); return
+        if self.path.startswith(f"{REPORTS_PATH}/"):
+            principal = self._current_principal()
+            report_id = self.path[len(REPORTS_PATH):].strip("/")
+            if principal is None or not principal.authenticated or _REPORT_STORE is None:
+                self._json(503, {"error": "report_store_unavailable"})
+                return
+            if not report_id or not _REPORT_STORE.delete(principal.user_id, report_id):
+                self._json(404, {"error": "report_not_found", "message": "Saved report was not found."})
+                return
+            _audit("report.delete", "success", principal, "report", report_id)
+            self._json(200, {"status": "deleted", "reportId": report_id})
+            return
+        if self.path.startswith(f"{CAPTURES_PATH}/"):
+            principal = self._current_principal(); capture_id = self.path[len(CAPTURES_PATH):].strip("/")
+            if principal is None or not principal.authenticated or _CAPTURE_STORE is None:
+                self._json(503, {"error": "capture_store_unavailable"}); return
+            if not capture_id or not _CAPTURE_STORE.delete(principal.user_id, capture_id):
+                self._json(404, {"error": "capture_not_found", "message": "Retained capture was not found."}); return
+            _audit("capture.delete", "success", principal, "capture", capture_id)
+            self._json(200, {"status": "deleted", "captureId": capture_id, "reportsPreserved": True}); return
         discovery_prefix = f"{DISCOVERY_PATH}/"
         if self.path.startswith(discovery_prefix):
             job_id = self.path[len(discovery_prefix):].strip("/")
+            snapshot = _job_snapshot(job_id)
+            principal = self._current_principal()
+            if _AUTH_SERVICE and _AUTH_SERVICE.config.enabled and (snapshot is None or principal is None or snapshot.get("ownerId") != principal.user_id):
+                self._json(404, {"error": "job_not_found", "message": "Unknown context-discovery job."})
+                return
             if not _cancel_discovery_job(job_id):
                 self._json(404, {"error": "job_not_found", "message": "Unknown context-discovery job."})
                 return
@@ -604,6 +904,11 @@ class Handler(BaseHTTPRequestHandler):
         analysis_prefix = f"{PCAP_PATH}/"
         if self.path.startswith(analysis_prefix):
             job_id = self.path[len(analysis_prefix):].strip("/")
+            snapshot = _analysis_job_snapshot(job_id)
+            principal = self._current_principal()
+            if _AUTH_SERVICE and _AUTH_SERVICE.config.enabled and (snapshot is None or principal is None or snapshot.get("ownerId") != principal.user_id):
+                self._json(404, {"error": "job_not_found", "message": "Unknown PCAP-analysis job."})
+                return
             if not _cancel_analysis_job(job_id):
                 self._json(404, {"error": "job_not_found", "message": "Unknown PCAP-analysis job."})
                 return
@@ -612,6 +917,145 @@ class Handler(BaseHTTPRequestHandler):
         self._json(404, {"error": "not_found"})
 
     def do_POST(self) -> None:  # noqa: N802
+        if self.path == f"{STORAGE_PATH}/cleanup":
+            if not self._require_authenticated_request(): return
+            principal=self._current_principal()
+            if principal is None or principal.role != "admin": self._json(403,{"error":"admin_required","message":"Administrator access required"}); return
+            try: payload=self._read_json()
+            except Exception: payload={}
+            expired=_CAPTURE_STORE.cleanup_expired() if _CAPTURE_STORE is not None else {"expiredCaptures":0,"bytesFreed":0}
+            orphans=_CAPTURE_STORE.remove_orphans() if _CAPTURE_STORE is not None and isinstance(payload,dict) and payload.get("removeOrphans") is True else {"orphanFiles":0,"bytesFreed":0}
+            _audit("storage.cleanup","success",principal,"storage",None,{"expiredCaptures":expired["expiredCaptures"],"orphanFiles":orphans["orphanFiles"]})
+            self._json(200,{"expired":expired,"orphans":orphans}); return
+        if self.path == AUTH_LOGIN_PATH:
+            if _AUTH_SERVICE is None:
+                self._json(503, {"error": "auth_unavailable", "message": "Authentication service is not initialized."})
+                return
+            if not _AUTH_SERVICE.config.enabled:
+                self._json(409, {"error": "auth_disabled", "message": "Authentication is disabled for this eleVADR instance."})
+                return
+            try:
+                request = self._read_json()
+                if not isinstance(request, dict):
+                    raise ValueError("Login request must be a JSON object")
+                username = str(request.get("username", "")).strip()
+                password = str(request.get("password", ""))
+                if not username or not password:
+                    raise ValueError("Username and password are required")
+                if len(username) > 128 or len(password) > 1024:
+                    raise ValueError("Username or password exceeds the allowed length")
+                client_address = getattr(self, "client_address", None)
+                client_ip = client_address[0] if client_address else "unknown"      
+                retry_after = _login_retry_after(client_ip, username)
+                if retry_after:
+                    self.send_response(429)
+                    self.send_header("Retry-After", str(retry_after))
+                    body = json.dumps({"error":"login_throttled","message":"Too many failed login attempts. Try again later."}, separators=(",", ":")).encode("utf-8")
+                    self.send_header("Content-Type", "application/json"); self.send_header("Content-Length", str(len(body))); self._cors_headers(); self.end_headers(); self.wfile.write(body)
+                    return
+                principal, token = _AUTH_SERVICE.login(username, password)
+            except (ValueError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                self._json(400, {"error": "invalid_request", "message": str(exc)})
+                return
+            except PermissionError as exc:
+                _record_login_failure(client_ip, username)
+                _audit("auth.login", "failure", None, "user", username, {"username": username})
+                self._json(401, {"error": "invalid_credentials", "message": str(exc)})
+                return
+            _clear_login_failures(client_ip, username)
+            _audit("auth.login", "success", principal, "user", principal.user_id)
+            expires_in = _AUTH_SERVICE.config.jwt_expire_minutes * 60
+            self._json(200, {
+                # Canonical Stage 1 API contract used by CLI tests and the upcoming frontend.
+                "access_token": token,
+                "token_type": "bearer",
+                "expires_in": expires_in,
+                "user": principal.as_dict(),
+                # Temporary compatibility aliases for any client built against the
+                # initial Stage 1 candidate before the response contract was corrected.
+                "accessToken": token,
+                "tokenType": "bearer",
+                "expiresIn": expires_in,
+            })
+            return
+
+        if self.path == AUTH_LOGOUT_PATH:
+            principal = self._current_principal()
+            if principal is not None and principal.authenticated:
+                _AUTH_SERVICE.logout(principal)
+            _audit("auth.logout", "success", principal)
+            self._json(200, {"status": "ok", "message": "Session revoked and client access token should be discarded."})
+            return
+
+        if self.path == AUTH_PASSWORD_PATH:
+            if not self._require_authenticated_request(): return
+            principal = self._current_principal()
+            try:
+                payload = self._read_json()
+                if not isinstance(payload, dict): raise ValueError("Password change must be a JSON object")
+                current_password = str(payload.get("currentPassword", "")); new_password = str(payload.get("newPassword", ""))
+                if not current_password or not new_password: raise ValueError("Current and new passwords are required")
+                _AUTH_SERVICE.change_password(principal, current_password, new_password)
+            except PermissionError as exc:
+                self._json(401, {"error":"invalid_current_password","message":str(exc)}); return
+            except ValueError as exc:
+                self._json(400, {"error":"invalid_password","message":str(exc)}); return
+            _audit("auth.password_change", "success", principal, "user", principal.user_id)
+            self._json(200, {"status":"password_changed"}); return
+
+        if self.path == USERS_PATH:
+            if not self._require_authenticated_request(): return
+            principal = self._current_principal()
+            try:
+                payload = self._read_json()
+                if not isinstance(payload, dict): raise ValueError("User creation must be a JSON object")
+                user = _AUTH_SERVICE.create_user(principal, str(payload.get("username", "")), str(payload.get("password", "")), str(payload.get("role", "analyst")), str(payload.get("email", "")))
+            except PermissionError as exc:
+                self._json(403, {"error":"admin_required","message":str(exc)}); return
+            except ValueError as exc:
+                self._json(400, {"error":"invalid_user","message":str(exc)}); return
+            _audit("user.create", "success", principal, "user", str(user.get("id","")), {"role": user.get("role")})
+            self._json(201, {"user":user}); return
+
+        if not self._require_authenticated_request():
+            return
+        if self.path == CONTEXT_PROFILES_PATH:
+            if not self._require_write_access(): return
+            principal=self._current_principal()
+            if principal is None or not principal.authenticated or _CONTEXT_PROFILE_STORE is None:
+                self._json(503,{"error":"context_profile_store_unavailable"}); return
+            try:
+                payload=self._read_json(); profile=payload.get("profile") if isinstance(payload,dict) else None
+                if not isinstance(profile,dict): raise ValueError("Profile is required")
+                saved=_CONTEXT_PROFILE_STORE.save(principal.user_id,principal.username,profile)
+            except ValueError as exc:
+                self._json(400,{"error":"invalid_context_profile","message":str(exc)}); return
+            self._json(200,{"profile":saved}); return
+        if not self._require_write_access():
+            return
+
+        if self.path.startswith(f"{CAPTURES_PATH}/") and self.path.endswith("/analyze"):
+            principal = self._current_principal()
+            capture_id = self.path[len(CAPTURES_PATH):].strip("/").removesuffix("/analyze").strip("/")
+            if principal is None or not principal.authenticated or _CAPTURE_STORE is None:
+                self._json(503, {"error": "capture_store_unavailable"}); return
+            path = _CAPTURE_STORE.path_for_owner(principal.user_id, capture_id)
+            meta = _CAPTURE_STORE.get(principal.user_id, capture_id)
+            if path is None or meta is None:
+                self._json(404, {"error": "capture_not_found", "message": "Retained capture was not found."}); return
+            try:
+                payload = self._read_json(); profile = payload.get("profile") if isinstance(payload, dict) else None
+                if not isinstance(profile, dict): raise ValueError("Analysis Context profile is required")
+            except (ValueError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                self._json(400, {"error": "invalid_request", "message": str(exc)}); return
+            fd, temp_name = tempfile.mkstemp(prefix="elevadr-retained-", suffix=".pcapng" if str(meta["filename"]).lower().endswith(".pcapng") else ".pcap")
+            os.close(fd); shutil.copy2(path, temp_name); temp_path = Path(temp_name); job_id = uuid.uuid4().hex
+            with _ANALYSIS_LOCK:
+                _ANALYSIS_JOBS[job_id] = {"ownerId": principal.user_id, "jobId": job_id, "status":"queued", "stage":"queued", "progress":0, "message":"Retained PCAP analysis queued.", "detail":meta["filename"], "elapsedSeconds":0, "createdAt":time.time(), "updatedAt":time.time()}
+            threading.Thread(target=_run_analysis_job, args=(job_id,temp_path,str(meta["filename"]),profile,None,None,principal.user_id,principal.username,capture_id), daemon=True).start()
+            _audit("capture.reanalyze", "success", principal, "capture", capture_id, {"jobId": job_id})
+            self._json(202, {"jobId":job_id,"status":"queued","statusUrl":f"{PCAP_PATH}/{job_id}","captureId":capture_id}); return
+
         if self.path == ANALYSIS_PATH:
             try:
                 request = self._read_json()
@@ -626,13 +1070,16 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == DISCOVERY_PATH:
             try:
                 pcap_bytes, filename = self._multipart_file()
+                principal = self._current_principal()
                 suffix = ".pcapng" if filename.lower().endswith(".pcapng") else ".pcap"
                 with tempfile.NamedTemporaryFile(prefix="elevadr-discovery-", suffix=suffix, delete=False) as handle:
                     handle.write(pcap_bytes)
                     temp_path = Path(handle.name)
                 job_id = uuid.uuid4().hex
+                principal = self._current_principal()
                 with _DISCOVERY_LOCK:
                     _DISCOVERY_JOBS[job_id] = {
+                        "ownerId": principal.user_id if principal and principal.authenticated else None,
                         "jobId": job_id,
                         "status": "queued",
                         "stage": "queued",
@@ -643,7 +1090,7 @@ class Handler(BaseHTTPRequestHandler):
                         "createdAt": time.time(),
                         "updatedAt": time.time(),
                     }
-                threading.Thread(target=_run_discovery_job, args=(job_id, temp_path, filename), daemon=True).start()
+                threading.Thread(target=_run_discovery_job, args=(job_id, temp_path, filename, principal.user_id if principal and principal.authenticated else None, principal.username if principal and principal.authenticated else None), daemon=True).start()
                 self._json(202, {"jobId": job_id, "status": "queued", "statusUrl": f"{DISCOVERY_PATH}/{job_id}"})
             except (ValueError, json.JSONDecodeError) as exc:
                 self._json(400, {"error": "invalid_request", "message": str(exc)})
@@ -653,7 +1100,7 @@ class Handler(BaseHTTPRequestHandler):
 
         if self.path == PCAP_PATH:
             try:
-                pcap_bytes, filename, profile, evidence_token, evidence_pcap_sha256 = self._multipart()
+                pcap_bytes, filename, profile, evidence_token, evidence_pcap_sha256, capture_id = self._multipart()
                 temp_path: Path | None = None
                 if evidence_token:
                     snapshot = _evidence_snapshot(evidence_token)
@@ -680,13 +1127,18 @@ class Handler(BaseHTTPRequestHandler):
                         _release_evidence(evidence_token)
                 else:
                     assert pcap_bytes is not None
+                    principal = self._current_principal()
+                    if _CAPTURE_STORE is not None and principal and principal.authenticated:
+                        capture_id = _CAPTURE_STORE.save_bytes(principal.user_id, principal.username, filename, pcap_bytes).get("captureId")
                     suffix = ".pcapng" if filename.lower().endswith(".pcapng") else ".pcap"
                     with tempfile.NamedTemporaryFile(prefix="elevadr-upload-", suffix=suffix, delete=False) as handle:
                         handle.write(pcap_bytes)
                         temp_path = Path(handle.name)
                 job_id = uuid.uuid4().hex
+                principal = self._current_principal()
                 with _ANALYSIS_LOCK:
                     _ANALYSIS_JOBS[job_id] = {
+                        "ownerId": principal.user_id if principal and principal.authenticated else None,
                         "jobId": job_id,
                         "status": "queued",
                         "stage": "queued",
@@ -697,9 +1149,14 @@ class Handler(BaseHTTPRequestHandler):
                         "createdAt": time.time(),
                         "updatedAt": time.time(),
                     }
+                principal = self._current_principal()
+                if capture_id and _CAPTURE_STORE is not None and principal and principal.authenticated and _CAPTURE_STORE.get(principal.user_id, capture_id) is None:
+                    self._json(404, {"error": "capture_not_found", "message": "Retained capture was not found."}); return
+                owner_id = principal.user_id if principal and principal.authenticated else None
+                owner_username = principal.username if principal and principal.authenticated else None
                 threading.Thread(
                     target=_run_analysis_job,
-                    args=(job_id, temp_path, filename, profile, evidence_token, evidence_pcap_sha256),
+                    args=(job_id, temp_path, filename, profile, evidence_token, evidence_pcap_sha256, owner_id, owner_username, capture_id),
                     daemon=True,
                 ).start()
                 self._json(202, {"jobId": job_id, "status": "queued", "statusUrl": f"{PCAP_PATH}/{job_id}", "zeekEvidenceReused": bool(evidence_token)})
@@ -716,6 +1173,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main() -> int:
+    global _AUTH_SERVICE, _REPORT_STORE, _CAPTURE_STORE, _AUDIT_STORE, _CONTEXT_PROFILE_STORE
     parser = argparse.ArgumentParser(description="Run isolated eleVADR analysis reference server")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
@@ -729,14 +1187,55 @@ def main() -> int:
     print(f"Detector modules: {len(modules)}")
     from backend_bryan.runtime.zeek_runtime import describe_zeek_runtime
     print(f"Zeek runtime: {describe_zeek_runtime()}")
+    from backend_bryan.auth.runtime import build_auth_service
+    try:
+        _AUTH_SERVICE = build_auth_service()
+    except (RuntimeError, ValueError) as exc:
+        print(f"ERROR: authentication startup failed: {exc}")
+        return 3
+    print(f"Authentication: {'enabled (MongoDB + JWT)' if _AUTH_SERVICE.config.enabled else 'disabled (anonymous mode)'}")
+    if _AUTH_SERVICE.config.enabled:
+        from backend_bryan.auth.report_store import MongoReportStore
+        from backend_bryan.auth.capture_store import MongoCaptureStore
+        from backend_bryan.auth.audit_store import MongoAuditStore
+        from backend_bryan.auth.context_profile_store import MongoContextProfileStore
+        try:
+            _REPORT_STORE = MongoReportStore(_AUTH_SERVICE.config); _REPORT_STORE.connect()
+            _CAPTURE_STORE = MongoCaptureStore(_AUTH_SERVICE.config); _CAPTURE_STORE.connect()
+            _AUDIT_STORE = MongoAuditStore(_AUTH_SERVICE.config); _AUDIT_STORE.connect()
+            _CONTEXT_PROFILE_STORE = MongoContextProfileStore(_AUTH_SERVICE.config); _CONTEXT_PROFILE_STORE.connect()
+        except (RuntimeError, ValueError) as exc:
+            print(f"ERROR: platform persistence startup failed: {exc}")
+            if _REPORT_STORE is not None: _REPORT_STORE.close()
+            _AUTH_SERVICE.close()
+            return 4
+        print(f"Report persistence: enabled ({_REPORT_STORE.root})")
+        cleanup=_CAPTURE_STORE.cleanup_expired()
+        print(f"PCAP retention: enabled ({_CAPTURE_STORE.root})")
+        print(f"Storage policy: retention={_AUTH_SERVICE.config.pcap_retention_days or 'disabled'} day(s), per-user limit={_AUTH_SERVICE.config.pcap_storage_limit_bytes or 'unlimited'} bytes; expired cleanup={cleanup['expiredCaptures']}")
+        print("Audit history: enabled (180-day MongoDB retention)")
+        print("Analysis Context profiles: authenticated MongoDB persistence enabled")
     _cleanup_restart_orphans()
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"Analysis API: http://{args.host}:{args.port}{ANALYSIS_PATH}")
     print(f"PCAP API:     http://{args.host}:{args.port}{PCAP_PATH}")
     print(f"Context API:  http://{args.host}:{args.port}{DISCOVERY_PATH}")
+    print(f"Auth API:     http://{args.host}:{args.port}/auth/*")
     print("Context discovery progress: job polling enabled")
     print("PCAP analysis progress:     job polling enabled")
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    finally:
+        if _CONTEXT_PROFILE_STORE is not None:
+            _CONTEXT_PROFILE_STORE.close()
+        if _AUDIT_STORE is not None:
+            _AUDIT_STORE.close()
+        if _CAPTURE_STORE is not None:
+            _CAPTURE_STORE.close()
+        if _REPORT_STORE is not None:
+            _REPORT_STORE.close()
+        if _AUTH_SERVICE is not None:
+            _AUTH_SERVICE.close()
     return 0
 
 

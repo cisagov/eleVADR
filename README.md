@@ -23,6 +23,21 @@ Advanced operational documentation can be found on our
 
 ---
 
+## Local Windows Platform Quickstart ##
+
+The current local authenticated platform workflow uses Python 3.12+, Node.js 22.22.3+ (Node 22), npm, and Docker Desktop. From a clean extracted package, run:
+
+```powershell
+.\first_run_elevadr.bat
+.\start_elevadr.bat
+```
+
+`first_run_elevadr.bat` validates prerequisites, installs locked dependencies, initializes the localhost-only MongoDB runtime, creates the first administrator when needed, and enables authentication. The application then provides owner-scoped saved reports and retained PCAPs, re-analysis/history/comparison, roles, audit history, storage/retention controls, and backup/restore.
+
+See the [Operator Guide](docs/source/operator-guide.md) for daily operation, administration, security settings, troubleshooting, and recovery. Validate an installed workstation with `validate_clean_install.bat`.
+
+For the current local workflow, use npm commands from the supplied lockfile; older pnpm-oriented development instructions below apply to the upstream/container development environment and not to this local platform launcher.
+
 ## Repository Structure ##
 
 The repository is structured as a monorepo containing the following

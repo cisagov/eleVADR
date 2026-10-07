@@ -1,0 +1,5 @@
+/* Retained PCAP icon action state. */
+.saved-report-icon-button:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}

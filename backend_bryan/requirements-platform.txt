@@ -1,0 +1,4 @@
+pymongo>=4.10,<5
+argon2-cffi>=23.1,<26
+PyJWT>=2.9,<3
+cryptography>=42,<44

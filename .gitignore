@@ -203,3 +203,9 @@ claude.md
 
 **/.pnpm-store
 .local_cache/
+
+# eleVADR local platform runtime secrets
+.elevadr-platform.env
+
+# eleVADR persisted user reports
+storage/

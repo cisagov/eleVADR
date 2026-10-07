@@ -12,6 +12,7 @@ To get started, jump to [Install](install.md).
 
 introduction.md
 install.md
+operator-guide.md
 glossary.md
 contributors.md
 ```

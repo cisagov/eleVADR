@@ -6,6 +6,12 @@ set "ZEEK_IMAGE=zeek/zeek:9.0.0"
 
 if defined ELEVADR_ZEEK_DOCKER_IMAGE set "ZEEK_IMAGE=%ELEVADR_ZEEK_DOCKER_IMAGE%"
 
+if exist "%ROOT%.elevadr-platform.env" (
+  echo Platform configuration: .elevadr-platform.env will be loaded by the backend.
+) else (
+  echo Platform configuration: not present; backend will use process/default settings.
+)
+
 echo Checking for an old eleVADR backend on port 8765...
 for /f "tokens=5" %%P in ('netstat -ano ^| findstr /R /C:":8765 .*LISTENING"') do (
   echo Stopping stale process %%P on port 8765...
@@ -41,15 +47,15 @@ if defined ELEVADR_ZEEK_COMMAND (
 
 echo.
 echo Starting eleVADR backend_bryan...
-start "eleVADR backend_bryan" cmd /k "cd /d ""%ROOT%"" && python -m backend_bryan.integration.http_reference_server"
+start "eleVADR backend_bryan" cmd /k "cd /d ""%ROOT%"" && python -m backend_bryan.auth.env_runner backend_bryan.integration.http_reference_server"
 
 timeout /t 2 /nobreak >nul
 
 echo Starting eleVADR frontend...
-start "eleVADR frontend" cmd /k "cd /d ""%ROOT%frontend"" && pnpm.cmd start --host 127.0.0.1"
+start "eleVADR frontend" cmd /k "cd /d ""%ROOT%frontend"" && npm.cmd start -- --host 127.0.0.1"
 
 echo.
 echo eleVADR startup commands launched.
-echo The backend window should report "Detector modules: 75" and the selected Zeek runtime.
+echo The backend window should report "Detector modules: 75", the selected Zeek runtime, and Authentication status.
 echo.
 exit

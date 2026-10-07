@@ -31,6 +31,7 @@ FIRST_RUN_TOUR = ROOT / "frontend" / "src" / "app" / "components" / "FirstRunTou
 FIRST_RUN_TOUR_CSS = ROOT / "frontend" / "src" / "app" / "components" / "FirstRunTour" / "FirstRunTour.css"
 REPORT_GUIDANCE = ROOT / "frontend" / "src" / "app" / "components" / "ReportGuidance" / "ReportGuidance.tsx"
 REPORT_GUIDANCE_CSS = ROOT / "frontend" / "src" / "app" / "components" / "ReportGuidance" / "ReportGuidance.css"
+AUTH_SERVICE = ROOT / "frontend" / "src" / "app" / "services" / "authService.ts"
 
 
 def run_cases(verbose: bool = True) -> list[str]:
@@ -63,6 +64,7 @@ def run_cases(verbose: bool = True) -> list[str]:
     first_run_tour_css = FIRST_RUN_TOUR_CSS.read_text(encoding="utf-8")
     report_guidance = REPORT_GUIDANCE.read_text(encoding="utf-8")
     report_guidance_css = REPORT_GUIDANCE_CSS.read_text(encoding="utf-8")
+    auth_service = AUTH_SERVICE.read_text(encoding="utf-8")
     sortable_table = (ROOT / "frontend" / "src" / "app" / "components" / "SortableTable" / "SortableTable.tsx").read_text(encoding="utf-8")
 
     def check(label: str, fn: Callable[[], None]) -> None:
@@ -515,6 +517,22 @@ def run_cases(verbose: bool = True) -> list[str]:
          and 'title={!effectiveProfile ? "Create or select a Context before analyzing this PCAP."' in upload
          and "report-guidance-actions" in report_guidance
          and ".report-guidance-action:focus-visible" in report_guidance_css)
+        or (_ for _ in ()).throw(AssertionError())
+    ))
+    check("Authentication-aware frontend gates analysis and carries bearer tokens to backend requests", lambda: (
+        ("fetchAuthState" in app
+         and "authenticationRequired" in app
+         and "Sign in to eleVADR" in app
+         and "Your session expired. Sign in again to continue." in app
+         and "handleSignOut" in app
+         and "sessionStorage" in auth_service
+         and 'headers.set("Authorization", `Bearer ${token}`)' in auth_service
+         and "AUTH_EXPIRED_EVENT" in auth_service
+         and "VITE_AUTH_BASE_URL" in auth_service
+         and "VITE_DETECTION_ANALYSIS_URL" in auth_service
+         and "new URL(configuredApi, window.location.origin).origin" in auth_service
+         and "authenticatedFetch" in upload
+         and "mocked in this frontend build" not in app)
         or (_ for _ in ()).throw(AssertionError())
     ))
     check("Saved Detection Context/module changes regenerate an open PCAP report in place", lambda: (

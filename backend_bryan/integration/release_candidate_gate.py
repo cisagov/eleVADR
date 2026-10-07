@@ -47,6 +47,12 @@ REQUIRED_FILES = (
     "frontend/pnpm-lock.yaml",
     "frontend/src/app/App.tsx",
     "frontend/src/tests/NetworkTopologyInteraction.test.tsx",
+    "first_run_elevadr.bat",
+    "validate_clean_install.bat",
+    "backend_bryan/integration/deployment_preflight.py",
+    "backend_bryan/requirements-platform.txt",
+    "backend_bryan/reference/clean_machine_deployment.md",
+    "DEPLOYMENT_PACKAGE_MANIFEST.json",
 )
 
 FORBIDDEN_PARTS = {

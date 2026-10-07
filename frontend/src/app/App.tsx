@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "./App.css";
+import "./saved-report-interactions.css";
+import "./pcap-icon-actions.css";
 import "./dhs-cisa-theme.css";
 import "./dhs-a11y-hardening.css";
 import { ElevadrReport } from "./types/Report";
@@ -32,6 +34,15 @@ import "./report-consistency.css";
 import ReportCustomization, { REPORT_SECTION_OPTIONS, ReportSectionId } from "./components/ReportCustomization/ReportCustomization";
 import ReportGuidance from "./components/ReportGuidance/ReportGuidance";
 import { InvestigationFilter, InvestigationFilterKey, SelectedEntity } from "./types/Investigation";
+import { AUTH_EXPIRED_EVENT, AuthState, fetchAuthState, login, logout } from "./services/authService";
+import { deleteSavedReport, listSavedReports, loadSavedReport, renameSavedReport, SavedReportSummary } from "./services/reportService";
+import { normalizeElevadrReport } from "./utils/reportCompatibility";
+import { listRetainedCaptures, deleteRetainedCapture, analyzeRetainedCapture, RetainedCaptureSummary } from "./services/captureService";
+import { loadActiveProfile, normalizeProfile } from "./components/DetectionConfiguration/profile";
+import { changeOwnPassword, createUser, listUsers, PlatformUser, updateUser } from "./services/accountService";
+import { listAuditEvents, type AuditEvent } from "./services/auditService";
+import { cleanupStorage, getStorageSummary, type StorageSummary } from "./services/storageService";
+import { compareReports, formatComparisonValue, type ReportComparison } from "./utils/reportComparison";
 
 const SUPPORTED_REPORT_MAJOR_VERSION = "2";
 
@@ -55,7 +66,14 @@ type IconName =
   | "notes"
   | "help"
   | "settings"
-  | "services";
+  | "services"
+  | "edit"
+  | "trash"
+  | "check"
+  | "close"
+  | "history"
+  | "refresh"
+  | "user";
 
 function isSupportedReportVersion(version?: string): boolean {
   if (!version || typeof version !== "string") return false;
@@ -153,6 +171,13 @@ const Icon = ({ name }: { name: IconName }) => {
     help: <><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 1 1 3.7 2c-.9.6-1.5 1-1.5 2"/><path d="M12 17h.01"/></>,
     settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21h-4v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H3v-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3h4a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1v4H21a1.7 1.7 0 0 0-1.6 1Z"/></>,
     services: <><path d="M5 6h14"/><path d="M5 12h14"/><path d="M5 18h14"/><circle cx="8" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="11" cy="18" r="1.5"/></>,
+    edit: <><path d="M4 20h4l11-11-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></>,
+    trash: <><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="m7 7 1 13h8l1-13"/><path d="M10 11v5M14 11v5"/></>,
+    check: <><path d="m5 12 4 4L19 6"/></>,
+    close: <><path d="m6 6 12 12M18 6 6 18"/></>,
+    history: <><circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2"/><path d="M5.5 5.5 3 8V4h4"/></>,
+    refresh: <><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M6.1 8a7 7 0 0 1 11.8-1L20 12"/><path d="M17.9 16a7 7 0 0 1-11.8 1L4 12"/></>,
+    user: <><circle cx="12" cy="8" r="4"/><path d="M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6"/></>,
   };
 
   return <svg className="nav-icon" viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
@@ -166,6 +191,7 @@ function App() {
   const [shareStatus, setShareStatus] = useState("");
   const [helpOpen, setHelpOpen] = useState(false);
   const [welcomeInstructionsOpen, setWelcomeInstructionsOpen] = useState(false);
+  const [platformView, setPlatformView] = useState<"dashboard" | "reports" | "pcaps" | "activity" | "storage" | "account">("dashboard");
   const [tourOpen, setTourOpen] = useState(() => localStorage.getItem("elevadr-tour-seen") !== "1");
   const [activeSection, setActiveSection] = useState("overview");
   const [filters, setFilters] = useState<InvestigationFilter[]>(() => {
@@ -191,9 +217,38 @@ function App() {
   const [allPanelsExpanded, setAllPanelsExpanded] = useState(true);
   const [welcomeUsername, setWelcomeUsername] = useState("");
   const [welcomePassword, setWelcomePassword] = useState("");
-  const [mockSignedIn, setMockSignedIn] = useState(false);
+  const [authState, setAuthState] = useState<AuthState | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authSubmitting, setAuthSubmitting] = useState(false);
   const [welcomeAuthMessage, setWelcomeAuthMessage] = useState("");
-  const [mockLibraryMessage, setMockLibraryMessage] = useState("");
+  const [savedReports, setSavedReports] = useState<SavedReportSummary[]>([]);
+  const [savedReportsLoading, setSavedReportsLoading] = useState(false);
+  const [savedReportsMessage, setSavedReportsMessage] = useState("");
+  const [savedReportQuery, setSavedReportQuery] = useState("");
+  const [savedReportSort, setSavedReportSort] = useState("newest");
+  const [renamingReportId, setRenamingReportId] = useState("");
+  const [renameDraft, setRenameDraft] = useState("");
+  const [deleteConfirmReportId, setDeleteConfirmReportId] = useState("");
+  const [retainedCaptures, setRetainedCaptures] = useState<RetainedCaptureSummary[]>([]);
+  const [capturesLoading, setCapturesLoading] = useState(false);
+  const [capturesMessage, setCapturesMessage] = useState("");
+  const [deleteConfirmCaptureId, setDeleteConfirmCaptureId] = useState("");
+  const [captureAnalyzingId, setCaptureAnalyzingId] = useState("");
+  const [historyCaptureId, setHistoryCaptureId] = useState("");
+  const [compareReportIds, setCompareReportIds] = useState<string[]>([]);
+  const [reportComparison, setReportComparison] = useState<ReportComparison | null>(null);
+  const [comparisonLoading, setComparisonLoading] = useState(false);
+  const [platformUsers, setPlatformUsers] = useState<PlatformUser[]>([]);
+  const [accountMessage, setAccountMessage] = useState("");
+  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
+  const [auditMessage, setAuditMessage] = useState("");
+  const [storageSummary, setStorageSummary] = useState<StorageSummary | null>(null);
+  const [storageMessage, setStorageMessage] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newUsername, setNewUsername] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserRole, setNewUserRole] = useState("analyst");
   const [notesOpen, setNotesOpen] = useState(false);
   const [detectionConfigOpen, setDetectionConfigOpen] = useState(false);
   const [detectionModulesOpen, setDetectionModulesOpen] = useState(false);
@@ -211,6 +266,8 @@ function App() {
   const [entityOverrides, setEntityOverrides] = useState<Record<string, Record<string, string>>>({});
   const [graphViewState, setGraphViewState] = useState<NetworkTopologyState | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
+  const isReadOnly = Boolean(authState?.authEnabled && authState.user.authenticated && authState.user.role === "read_only");
+  const canWriteAnalysis = !isReadOnly;
 
   const handleReportLoaded = (nextReport: ElevadrReport) => {
     setGraphViewState(null);
@@ -255,28 +312,179 @@ function App() {
     setReportRefreshPromptOpen(true);
   };
 
-  const mockPreviousUploads = [
-    { name: "plant-network-baseline.pcap", kind: "PCAP", date: "Aug 28, 2026" },
-    { name: "west-cell-review.json", kind: "Report", date: "Aug 25, 2026" },
-    { name: "ot-segmentation-check.pcapng", kind: "PCAPNG", date: "Aug 20, 2026" },
-  ];
+  const refreshSavedReports = async () => {
+    if (!authState?.authEnabled || !authState.user.authenticated) return;
+    setSavedReportsLoading(true);
+    setSavedReportsMessage("");
+    try { setSavedReports(await listSavedReports()); }
+    catch (error) { setSavedReportsMessage(error instanceof Error ? error.message : "Unable to load saved reports."); }
+    finally { setSavedReportsLoading(false); }
+  };
 
-  const handleMockSignIn = (event: React.FormEvent<HTMLFormElement>) => {
+  const refreshRetainedCaptures = async () => {
+    if (!authState?.authEnabled || !authState.user.authenticated) return;
+    setCapturesLoading(true); setCapturesMessage("");
+    try { setRetainedCaptures(await listRetainedCaptures()); }
+    catch (error) { setCapturesMessage(error instanceof Error ? error.message : "Unable to load retained captures."); }
+    finally { setCapturesLoading(false); }
+  };
+
+  const removeRetainedCapture = async (captureId: string) => {
+    if (deleteConfirmCaptureId !== captureId) { setDeleteConfirmCaptureId(captureId); return; }
+    try { await deleteRetainedCapture(captureId); setDeleteConfirmCaptureId(""); await refreshRetainedCaptures(); }
+    catch (error) { setCapturesMessage(error instanceof Error ? error.message : "Unable to delete retained capture."); }
+  };
+
+  const reanalyzeRetainedCapture = async (captureId: string) => {
+    setCaptureAnalyzingId(captureId); setCapturesMessage("");
+    try { const payload = await analyzeRetainedCapture(captureId, normalizeProfile(loadActiveProfile())); handleReportLoaded(normalizeElevadrReport(payload).report); }
+    catch (error) { setCapturesMessage(error instanceof Error ? error.message : "Unable to analyze retained capture."); }
+    finally { setCaptureAnalyzingId(""); }
+  };
+
+  const refreshAuditEvents = async () => {
+    if (!authState?.user.authenticated) return;
+    setAuditMessage("");
+    try { setAuditEvents(await listAuditEvents(authState.user.role === "admin" ? "all" : "mine", 50)); }
+    catch (error) { setAuditMessage(error instanceof Error ? error.message : "Unable to load activity."); }
+  };
+
+
+  const refreshStorageSummary = async () => {
+    if (!authState?.user.authenticated) return;
+    setStorageMessage("");
+    try { setStorageSummary(await getStorageSummary(authState.user.role === "admin" ? "all" : "mine")); }
+    catch (error) { setStorageMessage(error instanceof Error ? error.message : "Unable to load storage usage."); }
+  };
+
+  const runStorageCleanup = async (removeOrphans:boolean) => {
+    setStorageMessage("");
+    try { const result=await cleanupStorage(removeOrphans); setStorageMessage(`Cleanup complete: ${result.expired.expiredCaptures} expired capture(s), ${result.orphans.orphanFiles} orphan file(s) removed.`); await refreshStorageSummary(); await refreshRetainedCaptures(); }
+    catch (error) { setStorageMessage(error instanceof Error ? error.message : "Unable to clean storage."); }
+  };
+
+  const refreshPlatformUsers = async () => {
+    if (authState?.user.role !== "admin") return;
+    try { setPlatformUsers(await listUsers()); } catch (error) { setAccountMessage(error instanceof Error ? error.message : "Unable to load users."); }
+  };
+
+  const submitPasswordChange = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault(); setAccountMessage("");
+    try { await changeOwnPassword(currentPassword, newPassword); setCurrentPassword(""); setNewPassword(""); setAccountMessage("Password changed. Sign in again with your new password."); setTimeout(() => void handleSignOut(), 700); }
+    catch (error) { setAccountMessage(error instanceof Error ? error.message : "Unable to change password."); }
+  };
+
+  const submitNewUser = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault(); setAccountMessage("");
+    try { await createUser({username:newUsername,password:newUserPassword,role:newUserRole}); setNewUsername(""); setNewUserPassword(""); await refreshPlatformUsers(); setAccountMessage("User created."); }
+    catch (error) { setAccountMessage(error instanceof Error ? error.message : "Unable to create user."); }
+  };
+
+  const changeUser = async (user: PlatformUser, changes:{role?:string;disabled?:boolean}) => {
+    setAccountMessage("");
+    try { const updated=await updateUser(user.id,changes); setPlatformUsers((rows)=>rows.map((row)=>row.id===updated.id?updated:row)); }
+    catch (error) { setAccountMessage(error instanceof Error ? error.message : "Unable to update user."); }
+  };
+
+  const dashboardStorageBytes = useMemo(() => retainedCaptures.reduce((sum,item)=>sum+item.sizeBytes,0), [retainedCaptures]);
+
+  const visibleSavedReports = useMemo(() => {
+    const query = savedReportQuery.trim().toLowerCase();
+    const rows = savedReports.filter((item) => !query || item.title.toLowerCase().includes(query) || item.sourceFilename.toLowerCase().includes(query));
+    return [...rows].sort((a, b) => {
+      if (savedReportSort === "oldest") return Date.parse(a.createdAt) - Date.parse(b.createdAt);
+      if (savedReportSort === "title") return a.title.localeCompare(b.title);
+      if (savedReportSort === "findings-desc") return b.findingCount - a.findingCount;
+      if (savedReportSort === "findings-asc") return a.findingCount - b.findingCount;
+      return Date.parse(b.createdAt) - Date.parse(a.createdAt);
+    });
+  }, [savedReports, savedReportQuery, savedReportSort]);
+
+  const openSavedReport = async (reportId: string) => {
+    setSavedReportsMessage("");
+    try {
+      const payload = await loadSavedReport(reportId);
+      handleReportLoaded(normalizeElevadrReport(payload).report);
+    } catch (error) { setSavedReportsMessage(error instanceof Error ? error.message : "Unable to open saved report."); }
+  };
+
+  const saveReportRename = async (reportId: string) => {
+    try {
+      const updated = await renameSavedReport(reportId, renameDraft);
+      setSavedReports((rows) => rows.map((item) => item.reportId === reportId ? updated : item));
+      setRenamingReportId(""); setRenameDraft("");
+    } catch (error) { setSavedReportsMessage(error instanceof Error ? error.message : "Unable to rename saved report."); }
+  };
+
+  const removeSavedReport = async (reportId: string) => {
+    if (deleteConfirmReportId !== reportId) { setDeleteConfirmReportId(reportId); return; }
+    try { await deleteSavedReport(reportId); setDeleteConfirmReportId(""); await refreshSavedReports(); }
+    catch (error) { setSavedReportsMessage(error instanceof Error ? error.message : "Unable to delete saved report."); }
+  };
+
+  const toggleCompareReport = (reportId: string) => {
+    setReportComparison(null);
+    setCompareReportIds((current) => current.includes(reportId) ? current.filter((id) => id !== reportId) : current.length < 2 ? [...current, reportId] : [current[1], reportId]);
+  };
+
+  const compareSelectedReports = async () => {
+    if (compareReportIds.length !== 2) return;
+    setComparisonLoading(true); setCapturesMessage("");
+    try {
+      const [left, right] = await Promise.all(compareReportIds.map((id) => loadSavedReport(id)));
+      setReportComparison(compareReports(left, right));
+    } catch (error) { setCapturesMessage(error instanceof Error ? error.message : "Unable to compare saved reports."); }
+    finally { setComparisonLoading(false); }
+  };
+
+  const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!welcomeUsername.trim() || !welcomePassword) {
       setWelcomeAuthMessage("Enter a username and password to continue.");
       return;
     }
-    setMockSignedIn(true);
-    setWelcomeAuthMessage("Signed in for UI demonstration only. No authentication request was sent.");
+    setAuthSubmitting(true);
+    setWelcomeAuthMessage("");
+    try {
+      const state = await login(welcomeUsername.trim(), welcomePassword);
+      setAuthState(state);
+      setWelcomePassword("");
+    } catch (error) {
+      setWelcomeAuthMessage(error instanceof Error ? error.message : "Unable to sign in.");
+    } finally {
+      setAuthSubmitting(false);
+    }
   };
 
-  const handleMockSignOut = () => {
-    setMockSignedIn(false);
+  const handleSignOut = async () => {
+    await logout();
+    setAuthState((current) => current ? { ...current, user: { id: "", username: "", authenticated: false, role: "anonymous" } } : current);
+    setReport(null);
     setWelcomePassword("");
     setWelcomeAuthMessage("");
-    setMockLibraryMessage("");
   };
+
+  useEffect(() => {
+    let active = true;
+    fetchAuthState()
+      .then((state) => { if (active) setAuthState(state); })
+      .catch((error) => { if (active) setWelcomeAuthMessage(error instanceof Error ? error.message : "Unable to determine authentication status."); })
+      .finally(() => { if (active) setAuthLoading(false); });
+    const onExpired = () => {
+      setAuthState((current) => current ? { ...current, user: { id: "", username: "", authenticated: false, role: "anonymous" } } : current);
+      setReport(null);
+      setWelcomeAuthMessage("Your session expired. Sign in again to continue.");
+    };
+    window.addEventListener(AUTH_EXPIRED_EVENT, onExpired);
+    return () => { active = false; window.removeEventListener(AUTH_EXPIRED_EVENT, onExpired); };
+  }, []);
+
+  useEffect(() => {
+    if (authState?.authEnabled && authState.user.authenticated && !report) { void refreshSavedReports(); void refreshRetainedCaptures(); void refreshStorageSummary(); if (authState.user.role === "admin") void refreshPlatformUsers(); }
+    if (!authState?.user.authenticated) { setSavedReports([]); setRetainedCaptures([]); setPlatformUsers([]); }
+  }, [authState?.authEnabled, authState?.user.authenticated, report]);
+
+  const authenticationRequired = authState?.authEnabled === true && authState.user.authenticated !== true;
 
   const returnToWelcome = () => {
     if (!report) return;
@@ -846,8 +1054,11 @@ function App() {
               <span>{allPanelsExpanded ? "Collapse" : "Expand"}</span>
             </button>
           )}
-          <button id="report-modules-action" type="button" className="top-action-button" onClick={() => setDetectionModulesOpen(true)}><Icon name="shield" /><span>Modules</span></button>
-          <button id="report-context-action" type="button" className="top-action-button" onClick={() => setDetectionConfigOpen(true)}><Icon name="settings" /><span>Context</span></button>
+          {authState?.user.authenticated && <>
+            <button id="report-modules-action" type="button" className="top-action-button" disabled={!canWriteAnalysis} title={!canWriteAnalysis ? "Read-only accounts cannot change detection modules." : undefined} onClick={() => setDetectionModulesOpen(true)}><Icon name="shield" /><span>Modules</span></button>
+            <button id="report-context-action" type="button" className="top-action-button" disabled={!canWriteAnalysis} title={!canWriteAnalysis ? "Read-only accounts cannot change Analysis Context." : undefined} onClick={() => setDetectionConfigOpen(true)}><Icon name="settings" /><span>Context</span></button>
+          </>}
+          {authState?.authEnabled && authState.user.authenticated && <button type="button" className="top-action-button auth-user-action" onClick={handleSignOut} title="Sign out"><Icon name="user" /><span>{authState.user.username} ({authState.user.role}) - Sign Out</span></button>}
           <button type="button" className="top-action-button" onClick={() => setHelpOpen(true)}><Icon name="help" /><span>Help</span></button>
         </div>
       </header>
@@ -1099,75 +1310,78 @@ function App() {
             </div>
 
             <div className="welcome-primary-actions">
-              <UploadForm
-                onReportLoaded={handleReportLoaded}
-                report={report}
-                isAnalyzing={isAnalyzing}
-                setIsAnalyzing={setIsAnalyzing}
-                inputId="welcome-file-input"
-                onOpenDetectionContext={() => setDetectionConfigOpen(true)}
-                onOpenDetectionModules={() => setDetectionModulesOpen(true)}
-                profileRevision={detectionProfileRevision}
-                refreshRequestRevision={reportRefreshRequestRevision}
-                onReanalysisStatus={handleReportReanalysisStatus}
-              />
-
-              <section className="welcome-account-panel" aria-labelledby="welcome-account-title">
-                <div className="welcome-account-heading">
-                  <div>
-                    <h2 id="welcome-account-title">Saved Reports &amp; Captures</h2>
-                    <p>Sign in to access previously uploaded files. Authentication and storage are mocked in this frontend build.</p>
-                  </div>
-                  {mockSignedIn && (
-                    <button type="button" className="welcome-secondary-button" onClick={handleMockSignOut}>Sign out</button>
-                  )}
-                </div>
-
-                {!mockSignedIn ? (
-                  <form className="welcome-login-form" onSubmit={handleMockSignIn}>
-                    <label>
-                      <span>Username</span>
-                      <input
-                        type="text"
-                        value={welcomeUsername}
-                        onChange={(event) => setWelcomeUsername(event.target.value)}
-                        autoComplete="username"
-                      />
-                    </label>
-                    <label>
-                      <span>Password</span>
-                      <input
-                        type="password"
-                        value={welcomePassword}
-                        onChange={(event) => setWelcomePassword(event.target.value)}
-                        autoComplete="current-password"
-                      />
-                    </label>
-                    <button type="submit" className="welcome-signin-button">Sign in</button>
+              {authLoading ? (
+                <section className="welcome-account-panel auth-login-gate" aria-live="polite"><h2>Checking authentication…</h2><p>Connecting to the eleVADR backend.</p></section>
+              ) : authenticationRequired ? (
+                <section className="welcome-account-panel auth-login-gate" aria-labelledby="welcome-account-title">
+                  <div className="welcome-account-heading"><div><h2 id="welcome-account-title">Sign in to eleVADR</h2><p>Use your eleVADR account to access analysis features.</p></div></div>
+                  <form className="welcome-login-form" onSubmit={handleSignIn}>
+                    <label><span>Username</span><input type="text" value={welcomeUsername} onChange={(event) => setWelcomeUsername(event.target.value)} autoComplete="username" autoFocus /></label>
+                    <label><span>Password</span><input type="password" value={welcomePassword} onChange={(event) => setWelcomePassword(event.target.value)} autoComplete="current-password" /></label>
+                    <button type="submit" className="welcome-signin-button" disabled={authSubmitting}>{authSubmitting ? "Signing in…" : "Sign in"}</button>
+                    {welcomeAuthMessage && <p className="welcome-auth-message" role="alert">{welcomeAuthMessage}</p>}
                   </form>
-                ) : (
-                  <div className="welcome-library" aria-label="Previously uploaded files">
-                    {mockPreviousUploads.map((file) => (
-                      <div className="welcome-library-row" key={file.name}>
-                        <div>
-                          <strong>{file.name}</strong>
-                          <span>{file.kind} · {file.date}</span>
-                        </div>
-                        <button
-                          type="button"
-                          className="welcome-secondary-button"
-                          onClick={() => setMockLibraryMessage(`${file.name} is a mock library entry. Backend storage support is not connected yet.`)}
-                        >
-                          Open
-                        </button>
+                </section>
+              ) : (
+                <>
+                  {authState?.authEnabled && authState.user.authenticated && <>
+                    <nav className="platform-workspace-nav" aria-label="Platform workspace">
+                      {([
+                        ["dashboard", "Dashboard"], ["reports", "Reports"], ["pcaps", "PCAPs"], ["activity", authState.user.role === "admin" ? "Audit" : "Activity"], ["storage", "Storage"], ["account", authState.user.role === "admin" ? "Account & Users" : "Account"],
+                      ] as const).map(([id,label]) => <button key={id} type="button" className={platformView === id ? "is-active" : ""} aria-current={platformView === id ? "page" : undefined} onClick={() => setPlatformView(id)}>{label}</button>)}
+                    </nav>
+                    {platformView === "dashboard" && <section className="platform-workspace-dashboard" aria-labelledby="platform-dashboard-title">
+                      <div className="platform-workspace-heading"><div><h2 id="platform-dashboard-title">Dashboard</h2><p>Start an analysis or jump back into your recent eleVADR work.</p></div></div>
+                      <div className="platform-dashboard-summary" aria-label="Account dashboard summary">
+                        <div><span>Saved reports</span><strong>{savedReports.length}</strong></div><div><span>Retained PCAPs</span><strong>{retainedCaptures.length}</strong></div><div><span>Retained capture storage</span><strong>{(dashboardStorageBytes/(1024*1024)).toFixed(1)} MB</strong></div><div><span>Account</span><strong>{authState.user.username}</strong><small>{authState.user.role}</small></div>
                       </div>
-                    ))}
-                  </div>
-                )}
-
-                {welcomeAuthMessage && <p className="welcome-inline-status" role="status">{welcomeAuthMessage}</p>}
-                {mockLibraryMessage && <p className="welcome-inline-status" role="status">{mockLibraryMessage}</p>}
-              </section>
+                    </section>}
+                  </>}
+                  {(!authState?.authEnabled || !authState.user.authenticated || platformView === "dashboard") && (canWriteAnalysis ? <UploadForm onReportLoaded={handleReportLoaded} report={report} isAnalyzing={isAnalyzing} setIsAnalyzing={setIsAnalyzing} inputId="welcome-file-input" onOpenDetectionContext={() => setDetectionConfigOpen(true)} onOpenDetectionModules={() => setDetectionModulesOpen(true)} profileRevision={detectionProfileRevision} refreshRequestRevision={reportRefreshRequestRevision} onReanalysisStatus={handleReportReanalysisStatus} /> : <section className="welcome-account-panel read-only-notice" aria-label="Read-only access"><h2>Read-only access</h2><p>You can open saved reports and review retained PCAP metadata. Upload, analysis, re-analysis, Context changes, and destructive actions are unavailable for this account.</p></section>)}
+                  {authState?.authEnabled && authState.user.authenticated && platformView === "reports" && <section className="welcome-account-panel saved-reports-panel platform-workspace-view" aria-labelledby="welcome-account-title">
+                    <div className="welcome-account-heading"><div><h2 id="welcome-account-title">Saved Reports</h2><p><strong>{authState.user.username}</strong> · {authState.user.role}. Completed PCAP analyses are saved automatically.</p></div><div className="saved-report-actions"><button type="button" className="welcome-secondary-button" onClick={() => void refreshSavedReports()}>Refresh</button></div></div>
+                    {savedReports.length > 0 && <div className="saved-report-library-tools">
+                      <label><span>Search</span><input type="search" placeholder="Report or PCAP name…" value={savedReportQuery} onChange={(event) => setSavedReportQuery(event.target.value)} /></label>
+                      <label><span>Sort</span><select value={savedReportSort} onChange={(event) => setSavedReportSort(event.target.value)}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="title">Title</option><option value="findings-desc">Findings: high to low</option><option value="findings-asc">Findings: low to high</option></select></label>
+                      <span className="saved-report-count">{visibleSavedReports.length} of {savedReports.length} reports</span>
+                    </div>}
+                    {savedReportsLoading ? <p>Loading saved reports…</p> : savedReports.length ? (visibleSavedReports.length ? <div className="saved-report-list">{visibleSavedReports.map((item) => <article className="saved-report-row" key={item.reportId}>
+                      <div className={`saved-report-details ${renamingReportId === item.reportId ? "" : "saved-report-open-target"}`} role={renamingReportId === item.reportId ? undefined : "button"} tabIndex={renamingReportId === item.reportId ? undefined : 0} aria-label={renamingReportId === item.reportId ? undefined : `Open saved report ${item.title}`} onClick={renamingReportId === item.reportId ? undefined : () => void openSavedReport(item.reportId)} onKeyDown={renamingReportId === item.reportId ? undefined : (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); void openSavedReport(item.reportId); } }}>
+                        {renamingReportId === item.reportId ? <div className="saved-report-rename"><input aria-label="Report title" maxLength={160} value={renameDraft} onChange={(event) => setRenameDraft(event.target.value)} /><button type="button" className="saved-report-icon-button" onClick={() => void saveReportRename(item.reportId)} aria-label={`Save renamed report ${item.title}`} title="Save rename"><Icon name="check" /></button><button type="button" className="saved-report-icon-button" onClick={() => { setRenamingReportId(""); setRenameDraft(""); }} aria-label="Cancel rename" title="Cancel rename"><Icon name="close" /></button></div> : <strong>{item.title}</strong>}
+                        <span>Source: {item.sourceFilename || "Unknown PCAP"}</span><span>Saved {new Date(item.createdAt).toLocaleString()} · {item.findingCount} findings · {item.deviceCount} devices · ID {item.reportId.slice(0, 12)}</span>
+                      </div>
+                      {canWriteAnalysis && <div className="saved-report-actions saved-report-icon-actions"><button type="button" className="saved-report-icon-button" onClick={() => { setRenamingReportId(item.reportId); setRenameDraft(item.title); setDeleteConfirmReportId(""); }} aria-label={`Rename ${item.title}`} title="Rename"><Icon name="edit" /></button><button type="button" className={`saved-report-icon-button saved-report-delete ${deleteConfirmReportId === item.reportId ? "is-confirming" : ""}`} onClick={() => void removeSavedReport(item.reportId)} aria-label={deleteConfirmReportId === item.reportId ? `Confirm delete ${item.title}` : `Delete ${item.title}`} title={deleteConfirmReportId === item.reportId ? "Confirm delete" : "Delete"}><Icon name={deleteConfirmReportId === item.reportId ? "check" : "trash"} /></button>{deleteConfirmReportId === item.reportId && <button type="button" className="saved-report-icon-button" onClick={() => setDeleteConfirmReportId("")} aria-label="Cancel delete" title="Cancel delete"><Icon name="close" /></button>}</div>}
+                    </article>)}</div> : <p className="saved-report-empty">No saved reports match your search.</p>) : <p className="saved-report-empty">No saved reports yet. Analyze a PCAP to create your first saved report.</p>}
+                    {savedReportsMessage && <p className="welcome-auth-message" role="alert">{savedReportsMessage}</p>}
+                  </section>}
+                  {authState?.authEnabled && authState.user.authenticated && platformView === "pcaps" && <section className="welcome-account-panel saved-reports-panel platform-workspace-view" aria-labelledby="retained-captures-title">
+                    <div className="welcome-account-heading"><div><h2 id="retained-captures-title">Retained PCAPs</h2><p>Uploaded captures are retained for your account. Re-analysis uses the currently active Analysis Context and does not require another upload.</p></div><button type="button" className="welcome-secondary-button" onClick={() => void refreshRetainedCaptures()}>Refresh</button></div>
+                    {capturesLoading ? <p>Loading retained captures…</p> : retainedCaptures.length ? <div className="saved-report-list">{retainedCaptures.map((item) => <article className="saved-report-row" key={item.captureId}>
+                      <div className="saved-report-details"><strong>{item.filename}</strong><span>Retained {new Date(item.createdAt).toLocaleString()} · {(item.sizeBytes / (1024*1024)).toFixed(1)} MB · SHA-256 {item.sha256.slice(0,12)}…{item.expiresAt ? ` · Expires ${new Date(item.expiresAt).toLocaleString()}` : " · No automatic expiry"}</span><span>{savedReports.filter((reportItem) => reportItem.captureId === item.captureId).length} saved analyses</span></div>
+                      <div className="saved-report-actions saved-report-icon-actions"><button type="button" className="saved-report-icon-button" onClick={() => { setHistoryCaptureId(historyCaptureId === item.captureId ? "" : item.captureId); setCompareReportIds([]); setReportComparison(null); }} aria-label={historyCaptureId === item.captureId ? `Hide analysis history for ${item.filename}` : `Show analysis history for ${item.filename}`} title={historyCaptureId === item.captureId ? "Hide analysis history" : "Analysis history"}><Icon name="history" /></button>{canWriteAnalysis ? <><button type="button" className="saved-report-icon-button" disabled={Boolean(captureAnalyzingId)} onClick={() => void reanalyzeRetainedCapture(item.captureId)} aria-label={captureAnalyzingId === item.captureId ? `Analyzing ${item.filename}` : `Analyze ${item.filename} again`} title={captureAnalyzingId === item.captureId ? "Analyzing…" : "Analyze again"}><Icon name="refresh" /></button><button type="button" className={`saved-report-icon-button saved-report-delete ${deleteConfirmCaptureId === item.captureId ? "is-confirming" : ""}`} onClick={() => void removeRetainedCapture(item.captureId)} aria-label={deleteConfirmCaptureId === item.captureId ? `Confirm delete PCAP ${item.filename}` : `Delete PCAP ${item.filename}`} title={deleteConfirmCaptureId === item.captureId ? "Confirm delete PCAP" : "Delete PCAP"}><Icon name={deleteConfirmCaptureId === item.captureId ? "check" : "trash"} /></button>{deleteConfirmCaptureId === item.captureId && <button type="button" className="saved-report-icon-button" onClick={() => setDeleteConfirmCaptureId("")} aria-label="Cancel PCAP delete" title="Cancel delete"><Icon name="close" /></button>}</> : <span className="saved-report-count">Metadata only</span>}</div>
+                      {historyCaptureId === item.captureId && <div className="capture-analysis-history"><h3>Analysis history</h3>{savedReports.filter((r) => r.captureId === item.captureId).length ? <>{savedReports.filter((r) => r.captureId === item.captureId).map((r) => <div className="capture-history-row" key={r.reportId}><label><input type="checkbox" checked={compareReportIds.includes(r.reportId)} onChange={() => toggleCompareReport(r.reportId)} /> Compare</label><div><strong>{r.title}</strong><span>{new Date(r.createdAt).toLocaleString()} · {r.findingCount} findings · {r.deviceCount} devices</span></div><button type="button" className="welcome-secondary-button" onClick={() => void openSavedReport(r.reportId)}>Open</button></div>)}<div className="capture-history-compare"><button type="button" className="welcome-secondary-button" disabled={compareReportIds.length !== 2 || comparisonLoading} onClick={() => void compareSelectedReports()}>{comparisonLoading ? "Comparing…" : "Compare selected reports"}</button><span>Select exactly two analyses from this capture.</span></div>{reportComparison && <div className="report-comparison" aria-live="polite"><h3>Report comparison</h3><div className="comparison-grid"><div><span>Findings</span><strong>+{reportComparison.findings.added} / -{reportComparison.findings.removed} / ~{reportComparison.findings.changed}</strong></div><div><span>Assets</span><strong>+{reportComparison.assets.added} / -{reportComparison.assets.removed} / ~{reportComparison.assets.changed}</strong></div><div><span>Services</span><strong>+{reportComparison.services.added} / -{reportComparison.services.removed} / ~{reportComparison.services.changed}</strong></div><div><span>Connections</span><strong>+{reportComparison.connections.added} / -{reportComparison.connections.removed} / ~{reportComparison.connections.changed}</strong></div></div><details open><summary>Finding changes ({reportComparison.findingDeltas.length})</summary>{reportComparison.findingDeltas.length ? <div className="comparison-detail-list">{reportComparison.findingDeltas.map((delta) => <div className={`comparison-delta comparison-${delta.change}`} key={`${delta.change}:${delta.key}`}><strong>{delta.change === "new" ? "New" : delta.change === "resolved" ? "Resolved" : "Changed"}: {delta.title}</strong>{delta.moduleId && <span>Module: {delta.moduleId}</span>}{delta.change === "changed" && <span>Severity: {delta.severityBefore || "—"} → {delta.severityAfter || "—"} · Confidence: {delta.confidenceBefore || "—"} → {delta.confidenceAfter || "—"}</span>}{delta.change === "new" && <span>Severity: {delta.severityAfter || "—"} · Confidence: {delta.confidenceAfter || "—"}</span>}{delta.change === "resolved" && <span>Previous severity: {delta.severityBefore || "—"} · Confidence: {delta.confidenceBefore || "—"}</span>}</div>)}</div> : <p>No finding-level changes detected.</p>}</details><details><summary>Analysis Context changes ({reportComparison.contextDeltas.length})</summary>{reportComparison.contextDeltas.length ? <div className="comparison-diff-table">{reportComparison.contextDeltas.map((delta) => <div key={delta.path}><code>{delta.path}</code><span>{formatComparisonValue(delta.before)}</span><span aria-hidden="true">→</span><span>{formatComparisonValue(delta.after)}</span></div>)}</div> : <p>None detected.</p>}</details><details><summary>Module configuration changes ({reportComparison.moduleDeltas.length})</summary>{reportComparison.moduleDeltas.length ? <div className="comparison-diff-table">{reportComparison.moduleDeltas.map((delta) => <div key={delta.path}><code>{delta.path}</code><span>{formatComparisonValue(delta.before)}</span><span aria-hidden="true">→</span><span>{formatComparisonValue(delta.after)}</span></div>)}</div> : <p>None detected.</p>}</details><details><summary>Runtime changes ({reportComparison.runtimeChanges.length})</summary><p>{reportComparison.runtimeChanges.length ? reportComparison.runtimeChanges.join("; ") : "None detected."}</p></details></div>}</> : <p>No saved analyses are linked to this retained PCAP yet.</p>}</div>}
+                    </article>)}</div> : <p className="saved-report-empty">No retained PCAPs yet. Upload a capture to add it to your history.</p>}
+                    {capturesMessage && <p className="welcome-auth-message" role="alert">{capturesMessage}</p>}
+                  </section>}
+                  {authState?.authEnabled && authState.user.authenticated && platformView === "storage" && <section className="welcome-account-panel platform-storage-panel platform-workspace-view" aria-labelledby="storage-title">
+                    <div className="welcome-account-heading"><div><h2 id="storage-title">Storage & Retention</h2><p>Reports are durable. Retained PCAPs follow the configured retention and per-user storage policy.</p></div><button type="button" className="welcome-secondary-button" onClick={() => void refreshStorageSummary()}>Refresh</button></div>
+                    {storageSummary ? <div className="platform-dashboard-summary"><div><span>Capture storage</span><strong>{((storageSummary.captureBytes||0)/(1024*1024)).toFixed(1)} MB</strong></div><div><span>Report storage</span><strong>{((storageSummary.reportBytes||0)/(1024*1024)).toFixed(1)} MB</strong></div><div><span>PCAP retention</span><strong>{storageSummary.retentionDays ? `${storageSummary.retentionDays} days` : "Disabled"}</strong></div><div><span>PCAP limit</span><strong>{storageSummary.limitBytes ? `${(storageSummary.limitBytes/(1024*1024*1024)).toFixed(1)} GB` : "Unlimited"}</strong></div></div> : <p className="saved-report-empty">Storage usage has not been loaded yet.</p>}
+                    {authState.user.role === "admin" && storageSummary?.scope === "all" && <><p>Orphan capture files detected: <strong>{storageSummary.orphanFiles || 0}</strong></p>{storageSummary.users?.length ? <div className="platform-user-list">{storageSummary.users.map((u)=><article className="platform-user-row" key={u.ownerId}><div><strong>{u.username || u.ownerId}</strong><span>{u.captureCount} PCAP(s) · {u.reportCount} report(s)</span></div><div><strong>{(u.totalBytes/(1024*1024)).toFixed(1)} MB</strong></div></article>)}</div> : null}<div className="saved-report-actions"><button type="button" className="welcome-secondary-button" onClick={() => void runStorageCleanup(false)}>Clean expired PCAPs</button><button type="button" className="welcome-secondary-button" onClick={() => void runStorageCleanup(true)}>Clean expired + orphan files</button></div></>}
+                    {storageMessage && <p className="welcome-auth-message" role="status">{storageMessage}</p>}
+                  </section>}
+                  {authState?.authEnabled && authState.user.authenticated && platformView === "activity" && <section className="welcome-account-panel platform-activity-panel platform-workspace-view" aria-labelledby="recent-activity-title">
+                    <div className="welcome-account-heading"><div><h2 id="recent-activity-title">{authState.user.role === "admin" ? "Audit & Activity" : "Recent Activity"}</h2><p>{authState.user.role === "admin" ? "Recent platform activity across local accounts." : "Recent security and data activity for your account."}</p></div><button type="button" className="welcome-secondary-button" onClick={() => void refreshAuditEvents()}>Refresh</button></div>
+                    {auditEvents.length ? <div className="platform-activity-list">{auditEvents.slice(0,20).map((event)=><article className="platform-activity-row" key={event.eventId}><div><strong>{event.action.replaceAll(".", " · ")}</strong><span>{event.actorUsername || "System"}{event.targetType ? ` · ${event.targetType}` : ""}{event.targetId ? ` · ${event.targetId.slice(0,12)}` : ""}</span></div><div><span className={`activity-result ${event.result}`}>{event.result}</span><time>{event.createdAt ? new Date(event.createdAt).toLocaleString() : ""}</time></div></article>)}</div> : <p className="saved-report-empty">No activity has been loaded yet. Select Refresh to view recent events.</p>}
+                    {auditMessage && <p className="welcome-auth-message" role="status">{auditMessage}</p>}
+                  </section>}
+                  {authState?.authEnabled && authState.user.authenticated && platformView === "account" && <section className="welcome-account-panel platform-account-panel platform-workspace-view" aria-labelledby="account-management-title">
+                    <div className="welcome-account-heading"><div><h2 id="account-management-title">Account</h2><p>Manage your password{authState.user.role === "admin" ? " and local eleVADR users" : ""}.</p></div></div>
+                    <form className="platform-account-form" onSubmit={submitPasswordChange}><h3>Change password</h3><label><span>Current password</span><input type="password" autoComplete="current-password" value={currentPassword} onChange={(e)=>setCurrentPassword(e.target.value)} required /></label><label><span>New password</span><input type="password" autoComplete="new-password" minLength={8} value={newPassword} onChange={(e)=>setNewPassword(e.target.value)} required /></label><button className="welcome-secondary-button" type="submit">Change password</button></form>
+                    {authState.user.role === "admin" && <div className="platform-admin-users"><form className="platform-account-form" onSubmit={submitNewUser}><h3>Create user</h3><label><span>Username</span><input value={newUsername} onChange={(e)=>setNewUsername(e.target.value)} required /></label><label><span>Temporary password</span><input type="password" minLength={8} value={newUserPassword} onChange={(e)=>setNewUserPassword(e.target.value)} required /></label><label><span>Role</span><select value={newUserRole} onChange={(e)=>setNewUserRole(e.target.value)}><option value="analyst">Analyst</option><option value="read_only">Read only</option><option value="admin">Admin</option></select></label><button className="welcome-secondary-button" type="submit">Create user</button></form><div><h3>Users</h3><div className="platform-user-list">{platformUsers.map((user)=><article key={user.id} className="platform-user-row"><div><strong>{user.username}</strong><span>{user.disabled ? "Disabled" : "Active"}{user.lastLogin ? ` · Last login ${new Date(user.lastLogin).toLocaleString()}` : ""}</span></div><div className="saved-report-actions"><select aria-label={`Role for ${user.username}`} value={user.role} onChange={(e)=>void changeUser(user,{role:e.target.value})}><option value="admin">Admin</option><option value="analyst">Analyst</option><option value="read_only">Read only</option></select><button type="button" className="welcome-secondary-button" disabled={user.id===authState.user.id} onClick={()=>void changeUser(user,{disabled:!user.disabled})}>{user.disabled ? "Enable" : "Disable"}</button></div></article>)}</div></div></div>}
+                    {accountMessage && <p className="welcome-auth-message" role="status">{accountMessage}</p>}
+                  </section>}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -1178,7 +1392,7 @@ function App() {
             <header className="welcome-instructions-header">
               <div>
                 <h2 id="welcome-instructions-title">How to Use eleVADR</h2>
-                <p>Open a report or packet capture, or sign in to the mock saved-file library.</p>
+                <p>Open a report or packet capture, or sign in to your eleVADR workspace.</p>
               </div>
               <button type="button" className="welcome-instructions-close" onClick={() => setWelcomeInstructionsOpen(false)} aria-label="Close instructions">×</button>
             </header>
@@ -1189,7 +1403,7 @@ function App() {
               </section>
               <section>
                 <h3>Sign in</h3>
-                <p>The username and password fields are currently a frontend mockup. Signing in reveals example previously uploaded files; no backend authentication or storage is connected yet.</p>
+                <p>Sign in with your eleVADR account. Your saved reports and retained PCAPs are available from the signed-in dashboard.</p>
               </section>
               <section>
                 <h3>Review the report</h3>
@@ -1220,7 +1434,7 @@ function App() {
         onExportFull={handleDownloadFullJson}
       />
       <DetectionModuleSelector
-        open={detectionModulesOpen}
+        open={detectionModulesOpen && canWriteAnalysis}
         onClose={(changed) => {
           setDetectionModulesOpen(false);
           if (changed) markReportConfigurationChanged("Modules");
@@ -1231,7 +1445,7 @@ function App() {
         }}
       />
       <DetectionConfiguration
-        open={detectionConfigOpen}
+        open={detectionConfigOpen && canWriteAnalysis}
         onClose={(changed) => {
           setDetectionConfigOpen(false);
           if (changed) markReportConfigurationChanged("Detection Context");

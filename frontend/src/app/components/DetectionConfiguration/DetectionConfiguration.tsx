@@ -1,5 +1,7 @@
 import React, { ChangeEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import "./DetectionConfiguration.css";
+import { fetchAuthState } from "../../services/authService";
+import { listRemoteContextProfiles, saveRemoteContextProfile } from "../../services/contextProfileService";
 import { MODULE_COUNT } from "./moduleCatalog";
 import {
   exportProfile,
@@ -199,13 +201,30 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
 
   useEffect(() => {
     if (!open) return;
+    let cancelled = false;
+    const localProfiles = listProfiles();
     const active = loadActiveProfile();
-    setProfiles(listProfiles());
-    setProfile(active);
-    setClean(signature(active));
-    setModal(null);
-    setStatus("");
-    setSavedDuringSession(false);
+    setProfiles(localProfiles); setProfile(active); setClean(signature(active)); setModal(null); setStatus(""); setSavedDuringSession(false);
+    void (async () => {
+      try {
+        const auth = await fetchAuthState();
+        if (!auth.authEnabled || !auth.user.authenticated) return;
+        // Safe migration/merge: never overwrite a newer account copy with stale browser-local data.
+        const existingRemote = await listRemoteContextProfiles();
+        const remoteById = new Map(existingRemote.map((x) => [x.id, x]));
+        for (const local of localProfiles) {
+          const remoteCopy = remoteById.get(local.id);
+          if (!remoteCopy || local.updatedAt > remoteCopy.updatedAt) await saveRemoteContextProfile(local);
+        }
+        const remote = await listRemoteContextProfiles();
+        if (cancelled || !remote.length) return;
+        setProfiles(remote);
+        const selected = remote.find((x) => x.id === active.id) || remote[0];
+        setProfile(selected); setClean(signature(selected));
+        setStatus("Analysis Context profiles are synced to your account.");
+      } catch (error) { if (!cancelled) setStatus(`Account profile sync unavailable: ${error instanceof Error ? error.message : String(error)}`); }
+    })();
+    return () => { cancelled = true; };
   }, [open]);
 
   const dirty = clean !== "" && signature(profile) !== clean;
@@ -347,7 +366,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
     return () => window.removeEventListener("keydown", handler);
   }, [open, modal, dirty]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const current = validateProfile(profile);
     const errs = current.filter((x) => x.severity === "error");
     if (errs.length) {
@@ -355,12 +374,17 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
       return;
     }
     const changedFromClean = signature(profile) !== clean;
-    const saved = saveProfile(profile);
+    let saved = saveProfile(profile);
+    let confirmation = "Profile saved locally.";
+    try {
+      const auth = await fetchAuthState();
+      if (auth.authEnabled && auth.user.authenticated) { saved = await saveRemoteContextProfile(saved); confirmation = "Profile saved to your eleVADR account."; }
+    } catch (error) { setStatus(`Profile saved locally; account sync failed: ${error instanceof Error ? error.message : String(error)}`); }
     if (changedFromClean) setSavedDuringSession(true);
     setProfile(saved);
-    setProfiles(listProfiles());
+    setProfiles(listProfiles().map((x) => x.id === saved.id ? saved : x));
     setClean(signature(saved));
-    setSaveConfirmation("Profile saved locally.");
+    setSaveConfirmation(confirmation);
     window.setTimeout(() => setSaveConfirmation(""), 1800);
   };
 
