@@ -17,6 +17,7 @@ import shlex
 import shutil
 import subprocess
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Sequence
@@ -147,6 +148,50 @@ def _run_checked(command: list[str], *, cwd: Path | None = None) -> None:
         raise RuntimeError(f"Zeek execution failed with exit code {completed.returncode}")
 
 
+
+def _run_zeek_with_activity(
+    command: list[str], *, output_path: Path, progress: ProgressCallback | None,
+    cwd: Path | None = None, runtime_label: str = "Zeek",
+    heartbeat_seconds: float = 3.0,
+) -> None:
+    """Report observed log activity without inventing packet-based completion percentages."""
+    started = time.monotonic()
+    # A file avoids pipe deadlocks for verbose Zeek executions.
+    with tempfile.TemporaryFile(mode="w+t", encoding="utf-8", errors="replace") as output:
+        try:
+            process = subprocess.Popen(command, cwd=cwd, stdout=output, stderr=subprocess.STDOUT, text=True)
+        except FileNotFoundError as exc:
+            raise RuntimeError(f"Zeek runtime command could not be started: {command[0]}") from exc
+        try:
+            while process.poll() is None:
+                elapsed = int(time.monotonic() - started)
+                logs = sorted(output_path.glob("*.log"))
+                nonempty = [(log.name, log.stat().st_size) for log in logs if log.is_file()]
+                bytes_written = sum(size for _, size in nonempty)
+                names = ", ".join(name for name, _ in nonempty[:5])
+                detail = (
+                    f"{runtime_label} | Elapsed {elapsed // 60}m {elapsed % 60:02d}s | "
+                    f"{len(nonempty)} logs, {bytes_written / (1024 * 1024):.1f} MiB written"
+                    + (f" | Logs: {names}" if names else " | Waiting for Zeek to flush logs")
+                )
+                _emit(progress, "zeek-running", None, "Zeek processing capture (still active)…", detail)
+                process.wait(timeout=heartbeat_seconds) if process.poll() is not None else time.sleep(heartbeat_seconds)
+        except BaseException:
+            if process.poll() is None:
+                process.terminate()
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
+            raise
+        if process.returncode != 0:
+            output.seek(0)
+            detail = output.read()[-4000:].strip() or f"exit code {process.returncode}"
+            raise RuntimeError(f"Zeek execution failed: {detail}")
+    _emit(progress, "zeek-running", None, "Zeek finished processing capture; preparing logs…", f"Elapsed {int(time.monotonic() - started)}s")
+
+
 def _docker_image_available(runtime: ZeekRuntime) -> bool:
     assert runtime.docker_image
     completed = subprocess.run(
@@ -232,9 +277,9 @@ def _runtime_policy_copy(output_path: Path) -> Path:
 def _run_native(runtime: ZeekRuntime, pcap_path: Path, output_path: Path, progress: ProgressCallback | None) -> None:
     policy_path = _runtime_policy_copy(output_path)
     _emit(progress, "zeek-running", None, "Analyzing PCAP with Zeek…", pcap_path.name)
-    _run_checked(
+    _run_zeek_with_activity(
         [*runtime.command, "-r", str(pcap_path), *PASSWORD_CAPTURE_OPTIONS, str(policy_path)],
-        cwd=output_path,
+        output_path=output_path, progress=progress, cwd=output_path, runtime_label=runtime.label,
     )
 
 
@@ -263,7 +308,7 @@ def _run_docker(runtime: ZeekRuntime, pcap_path: Path, output_path: Path, progre
     ]
     _emit(progress, "zeek-running", None, "Analyzing PCAP with Zeek…", f"Docker image: {runtime.docker_image}")
     try:
-        _run_checked(command)
+        _run_zeek_with_activity(command, output_path=output_path, progress=progress, runtime_label=runtime.label)
     except RuntimeError as exc:
         message = str(exc)
         if "docker daemon" in message.lower() or "cannot connect" in message.lower():

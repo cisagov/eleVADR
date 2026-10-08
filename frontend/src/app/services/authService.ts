@@ -107,6 +107,40 @@ export async function login(
   return await fetchAuthState();
 }
 
+/** Keep a single renewal request in flight across polling and API calls. */
+let renewalInFlight: Promise<boolean> | null = null;
+
+export function tokenExpiresWithin(seconds: number): boolean {
+  const token = getAccessToken();
+  if (!token) return false;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))) as { exp?: number };
+    return typeof payload.exp === "number" && payload.exp - Date.now() / 1000 < seconds;
+  } catch { return false; }
+}
+
+/** Renewal is allowed only for an active server-side PCAP workflow. */
+export function renewProcessingSession(): Promise<boolean> {
+  if (renewalInFlight) return renewalInFlight;
+  renewalInFlight = (async () => {
+    const token = getAccessToken();
+    if (!token) return false;
+    try {
+      const response = await fetch(authApiUrl("/auth/renew"), {
+        method: "POST", headers: { Authorization: `Bearer ${token}` }, cache: "no-store",
+      });
+      if (!response.ok) return false;
+      const payload = (await response.json()) as LoginResponse;
+      if (payload.access_token && getAccessToken() === token) {
+        storeAccessToken(payload.access_token);
+        return true;
+      }
+    } catch { /* transient connection errors must not sign the user out */ }
+    return false;
+  })().finally(() => { renewalInFlight = null; });
+  return renewalInFlight;
+}
+
 export async function logout(): Promise<void> {
   const token = getAccessToken();
   try {
@@ -123,13 +157,27 @@ export async function authenticatedFetch(
   input: RequestInfo | URL,
   init: RequestInit = {},
 ): Promise<Response> {
-  const token = getAccessToken();
-  const headers = new Headers(init.headers || undefined);
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  const response = await fetch(input, { ...init, headers });
+  // Proactively renew before the next request if a processing job permits it.
+  if (tokenExpiresWithin(15 * 60)) await renewProcessingSession();
+  let token = getAccessToken();
+  const request = (value: string | null) => {
+    const headers = new Headers(init.headers || undefined);
+    if (value) headers.set("Authorization", `Bearer ${value}`);
+    return fetch(input, { ...init, headers });
+  };
+  let response = await request(token);
   if (response.status === 401 && token) {
-    clearAccessToken();
-    window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+    // Another request may have renewed the token during this fetch.
+    if (getAccessToken() === token) await renewProcessingSession();
+    const updated = getAccessToken();
+    if (updated && updated !== token) {
+      response = await request(updated);
+      token = updated;
+    }
+    if (response.status === 401 && getAccessToken() === token) {
+      clearAccessToken();
+      window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+    }
   }
   return response;
 }

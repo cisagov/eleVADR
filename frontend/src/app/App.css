@@ -3986,9 +3986,7 @@ select:focus-visible {
   background: #1c3444;
 }
 :root[data-theme="dark"] .analysis-tree-children,
-:root[data-theme="dark"]
-  .analysis-capture-card.is-not-retained
-  .analysis-capture-main {
+:root[data-theme="dark"] .analysis-capture-card.is-not-retained .analysis-capture-main {
   background: #132633;
 }
 :root[data-theme="dark"] .analysis-tree-children::before,
@@ -4022,38 +4020,25 @@ select:focus-visible {
 }
 
 /* Administration navigation and storage maintenance */
-.platform-admin-tabs {
-  display: flex;
-  gap: 8px;
-  margin: 12px 0;
-  border-bottom: 1px solid var(--border-color, #cad8e2);
-  padding-bottom: 8px;
+.platform-admin-tabs { display:flex; gap:8px; margin:12px 0; border-bottom:1px solid var(--border-color, #cad8e2); padding-bottom:8px; }
+.platform-admin-tabs button { border:1px solid #b8cfdf; background:transparent; color:inherit; padding:9px 18px; cursor:pointer; }
+.platform-admin-tabs button.is-active { border-bottom:3px solid #14638b; font-weight:700; }
+.platform-storage-maintenance { margin-top:16px; border-top:1px solid #cbd9e3; padding-top:12px; }
+.platform-storage-maintenance h3 { font-size:1rem; margin:0 0 6px; }
+.platform-storage-maintenance button:disabled { opacity:.48; cursor:not-allowed; }
+.storage-scope-note { font-size:.8rem; opacity:.8; }
+
+/* Processing status sits immediately before the first visible action.
+   The actions column sizes to its contents, so hiding Search or report
+   controls automatically moves the status next to the new first action. */
+.titlebar { grid-template-columns: auto minmax(0, 1fr) auto; }
+.titlebar-center { justify-self: stretch; justify-content: flex-end; min-width: 0; }
+.titlebar-actions { min-width: 0; }
+@media (max-width: 760px) {
+  .titlebar { grid-template-columns: minmax(0, 1fr) minmax(0, auto) auto; }
+  .titlebar-center { display: flex; justify-content: flex-end; }
 }
-.platform-admin-tabs button {
-  border: 1px solid #b8cfdf;
-  background: transparent;
-  color: inherit;
-  padding: 9px 18px;
-  cursor: pointer;
-}
-.platform-admin-tabs button.is-active {
-  border-bottom: 3px solid #14638b;
-  font-weight: 700;
-}
-.platform-storage-maintenance {
-  margin-top: 16px;
-  border-top: 1px solid #cbd9e3;
-  padding-top: 12px;
-}
-.platform-storage-maintenance h3 {
-  font-size: 1rem;
-  margin: 0 0 6px;
-}
-.platform-storage-maintenance button:disabled {
-  opacity: 0.48;
-  cursor: not-allowed;
-}
-.storage-scope-note {
-  font-size: 0.8rem;
-  opacity: 0.8;
+@media (max-width: 480px) {
+  .titlebar-center .analysis-titlebar-status { font-size: 0; gap: 4px; padding-inline: 7px; }
+  .titlebar-center .analysis-status-pulse { width: 8px; height: 8px; }
 }

@@ -1,61 +1,68 @@
 @echo off
-setlocal
-
+setlocal EnableExtensions
 set "ROOT=%~dp0"
 set "ZEEK_IMAGE=zeek/zeek:9.0.0"
-
 if defined ELEVADR_ZEEK_DOCKER_IMAGE set "ZEEK_IMAGE=%ELEVADR_ZEEK_DOCKER_IMAGE%"
 
-if exist "%ROOT%.elevadr-platform.env" (
-  echo Platform configuration: .elevadr-platform.env will be loaded by the backend.
-) else (
-  echo Platform configuration: not present; backend will use process/default settings.
-)
-
-echo Checking for an old eleVADR backend on port 8765...
-for /f "tokens=5" %%P in ('netstat -ano ^| findstr /R /C:":8765 .*LISTENING"') do (
-  echo Stopping stale process %%P on port 8765...
-  taskkill /PID %%P /T /F >nul 2>&1
-)
-
+echo ==================================================
+echo          eleVADR Development Restart
+echo ==================================================
+echo WARNING: In-memory processing jobs will be lost.
+echo MongoDB, stored reports, PCAPs, and contexts are preserved.
 echo.
-echo Checking Zeek runtime...
+
+echo [1/6] Stopping existing frontend and backend...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ports=@(5173,8765); foreach($port in $ports) { $conns=@(Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue); foreach($c in $conns) { $procId=$c.OwningProcess; $p=Get-CimInstance Win32_Process -Filter ('ProcessId = '+$procId) -ErrorAction SilentlyContinue; if(-not $p){continue}; $cmd=[string]$p.CommandLine; $frontend=($port -eq 5173 -and $p.Name -match 'node' -and $cmd -match 'vite'); $backend=($port -eq 8765 -and $cmd -match 'backend_bryan'); if($frontend -or $backend){Write-Host ('Stopping '+$p.Name+' PID '+$procId+' on port '+$port); taskkill /PID $procId /T /F | Out-Null} else {Write-Host ('ERROR: Port '+$port+' is occupied by '+$p.Name+' PID '+$procId); exit 1}}}"
+if errorlevel 1 goto :fail
+
+echo [2/6] Cleaning up labeled eleVADR Zeek containers...
+where docker >nul 2>&1
+if errorlevel 1 goto :no_docker
+docker info >nul 2>&1
+if errorlevel 1 goto :no_docker
+for /f "delims=" %%C in ('docker ps -aq --filter "label=elevadr.managed=true" --filter "label=elevadr.component=zeek"') do (
+  echo Removing eleVADR Zeek container %%C
+  docker rm -f %%C
+  if errorlevel 1 goto :fail
+)
+goto :docker_done
+:no_docker
+echo Docker is unavailable; skipping Zeek cleanup.
+:docker_done
+
+echo [3/6] Waiting for ports to be released...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ports=@(5173,8765); for($i=0;$i -lt 30;$i++){ $busy=@($ports | Where-Object {Get-NetTCPConnection -LocalPort $_ -State Listen -ErrorAction SilentlyContinue}); if($busy.Count -eq 0){exit 0}; Start-Sleep -Milliseconds 500 }; Write-Host 'ERROR: Port 5173 or 8765 remains occupied'; exit 1"
+if errorlevel 1 goto :fail
+
+echo [4/6] Checking configuration...
+if exist "%ROOT%.elevadr-platform.env" (
+  echo Platform environment file found.
+) else (
+  echo WARNING: Platform environment file missing; authentication may be disabled.
+)
 if defined ELEVADR_ZEEK_COMMAND (
-  echo Zeek: explicit command ^(%ELEVADR_ZEEK_COMMAND%^)
+  echo Zeek: explicit command configured.
 ) else (
   where zeek >nul 2>&1
   if not errorlevel 1 (
-    for /f "delims=" %%Z in ('where zeek') do echo Zeek: native ^(%%Z^)
+    echo Zeek: native runtime available.
   ) else (
-    where docker >nul 2>&1
-    if not errorlevel 1 (
-      echo Zeek: Docker fallback ^(%ZEEK_IMAGE%^)
-      docker info >nul 2>&1
-      if errorlevel 1 (
-        echo WARNING: Docker is installed but Docker Desktop/Engine is not running.
-        echo          Start Docker Desktop before PCAP context discovery or analysis.
-      ) else (
-        echo Docker is running. The Zeek image will be pulled automatically on first use if needed.
-      )
-    ) else (
-      echo WARNING: No Zeek runtime was found.
-      echo          Install/start Docker Desktop, install native Zeek, or set ELEVADR_ZEEK_COMMAND.
-      echo          JSON report viewing will still work, but PCAP discovery/analysis will not.
-    )
+    echo Zeek: Docker fallback %ZEEK_IMAGE%
   )
 )
 
-echo.
-echo Starting eleVADR backend_bryan...
-start "eleVADR backend_bryan" cmd /k "cd /d ""%ROOT%"" && python -m backend_bryan.auth.env_runner backend_bryan.integration.http_reference_server"
+echo [5/6] Starting backend_bryan...
+start "eleVADR backend_bryan" cmd /k "cd /d ""%ROOT%"" && python -m backend_bryan.auth.env_runner backend_bryan.integration.http_reference_server --host 127.0.0.1 --port 8765"
 
-timeout /t 2 /nobreak >nul
-
-echo Starting eleVADR frontend...
-start "eleVADR frontend" cmd /k "cd /d ""%ROOT%frontend"" && npm.cmd start -- --host 127.0.0.1"
+echo [6/6] Starting frontend...
+start "eleVADR frontend" cmd /k "cd /d ""%ROOT%frontend"" && npm.cmd start -- --host 127.0.0.1 --port 5173 --strictPort"
 
 echo.
-echo eleVADR startup commands launched.
-echo The backend window should report "Detector modules: 75", the selected Zeek runtime, and Authentication status.
-echo.
-exit
+echo Services launched. Check their terminal windows for startup errors.
+echo Frontend: http://127.0.0.1:5173/
+echo Backend:  http://127.0.0.1:8765/
+exit /b 0
+
+:fail
+echo Startup aborted. Review the error above.
+exit /b 1

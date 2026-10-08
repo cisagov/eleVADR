@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import React, {
   ChangeEvent,
   Dispatch,
@@ -47,7 +48,17 @@ interface ProgressEvent {
   detail?: string | null;
   elapsedSeconds?: number;
 }
+interface RecoverableJob {
+  jobId: string;
+  phase: string;
+  status: string;
+  message?: string;
+  detail?: string;
+  sourceFilename?: string;
+  progress?: number | null;
+}
 interface UploadFormProps {
+  recoveryJob?: RecoverableJob | null;
   onReportLoaded: (report: ElevadrReport) => void;
   report: ElevadrReport | null;
   isAnalyzing: boolean;
@@ -73,6 +84,7 @@ class AnalysisCanceledError extends Error {
 
 const UploadForm: React.FC<UploadFormProps> = ({
   onReportLoaded,
+  recoveryJob,
   report,
   isAnalyzing,
   setIsAnalyzing,
@@ -85,10 +97,29 @@ const UploadForm: React.FC<UploadFormProps> = ({
 }) => {
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressEvent | null>(null);
+  const [progressMinimized, setProgressMinimized] = useState(false);
+  const [notice, setNotice] = useState<"evidence" | null>(null);
+  const [pendingPcap, setPendingPcap] = useState<File | null>(null);
+  // The expanded popup is non-modal. Any interaction outside it collapses
+  // progress to the title bar without blocking the underlying action.
+  useEffect(() => {
+    const progressVisible = isAnalyzing || (notice === "evidence" && !!pendingPcap);
+    if (!progressVisible || progressMinimized) return;
+    const handleOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      // Preserve clicks inside the popup; outside clicks still reach their targets.
+      if (document.querySelector(".analysis-slide-down")?.contains(target)) return;
+      setProgressMinimized(true);
+    };
+    document.addEventListener("pointerdown", handleOutsidePointer, true);
+    return () => document.removeEventListener("pointerdown", handleOutsidePointer, true);
+  }, [isAnalyzing, progressMinimized, notice, pendingPcap]);
+
+  const [phase, setPhase] = useState<"evidence" | "modules">("evidence");
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [selectedFileKind, setSelectedFileKind] =
     useState<SupportedFileKind | null>(null);
-  const [pendingPcap, setPendingPcap] = useState<File | null>(null);
   const [contextDialogOpen, setContextDialogOpen] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState(() => {
     const stored = listProfiles();
@@ -119,6 +150,77 @@ const UploadForm: React.FC<UploadFormProps> = ({
   const activeJobUrlRef = useRef<string | null>(null);
   const cancelRequestedRef = useRef(false);
   const lastHandledRefreshRequestRef = useRef(refreshRequestRevision);
+
+  const recoveryHandledRef = useRef<string | null>(null);
+  // Reattach to server-owned jobs after authentication. Never upload or rerun Zeek.
+  useEffect(() => {
+    if (!recoveryJob || activeJobUrlRef.current || recoveryHandledRef.current === recoveryJob.jobId) return;
+    if (isAnalyzing && !activeJobUrlRef.current) return;
+    recoveryHandledRef.current = recoveryJob.jobId;
+    let canceled = false;
+    const url = `${recoveryJob.phase === "evidence" ? PCAP_CONTEXT_DISCOVERY_URL : PCAP_ANALYSIS_URL}/${encodeURIComponent(recoveryJob.jobId)}`;
+    const resume = async () => {
+      activeJobUrlRef.current = url;
+      setPhase(recoveryJob.phase === "evidence" ? "evidence" : "modules");
+      setProgressMinimized(false);
+      setNotice(null);
+      setError(null);
+      setIsAnalyzing?.(true);
+      try {
+        for (;;) {
+          const response = await authenticatedFetch(url, { cache: "no-store" });
+          if (!response.ok) throw new Error(`Unable to reconnect to processing job (${response.status}).`);
+          const job = await response.json() as {
+            status: string; stage?: string; progress?: number | null;
+            message?: string; detail?: string; elapsedSeconds?: number; result?: unknown;
+          };
+          if (canceled) return;
+          setProgress({ stage: job.stage || "processing", progress: job.progress ?? null,
+            message: job.message || "Processing capture…", detail: job.detail,
+            elapsedSeconds: job.elapsedSeconds });
+          if (job.status === "completed") {
+            if (recoveryJob.phase === "modules") {
+              const { report: normalized } = normalizeElevadrReport(job.result);
+              onReportLoaded(normalized);
+              setProgress(null);
+            } else {
+              const result = job.result as ZeekScanResult & {
+                evidenceToken?: string; sourceFilename?: string; evidence?: { pcapSha256?: string }; captureId?: string;
+              };
+              if (!result?.evidenceToken || !result.evidence?.pcapSha256)
+                throw new Error("Recovered evidence is missing its reusable token. Collect evidence again.");
+              const filename = result.sourceFilename || recoveryJob.sourceFilename;
+              if (!filename || !/\.pcap(?:ng)?$/i.test(filename))
+                throw new Error("Recovered job does not include the original PCAP filename. Cannot safely reuse Zeek evidence.");
+              setPendingPcap(new File([], filename));
+              setSelectedFileName(filename);
+              setSelectedFileKind("pcap");
+              setContextDiscovery(result);
+              setZeekEvidenceToken(result.evidenceToken);
+              setZeekEvidencePcapSha256(result.evidence.pcapSha256);
+              setRetainedCaptureId(result.captureId || null);
+              setNotice("evidence");
+            }
+            return;
+          }
+          if (job.status === "failed" || job.status === "canceled") {
+            throw new Error(job.message || `Processing job ${job.status}.`);
+          }
+          await new Promise((resolve) => window.setTimeout(resolve, 1500));
+          if (canceled) return;
+        }
+      } catch (err) {
+        if (!canceled) setError(err instanceof Error ? err.message : "Job recovery failed.");
+      } finally {
+        if (!canceled) {
+          activeJobUrlRef.current = null;
+          setIsAnalyzing?.(false);
+        }
+      }
+    };
+    void resume();
+    return () => { canceled = true; };
+  }, [recoveryJob?.jobId]);
 
   const profiles = useMemo(
     () => listProfiles(),
@@ -168,6 +270,10 @@ const UploadForm: React.FC<UploadFormProps> = ({
     captureId: string | null;
   }> => {
     setError(null);
+
+    setPhase("evidence");
+    setProgressMinimized(false);
+    setNotice(null);
     setIsAnalyzing?.(true);
     setProgress({
       stage: "uploading",
@@ -315,6 +421,10 @@ const UploadForm: React.FC<UploadFormProps> = ({
     captureId: string | null = null,
   ): Promise<string | null> => {
     setError(null);
+
+    setPhase("modules");
+    setProgressMinimized(false);
+    setNotice(null);
     setIsAnalyzing?.(true);
     setProgress({
       stage: "preparing-analysis",
@@ -421,6 +531,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
             detail: normalized.report_id,
           });
           onReportLoaded(normalized);
+
           return null;
         }
       }
@@ -431,7 +542,10 @@ const UploadForm: React.FC<UploadFormProps> = ({
           : err instanceof Error
             ? err.message
             : "Failed to analyze PCAP";
-      if (!(err instanceof AnalysisCanceledError)) setError(message);
+      if (!(err instanceof AnalysisCanceledError)) {
+        setError(message);
+
+      }
       return message;
     } finally {
       activeJobUrlRef.current = null;
@@ -441,10 +555,17 @@ const UploadForm: React.FC<UploadFormProps> = ({
   };
 
   const processFile = async (file: File): Promise<void> => {
-    if (isAnalyzing) return;
-    setError(null);
-    setProgress(null);
     const kind = getFileKind(file);
+    if (kind === "pcap" && (isAnalyzing || contextDialogOpen)) {
+      setError("A packet capture is already being processed or awaiting Detection Context. Finish or cancel it before opening another PCAP.");
+      return;
+    }
+    if (isAnalyzing && kind !== "json") return;
+    setError(null);
+    if (!isAnalyzing) {
+
+      setProgress(null);
+    }
     if (!kind) {
       setSelectedFileName(null);
       setSelectedFileKind(null);
@@ -453,18 +574,18 @@ const UploadForm: React.FC<UploadFormProps> = ({
       );
       return;
     }
-    setSelectedFileName(file.name);
-    setSelectedFileKind(kind);
     if (kind === "json") {
-      setLastPcapSession(null);
-      setPendingPcap(null);
-      setContextDiscovery(null);
-      setZeekEvidenceToken(null);
-      setZeekEvidencePcapSha256(null);
-      setContextDialogOpen(false);
+      // Opening a report must not invalidate the active capture's evidence token,
+      // context selection, or background polling state.
       await loadJsonReport(file);
+      if (!isAnalyzing && !contextDialogOpen) {
+        setSelectedFileName(file.name);
+        setSelectedFileKind(kind);
+      }
       return;
     }
+    setSelectedFileName(file.name);
+    setSelectedFileKind(kind);
     setLastPcapSession(null);
     setZeekEvidenceToken(null);
     setZeekEvidencePcapSha256(null);
@@ -487,10 +608,13 @@ const UploadForm: React.FC<UploadFormProps> = ({
         ? active.id
         : stored[0]?.id || "";
       setSelectedProfileId(nextId);
-      setContextDialogOpen(true);
+      setContextDialogOpen(false);
+      setProgressMinimized(false);
+      setNotice("evidence");
       setProgress(null);
     } catch (err) {
       setPendingPcap(null);
+      setNotice(null);
       setContextDiscovery(null);
       setZeekEvidenceToken(null);
       setZeekEvidencePcapSha256(null);
@@ -561,7 +685,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
     event.target.value = "";
   };
   const openFilePicker = () => {
-    if (!isAnalyzing && !contextDialogOpen) inputRef.current?.click();
+    inputRef.current?.click();
   };
   const closeContextDialog = () => {
     setContextDialogOpen(false);
@@ -647,15 +771,14 @@ const UploadForm: React.FC<UploadFormProps> = ({
       <div
         className={`file-picker-panel ${isAnalyzing ? "is-busy" : ""}`}
         role="button"
-        tabIndex={isAnalyzing || contextDialogOpen ? -1 : 0}
-        aria-disabled={isAnalyzing || contextDialogOpen}
+        tabIndex={0}
+        aria-disabled={false}
         aria-label="Open a PCAP, PCAPNG, or JSON report"
         onClick={openFilePicker}
         onKeyDown={(event) => {
           if (
             (event.key === "Enter" || event.key === " ") &&
-            !isAnalyzing &&
-            !contextDialogOpen
+            true
           ) {
             event.preventDefault();
             openFilePicker();
@@ -667,10 +790,9 @@ const UploadForm: React.FC<UploadFormProps> = ({
           id={inputId}
           className="file-picker-input"
           type="file"
-          accept=".pcap,.pcapng,.json,application/json"
-          aria-label="Open PCAP or JSON report"
+          accept={isAnalyzing || contextDialogOpen ? ".json,application/json" : ".pcap,.pcapng,.json,application/json"}
+          aria-label={isAnalyzing || contextDialogOpen ? "Open JSON report" : "Open PCAP or JSON report"}
           onChange={handleFileInput}
-          disabled={isAnalyzing}
         />
         <div className="file-picker-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -681,22 +803,22 @@ const UploadForm: React.FC<UploadFormProps> = ({
         </div>
         <div className="file-picker-copy">
           <strong>
-            {isAnalyzing
-              ? "Analyzing packet capture…"
+            {isAnalyzing || contextDialogOpen
+              ? "Open another JSON report"
               : "Open a report or packet capture"}
           </strong>
           <span>
-            {isAnalyzing
-              ? (progress?.message ?? "Preparing analysis…")
+            {isAnalyzing || contextDialogOpen
+              ? "PCAP uploads are paused until the current capture finishes."
               : "Choose a PCAP, PCAPNG, or eleVADR JSON report to open."}
           </span>
           <div className="file-picker-types" aria-hidden="true">
-            <span>PCAP</span>
-            <span>PCAPNG</span>
+            {!isAnalyzing && !contextDialogOpen && <span>PCAP</span>}
+            {!isAnalyzing && !contextDialogOpen && <span>PCAPNG</span>}
             <span>JSON</span>
           </div>
         </div>
-        {!isAnalyzing && (
+        {(
           <button
             type="button"
             className="file-picker-button"
@@ -735,8 +857,26 @@ const UploadForm: React.FC<UploadFormProps> = ({
         </div>
       )}
 
-      {isAnalyzing && (
-        <div className="upload-status" aria-live="polite">
+      {(isAnalyzing || (notice === "evidence" && !!pendingPcap)) && progressMinimized && createPortal(
+        <button type="button" className="analysis-titlebar-status" onClick={() => setProgressMinimized(false)} aria-label={notice === "evidence" && !isAnalyzing ? "Show evidence ready actions" : "Expand processing progress"} title={notice === "evidence" && !isAnalyzing ? "Evidence ready: choose context" : "Expand processing progress"}>
+          <span className="analysis-status-pulse" aria-hidden="true" />
+          {notice === "evidence" && !isAnalyzing ? "Evidence ready · Choose Context" : phase === "evidence" ? "Zeek collecting evidence" : "Detection modules running"}
+          {notice === "evidence" && !isAnalyzing ? "" : progress?.progress != null ? ` · ${progress.progress}%` : " · Working"}
+          <span aria-hidden="true"> ▾</span>
+        </button>,
+        document.querySelector(".titlebar-center") ?? document.body,
+      )}
+
+      {(isAnalyzing || (notice === "evidence" && !!pendingPcap)) && !progressMinimized && createPortal(
+        <div className="upload-status analysis-slide-down" aria-live="polite">
+          <div className="processing-heading">
+            <strong>{notice === "evidence" && !isAnalyzing ? "Stage 1 complete: Evidence ready" : phase === "evidence" ? "Stage 1 of 2: Zeek evidence collection" : "Stage 2 of 2: Detection modules"}</strong>
+            <button type="button" onClick={() => setProgressMinimized((v) => !v)} aria-label="Minimize processing status to title bar" title="Minimize to title bar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14" /></svg></button>
+          </div>
+          {notice === "evidence" && !isAnalyzing ? (
+            <div className="analysis-ready-actions"><p>Zeek evidence is ready. Select a Detection Context to continue analysis.</p><button type="button" onClick={() => { setProgressMinimized(true); setContextDialogOpen(true); }}>Choose Context</button></div>
+          ) : <p className="processing-advisory">Large captures may take some time. Keep this page open while processing; you can review other reports when available.</p>}
+          {isAnalyzing && <>
           <div className="upload-progress-row">
             <div className="upload-progress-copy">
               <p className="loading-text">
@@ -782,7 +922,9 @@ const UploadForm: React.FC<UploadFormProps> = ({
               Cancel analysis
             </button>
           </div>
-        </div>
+          </>}
+        </div>,
+        document.body,
       )}
 
       {error && (
@@ -792,7 +934,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
         </div>
       )}
 
-      {contextDialogOpen && pendingPcap && (
+      {contextDialogOpen && pendingPcap && createPortal(
         <div className="analysis-module-backdrop" role="presentation">
           <div
             className="analysis-module-dialog"
@@ -959,7 +1101,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
             </div>
           </div>
         </div>
-      )}
+        , document.body)}
     </div>
   );
 };

@@ -41,7 +41,7 @@ def verify_password(password: str, password_hash: str) -> bool:
         return False
 
 
-def create_access_token(principal: AuthPrincipal, config: AuthConfig) -> str:
+def create_access_token(principal: AuthPrincipal, config: AuthConfig, *, renew_until: int | None = None) -> str:
     """Create a signed short-lived JWT access token."""
     if not principal.authenticated or not principal.user_id:
         raise ValueError("Cannot issue an access token for an anonymous principal")
@@ -50,6 +50,8 @@ def create_access_token(principal: AuthPrincipal, config: AuthConfig) -> str:
     except ImportError as exc:
         raise RuntimeError("PyJWT is required when eleVADR authentication is enabled") from exc
     now = datetime.now(UTC)
+    if renew_until is None:
+        renew_until = int((now + timedelta(hours=8)).timestamp())
     payload: dict[str, Any] = {
         "sub": principal.user_id,
         "username": principal.username,
@@ -58,6 +60,7 @@ def create_access_token(principal: AuthPrincipal, config: AuthConfig) -> str:
         "exp": now + timedelta(minutes=config.jwt_expire_minutes),
         "iss": "elevadr",
         "sv": principal.session_version,
+        "renew_until": renew_until,
     }
     return str(jwt.encode(payload, config.jwt_secret, algorithm=config.jwt_algorithm))
 

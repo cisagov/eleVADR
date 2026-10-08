@@ -40,7 +40,6 @@ HEALTH_PATH = "/health"
 AUTH_LOGIN_PATH = "/auth/login"
 AUTH_LOGOUT_PATH = "/auth/logout"
 AUTH_ME_PATH = "/auth/me"
-AUTH_RENEW_PATH = "/auth/renew"
 AUTH_PASSWORD_PATH = "/auth/password"
 USERS_PATH = "/api/v1/users"
 REPORTS_PATH = "/api/v1/reports"
@@ -500,7 +499,6 @@ def _run_discovery_job(job_id: str, temp_path: Path, filename: str, owner_id: st
         token, evidence = _register_evidence(evidence_dir, filename, pcap_sha256)
         evidence_registered = True
         result["evidenceToken"] = token
-        result["sourceFilename"] = filename
         if _CAPTURE_STORE is not None and owner_id and owner_username:
             retained = _CAPTURE_STORE.save_bytes(owner_id, owner_username, filename, temp_path.read_bytes())
             result["captureId"] = retained.get("captureId")
@@ -633,7 +631,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self) -> None:  # noqa: N802
         if (
-            self.path not in {ANALYSIS_PATH, PCAP_PATH, DISCOVERY_PATH, HEALTH_PATH, AUTH_LOGIN_PATH, AUTH_LOGOUT_PATH, AUTH_ME_PATH, AUTH_RENEW_PATH, AUTH_PASSWORD_PATH, REPORTS_PATH, USERS_PATH}
+            self.path not in {ANALYSIS_PATH, PCAP_PATH, DISCOVERY_PATH, HEALTH_PATH, AUTH_LOGIN_PATH, AUTH_LOGOUT_PATH, AUTH_ME_PATH, AUTH_PASSWORD_PATH, REPORTS_PATH, USERS_PATH}
             and not self.path.startswith(f"{DISCOVERY_PATH}/")
             and not self.path.startswith(f"{PCAP_PATH}/")
             and not self.path.startswith(f"{REPORTS_PATH}/")
@@ -745,33 +743,10 @@ class Handler(BaseHTTPRequestHandler):
                 capture = _CAPTURE_STORE.get(principal.user_id, capture_id)
                 path = _CAPTURE_STORE.path_for_owner(principal.user_id, capture_id)
             except ValueError:
-                self._json(
-                    404,
-                    {
-                        "error": "capture_not_found",
-                        "message": "Retained capture was not found.",
-                    },
-                )
+                self._json(404, {"error": "capture_not_found"})
                 return
-
-            if not capture:
-                self._json(
-                    404,
-                    {
-                        "error": "capture_not_found",
-                        "message": "Capture record not found for this account.",
-                    },
-                )
-                return
-
-            if path is None:
-                self._json(
-                    404,
-                    {
-                        "error": "capture_file_missing",
-                        "message": "Capture record exists, but its retained PCAP file is unavailable.",
-                    },
-                )
+            if not capture or path is None:
+                self._json(404, {"error": "capture_not_found"})
                 return
             filename = _sanitize_upload_filename(capture.get("filename"), "capture.pcap")
             # Use an ASCII filename parameter to prevent header injection.
@@ -793,24 +768,6 @@ class Handler(BaseHTTPRequestHandler):
             if principal is None or not principal.authenticated or _CAPTURE_STORE is None:
                 self._json(503, {"error": "capture_store_unavailable"}); return
             self._json(200, {"captures": _CAPTURE_STORE.list_for_owner(principal.user_id)})
-            return
-
-        if self.path == "/api/v1/processing-jobs":
-            principal = self._current_principal()
-            if principal is None or not principal.authenticated:
-                self._json(401, {"error": "authentication_required"}); return
-            with _DISCOVERY_LOCK:
-                discovery = [dict(job) for job in _DISCOVERY_JOBS.values() if job.get("ownerId") == principal.user_id]
-            with _ANALYSIS_LOCK:
-                analysis = [dict(job) for job in _ANALYSIS_JOBS.values() if job.get("ownerId") == principal.user_id]
-            jobs = []
-            for kind, group in (("evidence", discovery), ("modules", analysis)):
-                for job in group:
-                    jobs.append({key: value for key, value in job.items()
-                                 if key in {"jobId", "status", "stage", "progress", "message", "detail", "elapsedSeconds", "sourceFilename"}} | {"phase": kind})
-            # Most recently updated jobs first, so the client resumes the latest workflow.
-            jobs.sort(key=lambda item: next((j.get("updatedAt", 0) for j in discovery + analysis if j.get("jobId") == item["jobId"]), 0), reverse=True)
-            self._json(200, {"jobs": jobs})
             return
 
         discovery_prefix = f"{DISCOVERY_PATH}/"
@@ -1053,36 +1010,6 @@ class Handler(BaseHTTPRequestHandler):
             })
             return
 
-        if self.path == AUTH_RENEW_PATH:
-            # Renewal is permitted only for an existing, valid login with a
-            # processing job; it never resurrects an expired/revoked token.
-            if not self._require_authenticated_request(): return
-            principal = self._current_principal()
-            if principal is None or not principal.authenticated:
-                self._json(401, {"error": "authentication_required"}); return
-            from backend_bryan.auth.security import create_access_token
-            import jwt
-            try:
-                raw = self.headers.get("Authorization", "")
-                claims = jwt.decode(raw[7:].strip(), _AUTH_SERVICE.config.jwt_secret,
-                                    algorithms=[_AUTH_SERVICE.config.jwt_algorithm], issuer="elevadr",
-                                    options={"require": ["exp", "iat", "sub", "iss"]})
-                deadline = int(claims.get("renew_until", 0))
-            except (ValueError, jwt.PyJWTError):
-                self._json(401, {"error": "authentication_required"}); return
-            if deadline <= int(time.time()):
-                self._json(403, {"error": "renewal_limit", "message": "Processing session renewal limit reached. Sign in again."}); return
-            with _DISCOVERY_LOCK:
-                discovery_active = any(j.get("ownerId") == principal.user_id and j.get("status") in {"queued", "running", "completed"} for j in _DISCOVERY_JOBS.values())
-            with _ANALYSIS_LOCK:
-                analysis_active = any(j.get("ownerId") == principal.user_id and j.get("status") in {"queued", "running"} for j in _ANALYSIS_JOBS.values())
-            if not (discovery_active or analysis_active):
-                self._json(409, {"error": "no_processing_job", "message": "No active PCAP workflow requires renewal."}); return
-            token = create_access_token(principal, _AUTH_SERVICE.config, renew_until=deadline)
-            _audit("auth.renew", "success", principal)
-            self._json(200, {"access_token": token, "token_type": "bearer", "expires_in": _AUTH_SERVICE.config.jwt_expire_minutes * 60})
-            return
-
         if self.path == AUTH_LOGOUT_PATH:
             principal = self._current_principal()
             if principal is not None and principal.authenticated:
@@ -1190,7 +1117,6 @@ class Handler(BaseHTTPRequestHandler):
                         "progress": 0,
                         "message": "Context discovery queued.",
                         "detail": filename,
-                        "sourceFilename": filename,
                         "elapsedSeconds": 0,
                         "createdAt": time.time(),
                         "updatedAt": time.time(),

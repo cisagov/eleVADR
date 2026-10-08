@@ -53,9 +53,6 @@ import {
   fetchAuthState,
   login,
   logout,
-  authenticatedFetch,
-  renewProcessingSession,
-  tokenExpiresWithin,
 } from "./services/authService";
 import {
   deleteSavedReport,
@@ -68,7 +65,6 @@ import { normalizeElevadrReport } from "./utils/reportCompatibility";
 import {
   listRetainedCaptures,
   deleteRetainedCapture,
-  downloadRetainedCapture,
   analyzeRetainedCapture,
   RetainedCaptureSummary,
 } from "./services/captureService";
@@ -458,19 +454,14 @@ const Icon = ({ name }: { name: IconName }) => {
 function App() {
   const [report, setReport] = useState<ElevadrReport | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [recoveredJobs, setRecoveredJobs] = useState<Array<{
-    jobId: string; phase: string; status: string; message?: string;
-    detail?: string; progress?: number | null;
-  }>>([]);
-
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
   const [helpOpen, setHelpOpen] = useState(false);
   const [welcomeInstructionsOpen, setWelcomeInstructionsOpen] = useState(false);
   const [platformView, setPlatformView] = useState<
-    "open-file" | "analyses" | "storage" | "administration" | "account"
-  >("open-file");
+    "dashboard" | "analyses" | "storage" | "administration" | "account"
+  >("dashboard");
   const [adminTab, setAdminTab] = useState<"users" | "audit">("users");
   const [tourOpen, setTourOpen] = useState(
     () => localStorage.getItem("elevadr-tour-seen") !== "1",
@@ -827,6 +818,11 @@ function App() {
     }
   };
 
+  const dashboardStorageBytes = useMemo(
+    () => retainedCaptures.reduce((sum, item) => sum + item.sizeBytes, 0),
+    [retainedCaptures],
+  );
+
   const analysisCaptureGroups = useMemo(() => {
     const query = savedReportQuery.trim().toLowerCase();
     const retainedById = new Map(
@@ -994,42 +990,6 @@ function App() {
     }
   };
 
-  // Jobs belong to the server, not the login session. Re-query after login
-  // and while authenticated so a completed job is still visible after renewal.
-  useEffect(() => {
-    if (!authState?.user.authenticated) { setRecoveredJobs([]); return; }
-    let active = true;
-    const check = async () => {
-      try {
-        const response = await authenticatedFetch("/api/v1/processing-jobs", { cache: "no-store" });
-        if (!response.ok) return;
-        const payload = await response.json() as { jobs?: typeof recoveredJobs };
-        if (active) setRecoveredJobs(Array.isArray(payload.jobs) ? payload.jobs : []);
-      } catch { /* retain last known state during transient network failures */ }
-    };
-    void check();
-    const interval = window.setInterval(() => { void check(); }, 5000);
-    return () => { active = false; window.clearInterval(interval); };
-  }, [authState?.user.authenticated]);
-
-  // Background tabs throttle timers; also check on focus and visibility changes.
-  // Renewal is attempted before expiry, but only the server can authorize it.
-  useEffect(() => {
-    if (!authState?.authEnabled || !authState.user.authenticated) return;
-    const check = () => {
-      if (tokenExpiresWithin(20 * 60)) void renewProcessingSession();
-    };
-    check();
-    const interval = window.setInterval(check, 60 * 1000);
-    window.addEventListener("focus", check);
-    document.addEventListener("visibilitychange", check);
-    return () => {
-      window.clearInterval(interval);
-      window.removeEventListener("focus", check);
-      document.removeEventListener("visibilitychange", check);
-    };
-  }, [authState?.authEnabled, authState?.user.authenticated]);
-
   const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!welcomeUsername.trim() || !welcomePassword) {
@@ -1132,7 +1092,7 @@ function App() {
   const returnToWelcome = () => {
     if (!report) return;
     setReport(null);
-    // Returning to the welcome screen must not cancel an active PCAP job.
+    setIsAnalyzing(false);
     setMobileNavOpen(false);
     setHelpOpen(false);
     setNotesOpen(false);
@@ -1893,17 +1853,6 @@ function App() {
       <a className="skip-link" href="#main-content">
         Skip to main content
       </a>
-      {authState?.user.authenticated && recoveredJobs.some((job) => job.status === "running" || job.status === "queued" || job.status === "completed") && (
-        <aside role="status" aria-live="polite" style={{ padding: "8px 16px", background: "#eaf4fa", color: "#07334d", borderBottom: "1px solid #a9c6d6" }}>
-          <strong>Recovered server processing activity: </strong>
-          {recoveredJobs.filter((job) => ["running", "queued", "completed"].includes(job.status)).map((job) => (
-            <span key={job.jobId} style={{ marginRight: 18 }}>
-              {job.phase === "evidence" ? "Zeek evidence" : "Detection modules"}: {job.status} — {job.message || job.stage}
-              {typeof job.progress === "number" ? ` (${job.progress}%)` : ""}.
-            </span>
-          ))}
-        </aside>
-      )}
       <header className="titlebar">
         <div className="titlebar-brand">
           <button
@@ -2014,6 +1963,7 @@ function App() {
             </button>
           )}
           {report &&
+            (!isAnalyzing || reportRefreshInProgress) &&
             hasSupportedReportVersion && (
               <button
                 type="button"
@@ -2195,7 +2145,7 @@ function App() {
             </div>
           )}
 
-          {report && !hasSupportedReportVersion && (
+          {report && !isAnalyzing && !hasSupportedReportVersion && (
             <div className="status-container">
               <div className="loading-container">
                 <p className="loading-text">Unsupported report version</p>
@@ -2208,6 +2158,7 @@ function App() {
           )}
 
           {report &&
+            (!isAnalyzing || reportRefreshInProgress) &&
             hasSupportedReportVersion && (
               <>
                 <div className="report-current-section" aria-live="polite">
@@ -2716,7 +2667,7 @@ function App() {
                     >
                       {(
                         [
-                          ["open-file", "Open File"],
+                          ["dashboard", "Dashboard"],
                           ["analyses", "Analyses"],
                           ["storage", "Storage"],
                           ...(authState.user.role === "admin"
@@ -2737,13 +2688,57 @@ function App() {
                         </button>
                       ))}
                     </nav>
+                    {platformView === "dashboard" && (
+                      <section
+                        className="platform-workspace-dashboard"
+                        aria-labelledby="platform-dashboard-title"
+                      >
+                        <div className="platform-workspace-heading">
+                          <div>
+                            <h2 id="platform-dashboard-title">Dashboard</h2>
+                            <p>
+                              Start an analysis or jump back into your recent
+                              eleVADR work.
+                            </p>
+                          </div>
+                        </div>
+                        <div
+                          className="platform-dashboard-summary"
+                          aria-label="Account dashboard summary"
+                        >
+                          <div>
+                            <span>Analyses</span>
+                            <strong>{savedReports.length}</strong>
+                          </div>
+                          <div>
+                            <span>Retained PCAPs</span>
+                            <strong>{retainedCaptures.length}</strong>
+                          </div>
+                          <div>
+                            <span>Retained capture storage</span>
+                            <strong>
+                              {(dashboardStorageBytes / (1024 * 1024)).toFixed(
+                                1,
+                              )}{" "}
+                              MB
+                            </strong>
+                          </div>
+                          <div>
+                            <span>Account</span>
+                            <strong>{authState.user.username}</strong>
+                            <small>{authState.user.role}</small>
+                          </div>
+                        </div>
+                      </section>
+                    )}
                   </>
                 )}
-                {canWriteAnalysis ? (
-                  <div style={{ display: (!authState?.authEnabled || !authState.user.authenticated || platformView === "open-file") ? undefined : "none" }}>
+                {(!authState?.authEnabled ||
+                  !authState.user.authenticated ||
+                  platformView === "dashboard") &&
+                  (canWriteAnalysis ? (
                     <UploadForm
                       onReportLoaded={handleReportLoaded}
-                      recoveryJob={recoveredJobs.find((job) => job.status === "running" || job.status === "queued") || recoveredJobs.find((job) => job.status === "completed") || null}
                       report={report}
                       isAnalyzing={isAnalyzing}
                       setIsAnalyzing={setIsAnalyzing}
@@ -2758,13 +2753,20 @@ function App() {
                       refreshRequestRevision={reportRefreshRequestRevision}
                       onReanalysisStatus={handleReportReanalysisStatus}
                     />
-                  </div>
-                ) : (!authState?.authEnabled || !authState.user.authenticated || platformView === "open-file") ? (
-                    <section className="welcome-account-panel read-only-notice" aria-label="Read-only access">
+                  ) : (
+                    <section
+                      className="welcome-account-panel read-only-notice"
+                      aria-label="Read-only access"
+                    >
                       <h2>Read-only access</h2>
-                      <p>You can open saved reports and review retained PCAP metadata. Upload and analysis are unavailable for this account.</p>
+                      <p>
+                        You can open saved reports and review retained PCAP
+                        metadata. Upload, analysis, re-analysis, Context
+                        changes, and destructive actions are unavailable for
+                        this account.
+                      </p>
                     </section>
-                ) : null}
+                  ))}
                 {authState?.authEnabled &&
                   authState.user.authenticated &&
                   platformView === "analyses" && (
@@ -2957,20 +2959,6 @@ function App() {
                                         </button>
                                         {menuOpen && (
                                           <div className="capture-overflow-menu">
-                                            <button
-                                              type="button"
-                                              disabled={!retained}
-                                              title={retained ? "Download the original retained capture" : "This PCAP is no longer retained."}
-                                              onClick={() => {
-                                                if (!retained) return;
-                                                setCaptureMenuId("");
-                                                void downloadRetainedCapture(retained.captureId, retained.filename).catch((error: unknown) => {
-                                                  setCapturesMessage(error instanceof Error ? error.message : "PCAP download failed.");
-                                                });
-                                              }}
-                                            >
-                                              Download PCAP
-                                            </button>
                                             {retained && deleteConfirmCaptureId === retained.captureId ? (
                                               <div className="capture-delete-confirmation">
                                                 <strong>Delete retained PCAP?</strong>

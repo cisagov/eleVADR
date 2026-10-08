@@ -30,8 +30,9 @@ function api(path = ""): string {
 }
 async function msg(r: Response) {
   try {
-    const p = (await r.clone().json()) as { message?: unknown };
+    const p = (await r.clone().json()) as { message?: unknown; error?: unknown };
     if (typeof p.message === "string") return p.message;
+    if (typeof p.error === "string") return p.error;
   } catch {}
   return `Capture request failed with status ${r.status}`;
 }
@@ -43,6 +44,25 @@ export async function listRetainedCaptures(): Promise<
   const p = (await r.json()) as { captures?: RetainedCaptureSummary[] };
   return Array.isArray(p.captures) ? p.captures : [];
 }
+export async function downloadRetainedCapture(id: string, filename: string): Promise<void> {
+  const response = await authenticatedFetch(api(`/${encodeURIComponent(id)}/download`), {
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(await msg(response));
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename || "capture.pcap";
+  document.body.appendChild(anchor);
+  try {
+    anchor.click();
+  } finally {
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+}
+
 export async function deleteRetainedCapture(id: string): Promise<void> {
   const r = await authenticatedFetch(api(`/${encodeURIComponent(id)}`), {
     method: "DELETE",
