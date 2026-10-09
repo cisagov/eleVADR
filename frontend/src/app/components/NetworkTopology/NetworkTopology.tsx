@@ -306,6 +306,42 @@ const NetworkTopology: React.FC<Props> = ({
     } catch (error) { setComparisonError(error instanceof Error ? error.message : "Cannot save comparison"); }
     finally { setComparisonBusy(false); }
   };
+  // Restore the baseline from the owner-scoped report store when possible.
+  // Never silently compare a saved configuration against a different report.
+  const recallComparisonSettings = async (item: SavedComparison) => {
+    setComparisonSavedId(item.id);
+    setComparisonSavedName(item.name);
+    setComparisonFilter(item.filter);
+    setComparisonFindingsOnly(item.findingsOnly);
+    setComparisonQueryOnly(item.queryOnly);
+    setComparisonPage(0);
+    setSelectedComparisonKey(null);
+    if (item.currentReportId !== String(report.report_id || "")) {
+      setComparisonError("Load the saved comparison's current report before recalling its baseline.");
+      return;
+    }
+    if (baselineReport && String(baselineReport.report_id || "") === item.baselineId) {
+      setComparisonError("");
+      return;
+    }
+    setComparisonBusy(true);
+    try {
+      const data = await comparisonRequest("GET", `/api/v1/reports/${encodeURIComponent(item.baselineId)}`);
+      const candidate = data.report as ElevadrReport | undefined;
+      if (!candidate?.modules?.connection_success_panel || !candidate.modules?.ot_cross_segment_lines_panel ||
+          !Array.isArray(candidate.modules?.ot_devices) || String(candidate.report_id || "") !== item.baselineId) {
+        throw new Error("The saved baseline report is unavailable or has incompatible topology data.");
+      }
+      setBaselineReport(candidate);
+      setBaselineName(`Saved report ${item.baselineId}`);
+      setComparisonError("");
+    } catch (error) {
+      setBaselineReport(null);
+      setComparisonError(`${error instanceof Error ? error.message : "Cannot restore baseline"} Open the baseline JSON manually if it was not retained.`);
+    } finally {
+      setComparisonBusy(false);
+    }
+  };
   const deleteComparisonSettings = async () => {
     if (!comparisonSavedId) return;
     setComparisonBusy(true);
@@ -1815,11 +1851,27 @@ const NetworkTopology: React.FC<Props> = ({
     if (!baselineReport || !queryActive) return null;
     const execute = (capture: ElevadrReport) => {
       const snapshot = comparisonSnapshot(capture);
-      const eligible = [...snapshot.edges.entries()].filter(([, edge]) =>
+      const deviceMatches = (ip: string) => {
+        const identified = classify(ip, capture);
+        const device = identified.device;
+        const subnet = (device?.subnets || device?.ipv4_subnets || [])[0] || "Unknown subnet";
+        const attributes = device as (Device & { roleGroup?: string; role?: string; purdueLevel?: string; purdue_level?: string }) | undefined;
+        const role = String(attributes?.roleGroup || attributes?.role || identified.type);
+        const purdue = String(attributes?.purdueLevel || attributes?.purdue_level || "Unassigned");
+        return (!query.type || identified.type === query.type) &&
+          (!query.subnet || subnet.toLowerCase().includes(query.subnet.toLowerCase())) &&
+          (!query.roleGroup || role.toLowerCase().includes(query.roleGroup.toLowerCase())) &&
+          (!query.purdueLevel || purdue.toLowerCase().includes(query.purdueLevel.toLowerCase()));
+      };
+      const suspiciousPairs = new Set((capture.modules.suspicious_outbound_connections_panel || []).map((line) =>
+        JSON.stringify([line["src_endpoint.ip"], line["dst_endpoint.ip"], line["service.name"] || "Unknown service"])));
+      const eligible = [...snapshot.edges.entries()].filter(([key, edge]) =>
         (!query.service || edge.service.toLowerCase().includes(query.service.toLowerCase())) &&
-        (!query.minCount || edge.count >= query.minCount));
+        (!query.minCount || edge.count >= query.minCount) &&
+        (query.suspicious === undefined || suspiciousPairs.has(key) === query.suspicious) &&
+        (query.findingRelated === undefined || (comparisonFindings(capture, edge.source, edge.target).length > 0) === query.findingRelated));
       const seed = (query.startAsset || "").trim();
-      if (!seed) return new Set(eligible.map(([key]) => key));
+      if (!seed) return new Set(eligible.filter(([, edge]) => deviceMatches(edge.source) || deviceMatches(edge.target)).map(([key]) => key));
       const selected = new Set<string>();
       const visited = new Set([seed]);
       let frontier = new Set([seed]);
@@ -1829,6 +1881,7 @@ const NetworkTopology: React.FC<Props> = ({
           const forward = query.direction !== "inbound" && frontier.has(edge.source);
           const reverse = query.direction !== "outbound" && frontier.has(edge.target);
           if (!forward && !reverse) continue;
+          if (!deviceMatches(edge.source) && !deviceMatches(edge.target)) continue;
           selected.add(key);
           for (const neighbor of [forward ? edge.target : null, reverse ? edge.source : null]) {
             if (neighbor && !visited.has(neighbor)) { visited.add(neighbor); next.add(neighbor); }
@@ -1895,16 +1948,10 @@ const NetworkTopology: React.FC<Props> = ({
               <label>Recall settings <select value="" onChange={(event) => {
                 const item = savedComparisons.find((entry) => entry.id === event.target.value);
                 if (!item) return;
-                setComparisonSavedId(item.id);
-                setComparisonSavedName(item.name);
-                setComparisonFilter(item.filter);
-                setComparisonFindingsOnly(item.findingsOnly);
-                setComparisonQueryOnly(item.queryOnly);
-                setComparisonPage(0);
-                if (item.baselineId !== String(baselineReport?.report_id || baselineName) || item.currentReportId !== String(report.report_id || "")) setComparisonError("Open the matching current and baseline reports to reproduce this saved comparison."); else setComparisonError("");
+                void recallComparisonSettings(item);
               }}><option value="">Choose saved settings</option>{savedComparisons.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}</select></label>
               <button type="button" disabled={!comparisonSavedId || comparisonBusy} onClick={() => void deleteComparisonSettings()}>Delete saved comparison</button>
-              <small>Saved comparison settings are stored in MongoDB for your account. Baseline JSON files must still be reopened.</small>
+              <small>Saved comparison settings are stored in MongoDB. Retained baseline reports are restored automatically; otherwise choose a baseline JSON file.</small>
             </div>
             <details><summary>Newly observed assets ({comparison.newAssets.length})</summary><p>{comparison.newAssets.slice(0, 100).join(", ") || "None"}{comparison.newAssets.length > 100 ? " ..." : ""}</p></details>
             <details><summary>Assets not observed in current report ({comparison.missingAssets.length})</summary><p>{comparison.missingAssets.slice(0, 100).join(", ") || "None"}{comparison.missingAssets.length > 100 ? " ..." : ""}</p></details>
