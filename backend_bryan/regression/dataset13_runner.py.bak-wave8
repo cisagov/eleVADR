@@ -299,7 +299,7 @@ def run_cases(verbose: bool = True) -> list[str]:
     check("Network topology uses the shared drawer/filter contract and finding-aware investigation controls", lambda: (
         ("setFocusedNodeId(node.id)" in network_topology
          and "setFocusedEdgeId(edge.id)" in network_topology
-         
+         and 'onSelect({ type: "device", id: node.id });' in network_topology
          and 'onSelect({ type: "connection", id: edge.id });' in network_topology
          and "topology-selection-bar" in network_topology
          and "topology-filter-action" in network_topology
@@ -310,7 +310,7 @@ def run_cases(verbose: bool = True) -> list[str]:
          and "findingIndex" in network_topology
          and "Finding-related" in network_topology
          and "focusedNodeId && !neighborIds.has(node.id)" in network_topology
-         and "topology-section-toggle" in network_topology
+         and "toggleFullScreen" in network_topology
          and "Export SVG" in network_topology
          and "Fit" in network_topology
          and "Reset" in network_topology
@@ -412,7 +412,7 @@ def run_cases(verbose: bool = True) -> list[str]:
     check("Network topology separates display mode from Group by and Labels", lambda: (
         require_tokens("topology controls", network_topology, (
             'className="topology-view-mode"', 'aria-label="Topology view"',
-            '<option value="findings">Findings</option>',
+            '<option value="communication">Communication</option>',
             '<option value="findings">Findings</option>',
             'id="topology-cluster-mode"', 'Group by',
             '<option value="subnet">Subnet</option>',
@@ -436,8 +436,8 @@ def run_cases(verbose: bool = True) -> list[str]:
     ))
     check("Network topology panel expansion, keyboard activation and empty recovery", lambda: (
         require_tokens("topology interaction", network_topology, (
-            'topology-section-toggle', 'topology-collapsible-card',
-            'aria-expanded=', 'inspectEdge(edge)', 'inspectNode(node)',
+            'toggleFullScreen', 'Collapse panel', 'Expand panel',
+            'aria-pressed={isFullScreen}', 'inspectEdge(edge)', 'inspectNode(node)',
             'Clear topology refinements', 'clearGraphRefinements',
             'aria-label="Topology view"',
         ))
@@ -447,7 +447,7 @@ def run_cases(verbose: bool = True) -> list[str]:
         (('Math.hypot(dxClient, dyClient) < 5' in network_topology
           and '.closest(".topology-node, .topology-edge")' in network_topology
           and 'onPointerDown={(event) => event.stopPropagation()}' in network_topology
-          and 'onPointerDown={(event) => beginNodeDrag(event, node)}' in network_topology
+          and 'className="node-drag-handle"' in network_topology
           and 'onPointerDown={(event) => beginNodeDrag(event, node)}' in network_topology
           and 'dragRef.current = null;' in network_topology
           and 'setIsInteracting(false);' in network_topology
@@ -455,12 +455,12 @@ def run_cases(verbose: bool = True) -> list[str]:
           and 'focusNodeNeighborhood(node);' in network_topology
           and 'className="topology-edge-hit"' in network_topology
           and 'Math.max(16, width + 12)' in network_topology
-          
+          and 'onSelect({ type: "device", id: node.id })' in network_topology
           and 'onSelect({ type: "connection", id: edge.id })' in network_topology
           and 'focusedDeviceFilterActive' in network_topology
           and 'focusedServiceFilterActive' in network_topology
           and 'event.key !== "Escape"' in network_topology
-          and '.topology-node' in (ROOT / "frontend/src/app/components/NetworkTopology/NetworkTopology.css").read_text(encoding="utf-8")
+          and '.node-drag-handle' in (ROOT / "frontend/src/app/components/NetworkTopology/NetworkTopology.css").read_text(encoding="utf-8")
           and 'outline: none !important' in (ROOT / "frontend/src/app/components/NetworkTopology/NetworkTopology.css").read_text(encoding="utf-8")))
         or (_ for _ in ()).throw(AssertionError())
     ))

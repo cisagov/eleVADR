@@ -1,0 +1,13 @@
+Wave 8.4: Topology graph readability
+
+Extract over the eleVADR repository root, preserving paths.
+Changes: clearer cluster/device counts, overview versus drill-down guidance,
+renamed and categorized graph key, simpler interaction hints, responsive styles.
+No backend, graph calculation, filtering, or evidence semantics changed.
+
+Validate:
+  npm --prefix frontend run type-check
+  npm --prefix frontend run build
+  npm --prefix frontend run test -- src/tests/NetworkTopologyInteraction.test.tsx
+  python -m backend_bryan.regression.dataset13_runner
+  python -m backend_bryan.regression.dataset20_runner

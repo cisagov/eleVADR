@@ -1,0 +1,5 @@
+Wave 8.5.23 - Advanced investigation controls styling
+
+Extract into the eleVADR repository root. Only NetworkTopology.css changes.
+Built from Wave 8.5.22 CSS.
+Run npm --prefix frontend run type-check and npm --prefix frontend run build.

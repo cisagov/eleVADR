@@ -44,7 +44,7 @@ def store(tmp_path: Path) -> MongoReportStore:
 
 def test_report_persistence_is_owner_scoped_and_deletable(tmp_path: Path):
     s = store(tmp_path)
-    report = {"report_id": "report-123", "report_version": "2.0", "summary": {"total_devices": 4}, "arch_insights": {"detector_findings": [{}, {}]}}
+    report = {"report_id": "report-123", "report_version": "2.0", "summary": {"total_devices": 999}, "modules": {"ot_devices": [{}, {}], "it_devices": [{}], "edge_devices": [{}]}, "arch_insights": {"detector_findings": [{}, {}]}}
     meta = s.save("user-a", "alice", report, "plant.pcap")
     assert meta["findingCount"] == 2
     assert meta["deviceCount"] == 4
@@ -93,3 +93,77 @@ def test_report_rename_validates_title(tmp_path: Path):
             pass
         else:
             raise AssertionError("invalid report title was accepted")
+
+
+def test_device_count_uses_inventory_not_summary(tmp_path: Path):
+    s = store(tmp_path)
+    report = {"report_id": "inventory-1", "summary": {"total_devices": 999},
+              "modules": {"ot_devices": [{}, {}], "it_devices": [{}], "edge_devices": []}}
+    assert s.save("user-a", "alice", report, "plant.pcap")["deviceCount"] == 3
+    assert s.list_for_owner("user-a")[0]["deviceCount"] == 3
+
+
+def test_legacy_device_count_repair_dry_run_then_apply(tmp_path: Path):
+    s = store(tmp_path)
+    report = {"report_id": "legacy-1", "summary": {"total_devices": 0},
+              "modules": {"ot_devices": [{}, {}], "it_devices": [{}], "edge_devices": []}}
+    s.save("user-a", "alice", report, "plant.pcap")
+    s._reports.rows[0]["device_count"] = 0
+    before = (tmp_path / "users/user-a/reports/legacy-1.json").read_bytes()
+    assert s.repair_device_counts_for_owner("user-b", dry_run=False)["checked"] == 0
+    assert s.repair_device_counts_for_owner("user-a") == {
+        "checked": 1, "different": 1, "updated": 0, "skipped": 0}
+    assert s.list_for_owner("user-a")[0]["deviceCount"] == 0
+    assert s.repair_device_counts_for_owner("user-a", dry_run=False)["updated"] == 1
+    assert s.list_for_owner("user-a")[0]["deviceCount"] == 3
+    assert (tmp_path / "users/user-a/reports/legacy-1.json").read_bytes() == before
+
+
+def test_repair_skips_incomplete_or_missing_reports(tmp_path: Path):
+    s = store(tmp_path)
+    s.save("user-a", "alice", {"report_id": "old-1"}, "old.pcap")
+    s.save("user-a", "alice", {"report_id": "gone-1"}, "gone.pcap")
+    (tmp_path / "users/user-a/reports/gone-1.json").unlink()
+    result = s.repair_device_counts_for_owner("user-a", dry_run=False)
+    assert result == {"checked": 2, "different": 0, "updated": 0, "skipped": 2}
+
+
+def test_service_and_connection_counts_are_persisted(tmp_path: Path):
+    s = store(tmp_path)
+    report = {
+        "report_id": "activity-1",
+        "modules": {
+            "ot_devices": [{}], "it_devices": [], "edge_devices": [],
+            "service_count_panel": {"service_count": 4},
+            "connection_success_panel": {"connections": [{}, {}, {}, {}]},
+        },
+    }
+    meta = s.save("user-a", "alice", report, "capture.pcap")
+    assert (meta["deviceCount"], meta["serviceCount"], meta["connectionCount"]) == (1, 4, 4)
+    assert s.list_for_owner("user-a")[0]["serviceCount"] == 4
+
+
+def test_activity_count_repair_dry_run_then_apply(tmp_path: Path):
+    s = store(tmp_path)
+    report = {"report_id": "activity-2", "modules": {
+        "service_panel": {"num_known_services": 3, "num_unknown_services": 2},
+        "connection_success_panel": {"summary": {"successful_count": 6, "unsuccessful_count": 1}},
+    }}
+    s.save("user-a", "alice", report, "capture.pcap")
+    row = s._reports.rows[0]
+    row.pop("service_count")
+    row.pop("connection_count")
+    assert s.repair_activity_counts_for_owner("user-a") == {
+        "checked": 1, "different": 1, "updated": 0, "skipped": 0}
+    assert "service_count" not in row
+    assert s.repair_activity_counts_for_owner("user-a", dry_run=False)["updated"] == 1
+    assert (row["service_count"], row["connection_count"]) == (5, 7)
+    assert s.load("user-a", "activity-2") == report
+    assert s.repair_activity_counts_for_owner("user-a")["different"] == 0
+
+
+def test_activity_repair_skips_missing_inventory(tmp_path: Path):
+    s = store(tmp_path)
+    s.save("user-a", "alice", {"report_id": "incomplete"}, "capture.pcap")
+    assert s.repair_activity_counts_for_owner("user-a", dry_run=False) == {
+        "checked": 1, "different": 0, "updated": 0, "skipped": 1}

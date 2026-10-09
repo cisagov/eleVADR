@@ -1,0 +1,12 @@
+Wave 8.1.1 Topology simplification
+
+Extract into the eleVADR repository root, preserving paths.
+Removes redundant Cluster summary and Rendering diagnostics UI, including unused measurement state.
+Keeps Explore a cluster dropdown, cluster drill-down, progressive display for dense graphs, and graph query features.
+
+Validate:
+ npm --prefix frontend run type-check
+ npm --prefix frontend run build
+ npm --prefix frontend run test -- src/tests/NetworkTopologyInteraction.test.tsx
+ python -m backend_bryan.regression.dataset13_runner
+ python -m backend_bryan.regression.dataset20_runner

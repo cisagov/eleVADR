@@ -582,6 +582,7 @@ function App() {
   >({});
   const [graphViewState, setGraphViewState] =
     useState<NetworkTopologyState | null>(null);
+  const [topologyExpanded, setTopologyExpanded] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
   const isReadOnly = Boolean(
     authState?.authEnabled &&
@@ -2557,8 +2558,32 @@ function App() {
                                 <InfoTooltip text="Interactive view of observed devices and the communication paths between them. Select a device or connection to inspect and pivot into related evidence." />
                               </div>
                             }
+                            headerAction={
+                              <button
+                                type="button"
+                                className="topology-header-expand-button"
+                                onClick={() => setTopologyExpanded((current) => !current)}
+                                aria-label={topologyExpanded ? "Restore topology panel" : "Expand topology panel"}
+                                aria-pressed={topologyExpanded}
+                                title={topologyExpanded ? "Restore topology panel" : "Expand topology panel"}
+                              >
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  {topologyExpanded ? (
+                                    <>
+                                      <path d="M9 3v6H3M15 21v-6h6M3 9l6-6M21 15l-6 6" />
+                                    </>
+                                  ) : (
+                                    <>
+                                      <path d="M9 3H3v6M15 21h6v-6M3 3l7 7M21 21l-7-7" />
+                                    </>
+                                  )}
+                                </svg>
+                              </button>
+                            }
                           >
                             <NetworkTopology
+                              expanded={topologyExpanded}
+                              onRestorePanel={() => setTopologyExpanded(false)}
                               report={report}
                               filters={filters}
                               onFilter={applyFilter}
@@ -3140,7 +3165,7 @@ function App() {
                                               </div>
                                               <span>
                                                 {analysis.findingCount} findings · {analysis.deviceCount}{" "}
-                                                devices
+                                                devices · {analysis.serviceCount ?? "—"} services · {analysis.connectionCount ?? "—"} connections
                                               </span>
                                               <span>
                                                 Saved analysis · source evidence{" "}

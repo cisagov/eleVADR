@@ -299,7 +299,7 @@ def run_cases(verbose: bool = True) -> list[str]:
     check("Network topology uses the shared drawer/filter contract and finding-aware investigation controls", lambda: (
         ("setFocusedNodeId(node.id)" in network_topology
          and "setFocusedEdgeId(edge.id)" in network_topology
-         
+         and 'onSelect({ type: "device", id: node.id });' in network_topology
          and 'onSelect({ type: "connection", id: edge.id });' in network_topology
          and "topology-selection-bar" in network_topology
          and "topology-filter-action" in network_topology
@@ -455,7 +455,7 @@ def run_cases(verbose: bool = True) -> list[str]:
           and 'focusNodeNeighborhood(node);' in network_topology
           and 'className="topology-edge-hit"' in network_topology
           and 'Math.max(16, width + 12)' in network_topology
-          
+          and 'onSelect({ type: "device", id: node.id })' in network_topology
           and 'onSelect({ type: "connection", id: edge.id })' in network_topology
           and 'focusedDeviceFilterActive' in network_topology
           and 'focusedServiceFilterActive' in network_topology

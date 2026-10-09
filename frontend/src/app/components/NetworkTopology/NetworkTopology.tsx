@@ -42,15 +42,6 @@ type GraphQuery = {
   direction?: "both" | "outbound" | "inbound";
 };
 type SavedGraphQuery = { id: string; name: string; query: GraphQuery; updatedAt: string };
-const GRAPH_QUERY_TEMPLATES: { name: string; query: GraphQuery }[] = [
-  { name: "Suspicious communications", query: { suspicious: true } },
-  { name: "Finding-related communications", query: { findingRelated: true } },
-  { name: "PLC / OT assets", query: { type: "OT" } },
-  { name: "High-volume links", query: { minCount: 10 } },
-  { name: "Observed two-hop neighborhood", query: { maxHops: 2 } },
-  { name: "PLC / OT two-hop relationships", query: { type: "OT", maxHops: 2 } },
-  { name: "Suspicious two-hop relationships", query: { suspicious: true, maxHops: 2 } },
-];
 type Point = { x: number; y: number };
 type Viewport = { x: number; y: number; scale: number };
 type LabelMode = "minimal" | "full" | "off";
@@ -138,98 +129,14 @@ function defaultPosition(
 }
 
 
-// Compare report-derived observations, never inferred physical links.
-type ComparisonEdge = { source: string; target: string; service: string; count: number };
-type ComparisonSnapshot = { assets: Set<string>; edges: Map<string, ComparisonEdge> };
-function comparisonSnapshot(report: ElevadrReport): ComparisonSnapshot {
-  const assets = new Set<string>();
-  const edges = new Map<string, ComparisonEdge>();
-  const modules = report.modules;
-  for (const device of [...(modules.ot_devices || []), ...(modules.it_devices || []), ...(modules.edge_devices || [])]) {
-    for (const ip of deviceIps(device)) if (ip) assets.add(ip);
-  }
-  const add = (source: string, target: string, service: string, count: number) => {
-    if (!source || !target || source === target) return;
-    assets.add(source); assets.add(target);
-    const name = service || "Unknown service";
-    const key = JSON.stringify([source, target, name]);
-    const previous = edges.get(key);
-    edges.set(key, { source, target, service: name, count: (previous?.count || 0) + count });
-  };
-  for (const line of modules.ot_cross_segment_lines_panel?.lines || []) {
-    add(line["src_endpoint.ip"], line["dst_endpoint.ip"], line["service.name"], Number(line.count) || 1);
-  }
-  for (const line of modules.suspicious_outbound_connections_panel || []) {
-    add(line["src_endpoint.ip"], line["dst_endpoint.ip"], line["service.name"], Number(line.count) || 1);
-  }
-  for (const line of modules.connection_success_panel?.connections || []) {
-    add(line["src_endpoint.ip"] || "", line["dst_endpoint.ip"] || "", line["service.name"] || line["connection_info.protocol_name"] || (line["dst_endpoint.port"] ? `Port ${line["dst_endpoint.port"]}` : "Connection"), 1);
-  }
-  return { assets, edges };
-}
-
-type ComparisonChange = { key: string; status: "New" | "Not observed" | "Count changed"; edge: ComparisonEdge; baselineCount: number; currentCount: number };
-type ComparisonFinding = { title: string; severity: string };
-function comparisonFindings(report: ElevadrReport, source: string, target: string): ComparisonFinding[] {
-  const findings = report.arch_insights?.detector_findings;
-  if (!Array.isArray(findings)) return [];
-  return findings.flatMap((raw): ComparisonFinding[] => {
-    if (!raw || typeof raw !== "object") return [];
-    const item = raw as Record<string, unknown>;
-    const addresses = new Set<string>();
-    if (Array.isArray(item.devices)) for (const ip of item.devices) if (typeof ip === "string") addresses.add(ip);
-    for (const field of ["connection_pairs", "flows"]) {
-      const records = item[field];
-      if (!Array.isArray(records)) continue;
-      for (const record of records) {
-        if (!record || typeof record !== "object") continue;
-        const pair = record as Record<string, unknown>;
-        for (const value of [pair.source, pair.src, pair.destination, pair.dst, pair["src_endpoint.ip"], pair["dst_endpoint.ip"]]) {
-          if (typeof value === "string") addresses.add(value);
-        }
-      }
-    }
-    if (!addresses.has(source) && !addresses.has(target)) return [];
-    return [{ title: String(item.title || item.name || item.module || "Detection finding"), severity: String(item.severity || "Unspecified") }];
-  });
-}
-function comparisonCsvCell(value: string | number): string {
-  return `"${String(value).replace(/"/g, '""')}"`;
-}
-function downloadComparison(name: string, contents: string, mime: string): void {
-  const url = URL.createObjectURL(new Blob([contents], { type: mime }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = name;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function compareTopology(baseline: ElevadrReport, current: ElevadrReport) {
-  const before = comparisonSnapshot(baseline);
-  const after = comparisonSnapshot(current);
-  const newAssets = [...after.assets].filter((ip) => !before.assets.has(ip)).sort();
-  const missingAssets = [...before.assets].filter((ip) => !after.assets.has(ip)).sort();
-  const changes: ComparisonChange[] = [];
-  for (const [key, edge] of after.edges) {
-    const prior = before.edges.get(key);
-    if (!prior) changes.push({ key, status: "New", edge, baselineCount: 0, currentCount: edge.count });
-    else if (prior.count !== edge.count) changes.push({ key, status: "Count changed", edge, baselineCount: prior.count, currentCount: edge.count });
-  }
-  for (const [key, edge] of before.edges) if (!after.edges.has(key)) {
-    changes.push({ key, status: "Not observed", edge, baselineCount: edge.count, currentCount: 0 });
-  }
-  return { newAssets, missingAssets, changes };
-}
-
 interface Props {
   report: ElevadrReport;
   filters: InvestigationFilter[];
   onFilter: (filter: InvestigationFilter) => void;
   onSelect: (entity: SelectedEntity) => void;
   onStateChange?: (state: NetworkTopologyState) => void;
+  expanded?: boolean;
+  onRestorePanel?: () => void;
 }
 
 const DEFAULT_VIEWPORT: Viewport = { x: 0, y: 0, scale: 1 };
@@ -240,6 +147,8 @@ const NetworkTopology: React.FC<Props> = ({
   onFilter,
   onSelect,
   onStateChange,
+  expanded = false,
+  onRestorePanel,
 }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const cardRef = useRef<HTMLElement | null>(null);
@@ -256,136 +165,6 @@ const NetworkTopology: React.FC<Props> = ({
     moved: boolean;
   } | null>(null);
 
-  const [comparisonOpen, setComparisonOpen] = useState(false);
-  const [baselineReport, setBaselineReport] = useState<ElevadrReport | null>(null);
-  const [baselineName, setBaselineName] = useState("");
-  const [comparisonError, setComparisonError] = useState("");
-  const [comparisonPage, setComparisonPage] = useState(0);
-  const [comparisonOverlay, setComparisonOverlay] = useState(true);
-  const [selectedComparisonKey, setSelectedComparisonKey] = useState<string | null>(null);
-  const [comparisonFilter, setComparisonFilter] = useState<"All" | ComparisonChange["status"]>("All");
-  const comparison = useMemo(() => baselineReport ? compareTopology(baselineReport, report) : null, [baselineReport, report]);
-  const [comparisonFindingsOnly, setComparisonFindingsOnly] = useState(false);
-  const [comparisonQueryOnly, setComparisonQueryOnly] = useState(false);
-  const [comparisonSavedName, setComparisonSavedName] = useState("");
-  type SavedComparison = { id: string; name: string; currentReportId: string; baselineId: string; filter: "All" | ComparisonChange["status"]; findingsOnly: boolean; queryOnly: boolean; updatedAt: string };
-  const [savedComparisons, setSavedComparisons] = useState<SavedComparison[]>([]);
-  const [comparisonBusy, setComparisonBusy] = useState(false);
-  const [comparisonSavedId, setComparisonSavedId] = useState<string | null>(null);
-  const comparisonRequest = async (method: string, path: string, body?: unknown) => {
-    const token = getAccessToken();
-    if (!token) throw new Error("Sign in to manage saved comparisons.");
-    const response = await fetch(authApiUrl(path), {
-      method, headers: { Authorization: `Bearer ${token}`, ...(body ? { "Content-Type": "application/json" } : {}) },
-      body: body ? JSON.stringify(body) : undefined, cache: "no-store",
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.message || `Comparison service returned HTTP ${response.status}`);
-    return data;
-  };
-  const refreshComparisons = async () => {
-    try {
-      const data = await comparisonRequest("GET", "/api/v1/topology-comparisons");
-      setSavedComparisons(Array.isArray(data.comparisons) ? data.comparisons : []);
-    } catch (error) { setComparisonError(error instanceof Error ? error.message : "Cannot load saved comparisons"); }
-  };
-  useEffect(() => { if (comparisonOpen) void refreshComparisons(); }, [comparisonOpen]);
-  const saveComparisonSettings = async () => {
-    if (!comparisonSavedName.trim() || !baselineReport) return;
-    setComparisonBusy(true);
-    try {
-      const payload = {
-        id: comparisonSavedId || undefined, name: comparisonSavedName.trim(),
-        currentReportId: String(report.report_id || ""),
-        baselineId: String(baselineReport.report_id || baselineName),
-        filter: comparisonFilter, findingsOnly: comparisonFindingsOnly, queryOnly: comparisonQueryOnly,
-      };
-      const data = await comparisonRequest("POST", "/api/v1/topology-comparisons", payload);
-      setComparisonSavedId(data.comparison.id);
-      await refreshComparisons(); setComparisonError("");
-    } catch (error) { setComparisonError(error instanceof Error ? error.message : "Cannot save comparison"); }
-    finally { setComparisonBusy(false); }
-  };
-  // Restore the baseline from the owner-scoped report store when possible.
-  // Never silently compare a saved configuration against a different report.
-  const recallComparisonSettings = async (item: SavedComparison) => {
-    setComparisonSavedId(item.id);
-    setComparisonSavedName(item.name);
-    setComparisonFilter(item.filter);
-    setComparisonFindingsOnly(item.findingsOnly);
-    setComparisonQueryOnly(item.queryOnly);
-    setComparisonPage(0);
-    setSelectedComparisonKey(null);
-    if (item.currentReportId !== String(report.report_id || "")) {
-      setComparisonError("Load the saved comparison's current report before recalling its baseline.");
-      return;
-    }
-    if (baselineReport && String(baselineReport.report_id || "") === item.baselineId) {
-      setComparisonError("");
-      return;
-    }
-    setComparisonBusy(true);
-    try {
-      const data = await comparisonRequest("GET", `/api/v1/reports/${encodeURIComponent(item.baselineId)}`);
-      const candidate = data.report as ElevadrReport | undefined;
-      if (!candidate?.modules?.connection_success_panel || !candidate.modules?.ot_cross_segment_lines_panel ||
-          !Array.isArray(candidate.modules?.ot_devices) || String(candidate.report_id || "") !== item.baselineId) {
-        throw new Error("The saved baseline report is unavailable or has incompatible topology data.");
-      }
-      setBaselineReport(candidate);
-      setBaselineName(`Saved report ${item.baselineId}`);
-      setComparisonError("");
-    } catch (error) {
-      setBaselineReport(null);
-      setComparisonError(`${error instanceof Error ? error.message : "Cannot restore baseline"} Open the baseline JSON manually if it was not retained.`);
-    } finally {
-      setComparisonBusy(false);
-    }
-  };
-  const deleteComparisonSettings = async () => {
-    if (!comparisonSavedId) return;
-    setComparisonBusy(true);
-    try {
-      await comparisonRequest("DELETE", `/api/v1/topology-comparisons/${encodeURIComponent(comparisonSavedId)}`);
-      setComparisonSavedId(null); setComparisonSavedName(""); await refreshComparisons(); setComparisonError("");
-    } catch (error) { setComparisonError(error instanceof Error ? error.message : "Cannot delete comparison"); }
-    finally { setComparisonBusy(false); }
-  };
-  const exportComparison = (format: "json" | "csv") => {
-    if (!comparison || !baselineReport) return;
-    const rows = comparison.changes.map((change) => ({
-      status: change.status, source: change.edge.source, destination: change.edge.target,
-      service: change.edge.service, baselineCount: change.baselineCount, currentCount: change.currentCount,
-      baselineFindings: comparisonFindings(baselineReport, change.edge.source, change.edge.target).length,
-      currentFindings: comparisonFindings(report, change.edge.source, change.edge.target).length,
-    }));
-    if (format === "json") {
-      downloadComparison("topology-comparison.json", JSON.stringify({ baselineReportId: baselineReport.report_id, currentReportId: report.report_id, newAssets: comparison.newAssets, notObservedAssets: comparison.missingAssets, changes: rows, caution: "Differences in observed traffic are not proof of physical network changes." }, null, 2), "application/json");
-    } else {
-      const fields = ["status", "source", "destination", "service", "baselineCount", "currentCount", "baselineFindings", "currentFindings"] as const;
-      downloadComparison("topology-comparison.csv", [fields.join(","), ...rows.map((row) => fields.map((field) => comparisonCsvCell(row[field])).join(","))].join("\r\n"), "text/csv;charset=utf-8");
-    }
-  };
-
-  const loadBaseline = async (file: File | undefined) => {
-    if (!file) return;
-    setComparisonError("");
-    try {
-      if (file.size > 50 * 1024 * 1024) throw new Error("JSON report exceeds the 50 MiB comparison limit.");
-      const value: unknown = JSON.parse(await file.text());
-      if (!value || typeof value !== "object" || !("modules" in value)) throw new Error("File is not an eleVADR report.");
-      const candidate = value as ElevadrReport;
-      if (!candidate.modules?.connection_success_panel || !candidate.modules?.ot_cross_segment_lines_panel || !Array.isArray(candidate.modules?.ot_devices)) throw new Error("Report is missing required topology data.");
-      setBaselineReport(candidate);
-      setBaselineName(file.name);
-      setComparisonPage(0);
-      setSelectedComparisonKey(null);
-      setComparisonOverlay(true);
-      setComparisonFilter("All");
-    } catch (error) {
-      setComparisonError(error instanceof Error ? error.message : "Unable to load comparison report.");
-    }
-  };
   const [labelMode, setLabelMode] = useState<LabelMode>("minimal");
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
@@ -398,55 +177,10 @@ const NetworkTopology: React.FC<Props> = ({
   const [focusedEdgeId, setFocusedEdgeId] = useState<string | null>(null);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("class");
   const [clusterFocus, setClusterFocus] = useState("");
-  const [clusterListOpen, setClusterListOpen] = useState(false);
+  const [organizeOpen, setOrganizeOpen] = useState(true);
+  const [exploreOpen, setExploreOpen] = useState(true);
   const [clusterRenderLimit, setClusterRenderLimit] = useState(24);
   const [autoRevealClusters, setAutoRevealClusters] = useState(false);
-  const [showPerformanceDetails, setShowPerformanceDetails] = useState(false);
-  const [lastFrameDelay, setLastFrameDelay] = useState<number | null>(null);
-  // Opt-in measurements of the real browser main thread, not synthetic SVG timings.
-  const [browserMetrics, setBrowserMetrics] = useState<{ samples: number; averageFrameMs: number; p95FrameMs: number; slowFrames: number; longTasks: number; longestTaskMs: number } | null>(null);
-  useEffect(() => {
-    if (!showPerformanceDetails) return;
-    let active = true;
-    let frameId = 0;
-    let previous = 0;
-    const frames: number[] = [];
-    let longTasks = 0;
-    let longestTaskMs = 0;
-    let observer: PerformanceObserver | undefined;
-    try {
-      if (PerformanceObserver.supportedEntryTypes?.includes("longtask")) {
-        observer = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
-            longTasks += 1;
-            longestTaskMs = Math.max(longestTaskMs, entry.duration);
-          }
-        });
-        observer.observe({ entryTypes: ["longtask"] });
-      }
-    } catch { /* Long Task API is not available in all browsers. */ }
-    const sample = (now: number) => {
-      if (!active) return;
-      if (previous) frames.push(now - previous);
-      previous = now;
-      if (frames.length >= 120) {
-        const sorted = [...frames].sort((a, b) => a - b);
-        const total = frames.reduce((a, b) => a + b, 0);
-        setBrowserMetrics({
-          samples: frames.length,
-          averageFrameMs: Math.round(total / frames.length * 10) / 10,
-          p95FrameMs: Math.round(sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * .95) - 1)] * 10) / 10,
-          slowFrames: frames.filter((ms) => ms > 50).length,
-          longTasks,
-          longestTaskMs: Math.round(longestTaskMs * 10) / 10,
-        });
-        frames.length = 0;
-      }
-      frameId = window.requestAnimationFrame(sample);
-    };
-    frameId = window.requestAnimationFrame(sample);
-    return () => { active = false; window.cancelAnimationFrame(frameId); observer?.disconnect(); };
-  }, [showPerformanceDetails]);
 
   const revealFrameRef = useRef<number | null>(null);
   const clusterLayoutCacheRef = useRef<{ signature: string; coordinates: Map<string, Point> } | null>(null);
@@ -469,7 +203,7 @@ const NetworkTopology: React.FC<Props> = ({
     rectHeight: number;
   } | null>(null);
   const [isInteracting, setIsInteracting] = useState(false);
-  const [isFullScreen, setIsFullScreen] = useState(false);
+  const isFullScreen = expanded;
   const [legendOpen, setLegendOpen] = useState(true);
 
   const [queryOpen, setQueryOpen] = useState(false);
@@ -480,8 +214,6 @@ const NetworkTopology: React.FC<Props> = ({
   const [queryActive, setQueryActive] = useState(false);
   const [queryError, setQueryError] = useState("");
   const [queryBusy, setQueryBusy] = useState(false);
-  const [queryAdvanced, setQueryAdvanced] = useState(false);
-  const [queryResultsOpen, setQueryResultsOpen] = useState(true);
   const [queryResultPage, setQueryResultPage] = useState(0);
   const [showOnlyQueryMatches, setShowOnlyQueryMatches] = useState(false);
   const QUERY_PAGE_SIZE = 50;
@@ -1238,7 +970,6 @@ const NetworkTopology: React.FC<Props> = ({
     if (dragRef.current?.moved) return;
     setFocusedNodeId(node.id);
     setFocusedEdgeId(null);
-    onSelect({ type: "device", id: node.id });
   };
 
   const focusedNode = focusedNodeId ? nodeMap.get(focusedNodeId) : undefined;
@@ -1301,7 +1032,6 @@ const NetworkTopology: React.FC<Props> = ({
         filter.key === "service" && filter.value === focusedEdge.service,
     ),
   );
-  const toggleFullScreen = () => setIsFullScreen((current) => !current);
 
   const resetGraphView = () => {
     setPreset("simple");
@@ -1443,7 +1173,7 @@ const NetworkTopology: React.FC<Props> = ({
   };
 
   const beginNodeDrag = (
-    event: React.PointerEvent<SVGCircleElement>,
+    event: React.PointerEvent<SVGGElement>,
     node: Node,
   ) => {
     event.preventDefault();
@@ -1457,18 +1187,22 @@ const NetworkTopology: React.FC<Props> = ({
     };
   };
 
-  const finishNodeDrag = (event: React.PointerEvent<SVGCircleElement>) => {
+  const finishNodeDrag = (event: React.PointerEvent<SVGGElement>) => {
     event.preventDefault();
     event.stopPropagation();
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId);
-    dragRef.current = null;
+    // Retain the moved flag until the synthetic click following pointerup.
+    // Otherwise releasing a drag can accidentally select the device.
+    const moved = Boolean(dragRef.current?.moved);
     pendingPointerRef.current = null;
     if (pointerFrameRef.current !== null) {
       window.cancelAnimationFrame(pointerFrameRef.current);
       pointerFrameRef.current = null;
     }
     setIsInteracting(false);
+    if (!moved) dragRef.current = null;
+    else window.setTimeout(() => { dragRef.current = null; }, 0);
   };
 
   const fittedViewport = (): Viewport | null => {
@@ -1794,14 +1528,10 @@ const NetworkTopology: React.FC<Props> = ({
       if (autoRevealClusters && clusterRenderLimit >= aggregateGraph.clusters.length) setAutoRevealClusters(false);
       return;
     }
-    const started = performance.now();
     revealFrameRef.current = window.requestAnimationFrame(() => {
       revealFrameRef.current = null;
-      const frameDelay = performance.now() - started;
-      setLastFrameDelay(Math.round(frameDelay * 10) / 10);
-      // Slow frames reveal fewer clusters. This bounds incremental SVG work
-      // without changing the underlying graph or saved-query results.
-      const batch = frameDelay > 48 ? 6 : frameDelay > 24 ? 12 : 24;
+      // Reveal a bounded batch per frame without changing saved-query results.
+      const batch = 24;
       setClusterRenderLimit((limit) => Math.min(limit + batch, aggregateGraph.clusters.length));
     });
     return () => {
@@ -1843,294 +1573,59 @@ const NetworkTopology: React.FC<Props> = ({
   }, [inspectedClusterEdge, clusterMembership, renderedQueryEdges]);
   const inspectedClusterPageEdges = inspectedClusterRelationship.slice(clusterEdgePage * 25, (clusterEdgePage + 1) * 25);
 
-  // The overlay is presentation-only: compare full report observations, then
-  // draw only relationships whose endpoints are visible in the current graph.
-  // Apply the same bounded observed-communication traversal independently to each capture.
-  // Comparing edge sets never implies routing or physical reachability.
-  const crossReportQuery = useMemo(() => {
-    if (!baselineReport || !queryActive) return null;
-    const execute = (capture: ElevadrReport) => {
-      const snapshot = comparisonSnapshot(capture);
-      const deviceMatches = (ip: string) => {
-        const identified = classify(ip, capture);
-        const device = identified.device;
-        const subnet = (device?.subnets || device?.ipv4_subnets || [])[0] || "Unknown subnet";
-        const attributes = device as (Device & { roleGroup?: string; role?: string; purdueLevel?: string; purdue_level?: string }) | undefined;
-        const role = String(attributes?.roleGroup || attributes?.role || identified.type);
-        const purdue = String(attributes?.purdueLevel || attributes?.purdue_level || "Unassigned");
-        return (!query.type || identified.type === query.type) &&
-          (!query.subnet || subnet.toLowerCase().includes(query.subnet.toLowerCase())) &&
-          (!query.roleGroup || role.toLowerCase().includes(query.roleGroup.toLowerCase())) &&
-          (!query.purdueLevel || purdue.toLowerCase().includes(query.purdueLevel.toLowerCase()));
-      };
-      const suspiciousPairs = new Set((capture.modules.suspicious_outbound_connections_panel || []).map((line) =>
-        JSON.stringify([line["src_endpoint.ip"], line["dst_endpoint.ip"], line["service.name"] || "Unknown service"])));
-      const eligible = [...snapshot.edges.entries()].filter(([key, edge]) =>
-        (!query.service || edge.service.toLowerCase().includes(query.service.toLowerCase())) &&
-        (!query.minCount || edge.count >= query.minCount) &&
-        (query.suspicious === undefined || suspiciousPairs.has(key) === query.suspicious) &&
-        (query.findingRelated === undefined || (comparisonFindings(capture, edge.source, edge.target).length > 0) === query.findingRelated));
-      const seed = (query.startAsset || "").trim();
-      if (!seed) return new Set(eligible.filter(([, edge]) => deviceMatches(edge.source) || deviceMatches(edge.target)).map(([key]) => key));
-      const selected = new Set<string>();
-      const visited = new Set([seed]);
-      let frontier = new Set([seed]);
-      for (let hop = 0; hop < Math.min(4, Math.max(1, query.maxHops || 1)) && frontier.size; hop++) {
-        const next = new Set<string>();
-        for (const [key, edge] of eligible) {
-          const forward = query.direction !== "inbound" && frontier.has(edge.source);
-          const reverse = query.direction !== "outbound" && frontier.has(edge.target);
-          if (!forward && !reverse) continue;
-          if (!deviceMatches(edge.source) && !deviceMatches(edge.target)) continue;
-          selected.add(key);
-          for (const neighbor of [forward ? edge.target : null, reverse ? edge.source : null]) {
-            if (neighbor && !visited.has(neighbor)) { visited.add(neighbor); next.add(neighbor); }
-          }
-        }
-        frontier = next;
-      }
-      return selected;
-    };
-    const baseline = execute(baselineReport);
-    const current = execute(report);
-    return { baseline, current,
-      newlyMatched: [...current].filter((key) => !baseline.has(key)).length,
-      noLongerMatched: [...baseline].filter((key) => !current.has(key)).length };
-  }, [baselineReport, report, queryActive, query]);
-  const comparisonChanges = useMemo(() => comparison?.changes.filter((change) => {
-    if (comparisonFilter !== "All" && change.status !== comparisonFilter) return false;
-    if (comparisonFindingsOnly && baselineReport && !comparisonFindings(baselineReport, change.edge.source, change.edge.target).length && !comparisonFindings(report, change.edge.source, change.edge.target).length) return false;
-    if (comparisonQueryOnly && (!crossReportQuery || (!crossReportQuery.baseline.has(change.key) && !crossReportQuery.current.has(change.key)))) return false;
-    return true;
-  }) || [], [comparison, comparisonFilter, comparisonFindingsOnly, comparisonQueryOnly, baselineReport, report, crossReportQuery]);
-  const selectedComparison = comparison?.changes.find((change) => change.key === selectedComparisonKey);
-  const comparisonColors: Record<ComparisonChange["status"], string> = {
-    New: "#16804a",
-    "Count changed": "#ad7400",
-    "Not observed": "#bd3945",
-  };
   const topologyView = (
     <section
       className={`topology-card${isFullScreen ? " topology-card--expanded" : ""}`}
       ref={cardRef}
       aria-label="Network topology visualization"
     >
-      <div className="topology-comparison-workspace" style={{ padding: "0.75rem", borderBottom: "1px solid #bbb" }}>
-        <button type="button" aria-expanded={comparisonOpen} onClick={() => setComparisonOpen((open) => !open)}>
-          {comparisonOpen ? "Hide report comparison" : "Compare with another report"}
+      {isFullScreen && onRestorePanel && (
+        <button
+          type="button"
+          className="topology-floating-restore"
+          onClick={onRestorePanel}
+          aria-label="Restore topology panel"
+          title="Restore topology panel"
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M9 3v6H3M15 21v-6h6M3 9l6-6M21 15l-6 6" />
+          </svg>
         </button>
-        {comparisonOpen && <div style={{ display: "grid", gap: "0.65rem", marginTop: "0.65rem" }}>
-          <label>Baseline eleVADR JSON report <input type="file" accept=".json,application/json" onChange={(event) => void loadBaseline(event.target.files?.[0])} /></label>
-          <small>Current report: {report.report_id || "Loaded report"}. Baseline: {baselineName || "None selected"}.</small>
-          {comparisonError && <p role="alert">{comparisonError}</p>}
-          {comparison && <>
-            {crossReportQuery && <p role="status">Cross-report query traversal: {crossReportQuery.newlyMatched} newly matching relationships; {crossReportQuery.noLongerMatched} no longer matching relationships (observed communications only).</p>}
-            <p role="status">{comparison.newAssets.length} newly observed assets; {comparison.missingAssets.length} assets not observed; {comparison.changes.length} changed communication relationships.</p>
-            <small>Changes describe observations in the two reports, not confirmed physical network changes. Counts may reflect different capture durations or visibility.</small>
-            <div className="topology-comparison-controls" style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-              <label><input type="checkbox" checked={comparisonOverlay} onChange={(event) => setComparisonOverlay(event.target.checked)} /> Show comparison on graph</label>
-              <label><input type="checkbox" checked={comparisonFindingsOnly} onChange={(event) => { setComparisonFindingsOnly(event.target.checked); setComparisonPage(0); }} /> Finding-associated changes only</label>
-              <label><input type="checkbox" checked={comparisonQueryOnly} onChange={(event) => { setComparisonQueryOnly(event.target.checked); setComparisonPage(0); }} disabled={!queryActive} /> Apply active query filters to differences</label>
-              <label>Highlight <select value={comparisonFilter} onChange={(event) => { setComparisonFilter(event.target.value as typeof comparisonFilter); setComparisonPage(0); }}>
-                <option value="All">All changes</option><option value="New">Newly observed</option><option value="Count changed">Count changed</option><option value="Not observed">Not observed</option>
-              </select></label>
-              <span aria-label="Comparison overlay legend" style={{ display: "inline-flex", gap: "0.7rem", flexWrap: "wrap" }}>
-                <span style={{ color: "#16804a" }}>● New</span>
-                <span style={{ color: "#ad7400" }}>● Count changed</span>
-                <span style={{ color: "#bd3945" }}>┄ Not observed</span>
-              </span>
-            </div>
-            <div className="topology-comparison-export" style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
-              <button type="button" onClick={() => exportComparison("csv")}>Export comparison CSV</button>
-              <button type="button" onClick={() => exportComparison("json")}>Export comparison JSON</button>
-              <label>Comparison name <input value={comparisonSavedName} maxLength={100} onChange={(event) => setComparisonSavedName(event.target.value)} /></label>
-              <button type="button" disabled={comparisonBusy || !baselineReport || !comparisonSavedName.trim()} onClick={() => void saveComparisonSettings()}>Save comparison settings</button>
-              <label>Recall settings <select value="" onChange={(event) => {
-                const item = savedComparisons.find((entry) => entry.id === event.target.value);
-                if (!item) return;
-                void recallComparisonSettings(item);
-              }}><option value="">Choose saved settings</option>{savedComparisons.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}</select></label>
-              <button type="button" disabled={!comparisonSavedId || comparisonBusy} onClick={() => void deleteComparisonSettings()}>Delete saved comparison</button>
-              <small>Saved comparison settings are stored in MongoDB. Retained baseline reports are restored automatically; otherwise choose a baseline JSON file.</small>
-            </div>
-            <details><summary>Newly observed assets ({comparison.newAssets.length})</summary><p>{comparison.newAssets.slice(0, 100).join(", ") || "None"}{comparison.newAssets.length > 100 ? " ..." : ""}</p></details>
-            <details><summary>Assets not observed in current report ({comparison.missingAssets.length})</summary><p>{comparison.missingAssets.slice(0, 100).join(", ") || "None"}{comparison.missingAssets.length > 100 ? " ..." : ""}</p></details>
-            <div><strong>Communication differences</strong>
-              <div style={{ maxHeight: "220px", overflowY: "auto" }}>
-                {comparisonChanges.slice(comparisonPage * 25, (comparisonPage + 1) * 25).map((change) => <button key={change.key} type="button"
-                  aria-pressed={selectedComparisonKey === change.key}
-                  onClick={() => setSelectedComparisonKey(change.key)}
-                  style={{ display: "block", width: "100%", textAlign: "left", padding: "0.4rem", border: selectedComparisonKey === change.key ? "2px solid currentColor" : "1px solid transparent", background: "transparent", cursor: "pointer" }}>
-                  {change.status}: {change.edge.source} to {change.edge.target} ({change.edge.service}) - baseline {change.baselineCount}, current {change.currentCount}
-                </button>)}
-                {!comparisonChanges.length && <p>No communication differences in the report-derived topology.</p>}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <button type="button" disabled={comparisonPage === 0} onClick={() => setComparisonPage((n) => Math.max(0, n - 1))}>Previous</button>
-                <span>Page {comparisonPage + 1} of {Math.max(1, Math.ceil(comparisonChanges.length / 25))}</span>
-                <button type="button" disabled={(comparisonPage + 1) * 25 >= comparisonChanges.length} onClick={() => setComparisonPage((n) => n + 1)}>Next</button>
-              </div>
-            </div>
-            {selectedComparison && <aside role="region" aria-label="Selected communication comparison" style={{ border: "1px solid #aaa", borderRadius: "0.4rem", padding: "0.75rem", display: "grid", gap: "0.4rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <strong>Communication comparison details</strong>
-                <button type="button" onClick={() => setSelectedComparisonKey(null)} aria-label="Close comparison details">Close</button>
-              </div>
-              <div><strong>Status:</strong> {selectedComparison.status}</div>
-              <div><strong>Source:</strong> {selectedComparison.edge.source} <button type="button" onClick={() => onSelect({ type: "device", id: selectedComparison.edge.source })}>Inspect source asset</button></div>
-              <div><strong>Destination:</strong> {selectedComparison.edge.target} <button type="button" onClick={() => onSelect({ type: "device", id: selectedComparison.edge.target })}>Inspect destination asset</button></div>
-              <div><strong>Service:</strong> {selectedComparison.edge.service}</div>
-              <div><strong>Baseline observations:</strong> {selectedComparison.baselineCount}</div>
-              <div><strong>Current observations:</strong> {selectedComparison.currentCount}</div>
-              <div><strong>Difference:</strong> {selectedComparison.currentCount - selectedComparison.baselineCount > 0 ? "+" : ""}{selectedComparison.currentCount - selectedComparison.baselineCount}</div>
-              {baselineReport && <div>
-                <strong>Associated findings (asset or flow evidence):</strong>
-                <div>Baseline: {comparisonFindings(baselineReport, selectedComparison.edge.source, selectedComparison.edge.target).length}; Current: {comparisonFindings(report, selectedComparison.edge.source, selectedComparison.edge.target).length}</div>
-                {comparisonFindings(report, selectedComparison.edge.source, selectedComparison.edge.target).slice(0, 15).map((finding, index) => <div key={index}>{finding.title} - {finding.severity}</div>)}
-                <small>Finding association is based on referenced endpoints and may not identify the exact communication. Review the Findings section for evidence.</small>
-              </div>}
-              <small>These are report-derived observations, not proof of a physical link or actual reachability. Asset details refer to the current report; baseline-only assets may not be present.</small>
-            </aside>}
-            <button type="button" onClick={() => { setBaselineReport(null); setBaselineName(""); setComparisonPage(0); setSelectedComparisonKey(null); }}>Clear comparison</button>
-          </>}
+      )}
+      <div className="topology-collapsible-card topology-organize-wrapper">
+        <button type="button" className="topology-section-toggle" aria-expanded={organizeOpen} aria-controls="topology-organize-content" onClick={() => setOrganizeOpen((open) => !open)}>
+          <span>1. Organize devices</span><span className="topology-section-chevron" aria-hidden="true">{organizeOpen ? "â–¾" : "â–¸"}</span>
+        </button>
+        {organizeOpen && <div id="topology-organize-content" className="topology-cluster-controls" aria-label="Topology grouping and cluster drill-down">
+        <label className="topology-cluster-field" htmlFor="topology-cluster-mode">
+          <span>Group by</span>
+          <select id="topology-cluster-mode" value={layoutMode} onChange={(event) => setLayoutMode(event.target.value as LayoutMode)}>
+            <option value="class">Asset class</option>
+            <option value="subnet">Subnet</option>
+            <option value="purdue">Purdue level</option>
+            <option value="role">Role group</option>
+          </select>
+        </label>
+        <label className="topology-cluster-field topology-cluster-focus-field" htmlFor="topology-cluster-focus">
+          <span>Explore a cluster</span>
+          <select id="topology-cluster-focus" value={clusterFocus} onChange={(event) => { setClusterFocus(event.target.value); setViewport(DEFAULT_VIEWPORT); }}>
+            <option value="">Network overview</option>
+            {clusterSummaries.map(([name, count]) => <option key={name} value={name}>{name} ({count} assets)</option>)}
+          </select>
+        </label>
+        <span role="status" className="topology-view-count">{aggregateView ? `${aggregateGraph.clusters.length} clusters Â· ${nodes.length} devices available` : `${nodes.length} devices shown Â· ${visibleEdges.length} connections`}</span>
+        {clusterFocus && <button type="button" onClick={() => { setClusterFocus(""); setViewport(DEFAULT_VIEWPORT); }}>Back to overview</button>}
+        <p className="topology-cluster-guidance">{aggregateView
+          ? "Select a cluster to see its devices and observed communications. Lines between clusters summarize traffic, not physical wiring."
+          : "Showing one cluster. Select a device or connection to inspect it; use Back to overview to see all clusters."}</p>
         </div>}
       </div>
-      <div className="topology-query-workspace">
-        <button type="button" aria-expanded={queryOpen} onClick={() => setQueryOpen((open) => !open)}>
-          {queryOpen ? "Hide Query Explorer" : "Graph Query Explorer"}
-        </button>
-        {queryActive && <span role="status">{queryMatchingEdges.length} matching relationships · {queryNodeIds.size} assets</span>}
-        {queryOpen && <div className="topology-query-panel">
-          <div className="topology-query-primary">
-            <label>Saved query
-              <select value={savedQueryId || ""} onChange={(event) => {
-                const saved = savedQueries.find((item) => item.id === event.target.value);
-                setSavedQueryId(saved?.id || null);
-                if (saved) { setQuery(saved.query); setQueryName(saved.name); setQueryActive(false); }
-              }}>
-                <option value="">New query</option>
-                {savedQueries.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-              </select>
-            </label>
-            <label>Investigation template
-              <select value="" onChange={(event) => {
-                const template = GRAPH_QUERY_TEMPLATES.find((item) => item.name === event.target.value);
-                if (template) { setQuery(template.query); setQueryName(template.name); setSavedQueryId(null); setQueryActive(false); }
-              }}>
-                <option value="">Choose a template</option>
-                {GRAPH_QUERY_TEMPLATES.map((item) => <option key={item.name} value={item.name}>{item.name}</option>)}
-              </select>
-            </label>
-            <label>Query name<input maxLength={100} value={queryName} onChange={(event) => setQueryName(event.target.value)} placeholder="Name this investigation" /></label>
-          </div>
-          <div className="topology-query-builder" aria-label="Visual relationship builder">
-            <strong>Relationship builder</strong>
-            <div className="topology-query-path">
-              <label>Starting asset IP<input placeholder="Any asset" value={query.startAsset || ""} onChange={(event) => setQuery((q) => ({ ...q, startAsset: event.target.value || undefined }))} /></label>
-              <label>Direction<select value={query.direction || "both"} onChange={(event) => setQuery((q) => ({ ...q, direction: event.target.value as "both" | "outbound" | "inbound" }))}>
-                <option value="both">Either direction ↔</option><option value="outbound">Source → destination</option><option value="inbound">Destination ← source</option>
-              </select></label>
-              <label>Depth<select value={query.maxHops || 1} onChange={(event) => setQuery((q) => ({ ...q, maxHops: Number(event.target.value) }))}>
-                <option value={1}>1 hop</option><option value={2}>2 hops</option><option value={3}>3 hops</option><option value={4}>4 hops</option>
-              </select></label>
-              <label>Asset class<select value={query.type || ""} onChange={(event) => setQuery((q) => ({ ...q, type: event.target.value || undefined }))}>
-                <option value="">Any class</option><option>OT</option><option>IT</option><option>Edge</option><option>Unknown</option>
-              </select></label>
-            </div>
-            <p className="topology-query-hint">Find chains of observed communications. A multi-hop chain does not establish physical connectivity or network reachability.</p>
-          </div>
-          <button className="topology-query-advanced-toggle" type="button" aria-expanded={queryAdvanced} onClick={() => setQueryAdvanced((value) => !value)}>
-            {queryAdvanced ? "Hide advanced filters −" : "Advanced filters +"}
-          </button>
-          {queryAdvanced && <div className="topology-query-fields">
-            <label>Subnet contains<input value={query.subnet || ""} onChange={(event) => setQuery((q) => ({ ...q, subnet: event.target.value || undefined }))} /></label>
-            <label>Purdue level contains<input value={query.purdueLevel || ""} onChange={(event) => setQuery((q) => ({ ...q, purdueLevel: event.target.value || undefined }))} /></label>
-            <label>Role group contains<input value={query.roleGroup || ""} onChange={(event) => setQuery((q) => ({ ...q, roleGroup: event.target.value || undefined }))} /></label>
-            <label>Service contains<input value={query.service || ""} onChange={(event) => setQuery((q) => ({ ...q, service: event.target.value || undefined }))} /></label>
-            <label>Minimum observations<input type="number" min="1" value={query.minCount || ""} onChange={(event) => setQuery((q) => ({ ...q, minCount: event.target.value ? Number(event.target.value) : undefined }))} /></label>
-            <label>Suspicious<select value={query.suspicious === undefined ? "any" : String(query.suspicious)} onChange={(event) => setQuery((q) => ({ ...q, suspicious: event.target.value === "any" ? undefined : event.target.value === "true" }))}>
-              <option value="any">Any</option><option value="true">Yes</option><option value="false">No</option>
-            </select></label>
-            <label>Finding-related<select value={query.findingRelated === undefined ? "any" : String(query.findingRelated)} onChange={(event) => setQuery((q) => ({ ...q, findingRelated: event.target.value === "any" ? undefined : event.target.value === "true" }))}>
-              <option value="any">Any</option><option value="true">Yes</option><option value="false">No</option>
-            </select></label>
-          </div>}
-          <div className="topology-query-actions">
-            <button type="button" onClick={() => { setQueryActive(true); setQueryResultsOpen(true); setQueryResultPage(0); }}>Run query</button>
-            <button type="button" onClick={() => { setQueryActive(false); setShowOnlyQueryMatches(false); setQueryResultPage(0); }}>Clear results</button>
-            <button type="button" disabled={queryBusy || !queryName.trim()} onClick={() => void saveGraphQuery()}>Save query</button>
-            <button type="button" disabled={queryBusy || !savedQueryId} onClick={() => void deleteGraphQuery()}>Delete saved query</button>
-          </div>
-          {queryActive && <label className="topology-query-display-toggle">
-            <input type="checkbox" checked={showOnlyQueryMatches} onChange={(event) => setShowOnlyQueryMatches(event.target.checked)} />
-            Show only matching relationships in graph
-          </label>}
-          {queryError && <p role="alert">{queryError}</p>}
-          {queryActive && <div className="topology-query-results">
-            <button type="button" aria-expanded={queryResultsOpen} onClick={() => setQueryResultsOpen((value) => !value)}>
-              {queryResultsOpen ? "Hide" : "Show"} results · {queryMatchingEdges.length} relationships · {queryNodeIds.size} assets
-            </button>
-            {queryResultsOpen && <div className="topology-query-result-list" role="region" aria-label="Matching observed communications">
-              {pagedQueryEdges.map((edge) => <button type="button" key={edge.id} onClick={() => inspectEdge(edge)}>
-                <span>{edge.source} → {edge.target}</span>
-                <span>{edge.service} · {edge.count} observations{queryHopDepths.has(edge.id) ? ` · hop ${queryHopDepths.get(edge.id)}` : ""}</span>
-              </button>)}
-              {!queryMatchingEdges.length && <span>No matching communications in the report-derived graph.</span>}
-              {queryMatchingEdges.length > QUERY_PAGE_SIZE && <div className="topology-query-pagination">
-                <button type="button" disabled={effectiveQueryPage === 0} onClick={() => setQueryResultPage((page) => Math.max(0, page - 1))}>Previous</button>
-                <span>Page {effectiveQueryPage + 1} of {queryPageCount} ({queryMatchingEdges.length} total)</span>
-                <button type="button" disabled={effectiveQueryPage + 1 >= queryPageCount} onClick={() => setQueryResultPage((page) => Math.min(queryPageCount - 1, page + 1))}>Next</button>
-              </div>}
-            </div>}
-          </div>}
-          <small>Queries search all relationships available in this report; the visualization is limited for responsiveness. Maximum traversal depth: four hops.</small>
-        </div>}
-      </div>
-      <div className="topology-cluster-controls" aria-label="Topology grouping and cluster drill-down">
-        <strong className="topology-control-heading">Grouping and drill-down</strong>
-        <label htmlFor="topology-cluster-mode">Group by</label>
-        <select id="topology-cluster-mode" value={layoutMode} onChange={(event) => setLayoutMode(event.target.value as LayoutMode)}>
-          <option value="class">Asset class</option>
-          <option value="subnet">Subnet</option>
-          <option value="purdue">Purdue level</option>
-          <option value="role">Role group</option>
-        </select>
-        <label htmlFor="topology-cluster-focus">Cluster drill-down</label>
-        <select id="topology-cluster-focus" value={clusterFocus} onChange={(event) => { setClusterFocus(event.target.value); setViewport(DEFAULT_VIEWPORT); }}>
-          <option value="">All displayed clusters</option>
-          {clusterSummaries.map(([name, count]) => <option key={name} value={name}>{name} ({count} assets)</option>)}
-        </select>
-        <button type="button" aria-expanded={clusterListOpen} onClick={() => setClusterListOpen((open) => !open)}>
-          {clusterListOpen ? "Hide cluster summary" : "Cluster summary"}
-        </button>
-        <span role="status">{aggregateView ? `${aggregateGraph.clusters.length} aggregate nodes / ${nodes.length} display-candidate assets` : `${nodes.length} displayed assets / ${baseNodes.length} display candidates`}</span>
-        {clusterFocus && <button type="button" onClick={() => { setClusterFocus(""); setViewport(DEFAULT_VIEWPORT); }}>Collapse to clusters</button>}
-      </div>
-      {clusterListOpen && <div className="topology-cluster-summary" aria-label="Cluster asset counts">
-        {clusterSummaries.map(([name, count]) => <button key={name} type="button" onClick={() => { setClusterFocus(name); setViewport(DEFAULT_VIEWPORT); }}>
-          {name}: {count} assets
-        </button>)}
-        <small>Counts describe the display-candidate graph, not necessarily every asset in the original capture. Query execution remains independent of this cluster filter.</small>
-      </div>}
       {aggregateView && aggregateGraph.clusters.length > clusterRenderLimit && (
         <div className="topology-cluster-progress" role="status">
           Showing {renderedClusters.length} of {aggregateGraph.clusters.length} clusters and {renderedClusterEdges.length} of {aggregateGraph.edges.length} aggregated links.
           <button type="button" onClick={() => { setAutoRevealClusters(false); setClusterRenderLimit((value) => Math.min(value + 24, aggregateGraph.clusters.length)); }}>Show next 24 clusters</button>
           <button type="button" onClick={() => setAutoRevealClusters((value) => !value)}>{autoRevealClusters ? "Pause progressive display" : "Progressively show all"}</button>
           <button type="button" onClick={() => { setAutoRevealClusters(false); setClusterRenderLimit(24); }}>Reset cluster display</button>
-        </div>
-      )}
-      {aggregateView && (
-        <div className="topology-cluster-progress">
-          <button type="button" aria-expanded={showPerformanceDetails} onClick={() => setShowPerformanceDetails((value) => !value)}>
-            {showPerformanceDetails ? "Hide rendering diagnostics" : "Rendering diagnostics"}
-          </button>
-          {showPerformanceDetails && <span role="status">
-            Rendered {renderedClusters.length}/{aggregateGraph.clusters.length} clusters and {renderedClusterEdges.length}/{aggregateGraph.edges.length} aggregated links.
-            {lastFrameDelay !== null ? ` Last reveal scheduling delay: ${lastFrameDelay} ms.` : ""}
-            {browserMetrics ? ` Browser frame intervals (last ${browserMetrics.samples}): mean ${browserMetrics.averageFrameMs} ms, p95 ${browserMetrics.p95FrameMs} ms, >50ms ${browserMetrics.slowFrames}; long tasks ${browserMetrics.longTasks}, longest ${browserMetrics.longestTaskMs} ms.` : " Sampling browser frames..."}
-            {" "}Frame intervals include browser scheduling and background activity; they are not isolated topology paint timings.
-          </span>}
         </div>
       )}
       {aggregateView && inspectedClusterEdge && (
@@ -2140,7 +1635,7 @@ const NetworkTopology: React.FC<Props> = ({
           </div>
           <p>These links are observed communications, not proof of routing or physical connectivity.</p>
           {inspectedClusterPageEdges.map((edge) => <button key={edge.id} type="button" onClick={() => inspectEdge(edge)}>
-            {edge.source} to {edge.target} — {edge.service} ({edge.count} observations)
+            {edge.source} to {edge.target} â€” {edge.service} ({edge.count} observations)
           </button>)}
           <div className="topology-cluster-inspector-pages">
             <button type="button" disabled={clusterEdgePage === 0} onClick={() => setClusterEdgePage((page) => page - 1)}>Previous</button>
@@ -2153,22 +1648,52 @@ const NetworkTopology: React.FC<Props> = ({
         <div className="topology-performance-note" role="status">
           Dense topology: showing the highest-activity {nodes.length} devices
           and {visibleEdges.length} links for responsive interaction. Use
-          filters, Findings, or Selected + neighbors to narrow the view.
+          search, Show: Findings, or More filters to narrow the view.
         </div>
       )}
 
-      <div className="topology-toolbar topology-toolbar-option1">
+      <div className="topology-collapsible-card topology-explore-wrapper">
+        <div className="topology-collapsible-heading-row">
+          <button type="button" className="topology-section-toggle" aria-expanded={exploreOpen} aria-controls="topology-explore-content" onClick={() => setExploreOpen((open) => !open)}>
+            <span>2. Explore communications</span><span className="topology-section-chevron" aria-hidden="true">{exploreOpen ? "â–¾" : "â–¸"}</span>
+          </button>
+            {exploreOpen && (
+            <div className="topology-inline-display" role="group" aria-label="Topology display options">
+              <label className="topology-label-mode">
+                <span>Labels</span>
+                <select
+                  value={labelMode}
+                  onChange={(event) => setLabelMode(event.target.value as LabelMode)}
+                  aria-label="Topology label density"
+                >
+                  <option value="minimal">Minimal</option>
+                  <option value="full">Full</option>
+                  <option value="off">Off</option>
+                </select>
+              </label>
+              <label className={hideIsolated ? "topology-hide-isolated active" : "topology-hide-isolated"}>
+                <input
+                  type="checkbox"
+                  checked={hideIsolated}
+                  onChange={(event) => setHideIsolated(event.target.checked)}
+                />
+                Hide isolated devices
+              </label>
+            </div>
+            )}
+        </div>
+        {exploreOpen && <div id="topology-explore-content" className="topology-explore-content">
+      <div className="topology-toolbar topology-toolbar-option1 topology-explore-card">
         <div
           className="topology-toolbar-group topology-filter-group"
           aria-label="Topology display and filters"
         >
-          <strong className="topology-control-heading">Display and filters</strong>
           <label className="topology-search">
-            <span>Find</span>
+            <span>Search devices or services</span>
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Device or service…"
+              placeholder="IP address, device name, or serviceâ€¦"
             />
           </label>
           <label>
@@ -2194,8 +1719,29 @@ const NetworkTopology: React.FC<Props> = ({
               ))}
             </select>
           </label>
+          <label className="topology-view-mode">
+            <span>Show</span>
+            <select
+              value={preset === "risk" ? "findings" : "communication"}
+              onChange={(event) => {
+                if (event.target.value === "findings") applyPreset("risk");
+                else applyPreset("simple");
+              }}
+              aria-label="Topology view"
+            >
+              <option value="communication">Communications</option>
+              <option value="findings">Findings</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="topology-toolbar-bottom-row">
+          <div className="topology-secondary-controls" aria-label="Additional topology settings">
+            <details className="topology-options-menu">
+              <summary aria-label="More topology filters">More filters{(selectedClass !== "all" || findingOnly || suspiciousOnly || neighborsOnly) ? " (active)" : ""}</summary>
+              <div className="topology-options-content" aria-label="Additional communication filters">
           <label>
-            <span>Filter device class</span>
+            <span>Device class filter</span>
             <select
               value={selectedClass}
               onChange={(event) => {
@@ -2215,41 +1761,7 @@ const NetworkTopology: React.FC<Props> = ({
               <option>Unknown</option>
             </select>
           </label>
-          <label className="topology-view-mode">
-            <span>Display mode</span>
-            <select
-              value={preset === "risk" ? "findings" : "communication"}
-              onChange={(event) => {
-                if (event.target.value === "findings") applyPreset("risk");
-                else applyPreset("simple");
-              }}
-              aria-label="Topology view"
-            >
-              <option value="communication">Communication</option>
-              <option value="findings">Findings</option>
-            </select>
-          </label>
-          <label className="topology-label-mode">
-            <span>Labels</span>
-            <select
-              value={labelMode}
-              onChange={(event) =>
-                setLabelMode(event.target.value as LabelMode)
-              }
-              aria-label="Topology label density"
-            >
-              <option value="minimal">Minimal</option>
-              <option value="full">Full</option>
-              <option value="off">Off</option>
-            </select>
-          </label>
-        </div>
-
-        <div className="topology-toolbar-bottom-row">
-          <div
-            className="topology-toolbar-group topology-refinement-group"
-            aria-label="Topology visibility refinements"
-          >
+                <div className="topology-toolbar-group topology-refinement-group">
             <label className={findingOnly ? "active" : ""}>
               <input
                 type="checkbox"
@@ -2266,14 +1778,6 @@ const NetworkTopology: React.FC<Props> = ({
               />{" "}
               Suspicious
             </label>
-            <label className={hideIsolated ? "active" : ""}>
-              <input
-                type="checkbox"
-                checked={hideIsolated}
-                onChange={(event) => setHideIsolated(event.target.checked)}
-              />{" "}
-              Hide isolated
-            </label>
             <label className={neighborsOnly ? "active" : ""}>
               <input
                 type="checkbox"
@@ -2283,6 +1787,10 @@ const NetworkTopology: React.FC<Props> = ({
               />{" "}
               Selected + neighbors
             </label>
+                </div>
+              </div>
+            </details>
+
           </div>
 
           <div className="topology-zoom-controls" aria-label="Topology actions">
@@ -2292,7 +1800,7 @@ const NetworkTopology: React.FC<Props> = ({
               aria-label="Zoom out"
               title="Zoom out"
             >
-              −
+              âˆ’
             </button>
             <button
               type="button"
@@ -2309,16 +1817,9 @@ const NetworkTopology: React.FC<Props> = ({
               type="button"
               onClick={resetGraphView}
               aria-label="Reset graph view"
-              title="Reset graph-only view settings without changing report filters"
+              title="Restore default topology display, grouping, and zoom; report-wide filters stay active"
             >
               Reset
-            </button>
-            <button
-              type="button"
-              onClick={toggleFullScreen}
-              aria-pressed={isFullScreen}
-            >
-              {isFullScreen ? "Collapse panel" : "Expand panel"}
             </button>
             <button type="button" onClick={exportSvg}>
               Export SVG
@@ -2327,6 +1828,137 @@ const NetworkTopology: React.FC<Props> = ({
         </div>
       </div>
 
+        </div>}
+      </div>
+      <div className="topology-collapsible-card topology-organize-wrapper topology-advanced-workspaces-card">
+        <button
+          type="button"
+          className="topology-section-toggle"
+          aria-expanded={queryOpen}
+          aria-controls="topology-advanced-content"
+          onClick={() => setQueryOpen((open) => !open)}
+        >
+          <span>3. Advanced investigation tools</span>
+          <span className="topology-section-chevron" aria-hidden="true">{queryOpen ? "â–¾" : "â–¸"}</span>
+        </button>
+        {queryOpen && <div id="topology-advanced-content" className="topology-advanced-workspaces-content">
+      <div className="topology-query-workspace topology-network-explorer">
+        <div className="topology-query-workspace-heading">
+          <strong>Explore network relationships</strong>
+        </div>
+        <div className="topology-query-panel">
+          <div className="topology-explorer-main-row">
+          <div className="topology-explorer-primary">
+            <label>Device IP
+              <input
+                value={query.startAsset || ""}
+                placeholder="Enter a device IP, or select a node"
+                onChange={(event) => setQuery((q) => ({ ...q, startAsset: event.target.value || undefined }))}
+              />
+            </label>
+            {focusedNode && (
+              <button type="button" className="topology-explorer-use-selected" onClick={() => setQuery((q) => ({ ...q, startAsset: focusedNode.id }))}>
+                Use selected device ({focusedNode.id})
+              </button>
+            )}
+          </div>
+          <fieldset className="topology-explorer-choices">
+            <legend>What would you like to see?</legend>
+            <label><input type="radio" name="topology-explorer-kind" checked={query.suspicious !== true && query.findingRelated !== true} onChange={() => setQuery((q) => ({ ...q, suspicious: undefined, findingRelated: undefined }))} /> All connected devices</label>
+            <label><input type="radio" name="topology-explorer-kind" checked={query.suspicious === true} onChange={() => setQuery((q) => ({ ...q, suspicious: true, findingRelated: undefined }))} /> Suspicious communications</label>
+            <label><input type="radio" name="topology-explorer-kind" checked={query.findingRelated === true} onChange={() => setQuery((q) => ({ ...q, suspicious: undefined, findingRelated: true }))} /> Connections associated with findings</label>
+          </fieldset>
+          </div>
+          <details className="topology-explorer-optional">
+            <summary>Additional options</summary>
+            <div className="topology-explorer-options">
+              <label>Connections to include
+                <select value={query.maxHops || 1} onChange={(event) => setQuery((q) => ({ ...q, maxHops: Number(event.target.value) }))}>
+                  <option value={1}>Direct connections</option>
+                  <option value={2}>Up to 2 connections away</option>
+                  <option value={3}>Up to 3 connections away</option>
+                  <option value={4}>Up to 4 connections away</option>
+                </select>
+              </label>
+              <label>Service
+                <input value={query.service || ""} placeholder="All services" onChange={(event) => setQuery((q) => ({ ...q, service: event.target.value || undefined }))} />
+              </label>
+              <label>Device class
+                <select value={query.type || ""} onChange={(event) => setQuery((q) => ({ ...q, type: event.target.value || undefined }))}>
+                  <option value="">All classes</option><option>OT</option><option>IT</option><option>Edge</option><option>Unknown</option>
+                </select>
+              </label>
+              <label>Direction
+                <select value={query.direction || "both"} onChange={(event) => setQuery((q) => ({ ...q, direction: event.target.value as "both" | "outbound" | "inbound" }))}>
+                  <option value="both">Both directions</option><option value="outbound">Outbound</option><option value="inbound">Inbound</option>
+                </select>
+              </label>
+              <label>Subnet contains<input value={query.subnet || ""} onChange={(event) => setQuery((q) => ({ ...q, subnet: event.target.value || undefined }))} /></label>
+              <label>Purdue level contains<input value={query.purdueLevel || ""} onChange={(event) => setQuery((q) => ({ ...q, purdueLevel: event.target.value || undefined }))} /></label>
+              <label>Role group contains<input value={query.roleGroup || ""} onChange={(event) => setQuery((q) => ({ ...q, roleGroup: event.target.value || undefined }))} /></label>
+              <label>Minimum observations<input type="number" min="1" value={query.minCount || ""} onChange={(event) => setQuery((q) => ({ ...q, minCount: event.target.value ? Number(event.target.value) : undefined }))} /></label>
+            </div>
+          </details>
+          <details className="topology-explorer-saved">
+            <summary>Saved searches</summary>
+            <div className="topology-explorer-saved-controls">
+              <label>Open saved search
+                <select value={savedQueryId || ""} onChange={(event) => {
+                  const saved = savedQueries.find((item) => item.id === event.target.value);
+                  setSavedQueryId(saved?.id || null);
+                  if (saved) { setQuery(saved.query); setQueryName(saved.name); setQueryActive(false); }
+                }}>
+                  <option value="">Choose a saved search</option>
+                  {savedQueries.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                </select>
+              </label>
+              <label>Search name<input maxLength={100} value={queryName} onChange={(event) => setQueryName(event.target.value)} placeholder="Name this search" /></label>
+              <div className="topology-explorer-saved-actions">
+                <button type="button" className="topology-explorer-icon-button" aria-label="Save search" title="Save search" disabled={queryBusy || !queryName.trim()} onClick={() => void saveGraphQuery()}>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+                </button>
+                <button type="button" className="topology-explorer-icon-button" aria-label="Delete saved search" title="Delete saved search" disabled={queryBusy || !savedQueryId} onClick={() => void deleteGraphQuery()}>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6M10 10v7M14 10v7"/></svg>
+                </button>
+                <span className="topology-explorer-action-spacer" aria-hidden="true" />
+                <div className="topology-explorer-view-action">
+            <button
+              type="button"
+              aria-pressed={queryActive}
+              onClick={() => {
+                setQueryActive((active) => !active);
+                setShowOnlyQueryMatches(false);
+                setQueryResultPage(0);
+              }}
+            >{queryActive ? "Hide relationships" : "View relationships"}</button>
+                </div>
+              </div>
+            </div>
+          </details>
+          {queryError && <p role="alert">{queryError}</p>}
+          {queryActive && <div className="topology-query-results" aria-live="polite">
+            <div className="topology-explorer-results-heading">
+              <strong>{queryMatchingEdges.length} relationships Â· {queryNodeIds.size} devices</strong>
+              <label><input type="checkbox" checked={showOnlyQueryMatches} onChange={(event) => setShowOnlyQueryMatches(event.target.checked)} /> Show only matches on graph</label>
+            </div>
+            <div className="topology-query-result-list" role="region" aria-label="Matching observed communications">
+              {pagedQueryEdges.map((edge) => <button type="button" key={edge.id} onClick={() => inspectEdge(edge)}>
+                <span>{edge.source} â†’ {edge.target}</span>
+                <span>{edge.service} Â· {edge.count} observations{queryHopDepths.has(edge.id) ? ` Â· hop ${queryHopDepths.get(edge.id)}` : ""}</span>
+              </button>)}
+              {!queryMatchingEdges.length && <span>No matching communications found. Try another device or search type.</span>}
+              {queryMatchingEdges.length > QUERY_PAGE_SIZE && <div className="topology-query-pagination">
+                <button type="button" disabled={effectiveQueryPage === 0} onClick={() => setQueryResultPage((page) => Math.max(0, page - 1))}>Previous</button>
+                <span>Page {effectiveQueryPage + 1} of {queryPageCount}</span>
+                <button type="button" disabled={effectiveQueryPage + 1 >= queryPageCount} onClick={() => setQueryResultPage((page) => Math.min(queryPageCount - 1, page + 1))}>Next</button>
+              </div>}
+            </div>
+          </div>}
+          <small>Results are observed communications, not proof of physical connectivity or authorized access. Searches use the complete report, including devices not currently drawn.</small>
+        </div>
+      </div>
+        </div>}
+      </div>
       {(focusedNode || focusedEdge) && (
         <div
           className="topology-selection-bar"
@@ -2337,15 +1969,42 @@ const NetworkTopology: React.FC<Props> = ({
             <strong>
               {focusedNode
                 ? `Device ${focusedNode.id}`
-                : `${focusedEdge!.source} → ${focusedEdge!.target}`}
+                : `${focusedEdge!.source} â†’ ${focusedEdge!.target}`}
             </strong>
             <span>
               {focusedNode
-                ? `${focusedNode.type} · ${focusedPeerCount} connected peer${focusedPeerCount === 1 ? "" : "s"} · ${focusedNode.findingCount} finding${focusedNode.findingCount === 1 ? "" : "s"}`
-                : `${focusedEdge!.service} · ${focusedEdge!.count.toLocaleString()} observation${focusedEdge!.count === 1 ? "" : "s"}${focusedEdge!.findingRelated || focusedEdge!.suspicious ? " · finding-related" : ""}`}
+                ? `${focusedNode.type} Â· ${focusedPeerCount} connected peer${focusedPeerCount === 1 ? "" : "s"} Â· ${focusedNode.findingCount} finding${focusedNode.findingCount === 1 ? "" : "s"}`
+                : `${focusedEdge!.service} Â· ${focusedEdge!.count.toLocaleString()} observation${focusedEdge!.count === 1 ? "" : "s"}${focusedEdge!.findingRelated || focusedEdge!.suspicious ? " Â· finding-related" : ""}`}
             </span>
           </div>
-          <div className="topology-selection-actions">
+          <div className="topology-selection-actions" aria-label="Selected item actions">
+            <button
+              type="button"
+              onClick={() => {
+                if (focusedNode) onSelect({ type: "device", id: focusedNode.id });
+                else if (focusedEdge) onSelect({ type: "connection", id: focusedEdge.id });
+              }}
+            >
+              Inspect details
+            </button>
+            {focusedNode && (
+              <button
+                type="button"
+                aria-pressed={neighborsOnly}
+                onClick={() => {
+                  if (neighborsOnly) {
+                    setNeighborsOnly(false);
+                    fitToView();
+                  } else {
+                    setNeighborsOnly(true);
+                    focusNodeNeighborhood(focusedNode);
+                  }
+                }}
+                title="Show only the selected device and its observed communication peers"
+              >
+                {neighborsOnly ? "Show all devices" : "Show connected devices"}
+              </button>
+            )}
             <button
               type="button"
               className="topology-filter-action"
@@ -2375,6 +2034,11 @@ const NetworkTopology: React.FC<Props> = ({
         </div>
       )}
 
+      {!aggregateView && !focusedNode && !focusedEdge && nodes.length > 0 && (
+        <p className="topology-interaction-hint">
+          Click a device to select it, then choose Inspect details to open its information. Drag a device to move it. Double-click to focus its neighbors; press Escape to clear selection.
+        </p>
+      )}
       {nodes.length ? (
         <div className="topology-canvas">
           <svg
@@ -2467,23 +2131,6 @@ const NetworkTopology: React.FC<Props> = ({
                       <title>{`${edge.source} to ${edge.target}: ${edge.count} observations across ${edge.relationships} relationships; protocols: ${[...edge.services].join(", ")}`}</title>
                     </g>;
                   })}
-                  {comparison && comparisonOverlay && comparisonChanges.map((change) => {
-                    const sourceGroup = clusterMembership.get(change.edge.source);
-                    const targetGroup = clusterMembership.get(change.edge.target);
-                    if (!sourceGroup || !targetGroup || sourceGroup === targetGroup) return null;
-                    const source = clusterPositions.get(sourceGroup);
-                    const target = clusterPositions.get(targetGroup);
-                    if (!source || !target) return null;
-                    return <g key={`compare-${change.key}`} role="button" tabIndex={0} aria-label={`Inspect ${change.status} communication between ${change.edge.source} and ${change.edge.target}`}
-                      onClick={(event) => { event.stopPropagation(); setSelectedComparisonKey(change.key); setComparisonOpen(true); }}
-                      onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedComparisonKey(change.key); setComparisonOpen(true); } }}>
-                      <line x1={source.x} y1={source.y} x2={target.x} y2={target.y} stroke="transparent" strokeWidth="16" />
-                      <line x1={source.x} y1={source.y} x2={target.x} y2={target.y}
-                        stroke={comparisonColors[change.status]} strokeWidth={selectedComparisonKey === change.key ? 5 : 2.5}
-                        strokeDasharray={change.status === "Not observed" ? "7 5" : undefined} opacity="0.9" pointerEvents="none" />
-                      <title>{`${change.status}: ${change.edge.source} to ${change.edge.target} (${change.edge.service})`}</title>
-                    </g>;
-                  })}
                   {renderedClusters.map((cluster) => (
                     <g key={cluster.key} transform={`translate(${cluster.x} ${cluster.y})`} role="button" tabIndex={0}
                       aria-label={`Expand ${cluster.key}, ${cluster.members.length} assets`}
@@ -2491,26 +2138,13 @@ const NetworkTopology: React.FC<Props> = ({
                       onClick={(event) => { event.stopPropagation(); setClusterFocus(cluster.key); setViewport(DEFAULT_VIEWPORT); }}
                       onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setClusterFocus(cluster.key); setViewport(DEFAULT_VIEWPORT); } }}>
                       <rect x="-78" y="-28" width="156" height="56" rx="12" fill="#e5f0f7" stroke="#397b9d" strokeWidth="2" />
-                      <text textAnchor="middle" y="-4" fontSize="13" fontWeight="600" fill="#153c56">{cluster.key.length > 22 ? `${cluster.key.slice(0, 21)}…` : cluster.key}</text>
-                      <text textAnchor="middle" y="15" fontSize="12" fill="#285775">{cluster.members.length} assets · expand</text>
+                      <text textAnchor="middle" y="-4" fontSize="13" fontWeight="600" fill="#153c56">{cluster.key.length > 22 ? `${cluster.key.slice(0, 21)}â€¦` : cluster.key}</text>
+                      <text textAnchor="middle" y="15" fontSize="12" fill="#285775">{cluster.members.length} assets Â· expand</text>
                       <title>{cluster.key}: {cluster.members.length} displayed assets. Activate to drill down.</title>
                     </g>
                   ))}
                 </g>
               ) : (<>
-              {layoutMode === "class" && (
-                <g className="topology-zone-labels" aria-hidden="true">
-                  <text x="185" y="46">
-                    IT
-                  </text>
-                  <text x="520" y="46">
-                    EDGE / TRANSIT
-                  </text>
-                  <text x="855" y="46">
-                    OT
-                  </text>
-                </g>
-              )}
               {layoutMode !== "class" && (
                 <g
                   className={`topology-group-regions topology-group-${layoutMode}`}
@@ -2640,14 +2274,14 @@ const NetworkTopology: React.FC<Props> = ({
                           />
                           <text textAnchor="middle" dominantBaseline="central">
                             {edge.service.length > 18
-                              ? `${edge.service.slice(0, 17)}…`
+                              ? `${edge.service.slice(0, 17)}â€¦`
                               : edge.service}
                           </text>
                         </g>
                       )}
                     <title>
-                      {edge.service} • {edge.count.toLocaleString()}{" "}
-                      observations{edge.suspicious ? " • suspicious" : ""}
+                      {edge.service} â€¢ {edge.count.toLocaleString()}{" "}
+                      observations{edge.suspicious ? " â€¢ suspicious" : ""}
                     </title>
                   </g>
                 );
@@ -2660,9 +2294,12 @@ const NetworkTopology: React.FC<Props> = ({
                     key={node.id}
                     className={`topology-node node-${node.type.toLowerCase()} ${selectedIp === node.id ? "selected" : ""} ${focusedNodeId === node.id ? "focused" : ""} ${focusedNodeId && !neighborIds.has(node.id) ? "dimmed" : ""} ${focusedEdge && node.id !== focusedEdge.source && node.id !== focusedEdge.target ? "dimmed" : ""} ${node.findingCount ? "finding-related" : ""} ${queryActive && !queryNodeIds.has(node.id) ? "query-dimmed" : ""} ${queryActive && queryNodeIds.has(node.id) ? "query-match" : ""}`}
                     transform={`translate(${node.x} ${node.y})`}
-                    onPointerDown={(event) => event.stopPropagation()}
+                    onPointerDown={(event) => beginNodeDrag(event, node)}
+                    onPointerUp={finishNodeDrag}
+                    onPointerCancel={finishNodeDrag}
                     onClick={(event) => {
                       event.stopPropagation();
+                      if (dragRef.current?.moved) return;
                       inspectNode(node);
                     }}
                     onDoubleClick={(event) => {
@@ -2699,21 +2336,6 @@ const NetworkTopology: React.FC<Props> = ({
                     <text className="node-type" y="3" textAnchor="middle">
                       {node.type === "Unknown" ? "?" : node.type.charAt(0)}
                     </text>
-                    <circle
-                      className="node-drag-handle"
-                      cx={radius + 5}
-                      cy={radius + 5}
-                      r="6"
-                      role="button"
-                      aria-label={`Move device ${node.id}`}
-                      onPointerDown={(event) => beginNodeDrag(event, node)}
-                      onPointerUp={finishNodeDrag}
-                      onPointerCancel={finishNodeDrag}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                      }}
-                    />
                     {node.findingCount > 0 && (
                       <g
                         className="topology-finding-marker"
@@ -2743,36 +2365,18 @@ const NetworkTopology: React.FC<Props> = ({
                         </g>
                       )}
                     <title>
-                      {node.type} • {node.id}
-                      {node.manufacturer ? ` • ${node.manufacturer}` : ""} • $
-                      {node.subnet} • ${node.roleGroup} • ${node.purdueLevel} •
+                      {node.type} â€¢ {node.id}
+                      {node.manufacturer ? ` â€¢ ${node.manufacturer}` : ""} â€¢ $
+                      {node.subnet} â€¢ ${node.roleGroup} â€¢ ${node.purdueLevel} â€¢
                       ${node.degree.toLocaleString()} observations$
                       {node.findingCount
-                        ? ` • ${node.findingCount} finding${node.findingCount === 1 ? "" : "s"}`
+                        ? ` â€¢ ${node.findingCount} finding${node.findingCount === 1 ? "" : "s"}`
                         : ""}
                     </title>
                   </g>
                 );
               })}
               </>)}
-              {comparison && comparisonOverlay && !aggregateView && (
-                <g className="topology-comparison-overlay" aria-label="Observed communication differences">
-                  {comparisonChanges.map((change) => {
-                    const source = nodeMap.get(change.edge.source);
-                    const target = nodeMap.get(change.edge.target);
-                    if (!source || !target) return null;
-                    return <g key={change.key} role="button" tabIndex={0} aria-label={`Inspect ${change.status} communication between ${change.edge.source} and ${change.edge.target}`}
-                      onClick={(event) => { event.stopPropagation(); setSelectedComparisonKey(change.key); setComparisonOpen(true); }}
-                      onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedComparisonKey(change.key); setComparisonOpen(true); } }}>
-                      <line x1={source.x} y1={source.y} x2={target.x} y2={target.y} stroke="transparent" strokeWidth="16" />
-                      <line x1={source.x} y1={source.y} x2={target.x} y2={target.y}
-                        stroke={comparisonColors[change.status]} strokeWidth={selectedComparisonKey === change.key ? 7 : change.status === "Count changed" ? 5 : 3.5}
-                        strokeDasharray={change.status === "Not observed" ? "7 5" : undefined} opacity="0.9" pointerEvents="none" />
-                      <title>{`${change.status}: ${change.edge.source} to ${change.edge.target} (${change.edge.service}); baseline ${change.baselineCount}, current ${change.currentCount}`}</title>
-                    </g>;
-                  })}
-                </g>
-              )}
             </g>
           </svg>
 
@@ -2785,11 +2389,12 @@ const NetworkTopology: React.FC<Props> = ({
               aria-expanded={legendOpen}
               onClick={() => setLegendOpen((open) => !open)}
             >
-              <span>Legend</span>
-              <span aria-hidden="true">{legendOpen ? "−" : "+"}</span>
+              <span>Graph key</span>
+              <span aria-hidden="true">{legendOpen ? "âˆ’" : "+"}</span>
             </button>
             {legendOpen && (
               <div className="topology-legend-items">
+                <strong className="topology-legend-category">Device types</strong>
                 <span>
                   <i className="legend-role legend-ot" />
                   OT
@@ -2806,6 +2411,7 @@ const NetworkTopology: React.FC<Props> = ({
                   <i className="legend-role legend-unknown" />
                   Unknown
                 </span>
+                <strong className="topology-legend-category">Connection highlights</strong>
                 <span>
                   <i className="legend-finding" />
                   Finding-related
@@ -2826,9 +2432,8 @@ const NetworkTopology: React.FC<Props> = ({
                   </span>
                 )}
                 <span className="legend-hint">
-                  Click = details · drag handle = move · double-click = focus ·
-                  funnel = filter · drag background = pan · Ctrl/⌘ + wheel =
-                  zoom · Esc = clear
+                  Click to select Â· drag to move Â· use Inspect details for the drawer Â· double-click to focus neighbors Â·
+                  drag the background to pan Â· Ctrl/âŒ˜ + wheel to zoom Â· Esc to clear selection
                 </span>
               </div>
             )}

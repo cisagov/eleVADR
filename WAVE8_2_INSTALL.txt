@@ -1,0 +1,8 @@
+Wave 8.2: extract into eleVADR repository root, preserving paths.
+Changes: reorganize Topology secondary filters and display settings into expandable controls; preserve existing handlers.
+Validate:
+ npm --prefix frontend run type-check
+ npm --prefix frontend run build
+ npm --prefix frontend run test -- src/tests/NetworkTopologyInteraction.test.tsx
+ python -m backend_bryan.regression.dataset13_runner
+ python -m backend_bryan.regression.dataset20_runner

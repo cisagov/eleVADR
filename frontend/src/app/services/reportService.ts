@@ -9,6 +9,8 @@ export interface SavedReportSummary {
   reportVersion: string;
   findingCount: number;
   deviceCount: number;
+  serviceCount?: number;
+  connectionCount?: number;
   captureId: string;
 }
 

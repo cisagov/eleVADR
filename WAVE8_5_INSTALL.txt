@@ -1,0 +1,21 @@
+Wave 8.5 - Topology accessibility and responsive refinement
+
+Copy the frontend/ directory into your eleVADR repository root, replacing the three matching files.
+
+Changes:
+- Accessible names for the secondary filter and display disclosure controls.
+- Clear keyboard interaction instructions in the graph's empty-selection hint.
+- Visible focus treatment for grouping, selection, cluster controls, and keyboard-targetable cluster nodes.
+- Narrow-screen action wrapping and reduced-motion support.
+- Two additional React interaction tests for keyboard cluster navigation and accessible disclosure labels.
+
+Validate from repository root:
+  npm --prefix frontend run type-check
+  npm --prefix frontend run build
+  npm --prefix frontend run test -- src/tests/NetworkTopologyInteraction.test.tsx
+  python -m backend_bryan.regression.dataset13_runner
+  python -m backend_bryan.regression.dataset20_runner
+  .\\run_regression_tests.bat
+  .\\run_platform_regression_tests.bat
+
+Full local test execution was not performed in the patch environment.

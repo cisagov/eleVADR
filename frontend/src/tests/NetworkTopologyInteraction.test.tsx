@@ -107,16 +107,31 @@ describe("NetworkTopology interaction regression", () => {
     }
   });
 
-  it("opens device details on a normal node-body click without entering drag mode", () => {
+  it("selects a device on click without opening details", () => {
     const { onSelect } = renderTopology();
     const node = firstDeviceButton();
     fireEvent.click(node);
-    expect(onSelect).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "device" }),
-    );
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Inspect details" })).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /Filter device/i }),
     ).toBeInTheDocument();
+  });
+
+  it("provides contextual inspection and connected-device actions", () => {
+    const { onSelect } = renderTopology();
+    fireEvent.click(firstDeviceButton());
+    expect(onSelect).not.toHaveBeenCalled();
+    const inspect = screen.getByRole("button", { name: "Inspect details" });
+    fireEvent.click(inspect);
+    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ type: "device" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show connected devices" }));
+    expect(screen.getByRole("button", { name: "Show all devices" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: "Show all devices" }));
+    expect(screen.getByRole("button", { name: "Show connected devices" })).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(screen.getByRole("button", { name: "Clear selection" }));
+    expect(screen.queryByRole("button", { name: "Inspect details" })).not.toBeInTheDocument();
+    expect(screen.getByText(/Select a device or connection to inspect it/)).toBeInTheDocument();
   });
 
   it("opens connection details through the widened invisible edge hit target", () => {
@@ -162,31 +177,17 @@ describe("NetworkTopology interaction regression", () => {
     ).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("uses a dedicated drag handle and exits drag mode on pointer release", () => {
-    const { container } = renderTopology();
+  it("drags a device from its node body without a move handle", () => {
+    const { container, onSelect } = renderTopology();
     const node = firstDeviceButton();
-    const moveHandle =
-      node.querySelector<SVGCircleElement>(".node-drag-handle");
     const svg = container.querySelector("svg[role='img']") as SVGSVGElement;
-    expect(moveHandle).not.toBeNull();
+    expect(node.querySelector(".node-drag-handle")).toBeNull();
 
-    fireEvent.pointerDown(moveHandle!, {
-      pointerId: 7,
-      clientX: 100,
-      clientY: 100,
-    });
+    fireEvent.pointerDown(node, { pointerId: 7, clientX: 100, clientY: 100 });
     fireEvent.pointerMove(svg, { pointerId: 7, clientX: 150, clientY: 140 });
-    fireEvent.pointerUp(moveHandle!, {
-      pointerId: 7,
-      clientX: 150,
-      clientY: 140,
-    });
-
-    expect(moveHandle!.hasPointerCapture(7)).toBe(false);
-    fireEvent.click(node);
-    expect(
-      screen.getByRole("button", { name: /Filter device/i }),
-    ).toBeInTheDocument();
+    fireEvent.pointerUp(node, { pointerId: 7, clientX: 150, clientY: 140 });
+    expect(node.hasPointerCapture(7)).toBe(false);
+    expect(onSelect).not.toHaveBeenCalled();
   });
 
   it("leaves ordinary wheel gestures to page scrolling and reserves modifier-wheel for graph zoom", () => {
@@ -209,18 +210,16 @@ describe("NetworkTopology interaction regression", () => {
 
   it("double-click focuses a node neighborhood and Escape clears selection", () => {
     renderTopology();
+
     const node = firstDeviceButton();
     fireEvent.doubleClick(node);
-    expect(
-      screen
-        .getByLabelText("Topology visibility refinements")
-        .querySelector("input:disabled"),
-    ).toBeNull();
+
     expect(
       screen.getByRole("button", { name: /Filter device/i }),
     ).toBeInTheDocument();
 
     fireEvent.keyDown(document, { key: "Escape" });
+
     expect(
       screen.queryByRole("button", { name: /Filter device/i }),
     ).not.toBeInTheDocument();
@@ -243,6 +242,26 @@ describe("NetworkTopology interaction regression", () => {
       fireEvent.change(labels, { target: { value: mode } });
       expect(labels.value).toBe(mode);
     }
+  });
+
+  it("supports keyboard cluster drill-down and return to overview", () => {
+    renderTopology([], false);
+    const cluster = screen.getByRole("button", { name: /^Expand OT, /i });
+    expect(cluster).toHaveAttribute("tabindex", "0");
+    fireEvent.keyDown(cluster, { key: "Enter" });
+    expect(screen.getByRole("button", { name: "Back to overview" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Back to overview" }));
+    expect(screen.getByRole("button", { name: /^Expand OT, /i })).toBeInTheDocument();
+  });
+
+  it("keeps display options visible and secondary filters collapsible", () => {
+    renderTopology([], false);
+    const filters = screen.getByText(/^More filters/).closest("summary");
+    expect(filters).toHaveAttribute("aria-label", "More topology filters");
+    expect(filters?.parentElement?.tagName).toBe("DETAILS");
+    expect(screen.getByRole("group", { name: "Topology display options" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Topology label density")).toBeVisible();
+    expect(screen.getByLabelText("Hide isolated devices")).toBeVisible();
   });
 
   it("renders aggregate clusters, then retains dense device and edge drill-down", () => {

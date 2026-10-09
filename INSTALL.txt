@@ -1,1 +1,19 @@
-Extract into the eleVADR repository root, preserving folders. Back up modified files first. Run: python -m pytest backend_bryan/tests/test_platform_ux_contract.py backend_bryan/tests/test_platform_ui_polish.py backend_bryan/tests/test_analysis_history_comparison.py backend_bryan/tests/test_report_comparison_refinement.py -v; npm --prefix frontend run type-check; npm --prefix frontend run build.
+Wave 8.5.29 - Saved analysis service and connection counts
+
+Extract ZIP into eleVADR repository root, preserving paths.
+
+Validate:
+python -m pytest backend_bryan/tests/test_report_persistence.py -v
+npm --prefix frontend run type-check
+npm --prefix frontend run build
+
+Restart backend after installation.
+
+Preview existing metadata:
+python repair_saved_analysis_activity_counts.py
+
+After backing up MongoDB and reviewing preview, apply:
+python repair_saved_analysis_activity_counts.py --apply
+
+The repair updates only service_count and connection_count MongoDB metadata.
+Missing/incomplete report inventories are skipped. Original report JSON is not modified.

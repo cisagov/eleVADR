@@ -1,0 +1,2 @@
+Topology consistency styling pass based on uploaded Wave 8 source.
+Only NetworkTopology.css is changed. Test locally with type-check, build, and topology Vitest.

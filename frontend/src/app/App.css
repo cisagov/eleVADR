@@ -4042,3 +4042,23 @@ select:focus-visible {
   .titlebar-center .analysis-titlebar-status { font-size: 0; gap: 4px; padding-inline: 7px; }
   .titlebar-center .analysis-status-pulse { width: 8px; height: 8px; }
 }
+
+/* Wave 8.5.7: topology expansion beside the panel collapse control. */
+.topology-header-expand-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #005ea2;
+  cursor: pointer;
+}
+.topology-header-expand-button:hover { background: #e0e0e0; }
+.topology-header-expand-button:focus-visible {
+  outline: 2px solid #005ea2;
+  outline-offset: 2px;
+}

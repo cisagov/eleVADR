@@ -1,0 +1,13 @@
+Wave 8.1 usability patch
+
+Extract into repository root preserving paths.
+Changes: clearer Topology instructions, grouping-first layout, better labels, and collapsible advanced Query Explorer/comparison workspace. No backend changes.
+
+Validate:
+ npm --prefix frontend run type-check
+ npm --prefix frontend run build
+ npm --prefix frontend run test -- src/tests/NetworkTopologyInteraction.test.tsx
+ python -m backend_bryan.regression.dataset13_runner
+ python -m backend_bryan.regression.dataset20_runner
+
+Full regression gate recommended after these pass.

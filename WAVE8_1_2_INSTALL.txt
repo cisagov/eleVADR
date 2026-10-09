@@ -1,0 +1,11 @@
+Wave 8.1.2 Topology UI update
+
+Extract over eleVADR repository root.
+Changes: removes Explore the network intro; styles 2. Explore communications toolbar as a card matching 1. Organize devices. No interaction logic changed.
+
+Validate:
+ npm --prefix frontend run type-check
+ npm --prefix frontend run build
+ npm --prefix frontend run test -- src/tests/NetworkTopologyInteraction.test.tsx
+ python -m backend_bryan.regression.dataset13_runner
+ python -m backend_bryan.regression.dataset20_runner
