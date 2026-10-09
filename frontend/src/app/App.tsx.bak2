@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { , useRef } from import React, { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import "./saved-report-interactions.css";
 import "./pcap-icon-actions.css";
@@ -196,7 +196,7 @@ const ModuleContributionBadge: React.FC<{
       title={names.join("\n")}
       aria-label={`${modules.length} detection module${modules.length === 1 ? "" : "s"} contributed to this section`}
     >
-      <span aria-hidden="true">◈</span>{" "}
+      <span aria-hidden="true">â—ˆ</span>{" "}
       {modules.length === 1 ? names[0] : `${modules.length} detector modules`}
     </span>
   );
@@ -1776,23 +1776,15 @@ function App() {
   };
 
   const navScrollLockRef = useRef(0);
-  const navScrollTimersRef = useRef<number[]>([]);
 
-  // Scroll against the document, not a stale section position. Explicitly
-  // disable CSS smooth scrolling for the duration of the navigation so a
-  // second click is never necessary, even with long lazy-rendered tables.
-  const scrollToSection = (id: string, behavior: ScrollBehavior = "auto") => {
+  const scrollToSection = (id: string, behavior: ScrollBehavior = "smooth") => {
     const target = document.getElementById(id);
     if (!target) return;
-    const root = document.documentElement;
-    const previousBehavior = root.style.scrollBehavior;
-    root.style.scrollBehavior = "auto";
-    const targetTop = target.getBoundingClientRect().top + window.scrollY;
+    const targetTop = window.scrollY + target.getBoundingClientRect().top;
     window.scrollTo({
       top: Math.max(0, targetTop - getStickyHeaderOffset()),
-      behavior: behavior === "smooth" ? "smooth" : "instant",
+      behavior,
     });
-    root.style.scrollBehavior = previousBehavior;
   };
 
   useEffect(() => {
@@ -1803,11 +1795,10 @@ function App() {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (Date.now() < navScrollLockRef.current) return;
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target.id) setActiveSection(visible.target.id);
+        if (visible?.target.id && Date.now() >= navScrollLockRef.current) setActiveSection(visible.target.id);
       },
       { rootMargin: "-18% 0px -68% 0px", threshold: [0, 0.1, 0.25] },
     );
@@ -1815,26 +1806,14 @@ function App() {
     return () => observer.disconnect();
   }, [navItems, report]);
 
-  useEffect(() => {
-    return () => navScrollTimersRef.current.forEach(window.clearTimeout);
-  }, []);
-
   const goToSection = (id: string) => {
-    // Cancel corrections from an earlier click before navigating elsewhere.
-    navScrollTimersRef.current.forEach(window.clearTimeout);
-    navScrollTimersRef.current = [];
-    navScrollLockRef.current = Date.now() + 1900;
+    // Ignore intersection updates while the requested section is brought into view.
+    navScrollLockRef.current = Date.now() + 1200;
     setActiveSection(id);
     closeMobileNav();
-    scrollToSection(id);
-    // Recalculate after React commits and after lazy tables/charts settle.
-    // These are absolute target measurements, not cumulative offsets.
-    window.requestAnimationFrame(() => scrollToSection(id));
-    for (const delay of [100, 300, 700]) {
-      navScrollTimersRef.current.push(
-        window.setTimeout(() => scrollToSection(id), delay),
-      );
-    }
+    scrollToSection(id, "auto");
+    // The report layout can settle a frame after the click (e.g. section headers).
+    window.requestAnimationFrame(() => scrollToSection(id, "auto"));
   };
 
   const applyFilter = (filter: InvestigationFilter) => {
@@ -1923,9 +1902,7 @@ function App() {
     // Wait for the report toolbar and section content to finish laying out, then
     // restore the deep-linked section with the same sticky-header clearance used
     // by left-side navigation.
-    window.setTimeout(() => {
-      if (Date.now() >= navScrollLockRef.current) scrollToSection(section, "auto");
-    }, 120);
+    window.setTimeout(() => scrollToSection(section, "auto"), 120);
   }, [report]);
 
   return (
@@ -1940,7 +1917,7 @@ function App() {
           <strong>Recovered server processing activity: </strong>
           {recoveredJobs.filter((job) => ["running", "queued", "completed"].includes(job.status)).map((job) => (
             <span key={job.jobId} style={{ marginRight: 18 }}>
-              {job.phase === "evidence" ? "Zeek evidence" : "Detection modules"}: {job.status} — {job.message || job.detail}
+              {job.phase === "evidence" ? "Zeek evidence" : "Detection modules"}: {job.status} â€” {job.message || job.stage}
               {typeof job.progress === "number" ? ` (${job.progress}%)` : ""}.
             </span>
           ))}
@@ -2708,7 +2685,7 @@ function App() {
                 className="welcome-account-panel auth-login-gate"
                 aria-live="polite"
               >
-                <h2>Checking authentication…</h2>
+                <h2>Checking authenticationâ€¦</h2>
                 <p>Connecting to the eleVADR backend.</p>
               </section>
             ) : authenticationRequired ? (
@@ -2751,7 +2728,7 @@ function App() {
                     className="welcome-signin-button"
                     disabled={authSubmitting}
                   >
-                    {authSubmitting ? "Signing in…" : "Sign in"}
+                    {authSubmitting ? "Signing inâ€¦" : "Sign in"}
                   </button>
                   {welcomeAuthMessage && (
                     <p className="welcome-auth-message" role="alert">
@@ -2853,7 +2830,7 @@ function App() {
                             <span>Search</span>
                             <input
                               type="search"
-                              placeholder="Analysis or PCAP name…"
+                              placeholder="Analysis or PCAP nameâ€¦"
                               value={savedReportQuery}
                               onChange={(event) => setSavedReportQuery(event.target.value)}
                             />
@@ -2872,7 +2849,7 @@ function App() {
                             </select>
                           </label>
                           <span className="saved-report-count">
-                            {analysisCaptureGroups.length} PCAPs · {savedReports.length} analyses
+                            {analysisCaptureGroups.length} PCAPs Â· {savedReports.length} analyses
                           </span>
                         </div>
                         {reportComparison ? (
@@ -2905,14 +2882,14 @@ function App() {
                               disabled={comparisonLoading}
                               onClick={() => void compareSelectedReports()}
                             >
-                              {comparisonLoading ? "Comparing…" : "Compare analyses"}
+                              {comparisonLoading ? "Comparingâ€¦" : "Compare analyses"}
                             </button>
                           </div>
                         ) : null}
                       </div>
 
                       {capturesLoading || savedReportsLoading ? (
-                        <p>Loading analyses…</p>
+                        <p>Loading analysesâ€¦</p>
                       ) : analysisCaptureGroups.length ? (
                         <div className="analysis-capture-list unified-analysis-tree">
                           {analysisCaptureGroups.map((group) => {
@@ -2946,15 +2923,15 @@ function App() {
                                   <div className="analysis-capture-copy">
                                     <div className="analysis-capture-title-row">
                                       <span className="analysis-tree-chevron" aria-hidden="true">
-                                        {historyOpen ? "▾" : "▸"}
+                                        {historyOpen ? "â–¾" : "â–¸"}
                                       </span>
                                       <strong>{group.filename}</strong>
                                     </div>
                                     {retained ? (
                                       <>
                                         <span>
-                                          Retained {new Date(retained.createdAt).toLocaleString()} ·{" "}
-                                          {(retained.sizeBytes / (1024 * 1024)).toFixed(1)} MB ·{" "}
+                                          Retained {new Date(retained.createdAt).toLocaleString()} Â·{" "}
+                                          {(retained.sizeBytes / (1024 * 1024)).toFixed(1)} MB Â·{" "}
                                           {analyses.length} {analyses.length === 1 ? "analysis" : "analyses"}
                                         </span>
                                         <span>
@@ -2965,7 +2942,7 @@ function App() {
                                       </>
                                     ) : (
                                       <span className="analysis-source-state is-unavailable">
-                                        PCAP not retained · {analyses.length}{" "}
+                                        PCAP not retained Â· {analyses.length}{" "}
                                         {analyses.length === 1 ? "analysis" : "analyses"}
                                       </span>
                                     )}
@@ -2990,7 +2967,7 @@ function App() {
                                         }}
                                       >
                                         {retained && captureAnalyzingId === retained.captureId
-                                          ? "Analyzing…"
+                                          ? "Analyzingâ€¦"
                                           : analyses.length
                                             ? "Re-analyze"
                                             : "Analyze"}
@@ -3007,7 +2984,7 @@ function App() {
                                             setCaptureMenuId(menuOpen ? "" : group.key)
                                           }
                                         >
-                                          ⋯
+                                          â‹¯
                                         </button>
                                         {menuOpen && (
                                           <div className="capture-overflow-menu">
@@ -3112,11 +3089,11 @@ function App() {
                                                 )}
                                               </div>
                                               <span>
-                                                {analysis.findingCount} findings · {analysis.deviceCount}{" "}
+                                                {analysis.findingCount} findings Â· {analysis.deviceCount}{" "}
                                                 devices
                                               </span>
                                               <span>
-                                                Saved analysis · source evidence{" "}
+                                                Saved analysis Â· source evidence{" "}
                                                 {retained ? "retained" : "not retained"}
                                               </span>
                                             </div>
@@ -3305,7 +3282,7 @@ function App() {
                                     <div>
                                       <strong>{u.username || u.ownerId}</strong>
                                       <span>
-                                        {u.captureCount} PCAP(s) ·{" "}
+                                        {u.captureCount} PCAP(s) Â·{" "}
                                         {u.reportCount} report(s)
                                       </span>
                                     </div>
@@ -3323,7 +3300,7 @@ function App() {
                             ) : null}
                             <div className="platform-storage-maintenance">
                               <h3>Storage maintenance</h3>
-                              <p>Expired captures: {storageSummary.retentionDays ? "Check available" : "Retention disabled"} · Orphan files: {storageSummary.orphanFiles ?? 0}</p>
+                              <p>Expired captures: {storageSummary.retentionDays ? "Check available" : "Retention disabled"} Â· Orphan files: {storageSummary.orphanFiles ?? 0}</p>
                               <div className="saved-report-actions">
                                 <button type="button" className="welcome-secondary-button"
                                   disabled={!storageSummary.retentionDays}
@@ -3393,15 +3370,15 @@ function App() {
                             >
                               <div>
                                 <strong>
-                                  {event.action.replaceAll(".", " · ")}
+                                  {event.action.replaceAll(".", " Â· ")}
                                 </strong>
                                 <span>
                                   {event.actorUsername || "System"}
                                   {event.targetType
-                                    ? ` · ${event.targetType}`
+                                    ? ` Â· ${event.targetType}`
                                     : ""}
                                   {event.targetId
-                                    ? ` · ${event.targetId.slice(0, 12)}`
+                                    ? ` Â· ${event.targetId.slice(0, 12)}`
                                     : ""}
                                 </span>
                               </div>
@@ -3544,7 +3521,7 @@ function App() {
                                     <span>
                                       {user.disabled ? "Disabled" : "Active"}
                                       {user.lastLogin
-                                        ? ` · Last login ${new Date(user.lastLogin).toLocaleString()}`
+                                        ? ` Â· Last login ${new Date(user.lastLogin).toLocaleString()}`
                                         : ""}
                                     </span>
                                   </div>
@@ -3625,7 +3602,7 @@ function App() {
                 onClick={() => setWelcomeInstructionsOpen(false)}
                 aria-label="Close instructions"
               >
-                ×
+                Ã—
               </button>
             </header>
             <div className="welcome-instructions-body">
@@ -3823,7 +3800,7 @@ function App() {
                 onClick={() => setNotesOpen(false)}
                 aria-label="Close notes"
               >
-                ×
+                Ã—
               </button>
             </header>
             <div className="section-notes-body">

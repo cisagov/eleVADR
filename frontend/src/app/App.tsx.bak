@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import "./saved-report-interactions.css";
 import "./pcap-icon-actions.css";
@@ -1778,21 +1778,19 @@ function App() {
   const navScrollLockRef = useRef(0);
   const navScrollTimersRef = useRef<number[]>([]);
 
-  // Scroll against the document, not a stale section position. Explicitly
-  // disable CSS smooth scrolling for the duration of the navigation so a
-  // second click is never necessary, even with long lazy-rendered tables.
+  // Resolve the section against the live DOM each time: preceding report
+  // sections can change height as tables and charts finish rendering.
   const scrollToSection = (id: string, behavior: ScrollBehavior = "auto") => {
     const target = document.getElementById(id);
     if (!target) return;
-    const root = document.documentElement;
-    const previousBehavior = root.style.scrollBehavior;
-    root.style.scrollBehavior = "auto";
-    const targetTop = target.getBoundingClientRect().top + window.scrollY;
+    const targetTop = window.scrollY + target.getBoundingClientRect().top;
+    // A CSS scroll-behavior:smooth rule can turn behavior:auto into an
+    // animated scroll, leaving navigation stranded in the preceding section.
+    // Use instant for explicit navigation and respect smooth for other callers.
     window.scrollTo({
       top: Math.max(0, targetTop - getStickyHeaderOffset()),
       behavior: behavior === "smooth" ? "smooth" : "instant",
     });
-    root.style.scrollBehavior = previousBehavior;
   };
 
   useEffect(() => {
@@ -1923,9 +1921,7 @@ function App() {
     // Wait for the report toolbar and section content to finish laying out, then
     // restore the deep-linked section with the same sticky-header clearance used
     // by left-side navigation.
-    window.setTimeout(() => {
-      if (Date.now() >= navScrollLockRef.current) scrollToSection(section, "auto");
-    }, 120);
+    window.setTimeout(() => scrollToSection(section, "auto"), 120);
   }, [report]);
 
   return (
@@ -1940,7 +1936,7 @@ function App() {
           <strong>Recovered server processing activity: </strong>
           {recoveredJobs.filter((job) => ["running", "queued", "completed"].includes(job.status)).map((job) => (
             <span key={job.jobId} style={{ marginRight: 18 }}>
-              {job.phase === "evidence" ? "Zeek evidence" : "Detection modules"}: {job.status} — {job.message || job.detail}
+              {job.phase === "evidence" ? "Zeek evidence" : "Detection modules"}: {job.status} — {job.message || job.stage}
               {typeof job.progress === "number" ? ` (${job.progress}%)` : ""}.
             </span>
           ))}

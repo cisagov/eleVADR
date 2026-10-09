@@ -137,93 +137,6 @@ function defaultPosition(
   };
 }
 
-
-// Compare report-derived observations, never inferred physical links.
-type ComparisonEdge = { source: string; target: string; service: string; count: number };
-type ComparisonSnapshot = { assets: Set<string>; edges: Map<string, ComparisonEdge> };
-function comparisonSnapshot(report: ElevadrReport): ComparisonSnapshot {
-  const assets = new Set<string>();
-  const edges = new Map<string, ComparisonEdge>();
-  const modules = report.modules;
-  for (const device of [...(modules.ot_devices || []), ...(modules.it_devices || []), ...(modules.edge_devices || [])]) {
-    for (const ip of deviceIps(device)) if (ip) assets.add(ip);
-  }
-  const add = (source: string, target: string, service: string, count: number) => {
-    if (!source || !target || source === target) return;
-    assets.add(source); assets.add(target);
-    const name = service || "Unknown service";
-    const key = JSON.stringify([source, target, name]);
-    const previous = edges.get(key);
-    edges.set(key, { source, target, service: name, count: (previous?.count || 0) + count });
-  };
-  for (const line of modules.ot_cross_segment_lines_panel?.lines || []) {
-    add(line["src_endpoint.ip"], line["dst_endpoint.ip"], line["service.name"], Number(line.count) || 1);
-  }
-  for (const line of modules.suspicious_outbound_connections_panel || []) {
-    add(line["src_endpoint.ip"], line["dst_endpoint.ip"], line["service.name"], Number(line.count) || 1);
-  }
-  for (const line of modules.connection_success_panel?.connections || []) {
-    add(line["src_endpoint.ip"] || "", line["dst_endpoint.ip"] || "", line["service.name"] || line["connection_info.protocol_name"] || (line["dst_endpoint.port"] ? `Port ${line["dst_endpoint.port"]}` : "Connection"), 1);
-  }
-  return { assets, edges };
-}
-
-type ComparisonChange = { key: string; status: "New" | "Not observed" | "Count changed"; edge: ComparisonEdge; baselineCount: number; currentCount: number };
-type ComparisonFinding = { title: string; severity: string };
-function comparisonFindings(report: ElevadrReport, source: string, target: string): ComparisonFinding[] {
-  const findings = report.arch_insights?.detector_findings;
-  if (!Array.isArray(findings)) return [];
-  return findings.flatMap((raw): ComparisonFinding[] => {
-    if (!raw || typeof raw !== "object") return [];
-    const item = raw as Record<string, unknown>;
-    const addresses = new Set<string>();
-    if (Array.isArray(item.devices)) for (const ip of item.devices) if (typeof ip === "string") addresses.add(ip);
-    for (const field of ["connection_pairs", "flows"]) {
-      const records = item[field];
-      if (!Array.isArray(records)) continue;
-      for (const record of records) {
-        if (!record || typeof record !== "object") continue;
-        const pair = record as Record<string, unknown>;
-        for (const value of [pair.source, pair.src, pair.destination, pair.dst, pair["src_endpoint.ip"], pair["dst_endpoint.ip"]]) {
-          if (typeof value === "string") addresses.add(value);
-        }
-      }
-    }
-    if (!addresses.has(source) && !addresses.has(target)) return [];
-    return [{ title: String(item.title || item.name || item.module || "Detection finding"), severity: String(item.severity || "Unspecified") }];
-  });
-}
-function comparisonCsvCell(value: string | number): string {
-  return `"${String(value).replace(/"/g, '""')}"`;
-}
-function downloadComparison(name: string, contents: string, mime: string): void {
-  const url = URL.createObjectURL(new Blob([contents], { type: mime }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = name;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function compareTopology(baseline: ElevadrReport, current: ElevadrReport) {
-  const before = comparisonSnapshot(baseline);
-  const after = comparisonSnapshot(current);
-  const newAssets = [...after.assets].filter((ip) => !before.assets.has(ip)).sort();
-  const missingAssets = [...before.assets].filter((ip) => !after.assets.has(ip)).sort();
-  const changes: ComparisonChange[] = [];
-  for (const [key, edge] of after.edges) {
-    const prior = before.edges.get(key);
-    if (!prior) changes.push({ key, status: "New", edge, baselineCount: 0, currentCount: edge.count });
-    else if (prior.count !== edge.count) changes.push({ key, status: "Count changed", edge, baselineCount: prior.count, currentCount: edge.count });
-  }
-  for (const [key, edge] of before.edges) if (!after.edges.has(key)) {
-    changes.push({ key, status: "Not observed", edge, baselineCount: edge.count, currentCount: 0 });
-  }
-  return { newAssets, missingAssets, changes };
-}
-
 interface Props {
   report: ElevadrReport;
   filters: InvestigationFilter[];
@@ -256,100 +169,6 @@ const NetworkTopology: React.FC<Props> = ({
     moved: boolean;
   } | null>(null);
 
-  const [comparisonOpen, setComparisonOpen] = useState(false);
-  const [baselineReport, setBaselineReport] = useState<ElevadrReport | null>(null);
-  const [baselineName, setBaselineName] = useState("");
-  const [comparisonError, setComparisonError] = useState("");
-  const [comparisonPage, setComparisonPage] = useState(0);
-  const [comparisonOverlay, setComparisonOverlay] = useState(true);
-  const [selectedComparisonKey, setSelectedComparisonKey] = useState<string | null>(null);
-  const [comparisonFilter, setComparisonFilter] = useState<"All" | ComparisonChange["status"]>("All");
-  const comparison = useMemo(() => baselineReport ? compareTopology(baselineReport, report) : null, [baselineReport, report]);
-  const [comparisonFindingsOnly, setComparisonFindingsOnly] = useState(false);
-  const [comparisonQueryOnly, setComparisonQueryOnly] = useState(false);
-  const [comparisonSavedName, setComparisonSavedName] = useState("");
-  type SavedComparison = { id: string; name: string; currentReportId: string; baselineId: string; filter: "All" | ComparisonChange["status"]; findingsOnly: boolean; queryOnly: boolean; updatedAt: string };
-  const [savedComparisons, setSavedComparisons] = useState<SavedComparison[]>([]);
-  const [comparisonBusy, setComparisonBusy] = useState(false);
-  const [comparisonSavedId, setComparisonSavedId] = useState<string | null>(null);
-  const comparisonRequest = async (method: string, path: string, body?: unknown) => {
-    const token = getAccessToken();
-    if (!token) throw new Error("Sign in to manage saved comparisons.");
-    const response = await fetch(authApiUrl(path), {
-      method, headers: { Authorization: `Bearer ${token}`, ...(body ? { "Content-Type": "application/json" } : {}) },
-      body: body ? JSON.stringify(body) : undefined, cache: "no-store",
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.message || `Comparison service returned HTTP ${response.status}`);
-    return data;
-  };
-  const refreshComparisons = async () => {
-    try {
-      const data = await comparisonRequest("GET", "/api/v1/topology-comparisons");
-      setSavedComparisons(Array.isArray(data.comparisons) ? data.comparisons : []);
-    } catch (error) { setComparisonError(error instanceof Error ? error.message : "Cannot load saved comparisons"); }
-  };
-  useEffect(() => { if (comparisonOpen) void refreshComparisons(); }, [comparisonOpen]);
-  const saveComparisonSettings = async () => {
-    if (!comparisonSavedName.trim() || !baselineReport) return;
-    setComparisonBusy(true);
-    try {
-      const payload = {
-        id: comparisonSavedId || undefined, name: comparisonSavedName.trim(),
-        currentReportId: String(report.report_id || ""),
-        baselineId: String(baselineReport.report_id || baselineName),
-        filter: comparisonFilter, findingsOnly: comparisonFindingsOnly, queryOnly: comparisonQueryOnly,
-      };
-      const data = await comparisonRequest("POST", "/api/v1/topology-comparisons", payload);
-      setComparisonSavedId(data.comparison.id);
-      await refreshComparisons(); setComparisonError("");
-    } catch (error) { setComparisonError(error instanceof Error ? error.message : "Cannot save comparison"); }
-    finally { setComparisonBusy(false); }
-  };
-  const deleteComparisonSettings = async () => {
-    if (!comparisonSavedId) return;
-    setComparisonBusy(true);
-    try {
-      await comparisonRequest("DELETE", `/api/v1/topology-comparisons/${encodeURIComponent(comparisonSavedId)}`);
-      setComparisonSavedId(null); setComparisonSavedName(""); await refreshComparisons(); setComparisonError("");
-    } catch (error) { setComparisonError(error instanceof Error ? error.message : "Cannot delete comparison"); }
-    finally { setComparisonBusy(false); }
-  };
-  const exportComparison = (format: "json" | "csv") => {
-    if (!comparison || !baselineReport) return;
-    const rows = comparison.changes.map((change) => ({
-      status: change.status, source: change.edge.source, destination: change.edge.target,
-      service: change.edge.service, baselineCount: change.baselineCount, currentCount: change.currentCount,
-      baselineFindings: comparisonFindings(baselineReport, change.edge.source, change.edge.target).length,
-      currentFindings: comparisonFindings(report, change.edge.source, change.edge.target).length,
-    }));
-    if (format === "json") {
-      downloadComparison("topology-comparison.json", JSON.stringify({ baselineReportId: baselineReport.report_id, currentReportId: report.report_id, newAssets: comparison.newAssets, notObservedAssets: comparison.missingAssets, changes: rows, caution: "Differences in observed traffic are not proof of physical network changes." }, null, 2), "application/json");
-    } else {
-      const fields = ["status", "source", "destination", "service", "baselineCount", "currentCount", "baselineFindings", "currentFindings"] as const;
-      downloadComparison("topology-comparison.csv", [fields.join(","), ...rows.map((row) => fields.map((field) => comparisonCsvCell(row[field])).join(","))].join("\r\n"), "text/csv;charset=utf-8");
-    }
-  };
-
-  const loadBaseline = async (file: File | undefined) => {
-    if (!file) return;
-    setComparisonError("");
-    try {
-      if (file.size > 50 * 1024 * 1024) throw new Error("JSON report exceeds the 50 MiB comparison limit.");
-      const value: unknown = JSON.parse(await file.text());
-      if (!value || typeof value !== "object" || !("modules" in value)) throw new Error("File is not an eleVADR report.");
-      const candidate = value as ElevadrReport;
-      if (!candidate.modules?.connection_success_panel || !candidate.modules?.ot_cross_segment_lines_panel || !Array.isArray(candidate.modules?.ot_devices)) throw new Error("Report is missing required topology data.");
-      setBaselineReport(candidate);
-      setBaselineName(file.name);
-      setComparisonPage(0);
-      setSelectedComparisonKey(null);
-      setComparisonOverlay(true);
-      setComparisonFilter("All");
-    } catch (error) {
-      setComparisonError(error instanceof Error ? error.message : "Unable to load comparison report.");
-    }
-  };
   const [labelMode, setLabelMode] = useState<LabelMode>("minimal");
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
@@ -361,61 +180,6 @@ const NetworkTopology: React.FC<Props> = ({
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
   const [focusedEdgeId, setFocusedEdgeId] = useState<string | null>(null);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("class");
-  const [clusterFocus, setClusterFocus] = useState("");
-  const [clusterListOpen, setClusterListOpen] = useState(false);
-  const [clusterRenderLimit, setClusterRenderLimit] = useState(24);
-  const [autoRevealClusters, setAutoRevealClusters] = useState(false);
-  const [showPerformanceDetails, setShowPerformanceDetails] = useState(false);
-  const [lastFrameDelay, setLastFrameDelay] = useState<number | null>(null);
-  // Opt-in measurements of the real browser main thread, not synthetic SVG timings.
-  const [browserMetrics, setBrowserMetrics] = useState<{ samples: number; averageFrameMs: number; p95FrameMs: number; slowFrames: number; longTasks: number; longestTaskMs: number } | null>(null);
-  useEffect(() => {
-    if (!showPerformanceDetails) return;
-    let active = true;
-    let frameId = 0;
-    let previous = 0;
-    const frames: number[] = [];
-    let longTasks = 0;
-    let longestTaskMs = 0;
-    let observer: PerformanceObserver | undefined;
-    try {
-      if (PerformanceObserver.supportedEntryTypes?.includes("longtask")) {
-        observer = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
-            longTasks += 1;
-            longestTaskMs = Math.max(longestTaskMs, entry.duration);
-          }
-        });
-        observer.observe({ entryTypes: ["longtask"] });
-      }
-    } catch { /* Long Task API is not available in all browsers. */ }
-    const sample = (now: number) => {
-      if (!active) return;
-      if (previous) frames.push(now - previous);
-      previous = now;
-      if (frames.length >= 120) {
-        const sorted = [...frames].sort((a, b) => a - b);
-        const total = frames.reduce((a, b) => a + b, 0);
-        setBrowserMetrics({
-          samples: frames.length,
-          averageFrameMs: Math.round(total / frames.length * 10) / 10,
-          p95FrameMs: Math.round(sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * .95) - 1)] * 10) / 10,
-          slowFrames: frames.filter((ms) => ms > 50).length,
-          longTasks,
-          longestTaskMs: Math.round(longestTaskMs * 10) / 10,
-        });
-        frames.length = 0;
-      }
-      frameId = window.requestAnimationFrame(sample);
-    };
-    frameId = window.requestAnimationFrame(sample);
-    return () => { active = false; window.cancelAnimationFrame(frameId); observer?.disconnect(); };
-  }, [showPerformanceDetails]);
-
-  const revealFrameRef = useRef<number | null>(null);
-  const clusterLayoutCacheRef = useRef<{ signature: string; coordinates: Map<string, Point> } | null>(null);
-  const [inspectedClusterEdge, setInspectedClusterEdge] = useState<string | null>(null);
-  const [clusterEdgePage, setClusterEdgePage] = useState(0);
   const [preset, setPreset] = useState<"simple" | "risk" | "full">("simple");
   const [positions, setPositions] = useState<Record<string, Point>>({});
   const [viewport, setViewport] = useState<Viewport>(DEFAULT_VIEWPORT);
@@ -446,9 +210,6 @@ const NetworkTopology: React.FC<Props> = ({
   const [queryBusy, setQueryBusy] = useState(false);
   const [queryAdvanced, setQueryAdvanced] = useState(false);
   const [queryResultsOpen, setQueryResultsOpen] = useState(true);
-  const [queryResultPage, setQueryResultPage] = useState(0);
-  const [showOnlyQueryMatches, setShowOnlyQueryMatches] = useState(false);
-  const QUERY_PAGE_SIZE = 50;
   const queryRequest = async (method: string, path: string, body?: unknown) => {
     const token = getAccessToken();
     if (!token) throw new Error("Sign in to manage saved queries.");
@@ -1078,18 +839,6 @@ const NetworkTopology: React.FC<Props> = ({
     });
   }, [baseNodes, layoutMode]);
 
-  // Cluster drill-down restricts rendering only; saved queries still inspect
-  // all report-derived relationships independently of the display budget.
-  const clusterSummaries = useMemo(() => {
-    const groups = new Map<string, number>();
-    for (const node of baseNodes) {
-      const key = groupKeyFor(node) || "Unassigned";
-      groups.set(key, (groups.get(key) || 0) + 1);
-    }
-    return [...groups.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-  }, [baseNodes, layoutMode]);
-  useEffect(() => { setClusterFocus(""); setClusterRenderLimit(24); setAutoRevealClusters(false); setInspectedClusterEdge(null); setClusterEdgePage(0); }, [layoutMode, report.report_id]);
-
   const nodes = useMemo<Node[]>(() => {
     const query = search.trim().toLowerCase();
     return baseNodes
@@ -1098,7 +847,6 @@ const NetworkTopology: React.FC<Props> = ({
         ...(positions[node.id] || { x: WIDTH / 2, y: HEIGHT / 2 }),
       }))
       .filter((node) => {
-        if (clusterFocus && groupKeyFor(node) !== clusterFocus) return false;
         if (
           neighborsOnly &&
           focusedNeighborIds &&
@@ -1112,7 +860,7 @@ const NetworkTopology: React.FC<Props> = ({
           node.services.some((service) => service.toLowerCase().includes(query))
         );
       });
-  }, [baseNodes, positions, search, neighborsOnly, focusedNeighborIds, clusterFocus, layoutMode]);
+  }, [baseNodes, positions, search, neighborsOnly, focusedNeighborIds]);
 
   useEffect(() => {
     if (focusedNodeId && !baseNodes.some((node) => node.id === focusedNodeId)) {
@@ -1675,279 +1423,13 @@ const NetworkTopology: React.FC<Props> = ({
   }, [queryActive, query, queryMatchingEdges]);
   const queryEdgeIds = useMemo(() => new Set(queryMatchingEdges.map((edge) => edge.id)), [queryMatchingEdges]);
   const queryNodeIds = useMemo(() => new Set(queryMatchingEdges.flatMap((edge) => [edge.source, edge.target])), [queryMatchingEdges]);
-  const queryPageCount = Math.max(1, Math.ceil(queryMatchingEdges.length / QUERY_PAGE_SIZE));
-  const effectiveQueryPage = Math.min(queryResultPage, queryPageCount - 1);
-  const pagedQueryEdges = useMemo(
-    () => queryMatchingEdges.slice(effectiveQueryPage * QUERY_PAGE_SIZE, (effectiveQueryPage + 1) * QUERY_PAGE_SIZE),
-    [queryMatchingEdges, effectiveQueryPage],
-  );
-  // A query can search the full report; graph rendering is intentionally bounded.
-  const renderedQueryEdges = useMemo(
-    () => showOnlyQueryMatches && queryActive
-      ? visibleEdges.filter((edge) => queryEdgeIds.has(edge.id))
-      : visibleEdges,
-    [showOnlyQueryMatches, queryActive, visibleEdges, queryEdgeIds],
-  );
 
-  // Aggregate only the bounded display graph. Queries retain the full report data.
-  const aggregateView = !clusterFocus;
-  const aggregateGraph = useMemo(() => {
-    const grouped = new Map<string, { key: string; members: Node[]; x: number; y: number }>();
-    for (const node of nodes) {
-      const key = layoutMode === "subnet" ? node.subnet : layoutMode === "role" ? node.roleGroup : layoutMode === "purdue" ? node.purdueLevel : node.type;
-      let group = grouped.get(key);
-      if (!group) {
-        group = { key, members: [], x: 0, y: 0 };
-        grouped.set(key, group);
-      }
-      group.members.push(node);
-      group.x += node.x;
-      group.y += node.y;
-    }
-    const clusters = [...grouped.values()].sort((a, b) => a.key.localeCompare(b.key));
-    // Cache deterministic cluster coordinates for unchanged group membership.
-    // Filtering edges or opening the Query Explorer must not trigger a new layout.
-    const signature = `${layoutMode}:${clusters.map((group) => group.key).join("\u001f")}`;
-    let cached = clusterLayoutCacheRef.current;
-    if (!cached || cached.signature !== signature) {
-      const columns = Math.max(1, Math.ceil(Math.sqrt(clusters.length)));
-      const rows = Math.ceil(clusters.length / columns);
-      const coordinates = new Map<string, Point>();
-      clusters.forEach((group, index) => {
-        coordinates.set(group.key, {
-          x: (index % columns + 1) * WIDTH / (columns + 1),
-          y: (Math.floor(index / columns) + 1) * HEIGHT / (rows + 1),
-        });
-      });
-      cached = { signature, coordinates };
-      clusterLayoutCacheRef.current = cached;
-    }
-    for (const group of clusters) {
-      const point = cached.coordinates.get(group.key);
-      if (point) { group.x = point.x; group.y = point.y; }
-    }
-    const memberGroups = new Map<string, string>();
-    for (const group of clusters) {
-      for (const member of group.members) memberGroups.set(member.id, group.key);
-    }
-    const aggregated = new Map<string, { source: string; target: string; count: number; relationships: number; services: Set<string>; suspicious: boolean; findingRelated: boolean }>();
-    for (const edge of renderedQueryEdges) {
-      const source = memberGroups.get(edge.source);
-      const target = memberGroups.get(edge.target);
-      if (!source || !target || source === target) continue;
-      const key = JSON.stringify([source, target]);
-      let item = aggregated.get(key);
-      if (!item) {
-        item = { source, target, count: 0, relationships: 0, services: new Set(), suspicious: false, findingRelated: false };
-        aggregated.set(key, item);
-      }
-      item.count += edge.count;
-      item.relationships += 1;
-      item.services.add(edge.service);
-      item.suspicious ||= edge.suspicious;
-      item.findingRelated ||= edge.findingRelated;
-    }
-    return { clusters, edges: [...aggregated.values()] };
-  }, [nodes, renderedQueryEdges, layoutMode]);
-
-  // Progressive aggregate display: bounded SVG complexity without truncating query data.
-  // Reveal additional SVG groups in separate animation frames, keeping each
-  // React update bounded. Cancel immediately when the view changes/unmounts.
-  useEffect(() => {
-    if (!autoRevealClusters || !aggregateView || clusterRenderLimit >= aggregateGraph.clusters.length) {
-      if (autoRevealClusters && clusterRenderLimit >= aggregateGraph.clusters.length) setAutoRevealClusters(false);
-      return;
-    }
-    const started = performance.now();
-    revealFrameRef.current = window.requestAnimationFrame(() => {
-      revealFrameRef.current = null;
-      const frameDelay = performance.now() - started;
-      setLastFrameDelay(Math.round(frameDelay * 10) / 10);
-      // Slow frames reveal fewer clusters. This bounds incremental SVG work
-      // without changing the underlying graph or saved-query results.
-      const batch = frameDelay > 48 ? 6 : frameDelay > 24 ? 12 : 24;
-      setClusterRenderLimit((limit) => Math.min(limit + batch, aggregateGraph.clusters.length));
-    });
-    return () => {
-      if (revealFrameRef.current !== null) window.cancelAnimationFrame(revealFrameRef.current);
-      revealFrameRef.current = null;
-    };
-  }, [autoRevealClusters, aggregateView, clusterRenderLimit, aggregateGraph.clusters.length]);
-  const renderedClusters = useMemo(() => aggregateGraph.clusters.slice(0, clusterRenderLimit), [aggregateGraph.clusters, clusterRenderLimit]);
-  // Index cluster positions once rather than searching the cluster array for each SVG edge.
-  const clusterPositions = useMemo(() => new Map(aggregateGraph.clusters.map((cluster) => [cluster.key, cluster] as const)), [aggregateGraph.clusters]);
-  // Pre-sort edges by the index of their later endpoint. As clusters are revealed,
-  // a binary search selects a prefix instead of filtering every edge each frame.
-  const revealOrderedEdges = useMemo(() => {
-    const indices = new Map(aggregateGraph.clusters.map((cluster, index) => [cluster.key, index] as const));
-    return aggregateGraph.edges.map((edge) => ({ edge, revealAt: Math.max(indices.get(edge.source) ?? Infinity, indices.get(edge.target) ?? Infinity) }))
-      .sort((a, b) => a.revealAt - b.revealAt);
-  }, [aggregateGraph.clusters, aggregateGraph.edges]);
-  const renderedClusterEdges = useMemo(() => {
-    let low = 0;
-    let high = revealOrderedEdges.length;
-    while (low < high) {
-      const mid = (low + high) >>> 1;
-      if (revealOrderedEdges[mid].revealAt < clusterRenderLimit) low = mid + 1;
-      else high = mid;
-    }
-    return revealOrderedEdges.slice(0, low).map(({ edge }) => edge);
-  }, [revealOrderedEdges, clusterRenderLimit]);
-  const clusterMembership = useMemo(() => {
-    const membership = new Map<string, string>();
-    for (const cluster of aggregateGraph.clusters) {
-      for (const member of cluster.members) membership.set(member.id, cluster.key);
-    }
-    return membership;
-  }, [aggregateGraph.clusters]);
-  const inspectedClusterRelationship = useMemo(() => {
-    if (!inspectedClusterEdge) return [] as Edge[];
-    const [source, target] = JSON.parse(inspectedClusterEdge) as [string, string];
-    return renderedQueryEdges.filter((edge) => clusterMembership.get(edge.source) === source && clusterMembership.get(edge.target) === target);
-  }, [inspectedClusterEdge, clusterMembership, renderedQueryEdges]);
-  const inspectedClusterPageEdges = inspectedClusterRelationship.slice(clusterEdgePage * 25, (clusterEdgePage + 1) * 25);
-
-  // The overlay is presentation-only: compare full report observations, then
-  // draw only relationships whose endpoints are visible in the current graph.
-  // Apply the same bounded observed-communication traversal independently to each capture.
-  // Comparing edge sets never implies routing or physical reachability.
-  const crossReportQuery = useMemo(() => {
-    if (!baselineReport || !queryActive) return null;
-    const execute = (capture: ElevadrReport) => {
-      const snapshot = comparisonSnapshot(capture);
-      const eligible = [...snapshot.edges.entries()].filter(([, edge]) =>
-        (!query.service || edge.service.toLowerCase().includes(query.service.toLowerCase())) &&
-        (!query.minCount || edge.count >= query.minCount));
-      const seed = (query.startAsset || "").trim();
-      if (!seed) return new Set(eligible.map(([key]) => key));
-      const selected = new Set<string>();
-      const visited = new Set([seed]);
-      let frontier = new Set([seed]);
-      for (let hop = 0; hop < Math.min(4, Math.max(1, query.maxHops || 1)) && frontier.size; hop++) {
-        const next = new Set<string>();
-        for (const [key, edge] of eligible) {
-          const forward = query.direction !== "inbound" && frontier.has(edge.source);
-          const reverse = query.direction !== "outbound" && frontier.has(edge.target);
-          if (!forward && !reverse) continue;
-          selected.add(key);
-          for (const neighbor of [forward ? edge.target : null, reverse ? edge.source : null]) {
-            if (neighbor && !visited.has(neighbor)) { visited.add(neighbor); next.add(neighbor); }
-          }
-        }
-        frontier = next;
-      }
-      return selected;
-    };
-    const baseline = execute(baselineReport);
-    const current = execute(report);
-    return { baseline, current,
-      newlyMatched: [...current].filter((key) => !baseline.has(key)).length,
-      noLongerMatched: [...baseline].filter((key) => !current.has(key)).length };
-  }, [baselineReport, report, queryActive, query]);
-  const comparisonChanges = useMemo(() => comparison?.changes.filter((change) => {
-    if (comparisonFilter !== "All" && change.status !== comparisonFilter) return false;
-    if (comparisonFindingsOnly && baselineReport && !comparisonFindings(baselineReport, change.edge.source, change.edge.target).length && !comparisonFindings(report, change.edge.source, change.edge.target).length) return false;
-    if (comparisonQueryOnly && (!crossReportQuery || (!crossReportQuery.baseline.has(change.key) && !crossReportQuery.current.has(change.key)))) return false;
-    return true;
-  }) || [], [comparison, comparisonFilter, comparisonFindingsOnly, comparisonQueryOnly, baselineReport, report, crossReportQuery]);
-  const selectedComparison = comparison?.changes.find((change) => change.key === selectedComparisonKey);
-  const comparisonColors: Record<ComparisonChange["status"], string> = {
-    New: "#16804a",
-    "Count changed": "#ad7400",
-    "Not observed": "#bd3945",
-  };
   const topologyView = (
     <section
       className={`topology-card${isFullScreen ? " topology-card--expanded" : ""}`}
       ref={cardRef}
       aria-label="Network topology visualization"
     >
-      <div className="topology-comparison-workspace" style={{ padding: "0.75rem", borderBottom: "1px solid #bbb" }}>
-        <button type="button" aria-expanded={comparisonOpen} onClick={() => setComparisonOpen((open) => !open)}>
-          {comparisonOpen ? "Hide report comparison" : "Compare with another report"}
-        </button>
-        {comparisonOpen && <div style={{ display: "grid", gap: "0.65rem", marginTop: "0.65rem" }}>
-          <label>Baseline eleVADR JSON report <input type="file" accept=".json,application/json" onChange={(event) => void loadBaseline(event.target.files?.[0])} /></label>
-          <small>Current report: {report.report_id || "Loaded report"}. Baseline: {baselineName || "None selected"}.</small>
-          {comparisonError && <p role="alert">{comparisonError}</p>}
-          {comparison && <>
-            {crossReportQuery && <p role="status">Cross-report query traversal: {crossReportQuery.newlyMatched} newly matching relationships; {crossReportQuery.noLongerMatched} no longer matching relationships (observed communications only).</p>}
-            <p role="status">{comparison.newAssets.length} newly observed assets; {comparison.missingAssets.length} assets not observed; {comparison.changes.length} changed communication relationships.</p>
-            <small>Changes describe observations in the two reports, not confirmed physical network changes. Counts may reflect different capture durations or visibility.</small>
-            <div className="topology-comparison-controls" style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-              <label><input type="checkbox" checked={comparisonOverlay} onChange={(event) => setComparisonOverlay(event.target.checked)} /> Show comparison on graph</label>
-              <label><input type="checkbox" checked={comparisonFindingsOnly} onChange={(event) => { setComparisonFindingsOnly(event.target.checked); setComparisonPage(0); }} /> Finding-associated changes only</label>
-              <label><input type="checkbox" checked={comparisonQueryOnly} onChange={(event) => { setComparisonQueryOnly(event.target.checked); setComparisonPage(0); }} disabled={!queryActive} /> Apply active query filters to differences</label>
-              <label>Highlight <select value={comparisonFilter} onChange={(event) => { setComparisonFilter(event.target.value as typeof comparisonFilter); setComparisonPage(0); }}>
-                <option value="All">All changes</option><option value="New">Newly observed</option><option value="Count changed">Count changed</option><option value="Not observed">Not observed</option>
-              </select></label>
-              <span aria-label="Comparison overlay legend" style={{ display: "inline-flex", gap: "0.7rem", flexWrap: "wrap" }}>
-                <span style={{ color: "#16804a" }}>● New</span>
-                <span style={{ color: "#ad7400" }}>● Count changed</span>
-                <span style={{ color: "#bd3945" }}>┄ Not observed</span>
-              </span>
-            </div>
-            <div className="topology-comparison-export" style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
-              <button type="button" onClick={() => exportComparison("csv")}>Export comparison CSV</button>
-              <button type="button" onClick={() => exportComparison("json")}>Export comparison JSON</button>
-              <label>Comparison name <input value={comparisonSavedName} maxLength={100} onChange={(event) => setComparisonSavedName(event.target.value)} /></label>
-              <button type="button" disabled={comparisonBusy || !baselineReport || !comparisonSavedName.trim()} onClick={() => void saveComparisonSettings()}>Save comparison settings</button>
-              <label>Recall settings <select value="" onChange={(event) => {
-                const item = savedComparisons.find((entry) => entry.id === event.target.value);
-                if (!item) return;
-                setComparisonSavedId(item.id);
-                setComparisonSavedName(item.name);
-                setComparisonFilter(item.filter);
-                setComparisonFindingsOnly(item.findingsOnly);
-                setComparisonQueryOnly(item.queryOnly);
-                setComparisonPage(0);
-                if (item.baselineId !== String(baselineReport?.report_id || baselineName) || item.currentReportId !== String(report.report_id || "")) setComparisonError("Open the matching current and baseline reports to reproduce this saved comparison."); else setComparisonError("");
-              }}><option value="">Choose saved settings</option>{savedComparisons.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}</select></label>
-              <button type="button" disabled={!comparisonSavedId || comparisonBusy} onClick={() => void deleteComparisonSettings()}>Delete saved comparison</button>
-              <small>Saved comparison settings are stored in MongoDB for your account. Baseline JSON files must still be reopened.</small>
-            </div>
-            <details><summary>Newly observed assets ({comparison.newAssets.length})</summary><p>{comparison.newAssets.slice(0, 100).join(", ") || "None"}{comparison.newAssets.length > 100 ? " ..." : ""}</p></details>
-            <details><summary>Assets not observed in current report ({comparison.missingAssets.length})</summary><p>{comparison.missingAssets.slice(0, 100).join(", ") || "None"}{comparison.missingAssets.length > 100 ? " ..." : ""}</p></details>
-            <div><strong>Communication differences</strong>
-              <div style={{ maxHeight: "220px", overflowY: "auto" }}>
-                {comparisonChanges.slice(comparisonPage * 25, (comparisonPage + 1) * 25).map((change) => <button key={change.key} type="button"
-                  aria-pressed={selectedComparisonKey === change.key}
-                  onClick={() => setSelectedComparisonKey(change.key)}
-                  style={{ display: "block", width: "100%", textAlign: "left", padding: "0.4rem", border: selectedComparisonKey === change.key ? "2px solid currentColor" : "1px solid transparent", background: "transparent", cursor: "pointer" }}>
-                  {change.status}: {change.edge.source} to {change.edge.target} ({change.edge.service}) - baseline {change.baselineCount}, current {change.currentCount}
-                </button>)}
-                {!comparisonChanges.length && <p>No communication differences in the report-derived topology.</p>}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <button type="button" disabled={comparisonPage === 0} onClick={() => setComparisonPage((n) => Math.max(0, n - 1))}>Previous</button>
-                <span>Page {comparisonPage + 1} of {Math.max(1, Math.ceil(comparisonChanges.length / 25))}</span>
-                <button type="button" disabled={(comparisonPage + 1) * 25 >= comparisonChanges.length} onClick={() => setComparisonPage((n) => n + 1)}>Next</button>
-              </div>
-            </div>
-            {selectedComparison && <aside role="region" aria-label="Selected communication comparison" style={{ border: "1px solid #aaa", borderRadius: "0.4rem", padding: "0.75rem", display: "grid", gap: "0.4rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <strong>Communication comparison details</strong>
-                <button type="button" onClick={() => setSelectedComparisonKey(null)} aria-label="Close comparison details">Close</button>
-              </div>
-              <div><strong>Status:</strong> {selectedComparison.status}</div>
-              <div><strong>Source:</strong> {selectedComparison.edge.source} <button type="button" onClick={() => onSelect({ type: "device", id: selectedComparison.edge.source })}>Inspect source asset</button></div>
-              <div><strong>Destination:</strong> {selectedComparison.edge.target} <button type="button" onClick={() => onSelect({ type: "device", id: selectedComparison.edge.target })}>Inspect destination asset</button></div>
-              <div><strong>Service:</strong> {selectedComparison.edge.service}</div>
-              <div><strong>Baseline observations:</strong> {selectedComparison.baselineCount}</div>
-              <div><strong>Current observations:</strong> {selectedComparison.currentCount}</div>
-              <div><strong>Difference:</strong> {selectedComparison.currentCount - selectedComparison.baselineCount > 0 ? "+" : ""}{selectedComparison.currentCount - selectedComparison.baselineCount}</div>
-              {baselineReport && <div>
-                <strong>Associated findings (asset or flow evidence):</strong>
-                <div>Baseline: {comparisonFindings(baselineReport, selectedComparison.edge.source, selectedComparison.edge.target).length}; Current: {comparisonFindings(report, selectedComparison.edge.source, selectedComparison.edge.target).length}</div>
-                {comparisonFindings(report, selectedComparison.edge.source, selectedComparison.edge.target).slice(0, 15).map((finding, index) => <div key={index}>{finding.title} - {finding.severity}</div>)}
-                <small>Finding association is based on referenced endpoints and may not identify the exact communication. Review the Findings section for evidence.</small>
-              </div>}
-              <small>These are report-derived observations, not proof of a physical link or actual reachability. Asset details refer to the current report; baseline-only assets may not be present.</small>
-            </aside>}
-            <button type="button" onClick={() => { setBaselineReport(null); setBaselineName(""); setComparisonPage(0); setSelectedComparisonKey(null); }}>Clear comparison</button>
-          </>}
-        </div>}
-      </div>
       <div className="topology-query-workspace">
         <button type="button" aria-expanded={queryOpen} onClick={() => setQueryOpen((open) => !open)}>
           {queryOpen ? "Hide Query Explorer" : "Graph Query Explorer"}
@@ -2009,99 +1491,30 @@ const NetworkTopology: React.FC<Props> = ({
             </select></label>
           </div>}
           <div className="topology-query-actions">
-            <button type="button" onClick={() => { setQueryActive(true); setQueryResultsOpen(true); setQueryResultPage(0); }}>Run query</button>
-            <button type="button" onClick={() => { setQueryActive(false); setShowOnlyQueryMatches(false); setQueryResultPage(0); }}>Clear results</button>
+            <button type="button" onClick={() => { setQueryActive(true); setQueryResultsOpen(true); }}>Run query</button>
+            <button type="button" onClick={() => setQueryActive(false)}>Clear results</button>
             <button type="button" disabled={queryBusy || !queryName.trim()} onClick={() => void saveGraphQuery()}>Save query</button>
             <button type="button" disabled={queryBusy || !savedQueryId} onClick={() => void deleteGraphQuery()}>Delete saved query</button>
           </div>
-          {queryActive && <label className="topology-query-display-toggle">
-            <input type="checkbox" checked={showOnlyQueryMatches} onChange={(event) => setShowOnlyQueryMatches(event.target.checked)} />
-            Show only matching relationships in graph
-          </label>}
           {queryError && <p role="alert">{queryError}</p>}
           {queryActive && <div className="topology-query-results">
             <button type="button" aria-expanded={queryResultsOpen} onClick={() => setQueryResultsOpen((value) => !value)}>
               {queryResultsOpen ? "Hide" : "Show"} results · {queryMatchingEdges.length} relationships · {queryNodeIds.size} assets
             </button>
             {queryResultsOpen && <div className="topology-query-result-list" role="region" aria-label="Matching observed communications">
-              {pagedQueryEdges.map((edge) => <button type="button" key={edge.id} onClick={() => inspectEdge(edge)}>
+              {queryMatchingEdges.slice(0, 100).map((edge) => <button type="button" key={edge.id} onClick={() => inspectEdge(edge)}>
                 <span>{edge.source} → {edge.target}</span>
                 <span>{edge.service} · {edge.count} observations{queryHopDepths.has(edge.id) ? ` · hop ${queryHopDepths.get(edge.id)}` : ""}</span>
               </button>)}
               {!queryMatchingEdges.length && <span>No matching communications in the report-derived graph.</span>}
-              {queryMatchingEdges.length > QUERY_PAGE_SIZE && <div className="topology-query-pagination">
-                <button type="button" disabled={effectiveQueryPage === 0} onClick={() => setQueryResultPage((page) => Math.max(0, page - 1))}>Previous</button>
-                <span>Page {effectiveQueryPage + 1} of {queryPageCount} ({queryMatchingEdges.length} total)</span>
-                <button type="button" disabled={effectiveQueryPage + 1 >= queryPageCount} onClick={() => setQueryResultPage((page) => Math.min(queryPageCount - 1, page + 1))}>Next</button>
-              </div>}
+              {queryMatchingEdges.length > 100 && <span>Showing the first 100 matches. Narrow the query to investigate more.</span>}
             </div>}
           </div>}
           <small>Queries search all relationships available in this report; the visualization is limited for responsiveness. Maximum traversal depth: four hops.</small>
         </div>}
+          <small>Queries search all relationships available in this report; the visualization remains limited for responsiveness. Paths describe chains of observed communications, not proven routing or reachability. Traversal is limited to four hops.</small>
+        </div>}
       </div>
-      <div className="topology-cluster-controls" aria-label="Topology grouping and cluster drill-down">
-        <strong className="topology-control-heading">Grouping and drill-down</strong>
-        <label htmlFor="topology-cluster-mode">Group by</label>
-        <select id="topology-cluster-mode" value={layoutMode} onChange={(event) => setLayoutMode(event.target.value as LayoutMode)}>
-          <option value="class">Asset class</option>
-          <option value="subnet">Subnet</option>
-          <option value="purdue">Purdue level</option>
-          <option value="role">Role group</option>
-        </select>
-        <label htmlFor="topology-cluster-focus">Cluster drill-down</label>
-        <select id="topology-cluster-focus" value={clusterFocus} onChange={(event) => { setClusterFocus(event.target.value); setViewport(DEFAULT_VIEWPORT); }}>
-          <option value="">All displayed clusters</option>
-          {clusterSummaries.map(([name, count]) => <option key={name} value={name}>{name} ({count} assets)</option>)}
-        </select>
-        <button type="button" aria-expanded={clusterListOpen} onClick={() => setClusterListOpen((open) => !open)}>
-          {clusterListOpen ? "Hide cluster summary" : "Cluster summary"}
-        </button>
-        <span role="status">{aggregateView ? `${aggregateGraph.clusters.length} aggregate nodes / ${nodes.length} display-candidate assets` : `${nodes.length} displayed assets / ${baseNodes.length} display candidates`}</span>
-        {clusterFocus && <button type="button" onClick={() => { setClusterFocus(""); setViewport(DEFAULT_VIEWPORT); }}>Collapse to clusters</button>}
-      </div>
-      {clusterListOpen && <div className="topology-cluster-summary" aria-label="Cluster asset counts">
-        {clusterSummaries.map(([name, count]) => <button key={name} type="button" onClick={() => { setClusterFocus(name); setViewport(DEFAULT_VIEWPORT); }}>
-          {name}: {count} assets
-        </button>)}
-        <small>Counts describe the display-candidate graph, not necessarily every asset in the original capture. Query execution remains independent of this cluster filter.</small>
-      </div>}
-      {aggregateView && aggregateGraph.clusters.length > clusterRenderLimit && (
-        <div className="topology-cluster-progress" role="status">
-          Showing {renderedClusters.length} of {aggregateGraph.clusters.length} clusters and {renderedClusterEdges.length} of {aggregateGraph.edges.length} aggregated links.
-          <button type="button" onClick={() => { setAutoRevealClusters(false); setClusterRenderLimit((value) => Math.min(value + 24, aggregateGraph.clusters.length)); }}>Show next 24 clusters</button>
-          <button type="button" onClick={() => setAutoRevealClusters((value) => !value)}>{autoRevealClusters ? "Pause progressive display" : "Progressively show all"}</button>
-          <button type="button" onClick={() => { setAutoRevealClusters(false); setClusterRenderLimit(24); }}>Reset cluster display</button>
-        </div>
-      )}
-      {aggregateView && (
-        <div className="topology-cluster-progress">
-          <button type="button" aria-expanded={showPerformanceDetails} onClick={() => setShowPerformanceDetails((value) => !value)}>
-            {showPerformanceDetails ? "Hide rendering diagnostics" : "Rendering diagnostics"}
-          </button>
-          {showPerformanceDetails && <span role="status">
-            Rendered {renderedClusters.length}/{aggregateGraph.clusters.length} clusters and {renderedClusterEdges.length}/{aggregateGraph.edges.length} aggregated links.
-            {lastFrameDelay !== null ? ` Last reveal scheduling delay: ${lastFrameDelay} ms.` : ""}
-            {browserMetrics ? ` Browser frame intervals (last ${browserMetrics.samples}): mean ${browserMetrics.averageFrameMs} ms, p95 ${browserMetrics.p95FrameMs} ms, >50ms ${browserMetrics.slowFrames}; long tasks ${browserMetrics.longTasks}, longest ${browserMetrics.longestTaskMs} ms.` : " Sampling browser frames..."}
-            {" "}Frame intervals include browser scheduling and background activity; they are not isolated topology paint timings.
-          </span>}
-        </div>
-      )}
-      {aggregateView && inspectedClusterEdge && (
-        <div className="topology-cluster-inspector" role="region" aria-label="Aggregated communication details">
-          <div className="topology-cluster-inspector-header"><strong>Observed relationships: {inspectedClusterRelationship.length}</strong>
-            <button type="button" onClick={() => { setInspectedClusterEdge(null); setClusterEdgePage(0); }}>Close</button>
-          </div>
-          <p>These links are observed communications, not proof of routing or physical connectivity.</p>
-          {inspectedClusterPageEdges.map((edge) => <button key={edge.id} type="button" onClick={() => inspectEdge(edge)}>
-            {edge.source} to {edge.target} — {edge.service} ({edge.count} observations)
-          </button>)}
-          <div className="topology-cluster-inspector-pages">
-            <button type="button" disabled={clusterEdgePage === 0} onClick={() => setClusterEdgePage((page) => page - 1)}>Previous</button>
-            <span>Page {clusterEdgePage + 1} of {Math.max(1, Math.ceil(inspectedClusterRelationship.length / 25))}</span>
-            <button type="button" disabled={(clusterEdgePage + 1) * 25 >= inspectedClusterRelationship.length} onClick={() => setClusterEdgePage((page) => page + 1)}>Next</button>
-          </div>
-        </div>
-      )}
       {displayLimited && (
         <div className="topology-performance-note" role="status">
           Dense topology: showing the highest-activity {nodes.length} devices
@@ -2113,9 +1526,8 @@ const NetworkTopology: React.FC<Props> = ({
       <div className="topology-toolbar topology-toolbar-option1">
         <div
           className="topology-toolbar-group topology-filter-group"
-          aria-label="Topology display and filters"
+          aria-label="Topology filters and display options"
         >
-          <strong className="topology-control-heading">Display and filters</strong>
           <label className="topology-search">
             <span>Find</span>
             <input
@@ -2148,7 +1560,7 @@ const NetworkTopology: React.FC<Props> = ({
             </select>
           </label>
           <label>
-            <span>Filter device class</span>
+            <span>Device class</span>
             <select
               value={selectedClass}
               onChange={(event) => {
@@ -2169,16 +1581,40 @@ const NetworkTopology: React.FC<Props> = ({
             </select>
           </label>
           <label className="topology-view-mode">
-            <span>Display mode</span>
+            <span>View</span>
             <select
-              value={preset === "risk" ? "findings" : "communication"}
+              value={
+                preset === "risk"
+                  ? "findings"
+                  : layoutMode === "subnet"
+                    ? "subnet"
+                    : layoutMode === "role"
+                      ? "role"
+                      : layoutMode === "purdue"
+                        ? "purdue"
+                        : "communication"
+              }
               onChange={(event) => {
-                if (event.target.value === "findings") applyPreset("risk");
-                else applyPreset("simple");
+                const value = event.target.value;
+                if (value === "communication") applyPreset("simple");
+                else if (value === "findings") applyPreset("risk");
+                else if (
+                  value === "subnet" ||
+                  value === "role" ||
+                  value === "purdue"
+                ) {
+                  setPreset("full");
+                  setFindingOnly(false);
+                  setLayoutMode(value);
+                  setPositions({});
+                }
               }}
               aria-label="Topology view"
             >
               <option value="communication">Communication</option>
+              <option value="subnet">Subnet</option>
+              <option value="role">Role</option>
+              <option value="purdue">Purdue</option>
               <option value="findings">Findings</option>
             </select>
           </label>
@@ -2340,7 +1776,7 @@ const NetworkTopology: React.FC<Props> = ({
             onPointerUp={handleCanvasPointerUp}
             onPointerCancel={handleCanvasPointerUp}
             role="img"
-            aria-label={aggregateView ? `Clustered network topology with ${aggregateGraph.clusters.length} clusters and ${aggregateGraph.edges.length} aggregated communication links` : `Interactive network topology with ${nodes.length} devices and ${visibleEdges.length} communication links`}
+            aria-label={`Interactive network topology with ${nodes.length} devices and ${visibleEdges.length} communication links`}
           >
             <defs>
               <marker
@@ -2405,52 +1841,6 @@ const NetworkTopology: React.FC<Props> = ({
             <g
               transform={`translate(${viewport.x} ${viewport.y}) scale(${viewport.scale})`}
             >
-              {aggregateView ? (
-                <g className="topology-aggregate-view">
-                  {renderedClusterEdges.map((edge) => {
-                    const source = clusterPositions.get(edge.source);
-                    const target = clusterPositions.get(edge.target);
-                    if (!source || !target) return null;
-                    return <g key={JSON.stringify([edge.source, edge.target])} role="button" tabIndex={0}
-                      aria-label={`Inspect ${edge.relationships} observed relationships from ${edge.source} to ${edge.target}`}
-                      onPointerDown={(event) => event.stopPropagation()}
-                      onClick={(event) => { event.stopPropagation(); setInspectedClusterEdge(JSON.stringify([edge.source, edge.target])); setClusterEdgePage(0); }}
-                      onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setInspectedClusterEdge(JSON.stringify([edge.source, edge.target])); setClusterEdgePage(0); } }}>
-                      <line x1={source.x} y1={source.y} x2={target.x} y2={target.y} stroke={edge.suspicious ? "#b65349" : edge.findingRelated ? "#397b9d" : "#8ca8b7"} strokeWidth={Math.min(9, 1.5 + Math.log10(edge.count + 1) * 1.8)} markerEnd="url(#topology-arrow)" />
-                      <title>{`${edge.source} to ${edge.target}: ${edge.count} observations across ${edge.relationships} relationships; protocols: ${[...edge.services].join(", ")}`}</title>
-                    </g>;
-                  })}
-                  {comparison && comparisonOverlay && comparisonChanges.map((change) => {
-                    const sourceGroup = clusterMembership.get(change.edge.source);
-                    const targetGroup = clusterMembership.get(change.edge.target);
-                    if (!sourceGroup || !targetGroup || sourceGroup === targetGroup) return null;
-                    const source = clusterPositions.get(sourceGroup);
-                    const target = clusterPositions.get(targetGroup);
-                    if (!source || !target) return null;
-                    return <g key={`compare-${change.key}`} role="button" tabIndex={0} aria-label={`Inspect ${change.status} communication between ${change.edge.source} and ${change.edge.target}`}
-                      onClick={(event) => { event.stopPropagation(); setSelectedComparisonKey(change.key); setComparisonOpen(true); }}
-                      onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedComparisonKey(change.key); setComparisonOpen(true); } }}>
-                      <line x1={source.x} y1={source.y} x2={target.x} y2={target.y} stroke="transparent" strokeWidth="16" />
-                      <line x1={source.x} y1={source.y} x2={target.x} y2={target.y}
-                        stroke={comparisonColors[change.status]} strokeWidth={selectedComparisonKey === change.key ? 5 : 2.5}
-                        strokeDasharray={change.status === "Not observed" ? "7 5" : undefined} opacity="0.9" pointerEvents="none" />
-                      <title>{`${change.status}: ${change.edge.source} to ${change.edge.target} (${change.edge.service})`}</title>
-                    </g>;
-                  })}
-                  {renderedClusters.map((cluster) => (
-                    <g key={cluster.key} transform={`translate(${cluster.x} ${cluster.y})`} role="button" tabIndex={0}
-                      aria-label={`Expand ${cluster.key}, ${cluster.members.length} assets`}
-                      onPointerDown={(event) => event.stopPropagation()}
-                      onClick={(event) => { event.stopPropagation(); setClusterFocus(cluster.key); setViewport(DEFAULT_VIEWPORT); }}
-                      onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setClusterFocus(cluster.key); setViewport(DEFAULT_VIEWPORT); } }}>
-                      <rect x="-78" y="-28" width="156" height="56" rx="12" fill="#e5f0f7" stroke="#397b9d" strokeWidth="2" />
-                      <text textAnchor="middle" y="-4" fontSize="13" fontWeight="600" fill="#153c56">{cluster.key.length > 22 ? `${cluster.key.slice(0, 21)}…` : cluster.key}</text>
-                      <text textAnchor="middle" y="15" fontSize="12" fill="#285775">{cluster.members.length} assets · expand</text>
-                      <title>{cluster.key}: {cluster.members.length} displayed assets. Activate to drill down.</title>
-                    </g>
-                  ))}
-                </g>
-              ) : (<>
               {layoutMode === "class" && (
                 <g className="topology-zone-labels" aria-hidden="true">
                   <text x="185" y="46">
@@ -2502,7 +1892,7 @@ const NetworkTopology: React.FC<Props> = ({
                   ))}
                 </g>
               )}
-              {renderedQueryEdges.map((edge) => {
+              {visibleEdges.map((edge) => {
                 const source = nodeMap.get(edge.source)!;
                 const target = nodeMap.get(edge.target)!;
                 const midX = (source.x + target.x) / 2;
@@ -2707,25 +2097,6 @@ const NetworkTopology: React.FC<Props> = ({
                   </g>
                 );
               })}
-              </>)}
-              {comparison && comparisonOverlay && !aggregateView && (
-                <g className="topology-comparison-overlay" aria-label="Observed communication differences">
-                  {comparisonChanges.map((change) => {
-                    const source = nodeMap.get(change.edge.source);
-                    const target = nodeMap.get(change.edge.target);
-                    if (!source || !target) return null;
-                    return <g key={change.key} role="button" tabIndex={0} aria-label={`Inspect ${change.status} communication between ${change.edge.source} and ${change.edge.target}`}
-                      onClick={(event) => { event.stopPropagation(); setSelectedComparisonKey(change.key); setComparisonOpen(true); }}
-                      onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedComparisonKey(change.key); setComparisonOpen(true); } }}>
-                      <line x1={source.x} y1={source.y} x2={target.x} y2={target.y} stroke="transparent" strokeWidth="16" />
-                      <line x1={source.x} y1={source.y} x2={target.x} y2={target.y}
-                        stroke={comparisonColors[change.status]} strokeWidth={selectedComparisonKey === change.key ? 7 : change.status === "Count changed" ? 5 : 3.5}
-                        strokeDasharray={change.status === "Not observed" ? "7 5" : undefined} opacity="0.9" pointerEvents="none" />
-                      <title>{`${change.status}: ${change.edge.source} to ${change.edge.target} (${change.edge.service}); baseline ${change.baselineCount}, current ${change.currentCount}`}</title>
-                    </g>;
-                  })}
-                </g>
-              )}
             </g>
           </svg>
 

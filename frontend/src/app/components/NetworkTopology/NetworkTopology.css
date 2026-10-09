@@ -885,7 +885,7 @@
   background: #fff;
 }
 
-.topology-card:fullscreen {
+.topology-card--expanded {
   display: flex;
   flex-direction: column;
   width: 100vw;
@@ -895,12 +895,12 @@
   border-radius: 0;
   background: #fff;
 }
-.topology-card:fullscreen .topology-canvas {
+.topology-card--expanded .topology-canvas {
   flex: 1 1 auto;
   height: auto;
   min-height: 0;
 }
-.topology-card:fullscreen .topology-overview-row {
+.topology-card--expanded .topology-overview-row {
   padding: 12px 14px 8px;
 }
 
@@ -922,7 +922,7 @@
 :root[data-theme="dark"] .topology-selection-actions .topology-filter-action {
   color: #8fd4ef;
 }
-:root[data-theme="dark"] .topology-card:fullscreen {
+:root[data-theme="dark"] .topology-card--expanded {
   background: #0b1e2a;
 }
 
@@ -1751,3 +1751,164 @@
   fill: #18394b;
   stroke: #8fd4ef;
 }
+
+/* Expansion is confined to the report's right content panel, not the browser viewport. */
+.topology-card--expanded { width: 100%; height: min(85vh, 1100px); max-width: 100%; }
+.topology-card--expanded .topology-canvas { flex: 1 1 auto; min-height: 320px; }
+
+/* Expanded topology is a right-workspace overlay, not a taller in-flow card.
+   This covers the other report sections while leaving the app title bar and
+   report navigation usable. */
+.app-shell .topology-card--expanded {
+  position: fixed;
+  top: var(--titlebar-height, 68px);
+  bottom: 0;
+  left: var(--sidebar-width, 238px);
+  right: 0;
+  z-index: 30;
+  width: auto;
+  max-width: none;
+  height: auto;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface, #fff);
+  box-shadow: -3px 0 16px rgba(0, 0, 0, .10);
+}
+.sidebar-is-collapsed .topology-card--expanded {
+  left: var(--sidebar-collapsed-width, 72px);
+}
+.app-shell .topology-card--expanded .topology-canvas {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+}
+@media (max-width: 900px) {
+  .app-shell .topology-card--expanded,
+  .sidebar-is-collapsed .topology-card--expanded { left: 0; }
+}
+
+/* Portal-mounted expanded workspace: never clipped by the report panel. */
+body > .topology-card--expanded {
+  position: fixed;
+  z-index: 45;
+  top: var(--titlebar-height, 68px);
+  bottom: 0;
+  left: var(--sidebar-width, 238px);
+  right: 0;
+  width: auto;
+  max-width: none;
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--surface, #fff);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: -3px 0 16px rgba(0,0,0,.12);
+}
+body:has(.sidebar-is-collapsed) > .topology-card--expanded {
+  left: var(--sidebar-collapsed-width, 72px);
+}
+body > .topology-card--expanded .topology-canvas {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+}
+@media (max-width: 760px) {
+  body > .topology-card--expanded { left: 0; }
+}
+
+/* Stable right-workspace overlay. Portal is a direct child of body. */
+body > section.topology-card--expanded {
+  position: fixed !important;
+  inset: var(--titlebar-height, 68px) 0 0 var(--sidebar-width, 238px) !important;
+  z-index: 900 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  background: var(--surface, #fff);
+}
+body:has(.sidebar-is-collapsed) > section.topology-card--expanded {
+  left: var(--sidebar-collapsed-width, 72px) !important;
+}
+body > section.topology-card--expanded .topology-canvas {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+@media (max-width: 760px) {
+  body > section.topology-card--expanded { left: 0 !important; }
+}
+
+/* Graph Query Explorer */
+.topology-query-workspace { padding: .65rem .85rem; border-bottom: 1px solid #cbd5df; display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; background:var(--surface-color,#fff); }
+.topology-query-workspace > button { cursor:pointer; }
+.topology-query-fields { width:100%; display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:.65rem; align-items:end; }
+.topology-query-fields label { display:flex; flex-direction:column; gap:.25rem; font-size:.85rem; }
+.topology-query-fields input,.topology-query-fields select { min-width:0; width:100%; padding:.35rem; border:1px solid #a9b5c2; border-radius:4px; background:var(--surface-color,#fff); color:inherit; }
+.topology-query-actions { display:flex; flex-wrap:wrap; gap:.5rem; grid-column:1/-1; }
+.topology-query-fields p[role=alert] { color:#a32020; grid-column:1/-1; }
+.topology-query-results,.topology-query-fields small { grid-column:1/-1; }
+.topology-query-result-list { display:flex; flex-wrap:wrap; gap:.3rem; max-height:110px; overflow:auto; }
+.topology-query-result-list button { font-size:.78rem; }
+.topology-edge.query-dimmed,.topology-node.query-dimmed { opacity:.12; }
+.topology-edge.query-match .topology-edge-visible { stroke:#1767b2; stroke-width:3px; }
+.topology-node.query-match .node-ring { stroke:#1767b2; stroke-width:3px; }
+
+/* Wave 5: compact visual query builder and readable path results */
+.topology-query-panel { width:100%; display:flex; flex-direction:column; gap:.75rem; min-width:0; }
+.topology-query-primary,.topology-query-path { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:.65rem; }
+.topology-query-panel label { display:flex; flex-direction:column; gap:.25rem; font-size:.85rem; min-width:0; }
+.topology-query-panel input,.topology-query-panel select { min-width:0; width:100%; padding:.4rem; border:1px solid #a9b5c2; border-radius:4px; background:var(--surface-color,#fff); color:inherit; }
+.topology-query-builder { padding:.7rem; border:1px solid #cbd5df; border-radius:6px; background:var(--surface-color,#fff); }
+.topology-query-builder strong { display:block; margin-bottom:.6rem; }
+.topology-query-hint { font-size:.78rem; margin:.5rem 0 0; color:var(--text-secondary,#555); }
+.topology-query-advanced-toggle { align-self:flex-start; }
+.topology-query-panel .topology-query-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:.65rem; }
+.topology-query-panel .topology-query-results { width:100%; border:1px solid #cbd5df; border-radius:6px; padding:.6rem; }
+.topology-query-panel .topology-query-result-list { display:flex; flex-direction:column; max-height:240px; overflow:auto; gap:.25rem; margin-top:.5rem; }
+.topology-query-panel .topology-query-result-list button { display:flex; justify-content:space-between; gap:.75rem; text-align:left; padding:.4rem .5rem; border:1px solid #d6dce3; border-radius:4px; background:var(--surface-color,#fff); cursor:pointer; }
+.topology-query-panel .topology-query-result-list button:hover { border-color:#1767b2; }
+.topology-query-panel .topology-query-result-list button span:last-child { color:var(--text-secondary,#555); font-size:.78rem; }
+@media(max-width:700px){.topology-query-panel .topology-query-result-list button{flex-direction:column;gap:.2rem;}}
+
+/* Query result pagination and query-only graph mode */
+.topology-query-pagination { display: flex; justify-content: center; align-items: center; gap: .75rem; padding: .6rem; flex-wrap: wrap; }
+.topology-query-pagination button:disabled { opacity: .45; cursor: not-allowed; }
+.topology-query-display-toggle { display: inline-flex; align-items: center; gap: .5rem; margin: .5rem 0; }
+
+.topology-cluster-controls { display:flex; flex-wrap:wrap; align-items:center; gap:.65rem; padding:.65rem; border:1px solid #c7d1d8; border-radius:.4rem; margin:.65rem 0; }
+.topology-cluster-controls select { max-width:230px; min-width:125px; }
+.topology-cluster-controls [role=status] { margin-left:auto; font-size:.85rem; }
+.topology-cluster-summary { display:flex; flex-wrap:wrap; gap:.5rem; padding:.75rem; }
+.topology-cluster-summary small { flex-basis:100%; }
+
+/* Topology toolbar: distinguish display, filtering, and grouping. */
+.topology-control-heading { display:block; flex-basis:100%; width:100%; font-weight:700; font-size:.875rem; margin-bottom:.15rem; }
+.topology-cluster-controls { align-items:end; }
+.topology-filter-group { flex-wrap:wrap; }
+.topology-filter-group .topology-control-heading { flex-basis:100%; }
+
+.topology-cluster-progress, .topology-cluster-inspector { padding: .75rem; margin: .5rem 0; border: 1px solid #a9bbc5; border-radius: .4rem; }
+.topology-cluster-progress button { margin-left: .75rem; }
+.topology-cluster-inspector { max-height: 18rem; overflow-y: auto; }
+.topology-cluster-inspector-header, .topology-cluster-inspector-pages { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.topology-cluster-inspector > button { display: block; width: 100%; padding: .35rem; text-align: left; }
+.topology-aggregate-view g[role="button"] { cursor: pointer; }
+.topology-aggregate-view g[role="button"]:focus-visible { outline: 2px solid #397b9d; }

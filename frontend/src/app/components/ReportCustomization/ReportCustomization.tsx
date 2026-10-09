@@ -6,7 +6,8 @@ export type ReportSectionId =
   | "findings"
   | "devices"
   | "services"
-  | "connections";
+  | "connections"
+  | "topology";
 
 export interface ReportSectionOption {
   id: ReportSectionId;
@@ -39,6 +40,12 @@ export const REPORT_SECTION_OPTIONS: ReportSectionOption[] = [
     label: "Services",
     description:
       "Observed services, service counts, and service-risk information.",
+  },
+  {
+    id: "topology",
+    label: "Topology",
+    description: "Observed network graph and investigation workspace.",
+    sensitive: true,
   },
   {
     id: "connections",

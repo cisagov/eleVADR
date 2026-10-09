@@ -49,7 +49,6 @@ AUDIT_PATH = "/api/v1/audit"
 STORAGE_PATH = "/api/v1/storage"
 CONTEXT_PROFILES_PATH = "/api/v1/context-profiles"
 TOPOLOGY_QUERIES_PATH = "/api/v1/topology-queries"
-TOPOLOGY_COMPARISONS_PATH = "/api/v1/topology-comparisons"
 
 _AUTH_SERVICE: Any = None
 _REPORT_STORE: Any = None
@@ -57,7 +56,6 @@ _CAPTURE_STORE: Any = None
 _AUDIT_STORE: Any = None
 _CONTEXT_PROFILE_STORE: Any = None
 _TOPOLOGY_QUERY_STORE: Any = None
-_TOPOLOGY_COMPARISON_STORE: Any = None
 
 _LOGIN_RATE_LOCK = threading.Lock()
 _LOGIN_FAILURES: dict[str, list[float]] = {}
@@ -801,15 +799,6 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, {"captures": _CAPTURE_STORE.list_for_owner(principal.user_id)})
             return
 
-        if self.path == TOPOLOGY_COMPARISONS_PATH:
-            principal = self._current_principal()
-            if principal is None or not principal.authenticated:
-                self._json(401, {"error": "authentication_required"}); return
-            if _TOPOLOGY_COMPARISON_STORE is None:
-                self._json(503, {"error": "comparison_store_unavailable"}); return
-            self._json(200, {"comparisons": _TOPOLOGY_COMPARISON_STORE.list_for_owner(principal.user_id)})
-            return
-
         if self.path == TOPOLOGY_QUERIES_PATH:
             principal = self._current_principal()
             if principal is None or not principal.authenticated:
@@ -960,14 +949,6 @@ class Handler(BaseHTTPRequestHandler):
             return
         if not self._require_write_access():
             return
-        if self.path.startswith(f"{TOPOLOGY_COMPARISONS_PATH}/"):
-            principal = self._current_principal()
-            if principal is None or not principal.authenticated or _TOPOLOGY_COMPARISON_STORE is None:
-                self._json(503, {"error": "comparison_store_unavailable"}); return
-            comparison_id = self.path[len(TOPOLOGY_COMPARISONS_PATH)+1:].strip("/")
-            if not _TOPOLOGY_COMPARISON_STORE.delete(principal.user_id, comparison_id):
-                self._json(404, {"error": "comparison_not_found"}); return
-            self._json(200, {"status": "deleted"}); return
         if self.path.startswith(f"{TOPOLOGY_QUERIES_PATH}/"):
             principal=self._current_principal()
             if principal is None or not principal.authenticated or _TOPOLOGY_QUERY_STORE is None:
@@ -1031,16 +1012,6 @@ class Handler(BaseHTTPRequestHandler):
         self._json(404, {"error": "not_found"})
 
     def do_POST(self) -> None:  # noqa: N802
-        if self.path == TOPOLOGY_COMPARISONS_PATH:
-            if not self._require_write_access(): return
-            principal = self._current_principal()
-            if principal is None or not principal.authenticated or _TOPOLOGY_COMPARISON_STORE is None:
-                self._json(503, {"error": "comparison_store_unavailable"}); return
-            try:
-                saved = _TOPOLOGY_COMPARISON_STORE.save(principal.user_id, self._read_json())
-            except (ValueError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-                self._json(400, {"error": "invalid_comparison", "message": str(exc)}); return
-            self._json(200, {"comparison": saved}); return
         if self.path == TOPOLOGY_QUERIES_PATH:
             if not self._require_write_access(): return
             principal=self._current_principal()
@@ -1339,7 +1310,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main() -> int:
-    global _AUTH_SERVICE, _REPORT_STORE, _CAPTURE_STORE, _AUDIT_STORE, _CONTEXT_PROFILE_STORE, _TOPOLOGY_QUERY_STORE, _TOPOLOGY_COMPARISON_STORE
+    global _AUTH_SERVICE, _REPORT_STORE, _CAPTURE_STORE, _AUDIT_STORE, _CONTEXT_PROFILE_STORE, _TOPOLOGY_QUERY_STORE
     parser = argparse.ArgumentParser(description="Run isolated eleVADR analysis reference server")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
@@ -1366,14 +1337,12 @@ def main() -> int:
         from backend_bryan.auth.audit_store import MongoAuditStore
         from backend_bryan.auth.context_profile_store import MongoContextProfileStore
         from backend_bryan.auth.topology_query_store import MongoTopologyQueryStore
-        from backend_bryan.auth.topology_comparison_store import MongoTopologyComparisonStore
         try:
             _REPORT_STORE = MongoReportStore(_AUTH_SERVICE.config); _REPORT_STORE.connect()
             _CAPTURE_STORE = MongoCaptureStore(_AUTH_SERVICE.config); _CAPTURE_STORE.connect()
             _AUDIT_STORE = MongoAuditStore(_AUTH_SERVICE.config); _AUDIT_STORE.connect()
             _CONTEXT_PROFILE_STORE = MongoContextProfileStore(_AUTH_SERVICE.config); _CONTEXT_PROFILE_STORE.connect()
             _TOPOLOGY_QUERY_STORE = MongoTopologyQueryStore(_AUTH_SERVICE.config); _TOPOLOGY_QUERY_STORE.connect()
-            _TOPOLOGY_COMPARISON_STORE = MongoTopologyComparisonStore(_AUTH_SERVICE.config); _TOPOLOGY_COMPARISON_STORE.connect()
         except (RuntimeError, ValueError) as exc:
             print(f"ERROR: platform persistence startup failed: {exc}")
             if _REPORT_STORE is not None: _REPORT_STORE.close()
@@ -1396,8 +1365,6 @@ def main() -> int:
     try:
         server.serve_forever()
     finally:
-        if _TOPOLOGY_COMPARISON_STORE is not None:
-            _TOPOLOGY_COMPARISON_STORE.close()
         if _TOPOLOGY_QUERY_STORE is not None:
             _TOPOLOGY_QUERY_STORE.close()
         if _CONTEXT_PROFILE_STORE is not None:
