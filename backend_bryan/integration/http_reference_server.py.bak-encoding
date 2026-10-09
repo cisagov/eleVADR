@@ -350,7 +350,7 @@ def _cancel_analysis_job(job_id: str) -> bool:
         job["cancelRequested"] = True
         job["status"] = "canceling"
         job["stage"] = "canceling"
-        job["message"] = "Canceling PCAP analysis…"
+        job["message"] = "Canceling PCAP analysisâ€¦"
         job["updatedAt"] = time.time()
         return True
 
@@ -365,7 +365,7 @@ def _cancel_discovery_job(job_id: str) -> bool:
         job["cancelRequested"] = True
         job["status"] = "canceling"
         job["stage"] = "canceling"
-        job["message"] = "Canceling context discovery…"
+        job["message"] = "Canceling context discoveryâ€¦"
         job["updatedAt"] = time.time()
         return True
 
@@ -416,7 +416,7 @@ def _run_analysis_job(
                 expected_pcap_sha256=evidence_pcap_sha256,
             )
             evidence_leased = True
-            progress("preparing-analysis", 1, "Preparing analysis from retained Zeek evidence…", filename)
+            progress("preparing-analysis", 1, "Preparing analysis from retained Zeek evidenceâ€¦", filename)
             report = analyze_zeek_evidence_to_report(
                 Path(str(evidence["path"])),
                 profile,
@@ -432,7 +432,7 @@ def _run_analysis_job(
         else:
             if temp_path is None:
                 raise ValueError("PCAP analysis requires either retained Zeek evidence or a PCAP upload")
-            progress("preparing-analysis", 1, "Preparing PCAP analysis…", filename)
+            progress("preparing-analysis", 1, "Preparing PCAP analysisâ€¦", filename)
             report = analyze_pcap_to_report(temp_path, profile, source_filename=filename, progress=progress)
         _raise_if_analysis_canceled(job_id)
         if _REPORT_STORE is not None and owner_id and owner_username:
@@ -443,7 +443,7 @@ def _run_analysis_job(
             status="completed",
             stage="completed",
             progress=100,
-            message="Analysis complete. Loading eleVADR report…",
+            message="Analysis complete. Loading eleVADR reportâ€¦",
             detail=report.get("report_id"),
             elapsedSeconds=round(time.time() - started, 1),
             result=report,
@@ -495,7 +495,7 @@ def _run_discovery_job(job_id: str, temp_path: Path, filename: str, owner_id: st
         )
 
     try:
-        progress("preparing", 1, "Preparing packet capture…", filename)
+        progress("preparing", 1, "Preparing packet captureâ€¦", filename)
         pcap_sha256 = _sha256_file(temp_path)
         result = discover_context_with_retained_evidence(
             temp_path,

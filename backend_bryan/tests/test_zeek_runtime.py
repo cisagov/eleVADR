@@ -99,3 +99,21 @@ def test_elevadr_runtime_policy_enables_arp_logging() -> None:
     assert '$path="arp"' in text
     assert "event arp_request" in text
     assert "event arp_reply" in text
+
+
+def test_docker_cleanup_targets_only_named_container(monkeypatch):
+    from backend_bryan.runtime import zeek_runtime as runtime
+
+    calls = []
+
+    class Result:
+        returncode = 0
+
+    def fake_run(command, **kwargs):
+        calls.append((command, kwargs))
+        return Result()
+
+    monkeypatch.setattr(runtime.subprocess, "run", fake_run)
+    runtime._stop_zeek_container("docker", "elevadr-zeek-test123")
+    assert calls[0][0] == ["docker", "stop", "--time", "1", "elevadr-zeek-test123"]
+    assert calls[0][1]["timeout"] == 5

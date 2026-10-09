@@ -1,0 +1,1 @@
+Targeted cancellation hardening. Syntax checked. Full tests not run: partial source upload lacks detector_runtime. Docker cleanup best effort; Docker image pull and upload cannot be forcibly canceled by this patch. Validate locally before deployment.

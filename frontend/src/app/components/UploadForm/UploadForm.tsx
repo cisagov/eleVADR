@@ -670,7 +670,10 @@ const UploadForm: React.FC<UploadFormProps> = ({
       elapsedSeconds: current?.elapsedSeconds,
     }));
     try {
-      await authenticatedFetch(url, { method: "DELETE" });
+      const response = await authenticatedFetch(url, { method: "DELETE" });
+      if (!response.ok) {
+        throw new Error(`Cancellation rejected (HTTP ${response.status})`);
+      }
     } catch {
       cancelRequestedRef.current = false;
       setError(

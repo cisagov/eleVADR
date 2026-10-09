@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Sequence
@@ -153,6 +154,7 @@ def _run_zeek_with_activity(
     command: list[str], *, output_path: Path, progress: ProgressCallback | None,
     cwd: Path | None = None, runtime_label: str = "Zeek",
     heartbeat_seconds: float = 3.0,
+    docker_container: str | None = None,
 ) -> None:
     """Report observed log activity without inventing packet-based completion percentages."""
     started = time.monotonic()
@@ -177,6 +179,11 @@ def _run_zeek_with_activity(
                 _emit(progress, "zeek-running", None, "Zeek processing capture (still active)…", detail)
                 process.wait(timeout=heartbeat_seconds) if process.poll() is not None else time.sleep(heartbeat_seconds)
         except BaseException:
+            # A terminated Docker CLI can leave its container running on Windows.
+            # Stop only this invocation's uniquely named container, even if the
+            # CLI has already exited. --rm handles container removal.
+            if docker_container:
+                _stop_zeek_container(command[0], docker_container)
             if process.poll() is None:
                 process.terminate()
                 try:
@@ -190,6 +197,20 @@ def _run_zeek_with_activity(
             detail = output.read()[-4000:].strip() or f"exit code {process.returncode}"
             raise RuntimeError(f"Zeek execution failed: {detail}")
     _emit(progress, "zeek-running", None, "Zeek finished processing capture; preparing logs…", f"Elapsed {int(time.monotonic() - started)}s")
+
+
+def _stop_zeek_container(docker: str, container: str) -> None:
+    """Best-effort bounded cleanup for the container owned by this invocation."""
+    for action in (("stop", "--time", "1"), ("kill",), ("rm", "-f")):
+        try:
+            result = subprocess.run(
+                [docker, *action, container], capture_output=True,
+                text=True, check=False, timeout=5,
+            )
+            if result.returncode == 0:
+                return
+        except (OSError, subprocess.TimeoutExpired):
+            continue
 
 
 def _docker_image_available(runtime: ZeekRuntime) -> bool:
@@ -289,9 +310,11 @@ def _run_docker(runtime: ZeekRuntime, pcap_path: Path, output_path: Path, progre
     input_dir = pcap_path.parent.resolve()
     output_dir = output_path.resolve()
     policy_path = _runtime_policy_copy(output_path)
+    container_name = f"elevadr-zeek-{uuid.uuid4().hex}"
     command = [
         runtime.command[0],
         "run",
+        "--name", container_name,
         "--rm",
         "-v",
         f"{input_dir}:/input:ro",
@@ -308,7 +331,7 @@ def _run_docker(runtime: ZeekRuntime, pcap_path: Path, output_path: Path, progre
     ]
     _emit(progress, "zeek-running", None, "Analyzing PCAP with Zeek…", f"Docker image: {runtime.docker_image}")
     try:
-        _run_zeek_with_activity(command, output_path=output_path, progress=progress, runtime_label=runtime.label)
+        _run_zeek_with_activity(command, output_path=output_path, progress=progress, runtime_label=runtime.label, docker_container=container_name)
     except RuntimeError as exc:
         message = str(exc)
         if "docker daemon" in message.lower() or "cannot connect" in message.lower():
