@@ -250,8 +250,8 @@ describe("NetworkTopology interaction regression", () => {
     expect(container.querySelectorAll(".topology-aggregate-view [aria-label^='Expand ']").length).toBeGreaterThan(0);
     expect(container.querySelectorAll(".topology-node").length).toBe(0);
     fireEvent.click(screen.getByRole("button", { name: /^Expand OT, /i }));
-    expect(container.querySelectorAll(".topology-node").length).toBeGreaterThan(10);
-    expect(container.querySelectorAll(".topology-edge").length).toBeGreaterThan(0);
+    expect(container.querySelectorAll(".topology-node").length).toBeGreaterThan(20);
+    expect(container.querySelectorAll(".topology-edge").length).toBeGreaterThan(10);
     expect(screen.getByRole("img", { name: /Interactive network topology/i })).toBeInTheDocument();
   });
 });

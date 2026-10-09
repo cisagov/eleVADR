@@ -118,8 +118,13 @@ def _check_local_ports() -> CheckResult:
 def _check_required_release_files() -> CheckResult:
     required = (
         "README.md",
+        "HANDOFF.md",
         "run_regression_tests.bat",
+        "run_regression_tests.sh",
         "run_release_candidate_validation.bat",
+        "run_release_candidate_validation.sh",
+        "RELEASE_CANDIDATE_CHECKPOINT.md",
+        "RELEASE_CANDIDATE_MANIFEST.json",
         "backend_bryan/integration/release_candidate_gate.py",
         "backend_bryan/vendor/elevadr_modules/modules/cleartext_credentials.py",
         "backend_bryan/reference/release_readiness.md",

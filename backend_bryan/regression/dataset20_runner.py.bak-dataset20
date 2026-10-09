@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -47,13 +46,7 @@ def main() -> int:
         ("Topology retains a dedicated node drag handle", 'className="node-drag-handle"' in topology, "dedicated node drag handle missing"),
         ("Drag release clears active drag state", "dragRef.current = null;" in topology and "finishNodeDrag" in topology, "drag release cleanup missing"),
         ("Ordinary wheel input is reserved for report scrolling", "if (!event.ctrlKey && !event.metaKey) return;" in topology, "ordinary wheel scrolling is not protected"),
-        ("Double-click neighborhood focus remains wired", re.search(
-    r'onDoubleClick=\{\(event\)\s*=>\s*\{\s*'
-    r'event\.stopPropagation\(\);\s*'
-    r'focusNodeNeighborhood\(node\);\s*'
-    r'\}\}',
-    topology,
-) is not None, "double-click focus missing"),
+        ("Double-click neighborhood focus remains wired", 'onDoubleClick={(event) => { event.stopPropagation(); focusNodeNeighborhood(node); }}' in topology, "double-click focus missing"),
         ("Escape-to-clear remains wired", 'if (event.key !== "Escape") return;' in topology, "Escape-to-clear missing"),
     ]
 

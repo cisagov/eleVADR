@@ -85,7 +85,7 @@ def _frontend_details() -> dict[str, dict[str, Any]]:
     entries: dict[str, dict[str, Any]] = {}
     cursor = text.index("{") + 1
     while True:
-        match = re.search(r'\n\s{2}([a-z][a-z0-9_]*):\s*\{', text[cursor:])
+        match = re.search(r'\n\s{2}"([^"]+)":\s*\{', text[cursor:])
         if not match:
             break
         module_id = match.group(1)
@@ -140,34 +140,13 @@ def _frontend_details() -> dict[str, dict[str, Any]]:
 def _numeric_schema_fields() -> dict[str, set[str]]:
     text = SCHEMA.read_text(encoding="utf-8")
     result: dict[str, set[str]] = {}
-
-    modules = re.finditer(
-        r'\bmoduleId\s*:\s*"([^"]+)"',
-        text,
-    )
-
-    matches = list(modules)
-
-    for index, match in enumerate(matches):
-        module_id = match.group(1)
-        start = match.end()
-        end = (
-            matches[index + 1].start()
-            if index + 1 < len(matches)
-            else len(text)
-        )
-
-        body = text[start:end]
-
-        fields = re.findall(
-            r'\{\s*key\s*:\s*"([^"]+)"\s*,\s*type\s*:\s*"number"\s*,?\s*\}',
-            body,
-        )
-
-        if fields:
-            result[module_id] = set(fields)
-
+    for match in re.finditer(r'\{"moduleId":"([^"]+)","fields":\[(.*?)\]\}', text):
+        module_id, body = match.group(1), match.group(2)
+        numeric = set(re.findall(r'\{"key":"([^"]+)","type":"number"\}', body))
+        if numeric:
+            result[module_id] = numeric
     return result
+
 
 def _frontend_defaults() -> dict[str, dict[str, float]]:
     text = DEFAULTS.read_text(encoding="utf-8")

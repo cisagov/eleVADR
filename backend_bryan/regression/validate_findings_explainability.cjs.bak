@@ -37,7 +37,7 @@ function read(file) {
 }
 
 function requireText(source, needle, label) {
-  if (!(needle instanceof RegExp ? needle.test(source) : source.includes(needle)))
+  if (!source.includes(needle))
     throw new Error(
       `Findings explainability contract missing ${label}: ${needle}`,
     );
@@ -82,7 +82,7 @@ const tests = read(testPath);
     "rogue-device non-authorizing guidance",
   ],
   [
-    /["']observations["']\s*,\s*["']confidence["']\s*,\s*["']detection_basis["']/,
+    'observations", "confidence", "detection_basis',
     "CSV confidence/detection-basis columns",
   ],
 ].forEach(([needle, label]) => requireText(findings, needle, label));

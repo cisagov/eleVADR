@@ -1278,7 +1278,7 @@ function App() {
         included_sections: included,
         excluded_sections: excluded,
         active_investigation_filters: filters,
-        graph_view: visibleReportSections.has("connections")
+        graph_view: visibleReportSections.has("topology")
           ? graphViewState
           : null,
         note: "Derivative export from eleVADR. Sections not selected in the report view are intentionally omitted; the source report was not modified.",
@@ -2896,6 +2896,33 @@ function App() {
                               <div><span>Services</span><strong>+{reportComparison.services.added} / -{reportComparison.services.removed} / ~{reportComparison.services.changed}</strong></div>
                               <div><span>Context changes</span><strong>{reportComparison.contextDeltas.length}</strong></div>
                             </div>
+                            <details className="comparison-details">
+                              <summary>Finding changes ({reportComparison.findingDeltas.length})</summary>
+                              {reportComparison.findingDeltas.length ? (
+                                <ul>{reportComparison.findingDeltas.map((delta) => (
+                                  <li key={delta.key}>
+                                    <strong>{delta.change}: {delta.title}</strong> ({delta.moduleId})
+                                    <span> Severity: {delta.severityBefore || "Not recorded"} → {delta.severityAfter || "Not recorded"}; Confidence: {delta.confidenceBefore || "Not recorded"} → {delta.confidenceAfter || "Not recorded"}</span>
+                                  </li>
+                                ))}</ul>
+                              ) : <p>No finding changes.</p>}
+                            </details>
+                            <details className="comparison-details">
+                              <summary>Module configuration changes ({reportComparison.moduleDeltas.length})</summary>
+                              {reportComparison.moduleDeltas.length ? (
+                                <ul>{reportComparison.moduleDeltas.map((delta) => (
+                                  <li key={delta.path}><strong>{delta.path}</strong>: {formatComparisonValue(delta.before)} → {formatComparisonValue(delta.after)}</li>
+                                ))}</ul>
+                              ) : <p>No module configuration changes.</p>}
+                            </details>
+                            <details className="comparison-details">
+                              <summary>Detection Context changes ({reportComparison.contextDeltas.length})</summary>
+                              {reportComparison.contextDeltas.length ? (
+                                <ul>{reportComparison.contextDeltas.map((delta) => (
+                                  <li key={delta.path}><strong>{delta.path}</strong>: {formatComparisonValue(delta.before)} → {formatComparisonValue(delta.after)}</li>
+                                ))}</ul>
+                              ) : <p>No Detection Context changes.</p>}
+                            </details>
                           </div>
                         ) : compareReportIds.length === 2 ? (
                           <div className="analyses-compare-toolbar">

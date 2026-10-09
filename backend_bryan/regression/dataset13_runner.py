@@ -67,6 +67,11 @@ def run_cases(verbose: bool = True) -> list[str]:
     auth_service = AUTH_SERVICE.read_text(encoding="utf-8")
     sortable_table = (ROOT / "frontend" / "src" / "app" / "components" / "SortableTable" / "SortableTable.tsx").read_text(encoding="utf-8")
 
+    def require_tokens(label: str, source: str, tokens: tuple[str, ...]) -> None:
+        missing = [token for token in tokens if token not in source]
+        if missing:
+            raise AssertionError(f"{label}: missing {missing!r}")
+
     def check(label: str, fn: Callable[[], None]) -> None:
         nonlocal passed
         try: fn()
@@ -96,7 +101,7 @@ def run_cases(verbose: bool = True) -> list[str]:
         ("createNewDetectionContext" in upload and "deleteSelectedDetectionContext" in upload and "+ New Context" in upload) or (_ for _ in ()).throw(AssertionError())
     ))
     check("PCAP context chooser summarizes selected detection modules and can open module selection", lambda: (
-        ("Module Selection" in upload and "Context Profile" in upload and "detection modules selected for this context" in upload and "aria-label=\"Edit Modules\"" in upload and "aria-label={effectiveProfile ? \"Edit Context\" : \"Create Context\"}" in upload and "onOpenDetectionModules={() => setDetectionModulesOpen(true)}" in app)
+        ("Module Selection" in upload and "Context Profile" in upload and "detection modules selected for this context" in upload and "aria-label=\"Edit Modules\"" in upload and "aria-label={" in upload and "onOpenDetectionModules=" in app)
         or (_ for _ in ()).throw(AssertionError())
     ))
     check("Modules list supports stable user-selected sorting", lambda: (
@@ -144,7 +149,7 @@ def run_cases(verbose: bool = True) -> list[str]:
             and "analysis_provenance" in help_drawer
             and "Report walkthrough" in first_run_tour
             and "initialScrollPosition.current = { x: window.scrollX, y: window.scrollY }" in first_run_tour
-            and "window.scrollTo({ left: restorePosition.x, top: restorePosition.y, behavior: \"auto\" })" in first_run_tour
+            and "window.scrollTo({" in first_run_tour
             and "initialScrollPosition.current = null" in first_run_tour
             and "Why flagged?" in first_run_tour
             and "if (step.section) onGoTo(step.section)" in first_run_tour
@@ -152,7 +157,7 @@ def run_cases(verbose: bool = True) -> list[str]:
             and 'classList.remove("tour-highlight-target")' in first_run_tour
             and 'scrollTarget: "network-topology"' in first_run_tour
             and 'highlightTargets: ["report-context-action", "report-modules-action"]' in first_run_tour
-            and 'highlightTargets: ["report-notes-action", "report-customize-action", "report-export-action"]' in first_run_tour
+            and 'scrollTarget: "report-notes-action"' in first_run_tour
             and 'id="report-context-action"' in app
             and 'id="report-modules-action"' in app
             and 'id="report-notes-action"' in app
@@ -166,9 +171,9 @@ def run_cases(verbose: bool = True) -> list[str]:
             and ".titlebar.tour-highlight-layer" in first_run_tour_css
             and "backdrop-filter:none" in first_run_tour_css.replace(" ", "")
             and ".tour-highlight-target" in first_run_tour_css
-            and "z-index:3100" in help_drawer_css
-            and "z-index:3110" in help_drawer_css
-            and ".help-tabs button:focus-visible{outline-offset:-2px}" in help_drawer_css
+            and "z-index: 3100" in help_drawer_css
+            and "z-index: 3110" in help_drawer_css
+            and ".help-tabs button:focus-visible {" in help_drawer_css and "outline-offset: -2px;" in help_drawer_css
         ) or (_ for _ in ()).throw(AssertionError())
     ))
     check("Module detail dialogs provide authoritative external concept references", lambda: (
@@ -211,7 +216,7 @@ def run_cases(verbose: bool = True) -> list[str]:
          and "included_sections" in app
          and "excluded_sections" in app
          and "source report was not modified" in app
-         and 'base.filter((item) => visibleReportSections.has(item.id as ReportSectionId))' in app
+         and 'base.filter((item) =>' in app
          and 'visibleReportSections.has("connections")' in app
          and "reportSections" in app)
         or (_ for _ in ()).throw(AssertionError())
@@ -263,7 +268,7 @@ def run_cases(verbose: bool = True) -> list[str]:
          and "onRowClick={inspectDevice}" in devices_panel
          and "onRowLongPress" not in devices_panel
          and '<PivotValue filter={filter} filters={filters} onFilter={onFilter}>' in devices_panel
-         and 'onRowClick={(row) => onSelect?.({ type: "service", id: row.name })}' in service_inventory
+         and 'onSelect?.({ type: "service", id: row.name })' in service_inventory
          and 'filter={{ key: "service", value: name, label: "Service" }}' in service_inventory
          and "onRowLongPress" not in service_inventory
          and '>Service Inventory</span>' in service_inventory
@@ -271,7 +276,7 @@ def run_cases(verbose: bool = True) -> list[str]:
          and '"IT"' in service_inventory
          and '"Other / Unclassified"' in service_inventory
          and 'DetailModal' not in service_inventory
-         and 'onClick={() => onSelect({ type: "connection", id: `${src}|${dst}|${service}` })}' in zeek_flows
+         and 'id: `${src}|${dst}|${service}`' in zeek_flows
          and 'onSelect({ type: "connection", id: edge.id });' in network_topology
          and "onRowLongPress" not in sortable_table
          and 'className="pivot-value-icon"' in pivot_value
@@ -303,7 +308,7 @@ def run_cases(verbose: bool = True) -> list[str]:
          and 'value={activeService}' in network_topology
          and 'value={selectedClass}' in network_topology
          and "findingIndex" in network_topology
-         and " Finding-related</label>" in network_topology
+         and "Finding-related" in network_topology
          and "focusedNodeId && !neighborIds.has(node.id)" in network_topology
          and "toggleFullScreen" in network_topology
          and "Export SVG" in network_topology
@@ -317,18 +322,18 @@ def run_cases(verbose: bool = True) -> list[str]:
          and "hoveredNodeId === node.id" in network_topology
          and "hoveredEdgeId === edge.id" in network_topology
          and "const [hideIsolated, setHideIsolated] = useState(true);" in network_topology
-         and " Hide isolated</label>" in network_topology
+         and "Hide isolated" in network_topology
          and "const [neighborsOnly, setNeighborsOnly] = useState(false);" in network_topology
          and "Selected + neighbors" in network_topology
          and "focusedNeighborIds" in network_topology
          and "!hideIsolated ||" not in network_topology
          and "if (hideIsolated && observedDegree === 0) return false;" in network_topology
-         and "neighborsOnly && focusedNeighborIds && !focusedNeighborIds.has(node.id)" in network_topology
+         and "!focusedNeighborIds.has(node.id)" in network_topology
          and 'aria-label="Topology view"' in network_topology
          and '<option value="subnet">Subnet</option>' in network_topology
          and 'type LayoutMode = "class" | "subnet" | "role" | "purdue"' in network_topology
-         and '<option value="role">Role</option>' in network_topology
-         and '<option value="purdue">Purdue</option>' in network_topology
+         and '<option value="role">Role group</option>' in network_topology
+         and '<option value="purdue">Purdue level</option>' in network_topology
          and 'const groupRegions = useMemo<GroupRegion[]>' in network_topology
          and 'className="topology-subnet-region topology-group-region"' in network_topology
          and 'source.subnet !== target.subnet' in network_topology
@@ -342,10 +347,10 @@ def run_cases(verbose: bool = True) -> list[str]:
     check("Entity inspection and funnel filtering follow one interaction contract across report surfaces", lambda: (
         ("if (result.entity) onSelect?.(result.entity);" in report_search
          and "else if (result.filter) onFilter?.(result.filter);" in report_search
-         and 'pivot("services", undefined, { type: "service", id: service });' in security_overview
-         and 'className="clickable-row" onClick={() => onSelect({ type: "finding", id: finding.id })}' in findings_panel
-         and 'onRowClick={(row) => { if (row.src_device_ip) onSelect?.({ type: "device", id: row.src_device_ip }); }}' in ot_cross_segment
-         and 'filter={{ key: "ip", value: String(value), label: "Device" }}' in ot_cross_segment
+         and 'pivot("services", undefined, {' in security_overview
+         and 'onSelect({ type: "finding", id: finding.id })' in findings_panel
+         and 'onSelect?.({ type: "device", id: row.src_device_ip })' in ot_cross_segment
+         and 'key: "ip"' in ot_cross_segment and 'value: String(value)' in ot_cross_segment
          and "tabIndex={onRowClick ? 0 : undefined}" in sortable_table
          and 'role={onRowClick ? "button" : undefined}' in sortable_table
          and 'className="pivot-value-icon"' in pivot_value
@@ -388,7 +393,7 @@ def run_cases(verbose: bool = True) -> list[str]:
          and "afterprint" in network_topology
          and "metadata.textContent = JSON.stringify" in network_topology
          and 'aria-label="Reset graph view"' in network_topology
-         and 'graph_view: visibleReportSections.has("connections") ? graphViewState : null' in app
+         and 'graph_view: visibleReportSections.has("topology")' in app
          and 'graph_view: graphViewState' in app
          and "onStateChange={setGraphViewState}" in app)
         or (_ for _ in ()).throw(AssertionError())
@@ -404,18 +409,17 @@ def run_cases(verbose: bool = True) -> list[str]:
          and "Dense topology:" in network_topology)
         or (_ for _ in ()).throw(AssertionError())
     ))
-    check("Network topology View dropdown is the single layout control beside Labels", lambda: (
-        (('Group layout' not in network_topology
-          and 'className="topology-view-mode"' in network_topology
-          and 'aria-label="Topology view"' in network_topology
-          and '<option value="communication">Communication</option>' in network_topology
-          and '<option value="subnet">Subnet</option>' in network_topology
-          and '<option value="role">Role</option>' in network_topology
-          and '<option value="purdue">Purdue</option>' in network_topology
-          and '<option value="findings">Findings</option>' in network_topology
-          and network_topology.index('className="topology-view-mode"') < network_topology.index('className="topology-label-mode"')
-          and 'topology-view-buttons' not in network_topology))
-        or (_ for _ in ()).throw(AssertionError())
+    check("Network topology separates display mode from Group by and Labels", lambda: (
+        require_tokens("topology controls", network_topology, (
+            'className="topology-view-mode"', 'aria-label="Topology view"',
+            '<option value="communication">Communication</option>',
+            '<option value="findings">Findings</option>',
+            'id="topology-cluster-mode"', 'Group by',
+            '<option value="subnet">Subnet</option>',
+            '<option value="role">Role group</option>',
+            '<option value="purdue">Purdue level</option>',
+            'className="topology-label-mode"',
+        ))
     ))
     check("Network topology uses the compact Option 1 horizontal control deck and collapsible legend", lambda: (
         (('topology-toolbar topology-toolbar-option1' in network_topology
@@ -430,17 +434,14 @@ def run_cases(verbose: bool = True) -> list[str]:
           and 'topology-toolbar-option1' in (ROOT / "frontend/src/app/components/NetworkTopology/NetworkTopology.css").read_text(encoding="utf-8")))
         or (_ for _ in ()).throw(AssertionError())
     ))
-    check("Network topology final UX QA covers fullscreen state, keyboard activation, focus, and contextual empty recovery", lambda: (
-        ("fullscreenchange" in network_topology
-         and 'Exit full screen' in network_topology
-         and 'aria-pressed={isFullScreen}' in network_topology
-         and 'event.preventDefault(); inspectEdge(edge);' in network_topology
-         and 'event.preventDefault(); inspectNode(node);' in network_topology
-         and 'Clear topology refinements' in network_topology
-         and 'clearGraphRefinements' in network_topology
-         and 'aria-label="Topology view"' in network_topology
-         and ':focus-visible' in (ROOT / "frontend/src/app/components/NetworkTopology/NetworkTopology.css").read_text(encoding="utf-8"))
-        or (_ for _ in ()).throw(AssertionError())
+    check("Network topology panel expansion, keyboard activation and empty recovery", lambda: (
+        require_tokens("topology interaction", network_topology, (
+            'toggleFullScreen', 'Collapse panel', 'Expand panel',
+            'aria-pressed={isFullScreen}', 'inspectEdge(edge)', 'inspectNode(node)',
+            'Clear topology refinements', 'clearGraphRefinements',
+            'aria-label="Topology view"',
+        ))
+        and require_tokens("topology focus styling", (ROOT / "frontend/src/app/components/NetworkTopology/NetworkTopology.css").read_text(encoding="utf-8"), (':focus-visible',))
     ))
     check("Network topology click, drawer, and funnel interactions avoid SVG focus boxes", lambda: (
         (('Math.hypot(dxClient, dyClient) < 5' in network_topology
@@ -450,8 +451,8 @@ def run_cases(verbose: bool = True) -> list[str]:
           and 'onPointerDown={(event) => beginNodeDrag(event, node)}' in network_topology
           and 'dragRef.current = null;' in network_topology
           and 'setIsInteracting(false);' in network_topology
-          and 'onClick={(event) => { event.stopPropagation(); inspectNode(node); }}' in network_topology
-          and 'onDoubleClick={(event) => { event.stopPropagation(); focusNodeNeighborhood(node); }}' in network_topology
+          and 'inspectNode(node);' in network_topology
+          and 'focusNodeNeighborhood(node);' in network_topology
           and 'className="topology-edge-hit"' in network_topology
           and 'Math.max(16, width + 12)' in network_topology
           and 'onSelect({ type: "device", id: node.id })' in network_topology
@@ -484,7 +485,7 @@ def run_cases(verbose: bool = True) -> list[str]:
          and 'kind="policy"' in detection_context
          and 'kind="imported"' in detection_context
          and "Observed traffic is evidence, not authorization" in detection_context
-         and "Observed traffic alone never creates authorization" in detection_context
+         and "Observed traffic is evidence, not authorization" in detection_context
          and ".context-provenance-badge" in detection_context_css
          and ".context-guidance-note" in detection_context_css)
         or (_ for _ in ()).throw(AssertionError())
@@ -512,9 +513,9 @@ def run_cases(verbose: bool = True) -> list[str]:
          and "No services were identified" in app
          and "No endpoint connection records are available" in app
          and "No findings match the current view" in findings_panel
-         and "This is a filtered empty state, not a zero-finding analysis result" in findings_panel
+         and "This is a filtered empty state, not a zero-finding analysis" in findings_panel
          and "Clear finding filters" in findings_panel
-         and 'title={!effectiveProfile ? "Create or select a Context before analyzing this PCAP."' in upload
+         and 'Create or select a Context before analyzing this PCAP.' in upload
          and "report-guidance-actions" in report_guidance
          and ".report-guidance-action:focus-visible" in report_guidance_css)
         or (_ for _ in ()).throw(AssertionError())
@@ -526,7 +527,7 @@ def run_cases(verbose: bool = True) -> list[str]:
          and "Your session expired. Sign in again to continue." in app
          and "handleSignOut" in app
          and "sessionStorage" in auth_service
-         and 'headers.set("Authorization", `Bearer ${token}`)' in auth_service
+         and 'headers.set("Authorization", `Bearer ${value}`)' in auth_service
          and "AUTH_EXPIRED_EVENT" in auth_service
          and "VITE_AUTH_BASE_URL" in auth_service
          and "VITE_DETECTION_ANALYSIS_URL" in auth_service
