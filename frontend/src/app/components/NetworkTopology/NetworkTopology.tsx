@@ -1594,7 +1594,7 @@ const NetworkTopology: React.FC<Props> = ({
       )}
       <div className="topology-collapsible-card topology-organize-wrapper">
         <button type="button" className="topology-section-toggle" aria-expanded={organizeOpen} aria-controls="topology-organize-content" onClick={() => setOrganizeOpen((open) => !open)}>
-          <span>1. Organize devices</span><span className="topology-section-chevron" aria-hidden="true">{organizeOpen ? "â–¾" : "â–¸"}</span>
+          <span>1. Organize devices</span><span className="topology-section-chevron" aria-hidden="true">{organizeOpen ? "▾" : "▸"}</span>
         </button>
         {organizeOpen && <div id="topology-organize-content" className="topology-cluster-controls" aria-label="Topology grouping and cluster drill-down">
         <label className="topology-cluster-field" htmlFor="topology-cluster-mode">
@@ -1613,7 +1613,7 @@ const NetworkTopology: React.FC<Props> = ({
             {clusterSummaries.map(([name, count]) => <option key={name} value={name}>{name} ({count} assets)</option>)}
           </select>
         </label>
-        <span role="status" className="topology-view-count">{aggregateView ? `${aggregateGraph.clusters.length} clusters Â· ${nodes.length} devices available` : `${nodes.length} devices shown Â· ${visibleEdges.length} connections`}</span>
+        <span role="status" className="topology-view-count">{aggregateView ? `${aggregateGraph.clusters.length} clusters · ${nodes.length} devices available` : `${nodes.length} devices shown · ${visibleEdges.length} connections`}</span>
         {clusterFocus && <button type="button" onClick={() => { setClusterFocus(""); setViewport(DEFAULT_VIEWPORT); }}>Back to overview</button>}
         <p className="topology-cluster-guidance">{aggregateView
           ? "Select a cluster to see its devices and observed communications. Lines between clusters summarize traffic, not physical wiring."
@@ -1635,7 +1635,7 @@ const NetworkTopology: React.FC<Props> = ({
           </div>
           <p>These links are observed communications, not proof of routing or physical connectivity.</p>
           {inspectedClusterPageEdges.map((edge) => <button key={edge.id} type="button" onClick={() => inspectEdge(edge)}>
-            {edge.source} to {edge.target} â€” {edge.service} ({edge.count} observations)
+            {edge.source} to {edge.target} – {edge.service} ({edge.count} observations)
           </button>)}
           <div className="topology-cluster-inspector-pages">
             <button type="button" disabled={clusterEdgePage === 0} onClick={() => setClusterEdgePage((page) => page - 1)}>Previous</button>
@@ -1655,7 +1655,7 @@ const NetworkTopology: React.FC<Props> = ({
       <div className="topology-collapsible-card topology-explore-wrapper">
         <div className="topology-collapsible-heading-row">
           <button type="button" className="topology-section-toggle" aria-expanded={exploreOpen} aria-controls="topology-explore-content" onClick={() => setExploreOpen((open) => !open)}>
-            <span>2. Explore communications</span><span className="topology-section-chevron" aria-hidden="true">{exploreOpen ? "â–¾" : "â–¸"}</span>
+            <span>2. Explore communications</span><span className="topology-section-chevron" aria-hidden="true">{exploreOpen ? "▾" : "▸"}</span>
           </button>
             {exploreOpen && (
             <div className="topology-inline-display" role="group" aria-label="Topology display options">
@@ -1693,7 +1693,7 @@ const NetworkTopology: React.FC<Props> = ({
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="IP address, device name, or serviceâ€¦"
+              placeholder="IP address, device name, or service…"
             />
           </label>
           <label>
@@ -1800,7 +1800,7 @@ const NetworkTopology: React.FC<Props> = ({
               aria-label="Zoom out"
               title="Zoom out"
             >
-              âˆ’
+              −
             </button>
             <button
               type="button"
@@ -1839,7 +1839,7 @@ const NetworkTopology: React.FC<Props> = ({
           onClick={() => setQueryOpen((open) => !open)}
         >
           <span>3. Advanced investigation tools</span>
-          <span className="topology-section-chevron" aria-hidden="true">{queryOpen ? "â–¾" : "â–¸"}</span>
+          <span className="topology-section-chevron" aria-hidden="true">{queryOpen ? "▾" : "▸"}</span>
         </button>
         {queryOpen && <div id="topology-advanced-content" className="topology-advanced-workspaces-content">
       <div className="topology-query-workspace topology-network-explorer">
@@ -1938,13 +1938,13 @@ const NetworkTopology: React.FC<Props> = ({
           {queryError && <p role="alert">{queryError}</p>}
           {queryActive && <div className="topology-query-results" aria-live="polite">
             <div className="topology-explorer-results-heading">
-              <strong>{queryMatchingEdges.length} relationships Â· {queryNodeIds.size} devices</strong>
+              <strong>{queryMatchingEdges.length} relationships · {queryNodeIds.size} devices</strong>
               <label><input type="checkbox" checked={showOnlyQueryMatches} onChange={(event) => setShowOnlyQueryMatches(event.target.checked)} /> Show only matches on graph</label>
             </div>
             <div className="topology-query-result-list" role="region" aria-label="Matching observed communications">
               {pagedQueryEdges.map((edge) => <button type="button" key={edge.id} onClick={() => inspectEdge(edge)}>
-                <span>{edge.source} â†’ {edge.target}</span>
-                <span>{edge.service} Â· {edge.count} observations{queryHopDepths.has(edge.id) ? ` Â· hop ${queryHopDepths.get(edge.id)}` : ""}</span>
+                <span>{edge.source} → {edge.target}</span>
+                <span>{edge.service} · {edge.count} observations{queryHopDepths.has(edge.id) ? ` · hop ${queryHopDepths.get(edge.id)}` : ""}</span>
               </button>)}
               {!queryMatchingEdges.length && <span>No matching communications found. Try another device or search type.</span>}
               {queryMatchingEdges.length > QUERY_PAGE_SIZE && <div className="topology-query-pagination">
@@ -1969,12 +1969,12 @@ const NetworkTopology: React.FC<Props> = ({
             <strong>
               {focusedNode
                 ? `Device ${focusedNode.id}`
-                : `${focusedEdge!.source} â†’ ${focusedEdge!.target}`}
+                : `${focusedEdge!.source} → ${focusedEdge!.target}`}
             </strong>
             <span>
               {focusedNode
-                ? `${focusedNode.type} Â· ${focusedPeerCount} connected peer${focusedPeerCount === 1 ? "" : "s"} Â· ${focusedNode.findingCount} finding${focusedNode.findingCount === 1 ? "" : "s"}`
-                : `${focusedEdge!.service} Â· ${focusedEdge!.count.toLocaleString()} observation${focusedEdge!.count === 1 ? "" : "s"}${focusedEdge!.findingRelated || focusedEdge!.suspicious ? " Â· finding-related" : ""}`}
+                ? `${focusedNode.type} · ${focusedPeerCount} connected peer${focusedPeerCount === 1 ? "" : "s"} · ${focusedNode.findingCount} finding${focusedNode.findingCount === 1 ? "" : "s"}`
+                : `${focusedEdge!.service} · ${focusedEdge!.count.toLocaleString()} observation${focusedEdge!.count === 1 ? "" : "s"}${focusedEdge!.findingRelated || focusedEdge!.suspicious ? " · finding-related" : ""}`}
             </span>
           </div>
           <div className="topology-selection-actions" aria-label="Selected item actions">
@@ -2138,8 +2138,8 @@ const NetworkTopology: React.FC<Props> = ({
                       onClick={(event) => { event.stopPropagation(); setClusterFocus(cluster.key); setViewport(DEFAULT_VIEWPORT); }}
                       onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setClusterFocus(cluster.key); setViewport(DEFAULT_VIEWPORT); } }}>
                       <rect x="-78" y="-28" width="156" height="56" rx="12" fill="#e5f0f7" stroke="#397b9d" strokeWidth="2" />
-                      <text textAnchor="middle" y="-4" fontSize="13" fontWeight="600" fill="#153c56">{cluster.key.length > 22 ? `${cluster.key.slice(0, 21)}â€¦` : cluster.key}</text>
-                      <text textAnchor="middle" y="15" fontSize="12" fill="#285775">{cluster.members.length} assets Â· expand</text>
+                      <text textAnchor="middle" y="-4" fontSize="13" fontWeight="600" fill="#153c56">{cluster.key.length > 22 ? `${cluster.key.slice(0, 21)}…` : cluster.key}</text>
+                      <text textAnchor="middle" y="15" fontSize="12" fill="#285775">{cluster.members.length} assets · expand</text>
                       <title>{cluster.key}: {cluster.members.length} displayed assets. Activate to drill down.</title>
                     </g>
                   ))}
@@ -2274,14 +2274,14 @@ const NetworkTopology: React.FC<Props> = ({
                           />
                           <text textAnchor="middle" dominantBaseline="central">
                             {edge.service.length > 18
-                              ? `${edge.service.slice(0, 17)}â€¦`
+                              ? `${edge.service.slice(0, 17)}…`
                               : edge.service}
                           </text>
                         </g>
                       )}
                     <title>
-                      {edge.service} â€¢ {edge.count.toLocaleString()}{" "}
-                      observations{edge.suspicious ? " â€¢ suspicious" : ""}
+                      {edge.service} · {edge.count.toLocaleString()}{" "}
+                      observations{edge.suspicious ? " · suspicious" : ""}
                     </title>
                   </g>
                 );
@@ -2365,12 +2365,12 @@ const NetworkTopology: React.FC<Props> = ({
                         </g>
                       )}
                     <title>
-                      {node.type} â€¢ {node.id}
-                      {node.manufacturer ? ` â€¢ ${node.manufacturer}` : ""} â€¢ $
-                      {node.subnet} â€¢ ${node.roleGroup} â€¢ ${node.purdueLevel} â€¢
+                      {node.type} · {node.id}
+                      {node.manufacturer ? ` · ${node.manufacturer}` : ""} · $
+                      {node.subnet} · ${node.roleGroup} · ${node.purdueLevel} ·
                       ${node.degree.toLocaleString()} observations$
                       {node.findingCount
-                        ? ` â€¢ ${node.findingCount} finding${node.findingCount === 1 ? "" : "s"}`
+                        ? ` · ${node.findingCount} finding${node.findingCount === 1 ? "" : "s"}`
                         : ""}
                     </title>
                   </g>
@@ -2390,7 +2390,7 @@ const NetworkTopology: React.FC<Props> = ({
               onClick={() => setLegendOpen((open) => !open)}
             >
               <span>Graph key</span>
-              <span aria-hidden="true">{legendOpen ? "âˆ’" : "+"}</span>
+              <span aria-hidden="true">{legendOpen ? "−" : "+"}</span>
             </button>
             {legendOpen && (
               <div className="topology-legend-items">
@@ -2432,8 +2432,8 @@ const NetworkTopology: React.FC<Props> = ({
                   </span>
                 )}
                 <span className="legend-hint">
-                  Click to select Â· drag to move Â· use Inspect details for the drawer Â· double-click to focus neighbors Â·
-                  drag the background to pan Â· Ctrl/âŒ˜ + wheel to zoom Â· Esc to clear selection
+                  Click to select · drag to move · use Inspect details for the drawer · double-click to focus neighbors ·
+                  drag the background to pan · Ctrl/⌘ + wheel to zoom · Esc to clear selection
                 </span>
               </div>
             )}
