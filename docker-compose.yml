@@ -2,6 +2,115 @@
 name: elevadr-orchestration
 
 services:
+  mongodb:
+    image: elevadr-mongodb:dev
+    build:
+      context: ./docker/mongodb
+      dockerfile: Dockerfile
+    container_name: elevadr-mongodb
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: ${ELEVADR_MONGO_ROOT_USERNAME:?set ELEVADR_MONGO_ROOT_USERNAME in .elevadr-platform.env}
+      MONGODB_INITDB_ROOT_PASSWORD: ${ELEVADR_MONGO_ROOT_PASSWORD:?set ELEVADR_MONGO_ROOT_PASSWORD in .elevadr-platform.env}
+    volumes:
+      - elevadr-mongodb-data:/data/db
+      - type: tmpfs
+        target: /tmp
+    ports:
+      - 127.0.0.1:${ELEVADR_MONGO_PORT:-27017}:27017
+    networks:
+      - elevadr-network
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          mongosh --quiet --host 127.0.0.1 --port 27017
+          -u "$${MONGODB_INITDB_ROOT_USERNAME}"
+          -p "$${MONGODB_INITDB_ROOT_PASSWORD}"
+          --authenticationDatabase admin
+          --eval "quit(db.adminCommand({ ping: 1 }).ok ? 0 : 2)"
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 1GB
+          cpus: "1"
+        reservations:
+          memory: 256MB
+
+  # Dump and restore helper. Not started by default:
+  #   docker compose --profile tools run --rm mongo-tools mongodump ...
+  mongo-tools:
+    image: docker.io/mongo:8.0
+    profiles:
+      - tools
+    entrypoint: []
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      MONGODB_URI: mongodb://${ELEVADR_MONGO_ROOT_USERNAME}:${ELEVADR_MONGO_ROOT_PASSWORD}@mongodb:27017/?authSource=admin
+    volumes:
+      - ./backups/mongodb:/backups
+    networks:
+      - elevadr-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  backend-bryan:
+    image: elevadr-backend-bryan:dev
+    build:
+      context: .
+      dockerfile: docker/backend-bryan/Dockerfile
+      secrets:
+        - ssl_cert
+    container_name: elevadr-backend-bryan
+    restart: unless-stopped
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      ELEVADR_AUTH_ENABLED: "true"
+      ELEVADR_MONGODB_URI: mongodb://${ELEVADR_MONGO_ROOT_USERNAME}:${ELEVADR_MONGO_ROOT_PASSWORD}@mongodb:27017/?authSource=admin
+      ELEVADR_MONGODB_DATABASE: ${ELEVADR_MONGODB_DATABASE:-elevadr}
+      ELEVADR_JWT_SECRET: ${ELEVADR_JWT_SECRET:?set ELEVADR_JWT_SECRET (32+ characters) in .elevadr-platform.env}
+      ELEVADR_JWT_EXPIRE_MINUTES: ${ELEVADR_JWT_EXPIRE_MINUTES:-60}
+      ELEVADR_CORS_ORIGINS: ${ELEVADR_CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
+      ELEVADR_MAX_PCAP_UPLOAD_MB: ${ELEVADR_MAX_PCAP_UPLOAD_MB:-256}
+      ELEVADR_PCAP_RETENTION_DAYS: ${ELEVADR_PCAP_RETENTION_DAYS:-0}
+      ELEVADR_PCAP_STORAGE_LIMIT_GB: ${ELEVADR_PCAP_STORAGE_LIMIT_GB:-0}
+      ELEVADR_BACKUP_PASSPHRASE: ${ELEVADR_BACKUP_PASSPHRASE:-}
+      ELEVADR_ZEEK_COMMAND: zeek
+      ELEVADR_BOOTSTRAP_ADMIN_USERNAME: ${ELEVADR_BOOTSTRAP_ADMIN_USERNAME:-admin}
+      ELEVADR_BOOTSTRAP_ADMIN_PASSWORD: ${ELEVADR_BOOTSTRAP_ADMIN_PASSWORD:-}
+    volumes:
+      - elevadr-storage:/app/storage
+    ports:
+      - 127.0.0.1:8765:8765
+    networks:
+      - elevadr-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 4GB
+          cpus: "4"
+        reservations:
+          memory: 512MB
+
   elevadr-backend:
     image: docker.io/cisagov/elevadr-backend:develop
     build:
@@ -107,12 +216,20 @@ services:
     depends_on:
       elevadr-backend:
         condition: service_healthy
+      backend-bryan:
+        condition: service_started
     deploy:
       resources:
         limits:
           memory: 512MB
         reservations:
           memory: 200MB
+
+volumes:
+  elevadr-mongodb-data:
+    name: elevadr-mongodb-data
+  elevadr-storage:
+    name: elevadr-storage
 
 networks:
   elevadr-network:

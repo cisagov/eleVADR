@@ -6,7 +6,7 @@ if not exist .elevadr-platform.env (
   exit /b 1
 )
 
-docker compose --env-file .elevadr-platform.env -f docker-compose.mongodb.yml ps --status running mongodb >nul 2>&1
+docker compose --env-file .elevadr-platform.env -f docker-compose.yml ps --status running mongodb >nul 2>&1
 if errorlevel 1 (
   echo ERROR: eleVADR MongoDB container is not running.
   exit /b 1

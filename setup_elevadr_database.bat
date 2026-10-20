@@ -21,10 +21,10 @@ python -m backend_bryan.auth.local_runtime init
 if errorlevel 1 exit /b 1
 
 echo Starting MongoDB Community Server...
-docker compose --env-file .elevadr-platform.env -f docker-compose.mongodb.yml up -d --wait --wait-timeout 90
+docker compose --env-file .elevadr-platform.env -f docker-compose.yml up -d --wait --wait-timeout 90 mongodb
 if errorlevel 1 (
   echo ERROR: MongoDB did not become healthy.
-  docker compose --env-file .elevadr-platform.env -f docker-compose.mongodb.yml ps
+  docker compose --env-file .elevadr-platform.env -f docker-compose.yml ps mongodb
   exit /b 1
 )
 

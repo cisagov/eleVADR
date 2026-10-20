@@ -5,7 +5,6 @@ import sys
 
 COMPOSE_FILES = (
     "docker-compose.yml",
-    "docker-compose.mongodb.yml",
 )
 
 

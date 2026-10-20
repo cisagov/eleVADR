@@ -14,6 +14,7 @@ COPY package.json pnpm-lock.yaml* ./
 RUN --mount=type=secret,id=ssl_cert,required=false \
     --mount=type=cache,target=/pnpm/store \
     if [ -f /run/secrets/ssl_cert ]; then \
+        export NODE_EXTRA_CA_CERTS=/run/secrets/ssl_cert; \
         pnpm config set cafile /run/secrets/ssl_cert; \
     fi && \
     pnpm install --frozen-lockfile

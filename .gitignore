@@ -209,3 +209,6 @@ claude.md
 
 # eleVADR persisted user reports
 storage/
+
+# MongoDB dumps
+backups/

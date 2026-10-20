@@ -1,0 +1,17 @@
+**/__pycache__/
+**/*.pyc
+**/*.bak
+**/*.bak-*
+**/*.wave7-backup
+backend_bryan/tests/
+backend_bryan/regression/
+backend_bryan/examples/
+backend_bryan/reference/
+.git/
+frontend/
+backend/
+node_modules/
+storage/
+backups/
+.elevadr-platform.env
+.env

@@ -35,8 +35,9 @@ def test_runtime_env_creation_refuses_accidental_overwrite(tmp_path: Path) -> No
 
 
 def test_compose_binds_mongodb_to_loopback_and_persists_data() -> None:
-    compose = (ROOT / "docker-compose.mongodb.yml").read_text(encoding="utf-8")
-    assert "mongodb/mongodb-community-server:8.0.32-ubi9-slim" in compose
+    compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+    dockerfile = (ROOT / "docker" / "mongodb" / "Dockerfile").read_text(encoding="utf-8")
+    assert "mongodb/mongodb-community-server:8.0.32-ubi9-slim" in dockerfile
     assert '127.0.0.1:${ELEVADR_MONGO_PORT:-27017}:27017' in compose
     assert "elevadr-mongodb-data:/data/db" in compose
     assert "healthcheck:" in compose
