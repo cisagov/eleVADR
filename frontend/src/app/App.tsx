@@ -467,6 +467,7 @@ function App() {
     jobId: string; phase: string; status: string; message?: string;
     detail?: string; progress?: number | null;
   }>>([]);
+  const [dismissedJobIds, setDismissedJobIds] = useState<Set<string>>(new Set());
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -1003,14 +1004,22 @@ function App() {
   // Jobs belong to the server, not the login session. Re-query after login
   // and while authenticated so a completed job is still visible after renewal.
   useEffect(() => {
-    if (!authState?.user.authenticated) { setRecoveredJobs([]); return; }
+    if (!authState?.user.authenticated) { setRecoveredJobs([]); setDismissedJobIds(new Set()); return; }
     let active = true;
     const check = async () => {
       try {
         const response = await authenticatedFetch("/api/v1/processing-jobs", { cache: "no-store" });
         if (!response.ok) return;
         const payload = await response.json() as { jobs?: typeof recoveredJobs };
-        if (active) setRecoveredJobs(Array.isArray(payload.jobs) ? payload.jobs : []);
+        const jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
+        if (active) {
+          setRecoveredJobs(jobs);
+          const liveIds = new Set(jobs.map((job) => job.jobId));
+          setDismissedJobIds((prev) => {
+            const next = new Set([...prev].filter((id) => liveIds.has(id)));
+            return next.size === prev.size ? prev : next;
+          });
+        }
       } catch { /* retain last known state during transient network failures */ }
     };
     void check();
@@ -1936,17 +1945,42 @@ function App() {
       <a className="skip-link" href="#main-content">
         Skip to main content
       </a>
-      {authState?.user.authenticated && recoveredJobs.some((job) => job.status === "running" || job.status === "queued" || job.status === "completed") && (
-        <aside role="status" aria-live="polite" style={{ padding: "8px 16px", background: "#eaf4fa", color: "#07334d", borderBottom: "1px solid #a9c6d6" }}>
-          <strong>Recovered server processing activity: </strong>
-          {recoveredJobs.filter((job) => ["running", "queued", "completed"].includes(job.status)).map((job) => (
-            <span key={job.jobId} style={{ marginRight: 18 }}>
-              {job.phase === "evidence" ? "Zeek evidence" : "Detection modules"}: {job.status} — {job.message || job.detail}
-              {typeof job.progress === "number" ? ` (${job.progress}%)` : ""}.
+      {(() => {
+        const visibleJobs = recoveredJobs.filter(
+          (job) =>
+            ["running", "queued", "completed"].includes(job.status) &&
+            !dismissedJobIds.has(job.jobId),
+        );
+        if (!authState?.user.authenticated || visibleJobs.length === 0) return null;
+        return (
+          <aside role="status" aria-live="polite" style={{ padding: "8px 16px", background: "#eaf4fa", color: "#07334d", borderBottom: "1px solid #a9c6d6", display: "flex", alignItems: "baseline", gap: 8 }}>
+            <strong>Recovered server processing activity: </strong>
+            <span style={{ flex: 1 }}>
+              {visibleJobs.map((job) => (
+                <span key={job.jobId} style={{ marginRight: 18 }}>
+                  {job.phase === "evidence" ? "Zeek evidence" : "Detection modules"}: {job.status} — {job.message || job.detail}
+                  {typeof job.progress === "number" ? ` (${job.progress}%)` : ""}.
+                </span>
+              ))}
             </span>
-          ))}
-        </aside>
-      )}
+            <button
+              type="button"
+              aria-label="Dismiss processing activity notice"
+              title="Dismiss"
+              onClick={() =>
+                setDismissedJobIds((prev) => {
+                  const next = new Set(prev);
+                  visibleJobs.forEach((job) => next.add(job.jobId));
+                  return next;
+                })
+              }
+              style={{ background: "none", border: "none", color: "#07334d", cursor: "pointer", fontSize: 16, lineHeight: 1, padding: "0 4px" }}
+            >
+              ×
+            </button>
+          </aside>
+        );
+      })()}
       <header className="titlebar">
         <div className="titlebar-brand">
           <button
@@ -2833,6 +2867,7 @@ function App() {
                       onOpenDetectionModules={() =>
                         setDetectionModulesOpen(true)
                       }
+                      nestedDialogOpen={detectionModulesOpen || detectionConfigOpen}
                       profileRevision={detectionProfileRevision}
                       refreshRequestRevision={reportRefreshRequestRevision}
                       onReanalysisStatus={handleReportReanalysisStatus}

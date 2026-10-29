@@ -149,6 +149,7 @@ _ANALYSIS_LOCK = threading.Lock()
 _EVIDENCE_CACHE: dict[str, dict[str, Any]] = {}
 _EVIDENCE_LOCK = threading.Lock()
 EVIDENCE_TTL_SECONDS = int(os.environ.get("ELEVADR_EVIDENCE_TTL_SECONDS", "7200"))
+FINISHED_JOB_TTL_SECONDS = int(os.environ.get("ELEVADR_FINISHED_JOB_TTL_SECONDS", "300"))
 EVIDENCE_CACHE_ROOT = Path(os.environ.get("ELEVADR_EVIDENCE_CACHE_ROOT", str(Path(tempfile.gettempdir()) / "elevadr-zeek-evidence-cache")))
 
 
@@ -221,6 +222,28 @@ def _cleanup_expired_evidence(*, force: bool = False) -> None:
         path = Path(str(record.get("path", "")))
         if str(path):
             shutil.rmtree(path, ignore_errors=True)
+
+
+def _prune_finished_jobs() -> None:
+    """Drop discovery/analysis jobs that finished more than FINISHED_JOB_TTL_SECONDS ago.
+
+    Jobs are otherwise retained forever in memory, so without this the
+    recovered-processing-activity banner accumulates every job ever run in the
+    server process.
+    """
+    now = time.time()
+
+    def expired(job: dict[str, Any]) -> bool:
+        if job.get("status") not in {"completed", "failed", "canceled"}:
+            return False
+        return now - float(job.get("updatedAt", now)) > FINISHED_JOB_TTL_SECONDS
+
+    with _DISCOVERY_LOCK:
+        for job_id in [job_id for job_id, job in _DISCOVERY_JOBS.items() if expired(job)]:
+            _DISCOVERY_JOBS.pop(job_id, None)
+    with _ANALYSIS_LOCK:
+        for job_id in [job_id for job_id, job in _ANALYSIS_JOBS.items() if expired(job)]:
+            _ANALYSIS_JOBS.pop(job_id, None)
 
 
 def _runtime_signature_matches(record: dict[str, Any]) -> bool:
@@ -831,6 +854,7 @@ class Handler(BaseHTTPRequestHandler):
             principal = self._current_principal()
             if principal is None or not principal.authenticated:
                 self._json(401, {"error": "authentication_required"}); return
+            _prune_finished_jobs()
             with _DISCOVERY_LOCK:
                 discovery = [dict(job) for job in _DISCOVERY_JOBS.values() if job.get("ownerId") == principal.user_id]
             with _ANALYSIS_LOCK:

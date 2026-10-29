@@ -66,6 +66,7 @@ interface UploadFormProps {
   inputId?: string;
   onOpenDetectionContext?: () => void;
   onOpenDetectionModules?: () => void;
+  nestedDialogOpen?: boolean;
   profileRevision?: number;
   refreshRequestRevision?: number;
   onReanalysisStatus?: (
@@ -91,6 +92,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
   inputId,
   onOpenDetectionContext,
   onOpenDetectionModules,
+  nestedDialogOpen = false,
   profileRevision = 0,
   refreshRequestRevision = 0,
   onReanalysisStatus,
@@ -937,7 +939,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
         </div>
       )}
 
-      {contextDialogOpen && pendingPcap && createPortal(
+      {contextDialogOpen && pendingPcap && !nestedDialogOpen && createPortal(
         <div className="analysis-module-backdrop" role="presentation">
           <div
             className="analysis-module-dialog"
