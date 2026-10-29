@@ -53,7 +53,9 @@ class BacnetDiscoveryAnomaliesModule(AnalysisModule):
     )
 
     def analyze(self, context: AnalysisContext) -> ModuleResult:
-        if not context.bacnet:
+        discovery_rows = context.bacnet_discovery if context.bacnet_discovery else context.bacnet
+        source_log = "bacnet_discovery" if context.bacnet_discovery else "bacnet"
+        if not discovery_rows:
             return ModuleResult(
                 module_id=self.metadata.id,
                 findings=[],
@@ -78,7 +80,7 @@ class BacnetDiscoveryAnomaliesModule(AnalysisModule):
 
         policy = _policy(context.metadata)
         segments = _segments(context.metadata)
-        events = [event for row in context.bacnet if (event := _event(row)) is not None]
+        events = [event for row in discovery_rows if (event := _event(row)) is not None]
         who_is = [event for event in events if event.kind == "who_is"]
         i_am = [event for event in events if event.kind == "i_am"]
 
@@ -91,7 +93,7 @@ class BacnetDiscoveryAnomaliesModule(AnalysisModule):
             module_id=self.metadata.id,
             findings=findings,
             metrics={
-                "bacnet_events_evaluated": len(context.bacnet),
+                "bacnet_events_evaluated": len(discovery_rows),
                 "bacnet_discovery_events": len(events),
                 "who_is_events": len(who_is),
                 "i_am_events": len(i_am),
@@ -101,7 +103,7 @@ class BacnetDiscoveryAnomaliesModule(AnalysisModule):
                 "affected_devices": len(devices),
             },
             evidence={
-                "inspected_logs": ["bacnet"],
+                "inspected_logs": [source_log],
                 "segment_metadata_loaded": bool(segments),
                 "notes": [
                     "Who-Is and I-Am are normal BACnet discovery messages; their presence alone is not a finding.",
@@ -135,6 +137,7 @@ def _event(row: dict[str, Any]) -> _Event | None:
         "confirmed_service",
         "unconfirmed_service",
         "bacnet_service",
+        "pdu_service",
         "pdu_type",
     )
     kind = _kind(value)
@@ -143,10 +146,10 @@ def _event(row: dict[str, Any]) -> _Event | None:
     return _Event(
         row=row,
         kind=kind,
-        source=_text(_first(row, "source_ip", "id.orig_h", "src", "source")),
-        destination=_text(_first(row, "destination_ip", "id.resp_h", "dst", "destination")),
-        source_port=_as_int(_first(row, "source_port", "id.orig_p", "src_port")),
-        destination_port=_as_int(_first(row, "destination_port", "id.resp_p", "dst_port")),
+        source=_text(_first(row, "source_h", "source_ip", "id.orig_h", "src", "source")),
+        destination=_text(_first(row, "destination_h", "destination_ip", "id.resp_h", "dst", "destination")),
+        source_port=_as_int(_first(row, "source_p", "source_port", "id.orig_p", "src_port")),
+        destination_port=_as_int(_first(row, "destination_p", "destination_port", "id.resp_p", "dst_port")),
         timestamp=_as_float(_first(row, "timestamp", "ts")),
     )
 
@@ -285,7 +288,9 @@ def _finding(*, title: str, severity: str, confidence: str, summary: str, rows: 
         })
         if len(pairs) >= MAX_EVIDENCE:
             break
+    source_logs = sorted({str(row.row.get("_zeek_log") or "bacnet.log") for row in rows})
     return Finding(
+        provenance={"zeek_logs": source_logs, "fields": ["pdu_service", "source_h", "destination_h", "ts", "uid"] if "bacnet_discovery.log" in source_logs else ["service", "timestamp", "source_ip", "destination_ip"]},
         title=title,
         severity=severity,
         summary=summary,

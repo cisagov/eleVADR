@@ -1,3 +1,4 @@
+import evidenceMetadata from "./moduleEvidenceMetadata.json";
 export interface DetectionModuleDetail {
   id: string;
   name: string;
@@ -5,6 +6,10 @@ export interface DetectionModuleDetail {
   relevance: string;
   requiredLogs: string[];
   requiredAnyLogs: string[];
+  logSourceTier: string;
+  capturePrerequisites: string;
+  evidenceLimitations: string;
+  verificationNote: string;
 }
 
 export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
@@ -17,6 +22,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Helps identify asset impersonation, duplicate addressing, unauthorized device replacement, or unexpected Layer-2 changes that can undermine trust in OT asset identity.",
     requiredLogs: ["arp"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.arp_ip_mac_identity_change,
   },
   arp_l2_reconnaissance: {
     id: "arp_l2_reconnaissance",
@@ -27,6 +33,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "ARP sweeps can reveal unauthorized discovery of local devices and are often an early step before lateral movement or targeted attacks within a flat OT segment.",
     requiredLogs: ["arp"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.arp_l2_reconnaissance,
   },
   bacnet_discovery_anomalies: {
     id: "bacnet_discovery_anomalies",
@@ -37,6 +44,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unexpected BACnet discovery can expose building-automation assets and may indicate misconfiguration, unauthorized enumeration, or an attempt to map BAS devices for later control activity.",
     requiredLogs: ["bacnet"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.bacnet_discovery_anomalies,
   },
   beaconing_c2_communication: {
     id: "beaconing_c2_communication",
@@ -47,6 +55,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Regular outbound callbacks can indicate malware command-and-control activity, which is especially concerning on systems expected to have stable and limited external communications.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.beaconing_c2_communication,
   },
   brute_force_authentication: {
     id: "brute_force_authentication",
@@ -57,6 +66,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Repeated login failures can indicate password guessing or credential spraying and may precede unauthorized access to engineering, administrative, or control-system resources.",
     requiredLogs: [],
     requiredAnyLogs: [],
+    ...evidenceMetadata.brute_force_authentication,
   },
   cleartext_credentials: {
     id: "cleartext_credentials",
@@ -67,6 +77,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Credentials sent without encryption can be recovered by anyone with network visibility and can enable account compromise, lateral movement, and unauthorized administrative access.",
     requiredLogs: [],
     requiredAnyLogs: [],
+    ...evidenceMetadata.cleartext_credentials,
   },
   codesys_runtime_exposure: {
     id: "codesys_runtime_exposure",
@@ -77,6 +88,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Exposed CODESYS programming/runtime services can provide a path to controller configuration or logic changes and should generally be limited to explicitly authorized engineering paths.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.codesys_runtime_exposure,
   },
   control_system_enterprise_non_dmz: {
     id: "control_system_enterprise_non_dmz",
@@ -87,6 +99,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Direct OT-to-enterprise communication can bypass intended segmentation controls and increase the chance that enterprise compromise reaches control-system assets without an industrial DMZ boundary.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.control_system_enterprise_non_dmz,
   },
   controller_communication_jitter: {
     id: "controller_communication_jitter",
@@ -97,6 +110,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "A sudden increase in controller timing variance can reveal network degradation, overloaded devices, configuration changes, or abnormal traffic affecting deterministic control communications.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.controller_communication_jitter,
   },
   cross_purdue_level_traffic: {
     id: "cross_purdue_level_traffic",
@@ -107,6 +121,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unexpected direct traffic across Purdue levels can indicate segmentation bypass, architectural drift, or lateral movement between zones that are intended to be separated.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.cross_purdue_level_traffic,
   },
   database_service_exposed: {
     id: "database_service_exposed",
@@ -117,6 +132,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Databases may contain operational, historian, credential, or configuration data; unexpected exposure increases the risk of unauthorized access, data loss, and pivoting into OT systems.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.database_service_exposed,
   },
   deprecated_insecure_services_protocols: {
     id: "deprecated_insecure_services_protocols",
@@ -127,6 +143,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Legacy and plaintext protocols often lack modern authentication or encryption, making interception, credential theft, manipulation, and unauthorized access easier.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.deprecated_insecure_services_protocols,
   },
   deprecated_vpn_protocol: {
     id: "deprecated_vpn_protocol",
@@ -137,6 +154,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Deprecated VPN protocols can rely on weak or obsolete security mechanisms and may create an avoidable remote-access path into sensitive networks.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.deprecated_vpn_protocol,
   },
   dns_source_drift: {
     id: "dns_source_drift",
@@ -147,6 +165,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "OT devices normally use a small set of approved resolvers; resolver changes can indicate misconfiguration, rogue infrastructure, traffic redirection, or compromise.",
     requiredLogs: ["dns"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.dns_source_drift,
   },
   dns_tunneling_exfiltration: {
     id: "dns_tunneling_exfiltration",
@@ -157,6 +176,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "DNS is commonly permitted through firewalls, so covert channels can use it to move data or maintain command-and-control while bypassing normal application controls.",
     requiredLogs: ["dns"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.dns_tunneling_exfiltration,
   },
   encrypted_session_fingerprint_change: {
     id: "encrypted_session_fingerprint_change",
@@ -167,6 +187,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "A change in an established TLS fingerprint can indicate software replacement, device reimaging, proxy interception, unauthorized applications, or a changed endpoint behind the same address.",
     requiredLogs: ["ssl"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.encrypted_session_fingerprint_change,
   },
   engineering_tools_cleartext: {
     id: "engineering_tools_cleartext",
@@ -177,6 +198,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Firmware and configuration material sent over FTP/TFTP can be intercepted or altered, creating risk to controller logic, device configuration, and engineering workflows.",
     requiredLogs: [],
     requiredAnyLogs: ["ftp", "tftp", "files"],
+    ...evidenceMetadata.engineering_tools_cleartext,
   },
   engineering_workstation_control_burst: {
     id: "engineering_workstation_control_burst",
@@ -187,6 +209,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "A sudden burst of writes or programming actions from an engineering workstation can indicate unusual maintenance, automation mistakes, compromised credentials, or rapid unauthorized process changes.",
     requiredLogs: [],
     requiredAnyLogs: ["modbus", "dnp3", "s7comm", "enip"],
+    ...evidenceMetadata.engineering_workstation_control_burst,
   },
   enip_cip_write_session_abuses: {
     id: "enip_cip_write_session_abuses",
@@ -197,6 +220,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "CIP writes and abnormal session creation can directly alter PLC tags or controller state, so unexpected activity may have immediate process, safety, or availability consequences.",
     requiredLogs: ["enip"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.enip_cip_write_session_abuses,
   },
   excessive_broadcast_multicast_ot: {
     id: "excessive_broadcast_multicast_ot",
@@ -207,6 +231,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Broadcast or multicast storms can degrade deterministic OT communications, indicate loops or misconfiguration, and sometimes accompany discovery or denial-of-service activity.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.excessive_broadcast_multicast_ot,
   },
   file_extraction_sensitive_types: {
     id: "file_extraction_sensitive_types",
@@ -217,6 +242,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Executables, configurations, and archives crossing trust boundaries can represent unauthorized software transfer, configuration leakage, malware movement, or data exfiltration.",
     requiredLogs: ["files"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.file_extraction_sensitive_types,
   },
   high_fan_in_out: {
     id: "high_fan_in_out",
@@ -227,6 +253,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Sudden fan-out or fan-in can reveal scanning, propagation, centralized probing, compromised hosts, or a new service attracting connections outside normal OT communication patterns.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.high_fan_in_out,
   },
   http_user_agent_anomalies: {
     id: "http_user_agent_anomalies",
@@ -237,6 +264,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Scripted, rare, or missing HTTP client identifiers can reveal automation, unauthorized tooling, malware, or unexpected software communicating from systems with otherwise predictable behavior.",
     requiredLogs: ["http"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.http_user_agent_anomalies,
   },
   iccp_tase2_detected: {
     id: "iccp_tase2_detected",
@@ -247,6 +275,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "ICCP/TASE.2 links exchange operational power-system data between control centers; unexpected use can expose sensitive telemetry or indicate an unplanned control-center connection.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.iccp_tase2_detected,
   },
   icmp_data_channel: {
     id: "icmp_data_channel",
@@ -257,6 +286,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "ICMP can bypass normal application controls and be abused for covert command-and-control or data transfer, especially when timing and packet sizes are unusually regular.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.icmp_data_channel,
   },
   ics_protocol_error_spike: {
     id: "ics_protocol_error_spike",
@@ -267,6 +297,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "A sudden rise in ICS exceptions can indicate malformed commands, incompatible changes, device faults, scanning, or unauthorized attempts to interact with control devices.",
     requiredLogs: [],
     requiredAnyLogs: ["modbus", "dnp3", "enip", "s7comm"],
+    ...evidenceMetadata.ics_protocol_error_spike,
   },
   ics_write_operations: {
     id: "ics_write_operations",
@@ -277,6 +308,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unauthorized Modbus or DNP3 writes can directly change process values, outputs, or device behavior and therefore represent one of the highest-impact classes of OT network activity.",
     requiredLogs: [],
     requiredAnyLogs: ["modbus", "dnp3"],
+    ...evidenceMetadata.ics_write_operations,
   },
   internet_exposed_ics: {
     id: "internet_exposed_ics",
@@ -287,6 +319,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Direct Internet exposure of PLCs, HMIs, and other control assets creates a high-risk attack path by making sensitive services reachable outside intended network boundaries.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.internet_exposed_ics,
   },
   ipv6_traffic_ot: {
     id: "ipv6_traffic_ot",
@@ -297,6 +330,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unexpected IPv6 can bypass IPv4-only monitoring or policy assumptions and may indicate unmanaged interfaces, rogue communications, or configuration drift in an IPv4-only environment.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.ipv6_traffic_ot,
   },
   irc_traffic_detected: {
     id: "irc_traffic_detected",
@@ -307,6 +341,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "IRC is uncommon in most OT environments and has a long history as a command-and-control channel, so its presence can indicate unauthorized software or malware communication.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.irc_traffic_detected,
   },
   ja3_fingerprint_outliers: {
     id: "ja3_fingerprint_outliers",
@@ -317,6 +352,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Rare TLS fingerprints can reveal new or unauthorized applications, malware, tooling changes, or endpoints behaving differently from their established encrypted-traffic baseline.",
     requiredLogs: ["ssl"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.ja3_fingerprint_outliers,
   },
   kerberos_asrep_roastable_accounts: {
     id: "kerberos_asrep_roastable_accounts",
@@ -327,6 +363,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Accounts that permit authentication without Kerberos pre-authentication are vulnerable to offline password cracking, increasing credential-compromise risk.",
     requiredLogs: ["kerberos"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.kerberos_asrep_roastable_accounts,
   },
   large_outbound_http_uploads: {
     id: "large_outbound_http_uploads",
@@ -337,6 +374,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Large uploads to unknown external systems can indicate data exfiltration, unauthorized cloud transfer, or accidental disclosure of operational information.",
     requiredLogs: ["http"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.large_outbound_http_uploads,
   },
   ldap_cleartext_anonymous_cross_segment: {
     id: "ldap_cleartext_anonymous_cross_segment",
@@ -347,6 +385,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unprotected or unexpected directory queries can expose credentials and identity information, while cross-segment LDAP can create unnecessary trust paths between OT and enterprise networks.",
     requiredLogs: [],
     requiredAnyLogs: [],
+    ...evidenceMetadata.ldap_cleartext_anonymous_cross_segment,
   },
   llmnr_nbtns_mdns_poisoning_signals: {
     id: "llmnr_nbtns_mdns_poisoning_signals",
@@ -357,6 +396,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Name-resolution poisoning can redirect systems to an attacker-controlled host, enabling credential capture, man-in-the-middle activity, or lateral movement.",
     requiredLogs: ["dns"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.llmnr_nbtns_mdns_poisoning_signals,
   },
   netbios_smbv1_exposure: {
     id: "netbios_smbv1_exposure",
@@ -367,6 +407,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "SMBv1 and exposed NetBIOS services increase susceptibility to legacy protocol attacks, credential abuse, malware propagation, and lateral movement across network boundaries.",
     requiredLogs: [],
     requiredAnyLogs: ["conn", "smb", "smb_mapping", "smb_files", "smb_cmd"],
+    ...evidenceMetadata.netbios_smbv1_exposure,
   },
   new_ot_conversation_pair: {
     id: "new_ot_conversation_pair",
@@ -377,6 +418,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "New source-destination relationships are important in stable OT networks because they can indicate maintenance changes, unauthorized access, lateral movement, or newly connected equipment.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.new_ot_conversation_pair,
   },
   new_service_emergence_ot: {
     id: "new_service_emergence_ot",
@@ -387,6 +429,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "A newly observed service on an OT asset can indicate software installation, configuration drift, unauthorized remote access, device replacement, or compromise.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.new_service_emergence_ot,
   },
   niagara_fox_detected: {
     id: "niagara_fox_detected",
@@ -397,6 +440,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Niagara Fox is used to manage building-automation systems; unexpected exposure or cross-boundary use can provide access to BAS configuration and control functions.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.niagara_fox_detected,
   },
   ntp_internet_multi_dest_ot: {
     id: "ntp_internet_multi_dest_ot",
@@ -407,6 +451,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "OT devices normally use approved internal time sources; Internet or multi-destination NTP can indicate configuration drift, unnecessary external dependencies, or traffic manipulation risk.",
     requiredLogs: ["ntp"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.ntp_internet_multi_dest_ot,
   },
   ntp_source_drift: {
     id: "ntp_source_drift",
@@ -417,6 +462,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "A changed time source can affect event ordering, authentication, logging, and control-system coordination and may indicate rogue infrastructure or configuration changes.",
     requiredLogs: ["ntp"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.ntp_source_drift,
   },
   ot_asset_gone_silent: {
     id: "ot_asset_gone_silent",
@@ -427,6 +473,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "An expected OT asset that stops communicating may be offline, disconnected, failed, replaced, isolated, or affected by a network/security incident.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.ot_asset_gone_silent,
   },
   ot_external_dns_resolver: {
     id: "ot_external_dns_resolver",
@@ -437,6 +484,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "External DNS bypasses internal resolver controls and visibility, potentially exposing operational names and creating a path for traffic redirection or covert communication.",
     requiredLogs: ["dns"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.ot_external_dns_resolver,
   },
   ot_management_certificate_risk: {
     id: "ot_management_certificate_risk",
@@ -447,6 +495,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Weak, expired, mismatched, or otherwise risky certificates on OT management services can reduce trust in administrative sessions and make interception or impersonation easier.",
     requiredLogs: [],
     requiredAnyLogs: ["ssl", "x509"],
+    ...evidenceMetadata.ot_management_certificate_risk,
   },
   ot_outbound_internet_any_protocol: {
     id: "ot_outbound_internet_any_protocol",
@@ -457,6 +506,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unexpected Internet communication from OT assets increases exposure to command-and-control, exfiltration, software-download, and third-party dependency risks.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.ot_outbound_internet_any_protocol,
   },
   ot_protocol_exposure: {
     id: "ot_protocol_exposure",
@@ -467,6 +517,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Industrial protocols exposed outside their intended segments may allow unauthorized discovery, monitoring, or control of devices that often have limited built-in security.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.ot_protocol_exposure,
   },
   ot_protocol_role_reversal: {
     id: "ot_protocol_role_reversal",
@@ -477,6 +528,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "When a device unexpectedly changes from its normal client/server or controller/responder role, it can indicate reconfiguration, rogue services, compromise, or abnormal control behavior.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.ot_protocol_role_reversal,
   },
   plc_program_logic_firmware_update: {
     id: "plc_program_logic_firmware_update",
@@ -487,6 +539,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "PLC logic or firmware changes can alter physical process behavior; unexpected update activity should be closely tied to approved maintenance and engineering actions.",
     requiredLogs: [],
     requiredAnyLogs: ["modbus", "s7comm", "enip", "dnp3"],
+    ...evidenceMetadata.plc_program_logic_firmware_update,
   },
   plc_rtu_peer_change: {
     id: "plc_rtu_peer_change",
@@ -497,6 +550,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Controllers usually communicate with a stable set of peers; a new peer may indicate a new engineering path, unauthorized access, network change, or lateral movement toward control assets.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.plc_rtu_peer_change,
   },
   polling_cadence_disruption: {
     id: "polling_cadence_disruption",
@@ -507,6 +561,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Changes in regular polling intervals can reveal congestion, controller problems, communication faults, configuration changes, or interference with deterministic control traffic.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.polling_cadence_disruption,
   },
   port_host_scanning: {
     id: "port_host_scanning",
@@ -517,6 +572,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Scanning is often used to discover reachable hosts and services before exploitation and is unusual on tightly controlled OT networks outside approved maintenance activity.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.port_host_scanning,
   },
   protocol_unexpected_high_risk_port: {
     id: "protocol_unexpected_high_risk_port",
@@ -527,6 +583,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Sensitive services appearing on unexpected ports can indicate tunneling, service relocation, evasive behavior, misconfiguration, or unauthorized software.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.protocol_unexpected_high_risk_port,
   },
   public_to_public_traffic: {
     id: "public_to_public_traffic",
@@ -537,6 +594,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Public-to-public flows observed at an internal monitoring point can indicate routing or sensor-placement problems, unexpected transit traffic, or network behavior outside the intended scope.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.public_to_public_traffic,
   },
   quic_ot_segments: {
     id: "quic_ot_segments",
@@ -547,6 +605,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "QUIC/HTTP3 is uncommon in deterministic OT segments and can introduce encrypted external communications that bypass expected proxy, inspection, or protocol-control assumptions.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.quic_ot_segments,
   },
   rdp_nla_disabled: {
     id: "rdp_nla_disabled",
@@ -557,6 +616,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "RDP without Network Level Authentication exposes more of the remote desktop service before authentication and increases susceptibility to credential and pre-authentication attacks.",
     requiredLogs: ["rdp"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.rdp_nla_disabled,
   },
   remote_access_session_anomaly: {
     id: "remote_access_session_anomaly",
@@ -567,6 +627,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "New remote-access targets or unusual fan-out can indicate compromised accounts, unauthorized administration, or an operator/tool reaching systems outside its normal scope.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.remote_access_session_anomaly,
   },
   remote_access_tool_exposure: {
     id: "remote_access_tool_exposure",
@@ -577,6 +638,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unexpected remote-access services can create powerful administrative pathways into OT systems and are frequently abused for lateral movement and persistence.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.remote_access_tool_exposure,
   },
   rogue_dhcp_static_ot: {
     id: "rogue_dhcp_static_ot",
@@ -587,6 +649,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "DHCP activity in a static-address OT segment can reconfigure gateways, DNS, or host addressing and may indicate a rogue server or accidental infrastructure change.",
     requiredLogs: ["dhcp"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.rogue_dhcp_static_ot,
   },
   s7comm_unauthorized_write_stop: {
     id: "s7comm_unauthorized_write_stop",
@@ -597,6 +660,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unauthorized S7 writes or STOP commands can directly modify or halt Siemens PLC operation, creating immediate availability, process, and safety impact.",
     requiredLogs: ["s7comm"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.s7comm_unauthorized_write_stop,
   },
   service_disappearance_replacement: {
     id: "service_disappearance_replacement",
@@ -607,6 +671,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "A service that disappears or is replaced on the same OT endpoint can indicate maintenance, device replacement, software changes, failure, or compromise.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.service_disappearance_replacement,
   },
   smb_admin_share_access: {
     id: "smb_admin_share_access",
@@ -617,6 +682,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Administrative share access can provide broad file-system reach and is commonly used for remote administration, lateral movement, software deployment, and malware propagation.",
     requiredLogs: [],
     requiredAnyLogs: [],
+    ...evidenceMetadata.smb_admin_share_access,
   },
   smb_signing_disabled_ntlmv1: {
     id: "smb_signing_disabled_ntlmv1",
@@ -627,6 +693,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Weak SMB authentication or missing signing increases exposure to credential relay, downgrade, man-in-the-middle, and legacy password attacks.",
     requiredLogs: [],
     requiredAnyLogs: [],
+    ...evidenceMetadata.smb_signing_disabled_ntlmv1,
   },
   snmp_write_ot_devices: {
     id: "snmp_write_ot_devices",
@@ -637,6 +704,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "SNMP SET operations can change device configuration remotely; unexpected writes may alter network or OT device behavior outside approved management workflows.",
     requiredLogs: ["snmp"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.snmp_write_ot_devices,
   },
   socks_open_proxy_behavior: {
     id: "socks_open_proxy_behavior",
@@ -647,6 +715,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "SOCKS or open-proxy behavior can provide a covert pivot path through the environment, allowing attackers or unauthorized users to relay traffic through trusted systems.",
     requiredLogs: [],
     requiredAnyLogs: ["socks", "http"],
+    ...evidenceMetadata.socks_open_proxy_behavior,
   },
   tcp_reset_abort_surge: {
     id: "tcp_reset_abort_surge",
@@ -657,6 +726,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "A surge in resets or aborted sessions can indicate network instability, overloaded devices, scanning, policy changes, active interference, or denial-of-service conditions.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.tcp_reset_abort_surge,
   },
   tls_certificate_anomalies: {
     id: "tls_certificate_anomalies",
@@ -667,6 +737,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unexpected certificate properties can indicate expired or misconfigured services, interception, device replacement, unauthorized endpoints, or weak trust management.",
     requiredLogs: [],
     requiredAnyLogs: [],
+    ...evidenceMetadata.tls_certificate_anomalies,
   },
   tls_sni_certificate_reuse: {
     id: "tls_sni_certificate_reuse",
@@ -677,6 +748,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unusual reuse of the same certificate across unrelated names or destinations can indicate shared infrastructure, interception, misconfiguration, or suspicious service hosting.",
     requiredLogs: [],
     requiredAnyLogs: ["ssl", "x509"],
+    ...evidenceMetadata.tls_sni_certificate_reuse,
   },
   unexpected_dhcp_server: {
     id: "unexpected_dhcp_server",
@@ -687,6 +759,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "An unauthorized DHCP server can redirect gateways and DNS, disrupt addressing, or intercept traffic, making it a high-impact infrastructure integrity problem.",
     requiredLogs: ["dhcp"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.unexpected_dhcp_server,
   },
   unexpected_multicast_behavior: {
     id: "unexpected_multicast_behavior",
@@ -697,6 +770,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unapproved multicast can reveal new discovery protocols, misconfiguration, chatty devices, or traffic that may degrade or expose otherwise deterministic OT segments.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.unexpected_multicast_behavior,
   },
   unknown_rogue_devices: {
     id: "unknown_rogue_devices",
@@ -707,6 +781,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Previously unknown devices can represent unauthorized connections, unmanaged equipment, temporary contractor systems, asset-inventory gaps, or compromised infrastructure.",
     requiredLogs: [],
     requiredAnyLogs: [],
+    ...evidenceMetadata.unknown_rogue_devices,
   },
   unusual_outbound_data_volume: {
     id: "unusual_outbound_data_volume",
@@ -717,6 +792,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unexpectedly large outbound transfers can indicate exfiltration, backups or replication outside policy, compromised hosts, or operational data leaving intended boundaries.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.unusual_outbound_data_volume,
   },
   upnp_ssdp_igd_port_mapping: {
     id: "upnp_ssdp_igd_port_mapping",
@@ -727,6 +803,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "UPnP/SSDP and automatic port mapping can create unmanaged exposure paths and are generally inappropriate on controlled OT networks where connectivity should be explicit.",
     requiredLogs: [],
     requiredAnyLogs: ["upnp", "upnp_igd", "ssdp"],
+    ...evidenceMetadata.upnp_ssdp_igd_port_mapping,
   },
   vlan_tag_mismatch_double_tag: {
     id: "vlan_tag_mismatch_double_tag",
@@ -737,6 +814,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Unexpected or nested VLAN tags can indicate trunk misconfiguration, segmentation bypass attempts, VLAN hopping techniques, or traffic appearing on the wrong logical network.",
     requiredLogs: ["conn"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.vlan_tag_mismatch_double_tag,
   },
   weak_broken_tls_ssl: {
     id: "weak_broken_tls_ssl",
@@ -747,6 +825,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Obsolete SSL/TLS versions and weak cryptography can expose management or application sessions to downgrade, interception, and decryption attacks.",
     requiredLogs: [],
     requiredAnyLogs: [],
+    ...evidenceMetadata.weak_broken_tls_ssl,
   },
   weird_protocol_violations: {
     id: "weird_protocol_violations",
@@ -757,5 +836,6 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
       "Protocol parsing anomalies can reveal malformed traffic, implementation problems, evasion attempts, scanning, or device behavior that differs from expected protocol semantics.",
     requiredLogs: ["weird"],
     requiredAnyLogs: [],
+    ...evidenceMetadata.weird_protocol_violations,
   },
 };

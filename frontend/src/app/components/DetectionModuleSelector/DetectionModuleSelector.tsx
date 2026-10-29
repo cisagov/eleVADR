@@ -462,6 +462,41 @@ const DetectionModuleSelector: React.FC<Props> = ({
                       </ul>
                     </section>
 
+                    <section
+                      className="module-detail-section"
+                      aria-label="Evidence requirements"
+                    >
+                      <h4>Evidence requirements</h4>
+                      <dl className="module-evidence-requirements">
+                        <dt>Log source tier</dt>
+                        <dd>{detailModule.logSourceTier}</dd>
+                        <dt>Declared log sources</dt>
+                        <dd>
+                          {[
+                            ...detailModule.requiredLogs,
+                            ...detailModule.requiredAnyLogs,
+                          ].length
+                            ? [
+                                ...new Set([
+                                  ...detailModule.requiredLogs,
+                                  ...detailModule.requiredAnyLogs,
+                                ]),
+                              ].join(", ")
+                            : "No explicit required-log declaration"}
+                        </dd>
+                        <dt>Capture prerequisites</dt>
+                        <dd>{detailModule.capturePrerequisites}</dd>
+                        <dt>Evidence limitations</dt>
+                        <dd>{detailModule.evidenceLimitations}</dd>
+                        <dt>Verification status</dt>
+                        <dd>{detailModule.verificationNote}</dd>
+                      </dl>
+                      <p className="module-help-audit-note">
+                        These are documented requirements, not proof that the
+                        current capture contains sufficient evidence. Module
+                        readiness above reflects Context completeness only.
+                      </p>
+                    </section>
                     <section className="module-detail-section">
                       <h4>Detection logic</h4>
                       <p>{detailHelp.detectionLogic}</p>

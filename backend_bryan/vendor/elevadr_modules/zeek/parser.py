@@ -59,6 +59,7 @@ NORMALIZERS = {
     "modbus": {**COMMON_FLOW_FIELDS},
     "dnp3": {**COMMON_FLOW_FIELDS},
     "enip": {**COMMON_FLOW_FIELDS},
+    "bacnet_discovery": {**COMMON_FLOW_FIELDS, "source_h": "source_ip", "source_p": "source_port", "destination_h": "destination_ip", "destination_p": "destination_port"},
     "ntp": {**COMMON_FLOW_FIELDS},
     "snmp": {**COMMON_FLOW_FIELDS, "version": "version", "community": "community", "set_requests": "set_requests"},
     "files": {
@@ -76,7 +77,7 @@ NORMALIZERS = {
 }
 
 
-LOG_NAMES = ("conn", "dns", "http", "quic", "socks", "ftp", "tftp", "smtp", "telnet", "login", "ssl", "x509", "ssh", "kerberos", "ntlm", "ldap", "ldap_bind", "ldap_search", "smb", "smb_mapping", "smb_files", "smb_cmd", "rdp", "ssdp", "upnp", "upnp_igd", "vnc", "modbus", "dnp3", "enip", "bacnet", "s7comm", "mms", "iec61850", "dhcp", "ntp", "snmp", "arp", "files", "weird")
+LOG_NAMES = ("conn", "dns", "http", "quic", "socks", "ftp", "tftp", "smtp", "telnet", "login", "ssl", "x509", "ssh", "kerberos", "ntlm", "ldap", "ldap_bind", "ldap_search", "smb", "smb_mapping", "smb_files", "smb_cmd", "rdp", "ssdp", "upnp", "upnp_igd", "vnc", "modbus", "dnp3", "enip", "bacnet", "bacnet_discovery", "s7comm", "mms", "iec61850", "dhcp", "ntp", "snmp", "arp", "files", "weird")
 
 
 def load_zeek_directory(path: str | Path) -> AnalysisContext:
@@ -149,6 +150,7 @@ def load_zeek_directory(path: str | Path) -> AnalysisContext:
         dnp3=parsed["dnp3"],
         enip=parsed["enip"],
         bacnet=parsed["bacnet"],
+        bacnet_discovery=parsed["bacnet_discovery"],
         s7comm=parsed["s7comm"],
         mms=parsed["mms"],
         iec61850=parsed["iec61850"],
@@ -284,6 +286,8 @@ def _parse_ascii_log(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
 def _normalize_row(row: dict[str, Any], log_name: str) -> dict[str, Any]:
     mapping = NORMALIZERS.get(log_name, {})
     normalized = dict(row)
+    if log_name == "bacnet_discovery":
+        normalized["_zeek_log"] = "bacnet_discovery.log"
     for source, destination in mapping.items():
         if source in row:
             normalized[destination] = row[source]

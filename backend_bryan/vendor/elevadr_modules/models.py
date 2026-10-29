@@ -39,6 +39,7 @@ class AnalysisContext:
     dnp3: list[dict[str, Any]] = field(default_factory=list)
     enip: list[dict[str, Any]] = field(default_factory=list)
     bacnet: list[dict[str, Any]] = field(default_factory=list)
+    bacnet_discovery: list[dict[str, Any]] = field(default_factory=list)
     s7comm: list[dict[str, Any]] = field(default_factory=list)
     mms: list[dict[str, Any]] = field(default_factory=list)
     iec61850: list[dict[str, Any]] = field(default_factory=list)
@@ -84,6 +85,7 @@ class AnalysisContext:
             "dnp3": "dnp3",
             "enip": "enip",
             "bacnet": "bacnet",
+            "bacnet_discovery": "bacnet_discovery",
             "s7comm": "s7comm",
             "mms": "mms",
             "iec61850": "iec61850",

@@ -1,0 +1,752 @@
+{
+  "arp_ip_mac_identity_change": {
+    "implementationId": "arp_ip_mac_identity_change",
+    "logSourceTier": "Custom",
+    "declaredLogs": [
+      "arp"
+    ],
+    "capturePrerequisites": "Custom ARP logging policy; L2 sensor visibility",
+    "evidenceLimitations": "ARP visibility depends on capture placement.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "arp_l2_reconnaissance": {
+    "implementationId": "arp_l2_reconnaissance",
+    "logSourceTier": "Custom",
+    "declaredLogs": [
+      "arp"
+    ],
+    "capturePrerequisites": "Custom ARP logging policy; L2 sensor visibility",
+    "evidenceLimitations": "ARP visibility depends on capture placement.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "bacnet_discovery_anomalies": {
+    "implementationId": "bacnet_discovery_anomalies",
+    "logSourceTier": "ICSNPP",
+    "declaredLogs": [
+      "bacnet"
+    ],
+    "capturePrerequisites": "ICSNPP BACnet parser; BAS segment context",
+    "evidenceLimitations": "Unavailable without protocol-specific BACnet evidence.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "beaconing_c2_communication": {
+    "implementationId": "beaconing_c2_communication",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "brute_force_authentication": {
+    "implementationId": "brute_force_authentication",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "codesys_runtime_exposure": {
+    "implementationId": "codesys_runtime_exposure",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "control_system_enterprise_non_dmz": {
+    "implementationId": "control_system_enterprise_non_dmz",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "controller_communication_jitter": {
+    "implementationId": "controller_communication_jitter",
+    "logSourceTier": "Base (limited)",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Per-poll protocol timestamps or per-poll connections",
+    "evidenceLimitations": "Long-lived TCP sessions hide individual polling intervals.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "cross_purdue_level_traffic": {
+    "implementationId": "cross_purdue_level_traffic",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "database_service_exposed": {
+    "implementationId": "database_service_exposed",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "deprecated_insecure_services_protocols": {
+    "implementationId": "deprecated_insecure_services_protocols",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "deprecated_vpn_protocol": {
+    "implementationId": "deprecated_vpn_protocol",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "dns_source_drift": {
+    "implementationId": "dns_source_drift",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "dns"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "dns_tunneling_exfiltration": {
+    "implementationId": "dns_tunneling_exfiltration",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "dns"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "encrypted_session_fingerprint_change": {
+    "implementationId": "encrypted_session_fingerprint_change",
+    "logSourceTier": "Package",
+    "declaredLogs": [
+      "ssl"
+    ],
+    "capturePrerequisites": "JA3/JA3S fields; baseline",
+    "evidenceLimitations": "JA3-specific drift requires extension fields.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "engineering_tools_cleartext": {
+    "implementationId": "engineering_tools_cleartext",
+    "logSourceTier": "Extension/non-base possible",
+    "declaredLogs": [
+      "ftp",
+      "tftp",
+      "files"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "non-base/extension logs",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "engineering_workstation_control_burst": {
+    "implementationId": "engineering_workstation_control_burst",
+    "logSourceTier": "Extension/non-base possible",
+    "declaredLogs": [
+      "modbus",
+      "dnp3",
+      "s7comm",
+      "enip"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "non-base/extension logs",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "enip_cip_write_session_abuses": {
+    "implementationId": "enip_cip_write_session_abuses",
+    "logSourceTier": "ICSNPP",
+    "declaredLogs": [
+      "enip"
+    ],
+    "capturePrerequisites": "ICSNPP ENIP/CIP; CIP service-code fields",
+    "evidenceLimitations": "ENIP-only records may not establish CIP writes.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "excessive_broadcast_multicast_ot": {
+    "implementationId": "excessive_broadcast_multicast_ot",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "file_extraction_sensitive_types": {
+    "implementationId": "file_extraction_sensitive_types",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "files"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "high_fan_in_out": {
+    "implementationId": "high_fan_in_out",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "http_user_agent_anomalies": {
+    "implementationId": "http_user_agent_anomalies",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "http"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "iccp_tase2_detected": {
+    "implementationId": "iccp_tase2_detected",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "icmp_data_channel": {
+    "implementationId": "icmp_data_channel",
+    "logSourceTier": "Base (limited)",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "conn.log; packet-level sizes for uniformity claim",
+    "evidenceLimitations": "conn.log does not supply per-packet length distribution.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ics_protocol_error_spike": {
+    "implementationId": "ics_protocol_error_spike",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ics_write_operations": {
+    "implementationId": "ics_write_operations",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "modbus",
+      "dnp3"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "internet_exposed_ics": {
+    "implementationId": "internet_exposed_ics",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ipv6_traffic_ot": {
+    "implementationId": "ipv6_traffic_ot",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "irc_traffic_detected": {
+    "implementationId": "irc_traffic_detected",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ja3_fingerprint_outliers": {
+    "implementationId": "ja3_fingerprint_outliers",
+    "logSourceTier": "Package",
+    "declaredLogs": [
+      "ssl"
+    ],
+    "capturePrerequisites": "JA3/JA3S fields; JA3 package",
+    "evidenceLimitations": "Stock TLS metadata does not establish JA3.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "kerberos_asrep_roastable_accounts": {
+    "implementationId": "kerberos_asrep_roastable_accounts",
+    "logSourceTier": "Custom",
+    "declaredLogs": [
+      "kerberos"
+    ],
+    "capturePrerequisites": "Kerberos pre-authentication evidence beyond default logs",
+    "evidenceLimitations": "Default kerberos.log cannot prove absence of preauthentication.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "large_outbound_http_uploads": {
+    "implementationId": "large_outbound_http_uploads",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "http"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ldap_cleartext_anonymous_cross_segment": {
+    "implementationId": "ldap_cleartext_anonymous_cross_segment",
+    "logSourceTier": "Base (6.1+)",
+    "declaredLogs": [],
+    "capturePrerequisites": "ldap.log; LDAP capture; segment context",
+    "evidenceLimitations": "ldap_bind.log is not a stock log.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "llmnr_nbtns_mdns_poisoning_signals": {
+    "implementationId": "llmnr_nbtns_mdns_poisoning_signals",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "dns"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "netbios_smbv1_exposure": {
+    "implementationId": "netbios_smbv1_exposure",
+    "logSourceTier": "Extension/non-base possible",
+    "declaredLogs": [
+      "conn",
+      "smb",
+      "smb_mapping",
+      "smb_files",
+      "smb_cmd"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "non-base/extension logs; smb.log nonstock",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "new_ot_conversation_pair": {
+    "implementationId": "new_ot_conversation_pair",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "new_service_emergence_ot": {
+    "implementationId": "new_service_emergence_ot",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "niagara_fox_detected": {
+    "implementationId": "niagara_fox_detected",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ntp_internet_multi_dest_ot": {
+    "implementationId": "ntp_internet_multi_dest_ot",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "ntp"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ntp_source_drift": {
+    "implementationId": "ntp_source_drift",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "ntp"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ot_asset_gone_silent": {
+    "implementationId": "ot_asset_gone_silent",
+    "logSourceTier": "Base (limited)",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Baseline and capture duration; per-poll evidence if needed",
+    "evidenceLimitations": "Connection inactivity does not prove polling inactivity.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ot_external_dns_resolver": {
+    "implementationId": "ot_external_dns_resolver",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "dns"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ot_management_certificate_risk": {
+    "implementationId": "ot_management_certificate_risk",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "ssl",
+      "x509"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ot_outbound_internet_any_protocol": {
+    "implementationId": "ot_outbound_internet_any_protocol",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ot_protocol_exposure": {
+    "implementationId": "ot_protocol_exposure",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "ot_protocol_role_reversal": {
+    "implementationId": "ot_protocol_role_reversal",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "plc_program_logic_firmware_update": {
+    "implementationId": "plc_program_logic_firmware_update",
+    "logSourceTier": "Extension/non-base possible",
+    "declaredLogs": [
+      "modbus",
+      "s7comm",
+      "enip",
+      "dnp3"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "non-base/extension logs",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "plc_rtu_peer_change": {
+    "implementationId": "plc_rtu_peer_change",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "polling_cadence_disruption": {
+    "implementationId": "polling_cadence_disruption",
+    "logSourceTier": "Base (limited)",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Per-poll protocol timestamps or per-poll connections",
+    "evidenceLimitations": "Long-lived TCP sessions hide individual polling intervals.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "port_host_scanning": {
+    "implementationId": "port_host_scanning",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "public_to_public_traffic": {
+    "implementationId": "public_to_public_traffic",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "quic_ot_segments": {
+    "implementationId": "quic_ot_segments",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "rdp_nla_disabled": {
+    "implementationId": "rdp_nla_disabled",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "rdp"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "cleartext_credentials": {
+    "implementationId": "cleartext_credentials",
+    "logSourceTier": "Base / Custom",
+    "declaredLogs": [],
+    "capturePrerequisites": "FTP, HTTP, SMTP metadata; custom Telnet credential instrumentation for Telnet claim",
+    "evidenceLimitations": "Telnet credential extraction is not established by base Zeek logs.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "remote_access_session_anomaly": {
+    "implementationId": "remote_access_session_anomaly",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "remote_access_tool_exposure": {
+    "implementationId": "remote_access_tool_exposure",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "rogue_dhcp_static_ot": {
+    "implementationId": "rogue_dhcp_static_ot",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "dhcp"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "s7comm_unauthorized_write_stop": {
+    "implementationId": "s7comm_unauthorized_write_stop",
+    "logSourceTier": "ICSNPP",
+    "declaredLogs": [
+      "s7comm"
+    ],
+    "capturePrerequisites": "ICSNPP S7comm protocol logs; authorization context",
+    "evidenceLimitations": "Requires S7 function-code evidence.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "service_disappearance_replacement": {
+    "implementationId": "service_disappearance_replacement",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "smb_admin_share_access": {
+    "implementationId": "smb_admin_share_access",
+    "logSourceTier": "Base",
+    "declaredLogs": [],
+    "capturePrerequisites": "smb_mapping.log, smb_files.log, dce_rpc.log",
+    "evidenceLimitations": "Avoid relying on nonexistent smb.log.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "smb_signing_disabled_ntlmv1": {
+    "implementationId": "smb_signing_disabled_ntlmv1",
+    "logSourceTier": "Custom",
+    "declaredLogs": [],
+    "capturePrerequisites": "SMB negotiation and NTLM version evidence",
+    "evidenceLimitations": "Default SMB/NTLM logs cannot establish full claim.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "snmp_write_ot_devices": {
+    "implementationId": "snmp_write_ot_devices",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "snmp"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "socks_open_proxy_behavior": {
+    "implementationId": "socks_open_proxy_behavior",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "socks",
+      "http"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "tcp_reset_abort_surge": {
+    "implementationId": "tcp_reset_abort_surge",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "tls_certificate_anomalies": {
+    "implementationId": "tls_certificate_anomalies",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "tls_sni_certificate_reuse": {
+    "implementationId": "tls_sni_certificate_reuse",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "ssl",
+      "x509"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "unexpected_dhcp_server": {
+    "implementationId": "unexpected_dhcp_server",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "dhcp"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "protocol_unexpected_high_risk_port": {
+    "implementationId": "protocol_unexpected_high_risk_port",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "unexpected_multicast_behavior": {
+    "implementationId": "unexpected_multicast_behavior",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "unknown_rogue_devices": {
+    "implementationId": "unknown_rogue_devices",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "unusual_outbound_data_volume": {
+    "implementationId": "unusual_outbound_data_volume",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "upnp_ssdp_igd_port_mapping": {
+    "implementationId": "upnp_ssdp_igd_port_mapping",
+    "logSourceTier": "Extension/non-base possible",
+    "declaredLogs": [
+      "upnp",
+      "upnp_igd",
+      "ssdp"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "non-base/extension logs",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "vlan_tag_mismatch_double_tag": {
+    "implementationId": "vlan_tag_mismatch_double_tag",
+    "logSourceTier": "Base (policy)",
+    "declaredLogs": [
+      "conn"
+    ],
+    "capturePrerequisites": "VLAN logging policy; preserved VLAN tags",
+    "evidenceLimitations": "SPAN/tap may strip tags before capture.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "weak_broken_tls_ssl": {
+    "implementationId": "weak_broken_tls_ssl",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  },
+  "weird_protocol_violations": {
+    "implementationId": "weird_protocol_violations",
+    "logSourceTier": "Base/verify fields",
+    "declaredLogs": [
+      "weird"
+    ],
+    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
+  }
+}
