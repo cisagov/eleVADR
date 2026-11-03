@@ -76,6 +76,10 @@ class KerberosAsrepRoastableAccountsModule(AnalysisModule):
         ),
         category="security_analysis",
         required_logs=("kerberos",),
+        # Disabled by default: stock Zeek kerberos.log does not expose the pre-authentication
+        # field this detector needs. It only fires when a non-stock deployment adds that field,
+        # which most captures will not have. Enable only if the capture source is known to log it.
+        default_enabled=False,
     )
 
     def analyze(self, context: AnalysisContext) -> ModuleResult:

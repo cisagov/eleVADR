@@ -185,10 +185,11 @@
     "default_enabled": true,
     "id": "enip_cip_write_session_abuses",
     "name": "EtherNet/IP CIP Write and Session Abuses",
-    "required_any_logs": [],
-    "required_logs": [
-      "enip"
-    ]
+    "required_any_logs": [
+      "enip",
+      "cip"
+    ],
+    "required_logs": []
   },
   {
     "category": "security_analysis",
@@ -259,6 +260,7 @@
       "modbus",
       "dnp3",
       "enip",
+      "cip",
       "s7comm"
     ],
     "required_logs": []
@@ -316,7 +318,7 @@
   },
   {
     "category": "security_analysis",
-    "default_enabled": true,
+    "default_enabled": false,
     "id": "kerberos_asrep_roastable_accounts",
     "name": "Kerberos AS-REP Roastable Accounts",
     "required_any_logs": [],
@@ -357,14 +359,10 @@
     "default_enabled": true,
     "id": "netbios_smbv1_exposure",
     "name": "NetBIOS / SMBv1 Exposure",
-    "required_any_logs": [
-      "conn",
-      "smb",
-      "smb_mapping",
-      "smb_files",
-      "smb_cmd"
-    ],
-    "required_logs": []
+    "required_any_logs": [],
+    "required_logs": [
+      "conn"
+    ]
   },
   {
     "category": "security_analysis",
@@ -620,7 +618,7 @@
   },
   {
     "category": "security_analysis",
-    "default_enabled": true,
+    "default_enabled": false,
     "id": "smb_signing_disabled_ntlmv1",
     "name": "SMB Signing Disabled or NTLMv1 Detected",
     "required_any_logs": [],

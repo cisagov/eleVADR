@@ -259,6 +259,51 @@ class MongoReportStore:
                 stats["updated"] += 1
         return stats
 
+    def update_notes(
+        self,
+        owner_id: str,
+        report_id: str,
+        section_notes: dict[str, str],
+        entity_notes: dict[str, str],
+        entity_overrides: dict[str, dict[str, str]],
+    ) -> dict[str, Any] | None:
+        """Merge analyst notes/overrides into the persisted report JSON.
+
+        Notes are part of the saved report so they survive reload and export
+        from any browser or device, not just the one that wrote them.
+        """
+        if self._reports is None:
+            raise RuntimeError("Report store is not connected")
+        report_id = self._safe(report_id, "report id")
+        query = {"owner_id": owner_id, "report_id": report_id}
+        row = self._reports.find_one(query)
+        if not row:
+            return None
+        path = (self.root / str(row["report_path"])).resolve()
+        if self.root not in path.parents:
+            raise RuntimeError("Stored report path escaped storage root")
+        try:
+            report = json.loads(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
+        report["section_notes"] = section_notes
+        report["entity_notes"] = entity_notes
+        report["entity_overrides"] = entity_overrides
+        directory = path.parent
+        payload = json.dumps(report, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        fd, temp_name = tempfile.mkstemp(prefix=f".{report_id}-", suffix=".tmp", dir=directory)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+                handle.write(payload)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temp_name, path)
+        finally:
+            if os.path.exists(temp_name):
+                os.unlink(temp_name)
+        self._reports.update_one(query, {"$set": {"updated_at": datetime.now(UTC)}})
+        return report
+
     def rename(self, owner_id: str, report_id: str, title: str) -> dict[str, Any] | None:
         if self._reports is None: raise RuntimeError("Report store is not connected")
         report_id = self._safe(report_id, "report id")

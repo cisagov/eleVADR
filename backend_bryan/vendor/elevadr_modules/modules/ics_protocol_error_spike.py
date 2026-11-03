@@ -10,6 +10,7 @@ from elevadr_modules.modules.base import AnalysisModule, ModuleMetadata
 
 MAX_EVIDENCE = 10
 PROTOCOLS = ("modbus", "dnp3", "enip", "s7comm")
+REQUIRED_ANY_LOGS = ("modbus", "dnp3", "enip", "cip", "s7comm")
 
 
 @dataclass(slots=True)
@@ -35,7 +36,7 @@ class IcsProtocolErrorSpikeModule(AnalysisModule):
         ),
         category="security_analysis",
         required_logs=(),
-        required_any_logs=PROTOCOLS,
+        required_any_logs=REQUIRED_ANY_LOGS,
     )
 
     def analyze(self, context: AnalysisContext) -> ModuleResult:
@@ -44,7 +45,7 @@ class IcsProtocolErrorSpikeModule(AnalysisModule):
         for protocol, rows in (
             ("modbus", context.modbus),
             ("dnp3", context.dnp3),
-            ("enip", context.enip),
+            ("enip", [*context.enip, *context.cip]),
             ("s7comm", context.s7comm),
         ):
             for row in rows:
@@ -78,7 +79,7 @@ class IcsProtocolErrorSpikeModule(AnalysisModule):
             evidence={
                 "inspected_logs": [name for name, rows in (
                     ("modbus", context.modbus), ("dnp3", context.dnp3),
-                    ("enip", context.enip), ("s7comm", context.s7comm),
+                    ("enip", context.enip), ("cip", context.cip), ("s7comm", context.s7comm),
                 ) if rows],
                 "policy_loaded": bool(policy),
                 "notes": [
@@ -86,7 +87,7 @@ class IcsProtocolErrorSpikeModule(AnalysisModule):
                     "Error ratios are evaluated in fixed analysis windows and compared with both an absolute threshold and, when sufficient baseline data exists, the learned baseline error ratio.",
                     "Modbus uses explicit exception evidence (exception fields/codes or exception responses); generic Modbus traffic is not treated as erroneous.",
                     "DNP3 requires explicit error/trouble IIN evidence; ordinary class/event IIN bits are not automatically errors.",
-                    "CIP/EtherNet/IP general status 0 is success; non-zero general status is treated as an error response.",
+                    "CIP/EtherNet/IP general status 0 is success; non-zero general status is treated as an error response. General-status detail is read from cip.log when ICSNPP-ENIP is loaded, falling back to enip.log alone when it is not.",
                     "S7 uses explicit error class/code or non-success return evidence; generic S7 responses are not assumed to be errors.",
                     "Passive captures can miss responses because of asymmetric routing or packet loss, so absence or apparent concentration of errors should be interpreted in capture context.",
                 ],

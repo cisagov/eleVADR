@@ -62,6 +62,7 @@ import {
   listSavedReports,
   loadSavedReport,
   renameSavedReport,
+  updateSavedReportNotes,
   SavedReportSummary,
 } from "./services/reportService";
 import { normalizeElevadrReport } from "./utils/reportCompatibility";
@@ -1664,6 +1665,23 @@ function App() {
     setEntityOverrides({ ...reportOverrides, ...stored });
   }, [report]);
 
+  const syncReportNotes = (
+    next: {
+      sectionNotes?: Record<string, string>;
+      entityNotes?: Record<string, string>;
+      entityOverrides?: Record<string, Record<string, string>>;
+    } = {},
+  ) => {
+    if (!report?.report_id) return;
+    void updateSavedReportNotes(report.report_id, {
+      sectionNotes: next.sectionNotes ?? sectionNotes,
+      entityNotes: next.entityNotes ?? entityNotes,
+      entityOverrides: next.entityOverrides ?? entityOverrides,
+    }).catch(() => {
+      /* report may not be backend-persisted yet; local copy still holds the note */
+    });
+  };
+
   const saveEntityOverrides = (
     entity: SelectedEntity,
     value: Record<string, string>,
@@ -1682,6 +1700,7 @@ function App() {
     } catch {
       /* local persistence unavailable */
     }
+    syncReportNotes({ entityOverrides: next });
   };
 
   const resetEntityOverrides = (entity: SelectedEntity) => {
@@ -1694,6 +1713,7 @@ function App() {
     } catch {
       /* local persistence unavailable */
     }
+    syncReportNotes({ entityOverrides: next });
   };
 
   const saveEntityNote = (entity: SelectedEntity, value: string) => {
@@ -1709,6 +1729,7 @@ function App() {
     } catch {
       /* local persistence unavailable */
     }
+    syncReportNotes({ entityNotes: next });
   };
 
   const deleteEntityNote = (entity: SelectedEntity) => {
@@ -1721,6 +1742,7 @@ function App() {
     } catch {
       /* local persistence unavailable */
     }
+    syncReportNotes({ entityNotes: next });
   };
 
   const openSectionNotes = () => {
@@ -1741,6 +1763,7 @@ function App() {
     } catch {
       /* local persistence unavailable */
     }
+    syncReportNotes({ sectionNotes: next });
     setNotesOpen(false);
   };
 
@@ -1755,6 +1778,7 @@ function App() {
     } catch {
       /* local persistence unavailable */
     }
+    syncReportNotes({ sectionNotes: next });
     setNotesOpen(false);
   };
 

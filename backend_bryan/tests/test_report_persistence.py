@@ -167,3 +167,28 @@ def test_activity_repair_skips_missing_inventory(tmp_path: Path):
     s.save("user-a", "alice", {"report_id": "incomplete"}, "capture.pcap")
     assert s.repair_activity_counts_for_owner("user-a", dry_run=False) == {
         "checked": 1, "different": 0, "updated": 0, "skipped": 1}
+
+
+def test_update_notes_persists_into_report_json_and_is_owner_scoped(tmp_path: Path):
+    s = store(tmp_path)
+    report = {"report_id": "notes-1", "report_version": "2.0"}
+    s.save("user-a", "alice", report, "plant.pcap")
+
+    assert s.update_notes("user-b", "notes-1", {}, {}, {}) is None
+
+    updated = s.update_notes(
+        "user-a",
+        "notes-1",
+        {"overview": "Looks fine"},
+        {"device|aa:bb": "Follow up"},
+        {"device|aa:bb": {"manufacturer": "Acme"}},
+    )
+    assert updated is not None
+    assert updated["section_notes"] == {"overview": "Looks fine"}
+    assert updated["entity_notes"] == {"device|aa:bb": "Follow up"}
+    assert updated["entity_overrides"] == {"device|aa:bb": {"manufacturer": "Acme"}}
+
+    reloaded = s.load("user-a", "notes-1")
+    assert reloaded == updated
+
+    assert s.update_notes("user-a", "missing-report", {}, {}, {}) is None

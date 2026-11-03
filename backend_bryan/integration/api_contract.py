@@ -22,8 +22,8 @@ SUPPORTED_LOG_NAMES = frozenset(
         "connections", "conn", "dns", "http", "quic", "socks", "ftp", "tftp",
         "smtp", "telnet", "login", "ssl", "x509", "ssh", "kerberos", "ntlm",
         "ldap", "ldap_bind", "ldap_search", "smb", "smb_mapping", "smb_files",
-        "smb_cmd", "rdp", "ssdp", "upnp", "upnp_igd", "vnc", "modbus", "dnp3",
-        "enip", "bacnet", "s7comm", "mms", "iec61850", "dhcp", "ntp", "snmp",
+        "smb_cmd", "dce_rpc", "rdp", "ssdp", "upnp", "upnp_igd", "vnc", "modbus", "dnp3",
+        "enip", "cip", "bacnet", "s7comm", "mms", "iec61850", "dhcp", "ntp", "snmp",
         "arp", "files", "weird",
     }
 )

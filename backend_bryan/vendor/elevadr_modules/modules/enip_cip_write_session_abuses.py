@@ -56,19 +56,24 @@ class EnipCipWriteSessionAbusesModule(AnalysisModule):
         name="EtherNet/IP CIP Write and Session Abuses",
         description=(
             "Detects explicit CIP write services and excessive Forward_Open/Large_Forward_Open activity "
-            "in EtherNet/IP telemetry, with optional policy checks for approved write paths."
+            "in EtherNet/IP telemetry, with optional policy checks for approved write paths. Reads CIP "
+            "service-code detail from cip.log when ICSNPP-ENIP is loaded, falling back to enip.log alone "
+            "when it is not."
         ),
         category="security_analysis",
-        required_logs=("enip",),
+        required_logs=(),
+        required_any_logs=("enip", "cip"),
     )
 
     def analyze(self, context: AnalysisContext) -> ModuleResult:
-        if not context.enip:
+        source_rows = [*context.enip, *context.cip]
+        if not source_rows:
             return ModuleResult(
                 module_id=self.metadata.id,
                 findings=[],
                 metrics={
                     "enip_events_evaluated": 0,
+                    "cip_events_evaluated": 0,
                     "cip_write_events": 0,
                     "forward_open_events": 0,
                     "forward_open_abuse_windows": 0,
@@ -78,14 +83,15 @@ class EnipCipWriteSessionAbusesModule(AnalysisModule):
                 evidence={
                     "inspected_logs": [],
                     "notes": [
-                        "The detector requires EtherNet/IP/CIP protocol-log evidence and never infers writes or Forward_Open activity from TCP/44818 or UDP/2222 alone."
+                        "The detector requires EtherNet/IP/CIP protocol-log evidence and never infers writes or Forward_Open activity from TCP/44818 or UDP/2222 alone.",
+                        "CIP service-code detail lives in cip.log (ICSNPP-ENIP); enip.log alone carries session/registration records and may lack explicit CIP service fields.",
                     ],
                 },
                 warnings=[],
             )
 
         policy = _policy(context.metadata)
-        events = [_event(row) for row in context.enip]
+        events = [_event(row) for row in source_rows]
         events = [event for event in events if event is not None]
         writes = [event for event in events if event.kind == "write"]
         opens = [event for event in events if event.kind == "forward_open"]
@@ -101,6 +107,7 @@ class EnipCipWriteSessionAbusesModule(AnalysisModule):
             findings=findings,
             metrics={
                 "enip_events_evaluated": len(context.enip),
+                "cip_events_evaluated": len(context.cip),
                 "classified_cip_events": len(events),
                 "cip_write_events": len(writes),
                 "forward_open_events": len(opens),
@@ -109,7 +116,7 @@ class EnipCipWriteSessionAbusesModule(AnalysisModule):
                 "affected_devices": len(devices),
             },
             evidence={
-                "inspected_logs": ["enip"],
+                "inspected_logs": [name for name in ("enip", "cip") if context.log(name)],
                 "policy_loaded": bool(policy),
                 "notes": [
                     "CIP writes require explicit service-code/name evidence such as Write Tag (0x4D), Write Tag Fragmented (0x53), or Set Attribute Single (0x10).",
@@ -118,6 +125,7 @@ class EnipCipWriteSessionAbusesModule(AnalysisModule):
                     "When no write-path policy is configured, explicit CIP writes are surfaced as low-severity review findings rather than labeled unauthorized.",
                     "TCP/44818 and UDP/2222 alone are never sufficient evidence for a finding.",
                     "Evidence is capped at 10 representative events while full counts remain in finding metadata.",
+                    "CIP service-code fields are read from cip.log when ICSNPP-ENIP is loaded and from enip.log otherwise; a deployment with only enip.log may lack the explicit service-code detail this detector needs.",
                 ],
                 "policy": {
                     "forward_open_window_seconds": _float_policy(policy, "forward_open_window_seconds", DEFAULT_FORWARD_OPEN_WINDOW),

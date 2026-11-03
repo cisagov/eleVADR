@@ -72,7 +72,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
     id: "cleartext_credentials",
     name: "Cleartext Credentials",
     description:
-      "Identifies cleartext credential exposure in FTP, HTTP, SMTP, and Telnet analysis data. Password values are redacted from results.",
+      "Identifies cleartext credential exposure in FTP, HTTP, and SMTP analysis data. Password values are redacted from results.",
     relevance:
       "Credentials sent without encryption can be recovered by anyone with network visibility and can enable account compromise, lateral movement, and unauthorized administrative access.",
     requiredLogs: [],
@@ -105,7 +105,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
     id: "controller_communication_jitter",
     name: "Controller Communication Jitter",
     description:
-      "Detects increased timing variance in established controller communications after a baseline.",
+      "Detects increased timing variance in established controller communications after a baseline. Uses per-message OT protocol-log timing when it is more granular than conn.log, so jitter inside one persistent session is still visible.",
     relevance:
       "A sudden increase in controller timing variance can reveal network degradation, overloaded devices, configuration changes, or abnormal traffic affecting deterministic control communications.",
     requiredLogs: ["conn"],
@@ -215,11 +215,11 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
     id: "enip_cip_write_session_abuses",
     name: "EtherNet/IP CIP Write and Session Abuses",
     description:
-      "Detects explicit CIP write services and excessive Forward_Open/Large_Forward_Open activity in EtherNet/IP telemetry, with optional policy checks for approved write paths.",
+      "Detects explicit CIP write services and excessive Forward_Open/Large_Forward_Open activity in EtherNet/IP telemetry, with optional policy checks for approved write paths. Reads CIP service-code detail from cip.log when ICSNPP-ENIP is loaded, falling back to enip.log alone when it is not.",
     relevance:
       "CIP writes and abnormal session creation can directly alter PLC tags or controller state, so unexpected activity may have immediate process, safety, or availability consequences.",
-    requiredLogs: ["enip"],
-    requiredAnyLogs: [],
+    requiredLogs: [],
+    requiredAnyLogs: ["enip", "cip"],
     ...evidenceMetadata.enip_cip_write_session_abuses,
   },
   excessive_broadcast_multicast_ot: {
@@ -296,7 +296,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
     relevance:
       "A sudden rise in ICS exceptions can indicate malformed commands, incompatible changes, device faults, scanning, or unauthorized attempts to interact with control devices.",
     requiredLogs: [],
-    requiredAnyLogs: ["modbus", "dnp3", "enip", "s7comm"],
+    requiredAnyLogs: ["modbus", "dnp3", "enip", "cip", "s7comm"],
     ...evidenceMetadata.ics_protocol_error_spike,
   },
   ics_write_operations: {
@@ -402,11 +402,11 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
     id: "netbios_smbv1_exposure",
     name: "NetBIOS / SMBv1 Exposure",
     description:
-      "Identifies NetBIOS traffic on ports 137-139 or explicitly evidenced SMBv1 traffic crossing configured network-segment boundaries or involving public Internet addresses.",
+      "Identifies NetBIOS traffic on ports 137-139 crossing configured network-segment boundaries or involving public Internet addresses.",
     relevance:
-      "SMBv1 and exposed NetBIOS services increase susceptibility to legacy protocol attacks, credential abuse, malware propagation, and lateral movement across network boundaries.",
-    requiredLogs: [],
-    requiredAnyLogs: ["conn", "smb", "smb_mapping", "smb_files", "smb_cmd"],
+      "Exposed NetBIOS services increase susceptibility to legacy protocol attacks, credential abuse, malware propagation, and lateral movement across network boundaries.",
+    requiredLogs: ["conn"],
+    requiredAnyLogs: [],
     ...evidenceMetadata.netbios_smbv1_exposure,
   },
   new_ot_conversation_pair: {
@@ -468,7 +468,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
     id: "ot_asset_gone_silent",
     name: "OT Asset Gone Silent (Loss of Expected Periodic Comms)",
     description:
-      "Learns regular OT host/conversation cadence during a baseline period and identifies expected periodic communications that cease for materially longer than their established interval.",
+      "Learns regular OT host/conversation cadence during a baseline period and identifies expected periodic communications that cease for materially longer than their established interval. Uses per-message OT protocol-log timing when it is more granular than conn.log, so polling inside one persistent session is still visible.",
     relevance:
       "An expected OT asset that stops communicating may be offline, disconnected, failed, replaced, isolated, or affected by a network/security incident.",
     requiredLogs: ["conn"],
@@ -556,7 +556,7 @@ export const DETECTION_MODULE_DETAILS: Record<string, DetectionModuleDetail> = {
     id: "polling_cadence_disruption",
     name: "Polling Cadence Disruption",
     description:
-      "Detects established periodic OT polling whose post-baseline interval shifts materially from its learned cadence.",
+      "Detects established periodic OT polling whose post-baseline interval shifts materially from its learned cadence. Uses per-message OT protocol-log timing when it is more granular than conn.log, so polling inside one persistent session is still visible.",
     relevance:
       "Changes in regular polling intervals can reveal congestion, controller problems, communication faults, configuration changes, or interference with deterministic control traffic.",
     requiredLogs: ["conn"],

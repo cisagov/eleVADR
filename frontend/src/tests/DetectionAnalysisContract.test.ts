@@ -3,7 +3,10 @@ import {
   buildDetectionAnalysisRequest,
   DETECTION_ANALYSIS_CONTRACT_VERSION,
 } from "../app/components/DetectionConfiguration/analysisRequest";
-import { ALL_DETECTION_MODULES } from "../app/components/DetectionConfiguration/moduleCatalog";
+import {
+  ALL_DETECTION_MODULES,
+  DEFAULT_ENABLED_MODULES,
+} from "../app/components/DetectionConfiguration/moduleCatalog";
 import { createEmptyProfile } from "../app/components/DetectionConfiguration/profile";
 
 describe("Detection Context frontend -> backend contract", () => {
@@ -12,7 +15,14 @@ describe("Detection Context frontend -> backend contract", () => {
     const request = buildDetectionAnalysisRequest(createEmptyProfile());
     expect(request.contractVersion).toBe(DETECTION_ANALYSIS_CONTRACT_VERSION);
     expect(request.profile.schemaVersion).toBe(3);
-    expect(request.profile.selectedModules).toHaveLength(75);
+    // The default profile selects every module except those disabled by default
+    // (modules that can only fire against non-stock Zeek log enrichment).
+    expect(request.profile.selectedModules).toHaveLength(
+      DEFAULT_ENABLED_MODULES.length,
+    );
+    expect(new Set(request.profile.selectedModules)).toEqual(
+      new Set(DEFAULT_ENABLED_MODULES),
+    );
   });
 
   it("sends frontend profile fields without compiling backend detector policy namespaces", () => {

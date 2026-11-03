@@ -970,6 +970,27 @@ class Handler(BaseHTTPRequestHandler):
             if updated is None: self._json(404, {"error":"user_not_found"}); return
             _audit("user.update", "success", principal, "user", user_id, {"role": role, "disabled": disabled})
             self._json(200, {"user":updated}); return
+        if self.path.startswith(f"{REPORTS_PATH}/") and self.path.rstrip("/").endswith("/notes"):
+            if not self._require_write_access(): return
+            principal = self._current_principal()
+            report_id = self.path[len(REPORTS_PATH):].strip("/")[: -len("notes")].strip("/")
+            if principal is None or not principal.authenticated or _REPORT_STORE is None:
+                self._json(503, {"error": "report_store_unavailable"}); return
+            try:
+                payload = self._read_json()
+                if not isinstance(payload, dict): raise ValueError("Notes update must be a JSON object")
+                section_notes = payload.get("sectionNotes") if isinstance(payload.get("sectionNotes"), dict) else {}
+                entity_notes = payload.get("entityNotes") if isinstance(payload.get("entityNotes"), dict) else {}
+                entity_overrides = payload.get("entityOverrides") if isinstance(payload.get("entityOverrides"), dict) else {}
+                report = _REPORT_STORE.update_notes(
+                    principal.user_id, report_id, section_notes, entity_notes, entity_overrides
+                )
+            except ValueError as exc:
+                self._json(400, {"error": "invalid_report_notes", "message": str(exc)}); return
+            if report is None:
+                self._json(404, {"error": "report_not_found", "message": "Saved report was not found."}); return
+            _audit("report.notes.update", "success", principal, "report", report_id)
+            self._json(200, {"report": report}); return
         if self.path.startswith(f"{REPORTS_PATH}/"):
             if not self._require_write_access(): return
             principal = self._current_principal(); report_id = self.path[len(REPORTS_PATH):].strip("/")

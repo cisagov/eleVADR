@@ -8,6 +8,7 @@ from typing import Any
 
 from elevadr_modules.models import AnalysisContext, Finding, ModuleResult
 from elevadr_modules.modules.base import AnalysisModule, ModuleMetadata
+from elevadr_modules.modules._protocol_timing import OT_PROTOCOL_LOGS, protocol_poll_series
 
 
 DEFAULT_BASELINE_SECONDS = 300.0
@@ -69,7 +70,9 @@ class OtAssetGoneSilentModule(AnalysisModule):
         name="OT Asset Gone Silent (Loss of Expected Periodic Comms)",
         description=(
             "Learns regular OT host/conversation cadence during a baseline period and identifies expected periodic "
-            "communications that cease for materially longer than their established interval."
+            "communications that cease for materially longer than their established interval. Uses per-message OT "
+            "protocol-log timing when it is more granular than conn.log, so polling inside one persistent session "
+            "is still visible."
         ),
         category="security_analysis",
         required_logs=("conn",),
@@ -148,6 +151,8 @@ class OtAssetGoneSilentModule(AnalysisModule):
                         identity=identity,
                     )
                 )
+
+        observations, protocol_log_conversations = _augment_with_protocol_timing(context, observations)
 
         if capture_end <= baseline_end:
             hosts = {obs.ot_host for obs in observations}
@@ -249,9 +254,10 @@ class OtAssetGoneSilentModule(AnalysisModule):
                 "rejected_irregular_baselines": rejected_irregular,
                 "skipped_unclassified": skipped_unclassified,
                 "skipped_allowlisted": skipped_allowlisted,
+                "conversations_using_protocol_log_timing": protocol_log_conversations,
             },
             evidence={
-                "inspected_logs": ["conn"],
+                "inspected_logs": ["conn", *OT_PROTOCOL_LOGS] if protocol_log_conversations else ["conn"],
                 "capture_start": capture_start,
                 "capture_end": capture_end,
                 "baseline_end": baseline_end,
@@ -263,6 +269,7 @@ class OtAssetGoneSilentModule(AnalysisModule):
                     "The silence threshold is max(min_silence_seconds, learned median interval x silence_multiplier).",
                     "If every learned periodic conversation for an OT host is stale and the host itself has disappeared beyond the learned threshold, one host-level finding is emitted and redundant conversation findings are suppressed.",
                     "A passive capture can only prove absence from the sensor's observation point; sensor outage, capture filtering, topology changes, maintenance, or asymmetric routing can also make a healthy asset appear silent.",
+                    "Falls back to per-message OT protocol-log timestamps (modbus/dnp3/s7comm/enip/cip) for a conversation when that log has more rows than conn.log for the same pair, since a persistent session logs as a single conn.log record regardless of how many polls occurred inside it.",
                 ],
             },
             warnings=[],
@@ -404,6 +411,51 @@ def _empty_result(module_id: str, policy: dict[str, Any], segments: list[_Segmen
         },
         warnings=[],
     )
+
+
+def _augment_with_protocol_timing(
+    context: AnalysisContext, observations: list[_Observation]
+) -> tuple[list[_Observation], int]:
+    """Replace a conversation's timestamps with OT protocol-log timing when it is more granular.
+
+    conn.log logs one row per TCP session; a persistent/long-lived session collapses an
+    entire sequence of application-layer polls into a single conn.log record. The OT
+    protocol logs (modbus/dnp3/s7comm/enip/cip) log one row per message, so when a conversation
+    has more protocol-log rows than conn-derived observations for the same ot_host/peer pair,
+    those per-message timestamps are used instead so baseline/silence detection can see polling
+    cadence that happened inside one session.
+    """
+    by_conversation: dict[tuple[str, str, str, str, int | None, str], list[_Observation]] = defaultdict(list)
+    for obs in observations:
+        by_conversation[obs.conversation_key].append(obs)
+
+    augmented: list[_Observation] = []
+    augmented_conversations = 0
+    for key, obs_list in by_conversation.items():
+        ot_host, peer, _direction, _protocol, _port, _service = key
+        template = obs_list[0]
+        src = ot_host if template.direction == "outbound" else peer
+        dst = peer if template.direction == "outbound" else ot_host
+        protocol_rows = protocol_poll_series(context, src, dst)
+        if len(protocol_rows) <= len(obs_list):
+            augmented.extend(obs_list)
+            continue
+        augmented_conversations += 1
+        for ts, row in protocol_rows:
+            augmented.append(
+                _Observation(
+                    timestamp=ts,
+                    row=row,
+                    ot_host=template.ot_host,
+                    peer=template.peer,
+                    direction=template.direction,
+                    protocol=template.protocol,
+                    port=template.port,
+                    service=template.service,
+                    identity=template.identity,
+                )
+            )
+    return augmented, augmented_conversations
 
 
 def _policy(metadata: dict[str, Any]) -> dict[str, Any]:

@@ -77,3 +77,16 @@ export const ALL_DETECTION_MODULES = [
 ] as const;
 
 export const MODULE_COUNT = ALL_DETECTION_MODULES.length;
+
+// Modules that produce findings only against non-stock Zeek log enrichment (the
+// field they need is never written by a default Zeek deployment). Off by default
+// so a run doesn't silently claim coverage it can't support; still selectable for
+// a capture source known to log the needed fields.
+export const DEFAULT_DISABLED_MODULES = [
+  "kerberos_asrep_roastable_accounts",
+  "smb_signing_disabled_ntlmv1",
+] as const;
+
+export const DEFAULT_ENABLED_MODULES = ALL_DETECTION_MODULES.filter(
+  (id) => !(DEFAULT_DISABLED_MODULES as readonly string[]).includes(id),
+);

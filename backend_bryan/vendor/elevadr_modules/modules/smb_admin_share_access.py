@@ -7,7 +7,11 @@ from elevadr_modules.models import AnalysisContext, Finding, ModuleResult
 from elevadr_modules.modules.base import AnalysisModule, ModuleMetadata
 
 MAX_EVIDENCE_FLOWS = 10
-SMB_LOGS = ("smb_mapping", "smb_files", "smb_cmd", "smb")
+SMB_LOGS = ("smb_mapping", "smb_files", "smb_cmd")
+DCE_RPC_LOG = "dce_rpc"
+# svcctl = remote service control (install/start/stop a service), atsvc = scheduled-task
+# control. Both are the classic PsExec-style remote-execution path over ADMIN$/IPC$.
+SERVICE_CONTROL_ENDPOINTS = {"svcctl", "atsvc"}
 ADMIN_SHARES = {"ADMIN$", "IPC$"}
 SHARE_FIELDS = (
     "share",
@@ -53,6 +57,7 @@ class SmbAdminShareAccessModule(AnalysisModule):
             for row in context.connections
             if row.get("uid") not in (None, "")
         }
+        rpc_by_uid, rpc_by_pair = _service_control_rpc_ops(context)
 
         events: list[dict[str, Any]] = []
         for log_name in SMB_LOGS:
@@ -60,11 +65,11 @@ class SmbAdminShareAccessModule(AnalysisModule):
                 share = _extract_admin_share(row)
                 if not share:
                     continue
-                events.append(_event(row, log_name, share, conn_by_uid))
+                events.append(_event(row, log_name, share, conn_by_uid, rpc_by_uid, rpc_by_pair))
 
         findings = _build_findings(events)
-        inspected = [name for name in SMB_LOGS if context.log(name)]
-        skipped = [name for name in SMB_LOGS if not context.log(name)]
+        inspected = [name for name in (*SMB_LOGS, DCE_RPC_LOG) if context.log(name)]
+        skipped = [name for name in (*SMB_LOGS, DCE_RPC_LOG) if not context.log(name)]
 
         return ModuleResult(
             module_id=self.metadata.id,
@@ -78,6 +83,9 @@ class SmbAdminShareAccessModule(AnalysisModule):
                 },
                 "distinct_sources": len({event["source"] for event in events if event["source"]}),
                 "distinct_destinations": len({event["destination"] for event in events if event["destination"]}),
+                "service_control_rpc_corroborated_events": sum(
+                    1 for event in events if event["service_control_ops"]
+                ),
             },
             evidence={
                 "inspected_logs": inspected,
@@ -87,6 +95,7 @@ class SmbAdminShareAccessModule(AnalysisModule):
                     "IPC$ is widely used for legitimate RPC, named-pipe, domain, and administration activity, so isolated IPC$ access remains low severity.",
                     "ADMIN$ is an administrative share and is more security-relevant, but its use can still be legitimate by management, backup, deployment, or support tooling.",
                     "Multi-target access from one source is highlighted as a lateral-movement-like pattern, but the module does not claim compromise without corroborating evidence.",
+                    "dce_rpc.log service-control operations (svcctl/atsvc) on the same connection or host pair are surfaced as corroborating evidence of PsExec-style remote execution, not as independent proof of compromise.",
                     "Evidence is capped at 10 representative SMB events while full event and target counts remain in finding metadata.",
                 ],
             },
@@ -113,11 +122,39 @@ def _extract_admin_share(row: dict[str, Any]) -> str | None:
     return None
 
 
+def _service_control_rpc_ops(
+    context: AnalysisContext,
+) -> tuple[dict[str, set[str]], dict[tuple[str, str], set[str]]]:
+    """Index dce_rpc.log service-control operations (svcctl/atsvc) by uid and host pair.
+
+    These RPC endpoints are the service-install/start and scheduled-task mechanisms
+    behind PsExec-style remote execution; seeing them alongside ADMIN$/IPC$ access
+    corroborates lateral movement without requiring a separate standalone detector.
+    """
+    by_uid: dict[str, set[str]] = defaultdict(set)
+    by_pair: dict[tuple[str, str], set[str]] = defaultdict(set)
+    for row in context.log(DCE_RPC_LOG):
+        endpoint = _first_text(row, "endpoint", "interface", "uuid").lower()
+        if endpoint not in SERVICE_CONTROL_ENDPOINTS:
+            continue
+        operation = _first_text(row, "operation") or endpoint
+        uid = _text(row.get("uid"))
+        if uid:
+            by_uid[uid].add(operation)
+        source = _first_text(row, "source_ip", "id.orig_h")
+        destination = _first_text(row, "destination_ip", "id.resp_h")
+        if source and destination:
+            by_pair[(source, destination)].add(operation)
+    return by_uid, by_pair
+
+
 def _event(
     row: dict[str, Any],
     log_name: str,
     share: str,
     conn_by_uid: dict[str, dict[str, Any]],
+    rpc_by_uid: dict[str, set[str]],
+    rpc_by_pair: dict[tuple[str, str], set[str]],
 ) -> dict[str, Any]:
     uid = _text(row.get("uid"))
     conn = conn_by_uid.get(uid, {}) if uid else {}
@@ -133,6 +170,9 @@ def _event(
     username = _first_text(row, *USER_FIELDS)
     if not username:
         username = _first_text(conn, *USER_FIELDS)
+    service_control_ops = set(rpc_by_uid.get(uid, ())) if uid else set()
+    if source and destination:
+        service_control_ops |= rpc_by_pair.get((source, destination), set())
     return {
         "share": share,
         "source": source,
@@ -145,6 +185,7 @@ def _event(
         "log_name": log_name,
         "row": row,
         "connection": conn or None,
+        "service_control_ops": service_control_ops,
     }
 
 
@@ -161,9 +202,11 @@ def _build_findings(events: list[dict[str, Any]]) -> list[Finding]:
         usernames = sorted({item["username"] for item in items if item["username"]})
         target_count = len(destinations)
         event_count = len(items)
+        service_control_ops = sorted({op for item in items for op in item["service_control_ops"]})
+        rpc_corroborated = bool(service_control_ops)
 
         if share == "ADMIN$":
-            severity = "high" if target_count >= 5 else "medium"
+            severity = "high" if target_count >= 5 or rpc_corroborated else "medium"
             title = (
                 f"SMB ADMIN$ access from {source} to {target_count} hosts"
                 if source and target_count > 1
@@ -174,9 +217,14 @@ def _build_findings(events: list[dict[str, Any]]) -> list[Finding]:
                 + (f" from {source}" if source else "")
                 + (f" across {target_count} destination hosts" if target_count > 1 else "")
                 + ". ADMIN$ is commonly used by legitimate remote-management and software-deployment tools, but it is also frequently used during remote execution and lateral movement. Correlate with the initiating account, host role, process telemetry, and change/administration activity before treating the pattern as malicious."
+                + (
+                    f" dce_rpc.log shows corroborating service-control RPC operations ({', '.join(service_control_ops)}), consistent with PsExec-style remote execution."
+                    if rpc_corroborated
+                    else ""
+                )
             )
         else:
-            severity = "medium" if target_count >= 5 else "low"
+            severity = "medium" if target_count >= 5 or rpc_corroborated else "low"
             title = (
                 f"SMB IPC$ access from {source} to {target_count} hosts"
                 if source and target_count > 1
@@ -187,6 +235,11 @@ def _build_findings(events: list[dict[str, Any]]) -> list[Finding]:
                 + (f" from {source}" if source else "")
                 + (f" across {target_count} destination hosts" if target_count > 1 else "")
                 + ". IPC$ is routinely used for legitimate SMB/RPC and named-pipe activity, so isolated access is not itself suspicious. Broad multi-target IPC$ use can nevertheless be consistent with remote administration, discovery, or lateral-movement workflows and should be correlated with surrounding authentication and execution evidence."
+                + (
+                    f" dce_rpc.log shows corroborating service-control RPC operations ({', '.join(service_control_ops)}), consistent with PsExec-style remote execution."
+                    if rpc_corroborated
+                    else ""
+                )
             )
 
         representative = items[:MAX_EVIDENCE_FLOWS]
@@ -199,6 +252,8 @@ def _build_findings(events: list[dict[str, Any]]) -> list[Finding]:
         tags = ["smb", "admin-share", "lateral-movement-review", share.lower().replace("$", "_share")]
         if target_count >= 5:
             tags.append("multi-target")
+        if rpc_corroborated:
+            tags.append("dce-rpc-corroborated")
 
         findings.append(
             Finding(
@@ -222,6 +277,7 @@ def _build_findings(events: list[dict[str, Any]]) -> list[Finding]:
                     "target_count": target_count,
                     "destinations": destinations,
                     "usernames": usernames,
+                    "service_control_rpc_operations": service_control_ops,
                     "evidence_event_count": len(representative),
                     "evidence_truncated": event_count > len(representative),
                     "lateral_movement_confirmed": False,

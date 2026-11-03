@@ -10,8 +10,6 @@ from elevadr_modules.modules.base import AnalysisModule, ModuleMetadata
 
 MAX_EVIDENCE_ROWS = 50
 NETBIOS_PORTS = {137, 138, 139}
-SMB_LOGS = ("smb", "smb_mapping", "smb_files", "smb_cmd")
-SMBV1_FIELDS = ("version", "smb_version", "protocol_version", "dialect", "smb_dialect", "negotiated_dialect")
 ESTABLISHED_TCP_STATES = {"SF", "S1", "S2", "S3", "RSTO", "RSTR", "RSTOS0", "RSTRH"}
 
 
@@ -27,12 +25,11 @@ class NetbiosSmbv1ExposureModule(AnalysisModule):
         id="netbios_smbv1_exposure",
         name="NetBIOS / SMBv1 Exposure",
         description=(
-            "Identifies NetBIOS traffic on ports 137-139 or explicitly evidenced SMBv1 traffic crossing "
-            "configured network-segment boundaries or involving public Internet addresses."
+            "Identifies NetBIOS traffic on ports 137-139 crossing configured network-segment boundaries "
+            "or involving public Internet addresses."
         ),
         category="security_analysis",
-        required_logs=(),
-        required_any_logs=("conn", "smb", "smb_mapping", "smb_files", "smb_cmd"),
+        required_logs=("conn",),
     )
 
     def analyze(self, context: AnalysisContext) -> ModuleResult:
@@ -45,13 +42,8 @@ class NetbiosSmbv1ExposureModule(AnalysisModule):
         report_cross_segment = _bool(policy.get("report_cross_segment"), True)
         report_external = _bool(policy.get("report_external"), True)
 
-        conn_by_uid = {
-            str(row.get("uid")): row for row in context.connections if row.get("uid") not in (None, "")
-        }
-
         events: list[dict[str, Any]] = []
         netbios_candidates = 0
-        smbv1_candidates = 0
         external_attempts_not_reachable = 0
         skipped_allowlisted = 0
         skipped_no_segment_context = 0
@@ -77,38 +69,6 @@ class NetbiosSmbv1ExposureModule(AnalysisModule):
                 event["context_type"] = decision
                 events.append(event)
 
-        seen_smb: set[tuple[str, str, str]] = set()
-        for log_name in SMB_LOGS:
-            for row in context.log(log_name):
-                version = _explicit_smbv1(row)
-                if not version:
-                    continue
-                uid = _text(row.get("uid"))
-                conn = conn_by_uid.get(uid, {}) if uid else {}
-                source = _ip(_first(row, "source_ip", "id.orig_h")) or _ip(_first(conn, "source_ip", "id.orig_h"))
-                destination = _ip(_first(row, "destination_ip", "id.resp_h")) or _ip(_first(conn, "destination_ip", "id.resp_h"))
-                if not source or not destination:
-                    continue
-                dedupe = (uid or f"{source}>{destination}", source, destination)
-                if dedupe in seen_smb:
-                    continue
-                seen_smb.add(dedupe)
-                smbv1_candidates += 1
-                event = _event_from_smb(row, conn, log_name, version)
-                decision = _classify_event(
-                    event, segments, allowed_hosts, allowed_pairs, allowed_segment_pairs,
-                    report_cross_segment, report_external, require_established_external,
-                )
-                if decision == "external_unreachable":
-                    external_attempts_not_reachable += 1
-                elif decision == "allowlisted":
-                    skipped_allowlisted += 1
-                elif decision == "no_segment":
-                    skipped_no_segment_context += 1
-                elif decision:
-                    event["context_type"] = decision
-                    events.append(event)
-
         groups: dict[tuple[str, str, str, str], list[dict[str, Any]]] = defaultdict(list)
         for event in events:
             groups[(event["protocol_type"], event["context_type"], event["source"], event["destination"])].append(event)
@@ -119,7 +79,6 @@ class NetbiosSmbv1ExposureModule(AnalysisModule):
             findings=findings,
             metrics={
                 "netbios_candidates": netbios_candidates,
-                "smbv1_candidates": smbv1_candidates,
                 "netbios_smbv1_findings": len(findings),
                 "cross_segment_events": sum(1 for e in events if e["context_type"] == "cross_segment"),
                 "external_events": sum(1 for e in events if e["context_type"] == "external"),
@@ -128,14 +87,14 @@ class NetbiosSmbv1ExposureModule(AnalysisModule):
                 "skipped_no_segment_context": skipped_no_segment_context,
             },
             evidence={
-                "inspected_logs": [name for name in ("conn", *SMB_LOGS) if context.log(name)],
+                "inspected_logs": [name for name in ("conn",) if context.log(name)],
                 "segments_loaded": len(segments),
                 "policy": policy,
                 "notes": [
                     "NetBIOS is identified from TCP/UDP ports 137-139; these legacy services are reported only when they cross a configured segment boundary or involve a public IP.",
-                    "TCP/445 alone is never classified as SMBv1. SMBv1 requires an explicit SMB protocol-log version/dialect such as SMB1, SMBv1, CIFS, or NT LM 0.12.",
                     "Cross-segment detection requires configured segment metadata; private addressing alone does not establish a boundary.",
                     "Unanswered Internet TCP probes are not treated as proof of reachable exposure when require_established_external is enabled.",
+                    "SMBv1 detection was removed from this module: it depended on smb_cmd.log, which is off by default in stock Zeek and known to drop commands on busy streams. It is not a reliable basis for a security finding.",
                 ],
             },
             warnings=[],
@@ -167,21 +126,13 @@ def _classify_event(event, segments, allowed_hosts, allowed_pairs, allowed_segme
 
 def _finding(items: list[dict[str, Any]]) -> Finding:
     first = items[0]
-    kind = first["protocol_type"]
     context_type = first["context_type"]
     external = context_type == "external"
-    if kind == "smbv1":
-        severity = "high" if external else "medium"
-        title = "SMBv1 exposed to public network" if external else "SMBv1 crossing network-segment boundary"
-        summary = f"Observed {len(items)} explicitly identified SMBv1 session/event(s) {'involving a public Internet address' if external else 'crossing configured network segments'}. SMBv1 is obsolete and should be removed or tightly isolated."
-        confidence, basis = "high", "protocol_log"
-        tags = ["smb", "smbv1", "legacy-protocol"]
-    else:
-        severity = "high" if external else "medium"
-        title = "NetBIOS exposed to public network" if external else "NetBIOS crossing network-segment boundary"
-        summary = f"Observed {len(items)} NetBIOS flow(s) on ports 137-139 {'involving a public Internet address' if external else 'crossing configured network segments'}. Review whether legacy NetBIOS is required across this trust boundary."
-        confidence, basis = "medium", "port"
-        tags = ["netbios", "legacy-protocol"]
+    severity = "high" if external else "medium"
+    title = "NetBIOS exposed to public network" if external else "NetBIOS crossing network-segment boundary"
+    summary = f"Observed {len(items)} NetBIOS flow(s) on ports 137-139 {'involving a public Internet address' if external else 'crossing configured network segments'}. Review whether legacy NetBIOS is required across this trust boundary."
+    confidence, basis = "medium", "port"
+    tags = ["netbios", "legacy-protocol"]
     devices = sorted({x for e in items for x in (e["source"], e["destination"]) if x})
     ports = sorted({e.get("port") for e in items if isinstance(e.get("port"), int)})
     pairs = []
@@ -194,18 +145,17 @@ def _finding(items: list[dict[str, Any]]) -> Finding:
         confidence=confidence,
         detection_basis=basis,
         devices=devices,
-        services=["SMBv1"] if kind == "smbv1" else ["NetBIOS"],
+        services=["NetBIOS"],
         ports=ports,
         connection_pairs=pairs,
         timestamps=[e["timestamp"] for e in items[:MAX_EVIDENCE_ROWS] if e.get("timestamp") not in (None, "")],
         tags=tags + (["external"] if external else ["cross-segment"]),
         metadata={
-            "protocol_type": kind,
+            "protocol_type": first["protocol_type"],
             "context_type": context_type,
             "event_count": len(items),
             "source_segment": first.get("source_segment"),
             "destination_segment": first.get("destination_segment"),
-            "smbv1_version_evidence": sorted({e.get("version_evidence") for e in items if e.get("version_evidence")}),
         },
     )
 
@@ -221,37 +171,6 @@ def _event_from_conn(row, protocol_type, basis):
         "timestamp": _first(row, "timestamp", "ts"),
         "connection": row,
     }
-
-
-def _event_from_smb(row, conn, log_name, version):
-    source = _ip(_first(row, "source_ip", "id.orig_h")) or _ip(_first(conn, "source_ip", "id.orig_h")) or ""
-    destination = _ip(_first(row, "destination_ip", "id.resp_h")) or _ip(_first(conn, "destination_ip", "id.resp_h")) or ""
-    port = _as_int(_first(row, "destination_port", "id.resp_p"))
-    if port is None:
-        port = _as_int(_first(conn, "destination_port", "id.resp_p"))
-    return {
-        "protocol_type": "smbv1",
-        "basis": "protocol_log",
-        "source": source,
-        "destination": destination,
-        "port": port,
-        "protocol": _text(_first(row, "protocol", "proto")).lower() or _text(_first(conn, "protocol", "proto")).lower() or "tcp",
-        "timestamp": _first(row, "timestamp", "ts") or _first(conn, "timestamp", "ts"),
-        "connection": conn,
-        "log_name": log_name,
-        "version_evidence": version,
-    }
-
-
-def _explicit_smbv1(row: dict[str, Any]) -> str:
-    for field in SMBV1_FIELDS:
-        if field not in row or row.get(field) in (None, "", "-"):
-            continue
-        text = _text(row.get(field)).strip().lower()
-        compact = text.replace(" ", "").replace("_", "").replace("-", "")
-        if compact in {"1", "v1", "smb1", "smbv1", "cifs", "ntlm0.12", "ntlm012"} or "nt lm 0.12" in text:
-            return f"{field}={_text(row.get(field))}"
-    return ""
 
 
 def _policy(metadata):

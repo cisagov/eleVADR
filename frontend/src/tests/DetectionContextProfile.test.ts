@@ -4,6 +4,10 @@ import {
   migrateProfile,
   moduleReadiness,
 } from "../app/components/DetectionConfiguration/profile";
+import {
+  ALL_DETECTION_MODULES,
+  DEFAULT_DISABLED_MODULES,
+} from "../app/components/DetectionConfiguration/moduleCatalog";
 import { validateProfile } from "../app/components/DetectionConfiguration/validation";
 import {
   assetsFromCsv,
@@ -18,6 +22,17 @@ import {
 import { mergeScanIntoProfile } from "../app/components/DetectionConfiguration/zeekScanner";
 
 describe("Detection Context profile hardening", () => {
+  it("excludes default-disabled modules from a new profile but keeps them selectable", () => {
+    const profile = createEmptyProfile();
+    for (const disabledId of DEFAULT_DISABLED_MODULES) {
+      expect(profile.selectedModules).not.toContain(disabledId);
+      expect(ALL_DETECTION_MODULES).toContain(disabledId);
+    }
+    expect(profile.selectedModules).toHaveLength(
+      ALL_DETECTION_MODULES.length - DEFAULT_DISABLED_MODULES.length,
+    );
+  });
+
   it("migrates schema v1/v2 profiles to schema v3", () => {
     const legacy = {
       ...createEmptyProfile(),

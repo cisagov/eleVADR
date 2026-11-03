@@ -1,4 +1,4 @@
-import { ALL_DETECTION_MODULES } from "./moduleCatalog";
+import { DEFAULT_ENABLED_MODULES } from "./moduleCatalog";
 import {
   DetectionConfigurationProfile,
   ModuleReadinessItem,
@@ -47,7 +47,7 @@ export function createEmptyProfile(): DetectionConfigurationProfile {
     name: "Default Detection Profile",
     description: "",
     updatedAt: now,
-    selectedModules: [...ALL_DETECTION_MODULES],
+    selectedModules: [...DEFAULT_ENABLED_MODULES],
     scan: { filesScanned: 0, recordsParsed: 0, logTypes: {}, warnings: [] },
     captureScope: {
       internalIcsOnlyExpected: false,
@@ -112,7 +112,7 @@ export function migrateProfile(value: unknown): {
         : new Date().toISOString(),
     selectedModules: stringArray(raw.selectedModules).length
       ? stringArray(raw.selectedModules)
-      : [...ALL_DETECTION_MODULES],
+      : [...DEFAULT_ENABLED_MODULES],
     scan:
       raw.scan && typeof raw.scan === "object"
         ? {

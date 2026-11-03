@@ -8,7 +8,7 @@ from elevadr_modules.modules.base import AnalysisModule, ModuleMetadata
 
 MAX_EVIDENCE_FLOWS = 10
 
-SMB_LOGS = ("smb", "smb_mapping", "smb_files", "smb_cmd")
+SMB_LOGS = ("smb_mapping", "smb_files", "smb_cmd")
 SIGNING_DISABLED_FIELDS = (
     "signing_enabled",
     "smb_signing_enabled",
@@ -55,7 +55,11 @@ class SmbSigningNtlmv1Module(AnalysisModule):
         category="security_analysis",
         required_logs=(),
         required_any_logs=(),
-        default_enabled=True,
+        # Disabled by default: SMB signing state is negotiated during session setup and is not
+        # written to any default Zeek log; NTLMv1 is likewise not a clean field in stock ntlm.log.
+        # This module only fires on non-stock/custom log enrichment. Enable only if the capture
+        # source is known to log these fields.
+        default_enabled=False,
     )
 
     def analyze(self, context: AnalysisContext) -> ModuleResult:

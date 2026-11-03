@@ -90,3 +90,22 @@ export async function renameSavedReport(
     throw new Error("Saved report rename returned no report metadata");
   return payload.report;
 }
+
+export async function updateSavedReportNotes(
+  reportId: string,
+  notes: {
+    sectionNotes: Record<string, string>;
+    entityNotes: Record<string, string>;
+    entityOverrides: Record<string, Record<string, string>>;
+  },
+): Promise<void> {
+  const response = await authenticatedFetch(
+    reportsApiUrl(`/${encodeURIComponent(reportId)}/notes`),
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(notes),
+    },
+  );
+  if (!response.ok) throw new Error(await message(response));
+}

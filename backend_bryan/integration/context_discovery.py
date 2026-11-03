@@ -107,7 +107,7 @@ def _context_logs(context: Any) -> dict[str, list[dict[str, Any]]]:
     names = (
         "connections", "dns", "http", "quic", "socks", "ftp", "tftp", "smtp", "telnet", "login",
         "ssl", "x509", "ssh", "kerberos", "ntlm", "ldap", "ldap_bind", "ldap_search", "smb", "smb_mapping",
-        "smb_files", "smb_cmd", "rdp", "ssdp", "upnp", "upnp_igd", "vnc", "modbus", "dnp3", "enip", "bacnet",
+        "smb_files", "smb_cmd", "dce_rpc", "rdp", "ssdp", "upnp", "upnp_igd", "vnc", "modbus", "dnp3", "enip", "cip", "bacnet",
         "s7comm", "mms", "iec61850", "dhcp", "ntp", "snmp", "arp", "files", "weird",
     )
     return {name: list(getattr(context, name, []) or []) for name in names}

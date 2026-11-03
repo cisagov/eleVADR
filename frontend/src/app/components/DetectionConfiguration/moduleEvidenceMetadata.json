@@ -156,7 +156,7 @@
       "files"
     ],
     "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
-    "evidenceLimitations": "non-base/extension logs",
+    "evidenceLimitations": "non-base/extension logs. Firmware/config identification is inferred from file MIME type/name heuristics and is best-effort, not a reliable determination.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "engineering_workstation_control_burst": {
@@ -176,10 +176,11 @@
     "implementationId": "enip_cip_write_session_abuses",
     "logSourceTier": "ICSNPP",
     "declaredLogs": [
-      "enip"
+      "enip",
+      "cip"
     ],
     "capturePrerequisites": "ICSNPP ENIP/CIP; CIP service-code fields",
-    "evidenceLimitations": "ENIP-only records may not establish CIP writes.",
+    "evidenceLimitations": "ICSNPP-ENIP writes enip.log (session/registration) AND cip.log (CIP service codes); CIP write/Forward_Open detail lives in cip.log, not enip.log. ENIP-only records without cip.log may not establish CIP writes.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "excessive_broadcast_multicast_ot": {
@@ -199,7 +200,7 @@
       "files"
     ],
     "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
-    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime. Sensitive-type classification is based on MIME type, which is coarse and best-effort; it is not a reliable determination of file sensitivity.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "high_fan_in_out": {
@@ -224,12 +225,13 @@
   },
   "iccp_tase2_detected": {
     "implementationId": "iccp_tase2_detected",
-    "logSourceTier": "Base/verify fields",
+    "logSourceTier": "ICSNPP",
     "declaredLogs": [
-      "conn"
+      "conn",
+      "mms"
     ],
-    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
-    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "capturePrerequisites": "ICSNPP MMS parser for explicit ICCP/TASE.2 service evidence; conn.log TCP/102 is a conservative fallback only",
+    "evidenceLimitations": "mms.log requires the ICSNPP-MMS package; stock Zeek has no MMS/ISO-on-TCP parser. Without it, this module can only see TCP/102 by port, which is treated conservatively because other industrial protocols also use ISO-on-TCP. IEC 61850 GOOSE/Sampled Values are L2 multicast, non-IP traffic and are invisible to an IP-oriented Zeek sensor; only MMS-over-TCP is covered here.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "icmp_data_channel": {
@@ -247,7 +249,7 @@
     "logSourceTier": "Base/verify fields",
     "declaredLogs": [],
     "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
-    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime. EtherNet/IP/CIP general-status detail is read from cip.log when ICSNPP-ENIP is loaded, falling back to enip.log alone when it is not.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "ics_write_operations": {
@@ -308,7 +310,7 @@
       "kerberos"
     ],
     "capturePrerequisites": "Kerberos pre-authentication evidence beyond default logs",
-    "evidenceLimitations": "Default kerberos.log cannot prove absence of preauthentication.",
+    "evidenceLimitations": "Default kerberos.log cannot prove absence of preauthentication. Disabled by default for this reason; enable only if the capture source is known to log pre-authentication fields.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "large_outbound_http_uploads": {
@@ -336,21 +338,17 @@
       "dns"
     ],
     "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
-    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime. LLMNR and mDNS land in dns.log on stock Zeek; NBT-NS is not a DNS protocol and stock Zeek's DNS analyzer does not parse it, so NBT-NS detection here depends on a non-stock pipeline writing NBT-NS records into dns.log.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "netbios_smbv1_exposure": {
     "implementationId": "netbios_smbv1_exposure",
-    "logSourceTier": "Extension/non-base possible",
+    "logSourceTier": "Base",
     "declaredLogs": [
-      "conn",
-      "smb",
-      "smb_mapping",
-      "smb_files",
-      "smb_cmd"
+      "conn"
     ],
     "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
-    "evidenceLimitations": "non-base/extension logs; smb.log nonstock",
+    "evidenceLimitations": "SMBv1 detection was removed from this module. It depended on smb_cmd.log, which is off by default in stock Zeek and known to drop commands on busy streams, and so was not a reliable basis for a finding. Only NetBIOS port-based detection remains.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "new_ot_conversation_pair": {
@@ -451,7 +449,7 @@
       "conn"
     ],
     "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
-    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "evidenceLimitations": "Log presence and field coverage must be verified at runtime. IEC 61850 GOOSE/Sampled Values are L2 multicast, non-IP traffic and are invisible to an IP-oriented Zeek sensor; only MMS-over-TCP is covered here.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "ot_protocol_role_reversal": {
@@ -519,12 +517,13 @@
   },
   "quic_ot_segments": {
     "implementationId": "quic_ot_segments",
-    "logSourceTier": "Base/verify fields",
+    "logSourceTier": "Base (6.1+)",
     "declaredLogs": [
+      "quic",
       "conn"
     ],
-    "capturePrerequisites": "Relevant capture traffic; applicable Detection Context and baseline where required",
-    "evidenceLimitations": "Log presence and field coverage must be verified at runtime.",
+    "capturePrerequisites": "quic.log preferred; Zeek 6.1+ for the QUIC analyzer; conn.log UDP/443 heuristic is a lower-confidence fallback",
+    "evidenceLimitations": "quic.log is a preliminary/evolving analyzer only present on Zeek 6.1 and newer; older Zeek builds have no quic.log and this module falls back to a low-confidence UDP/443 heuristic from conn.log alone.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "rdp_nla_disabled": {
@@ -539,10 +538,14 @@
   },
   "cleartext_credentials": {
     "implementationId": "cleartext_credentials",
-    "logSourceTier": "Base / Custom",
-    "declaredLogs": [],
-    "capturePrerequisites": "FTP, HTTP, SMTP metadata; custom Telnet credential instrumentation for Telnet claim",
-    "evidenceLimitations": "Telnet credential extraction is not established by base Zeek logs.",
+    "logSourceTier": "Base",
+    "declaredLogs": [
+      "ftp",
+      "http",
+      "smtp"
+    ],
+    "capturePrerequisites": "FTP, HTTP, SMTP metadata with password capture enabled",
+    "evidenceLimitations": "Telnet support was removed from this module. Modern Zeek ships no credential analyzer for Telnet payload content, so there was no log for that half of the module to read from.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "remote_access_session_anomaly": {
@@ -598,9 +601,14 @@
   "smb_admin_share_access": {
     "implementationId": "smb_admin_share_access",
     "logSourceTier": "Base",
-    "declaredLogs": [],
+    "declaredLogs": [
+      "smb_mapping",
+      "smb_files",
+      "smb_cmd",
+      "dce_rpc"
+    ],
     "capturePrerequisites": "smb_mapping.log, smb_files.log, dce_rpc.log",
-    "evidenceLimitations": "Avoid relying on nonexistent smb.log.",
+    "evidenceLimitations": "Avoid relying on nonexistent smb.log. dce_rpc.log svcctl/atsvc operations are used as corroborating evidence only, not independent proof of compromise.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "smb_signing_disabled_ntlmv1": {
@@ -608,7 +616,7 @@
     "logSourceTier": "Custom",
     "declaredLogs": [],
     "capturePrerequisites": "SMB negotiation and NTLM version evidence",
-    "evidenceLimitations": "Default SMB/NTLM logs cannot establish full claim.",
+    "evidenceLimitations": "Default SMB/NTLM logs cannot establish full claim. Disabled by default for this reason; enable only if the capture source is known to log signing/NTLM-version fields.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "snmp_write_ot_devices": {
@@ -728,7 +736,7 @@
       "conn"
     ],
     "capturePrerequisites": "VLAN logging policy; preserved VLAN tags",
-    "evidenceLimitations": "SPAN/tap may strip tags before capture.",
+    "evidenceLimitations": "conn.log carries no vlan/inner_vlan fields by default; the vlan-logging.zeek policy script must be explicitly loaded (redef) to add them. SPAN/tap may also strip 802.1Q tags before capture, which makes double-tag detection impossible regardless of the logging policy.",
     "verificationNote": "Declared prerequisites; actual log availability must be checked per capture."
   },
   "weak_broken_tls_ssl": {

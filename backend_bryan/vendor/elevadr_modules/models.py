@@ -30,6 +30,7 @@ class AnalysisContext:
     smb_mapping: list[dict[str, Any]] = field(default_factory=list)
     smb_files: list[dict[str, Any]] = field(default_factory=list)
     smb_cmd: list[dict[str, Any]] = field(default_factory=list)
+    dce_rpc: list[dict[str, Any]] = field(default_factory=list)
     rdp: list[dict[str, Any]] = field(default_factory=list)
     ssdp: list[dict[str, Any]] = field(default_factory=list)
     upnp: list[dict[str, Any]] = field(default_factory=list)
@@ -38,6 +39,7 @@ class AnalysisContext:
     modbus: list[dict[str, Any]] = field(default_factory=list)
     dnp3: list[dict[str, Any]] = field(default_factory=list)
     enip: list[dict[str, Any]] = field(default_factory=list)
+    cip: list[dict[str, Any]] = field(default_factory=list)
     bacnet: list[dict[str, Any]] = field(default_factory=list)
     bacnet_discovery: list[dict[str, Any]] = field(default_factory=list)
     s7comm: list[dict[str, Any]] = field(default_factory=list)
@@ -76,6 +78,7 @@ class AnalysisContext:
             "smb_mapping": "smb_mapping",
             "smb_files": "smb_files",
             "smb_cmd": "smb_cmd",
+            "dce_rpc": "dce_rpc",
             "rdp": "rdp",
             "ssdp": "ssdp",
             "upnp": "upnp",
@@ -84,6 +87,7 @@ class AnalysisContext:
             "modbus": "modbus",
             "dnp3": "dnp3",
             "enip": "enip",
+            "cip": "cip",
             "bacnet": "bacnet",
             "bacnet_discovery": "bacnet_discovery",
             "s7comm": "s7comm",

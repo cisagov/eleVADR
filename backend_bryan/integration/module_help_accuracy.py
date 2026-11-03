@@ -263,7 +263,7 @@ def audit(*, allowed_missing_sources: set[str] | None = None) -> list[str]:
 
     source_by_id: dict[str, DetectorMetadata] = {}
     for path in MODULE_DIR.glob("*.py"):
-        if path.name in {"__init__.py", "base.py", "template.py", "remote_access.py"}:
+        if path.name in {"__init__.py", "base.py", "template.py", "remote_access.py", "_protocol_timing.py"}:
             continue
         metadata = _source_metadata(path)
         if metadata and metadata.id in snapshot:

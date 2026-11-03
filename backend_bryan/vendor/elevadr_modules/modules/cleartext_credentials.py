@@ -8,12 +8,14 @@ from elevadr_modules.models import AnalysisContext, Finding, ModuleResult
 from elevadr_modules.modules.base import AnalysisModule, ModuleMetadata
 
 
-SUPPORTED_PROTOCOLS = ("ftp", "http", "smtp", "telnet")
-SUPPORTED_LOGS = ("ftp", "http", "smtp", "telnet", "login")
+SUPPORTED_PROTOCOLS = ("ftp", "http", "smtp")
+SUPPORTED_LOGS = ("ftp", "http", "smtp")
 _PLACEHOLDERS = {"", "-", "(empty)", "<hidden>", "[redacted]", "redacted", "none", "null"}
 
 # Standard Zeek FTP/HTTP can expose credential fields when password capture is enabled.
-# SMTP and Telnet credential fields normally require protocol-specific extraction/enrichment.
+# SMTP credential fields normally require protocol-specific extraction/enrichment.
+# Telnet was removed: modern Zeek ships no credential analyzer for Telnet payload content,
+# so this module had no log to read from and could never produce a Telnet finding.
 _FIELD_ALIASES = {
     "ftp": {
         "username": ("username", "user"),
@@ -27,10 +29,6 @@ _FIELD_ALIASES = {
         "username": ("username", "user", "auth_user", "auth_username"),
         "password": ("password", "passwd", "auth_password"),
     },
-    "telnet": {
-        "username": ("username", "user", "login_user"),
-        "password": ("password", "passwd", "login_password"),
-    },
 }
 
 
@@ -39,7 +37,7 @@ class CleartextCredentialsModule(AnalysisModule):
         id="cleartext_credentials",
         name="Cleartext Credentials",
         description=(
-            "Identifies cleartext credential exposure in FTP, HTTP, SMTP, and Telnet analysis data. "
+            "Identifies cleartext credential exposure in FTP, HTTP, and SMTP analysis data. "
             "Password values are redacted from results."
         ),
         category="security_analysis",
@@ -119,11 +117,6 @@ class CleartextCredentialsModule(AnalysisModule):
                 "smtp.log was present, but no explicit SMTP username/password fields were available. "
                 "Standard Zeek smtp.log does not expose SMTP AUTH credentials; protocol-specific extraction is required."
             )
-        if (context.telnet or context.login) and not any(event["protocol"] == "telnet" for event in events):
-            warnings.append(
-                "Telnet/login analysis data was present, but no explicit username/password pair was available. "
-                "Modern Zeek does not enable its legacy Telnet login credential analyzer by default."
-            )
 
         return ModuleResult(
             module_id=self.metadata.id,
@@ -146,8 +139,6 @@ def _collect_events(context: AnalysisContext) -> list[dict[str, Any]]:
         ("ftp", "ftp"),
         ("http", "http"),
         ("smtp", "smtp"),
-        ("telnet", "telnet"),
-        ("login", "telnet"),
     )
     for log_name, protocol in sources:
         aliases = _FIELD_ALIASES[protocol]
@@ -212,7 +203,6 @@ def _evidence_payload(context: AnalysisContext) -> dict[str, Any]:
             "ftp": "Direct username/password detection when Zeek FTP password capture is enabled.",
             "http": "Direct HTTP Basic Authentication detection when Zeek HTTP password capture is enabled.",
             "smtp": "Detects explicit credential fields from enriched/custom SMTP analysis; standard smtp.log alone does not expose AUTH passwords.",
-            "telnet": "Detects explicit credential fields from Telnet/login analysis; modern Zeek does not enable the legacy login credential analyzer by default.",
         },
     }
 
