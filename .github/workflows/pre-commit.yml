@@ -61,26 +61,11 @@ jobs:
 
       - uses: actions/checkout@v7
 
-      # ---- Python toolchain (for deptry, mypy, bandit, ruff, uv-audit) ----
+      # ---- Python toolchain (for the local docker-compose/text-encoding hooks) ----
       - id: setup-python
         uses: actions/setup-python@v6
         with:
-          python-version: 3.14
-
-      - id: setup-uv
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
-        with:
-          version: 0.11.11
-          enable-cache: false
-
-      - name: Install backend Python dependencies
-        working-directory: ./backend
-        run: uv sync
-
-      # Deptry needs to be installed separately because it would require
-      # `uv run deptry` in the pre-commit.
-      - name: Install Deptry as tool
-        run: uv tool install deptry
+          python-version: 3.12
 
       # ---- Node toolchain (for eslint, typescript-check) ----
       - id: setup-pnpm

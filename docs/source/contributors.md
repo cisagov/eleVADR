@@ -1,39 +1,31 @@
 # Development Environment Setup #
 
-To eliminate configuration drift and avoid complex manual toolchain installations,
-the eleVADR repository provides a fully integrated VS Code Dev Container.
-
-## Dev Container Architecture ##
-
-The continuous integration environment is declared in `.devcontainer/Dockerfile.dev`
-and managed through `devcontainer.json`. The environment features:
-
-* **Base Layer:** Ubuntu 26.04 (LTS)
-* **Default Shell:** Bash 5.2+ (configured with UTF-8 locale handling)
-* **Core Toolchains:**
-  * **Zeek 8.0.5:** Built and surgeon-copied along with
-  required `libnode.so` and `libicu` libraries.
-  * **Python 3.14:** Managed via `uv` package manager.
-  * **Node 22 (LTS):** Managed via `pnpm` workspace tools.
-  * **Rust Toolchain:** Stable release for compiling native modules.
-
----
+eleVADR is developed directly on the host — there is no container-based
+development environment. You need Zeek 8.0.5+, Node 22.22.3+, and
+Python 3.12+ installed locally.
 
 ## Workspace Initialization ##
 
-Follow these steps to initialize your VS Code environment:
-
 1. Clone the repository to your host machine.
-2. Open the repository directory in VS Code.
-3. When prompted, select **Reopen in Container**. If the prompt does not appear,
-open the command palette (`Ctrl+Shift+P`) and choose
-`Dev Containers: Rebuild and Reopen in Container`.
-4. The environment's post-creation script (`post-create.sh`) automatically executes
-to run the following initializations:
-   * Sets local Git configurations.
-   * Installs python backend environments via `uv sync`.
-   * Installs frontend node dependencies via `pnpm install`.
-   * Installs pre-commit testing framework.
+2. Install backend dependencies:
+
+   ```bash
+   pip install -r backend/requirements-platform.txt
+   ```
+
+3. Install frontend dependencies:
+
+   ```bash
+   cd frontend
+   pnpm install
+   ```
+
+4. Install the pre-commit hook framework:
+
+   ```bash
+   pip install pre-commit
+   pre-commit install
+   ```
 
 ---
 
@@ -50,11 +42,12 @@ pre-commit run --all-files
 
 The hook pipeline executes the following checks:
 
-* **Python:** Ruff (formatting and lint), mypy (static type audits), bandit
-(security scanning), deptry (dependency audits).
 * **TypeScript:** ESLint (React code checking), `tsc --noEmit` (TypeScript
 compilation checks).
-* **Configuration:** yamllint (YAML files), codespell (typo checks).
+* **Configuration:** yamllint (YAML files), codespell (typo checks), Docker
+Compose validation, text-encoding validation.
+* **General:** markdownlint, Prettier, shfmt/shellcheck, conventional commit
+messages.
 
 ---
 
@@ -65,11 +58,11 @@ Test pipelines are decoupled to allow execution within individual components.
 ### 1. Backend Python Tests ###
 
 The backend test suite is powered by `pytest` and processes mock analytical inputs.
-To execute tests:
+To execute tests (from the repository root, so the `backend` package resolves):
 
 ```bash
-cd backend
-uv run pytest
+pip install -r backend/requirements-platform.txt
+python -m pytest backend/tests
 ```
 
 ### 2. Frontend React Tests ###
@@ -88,10 +81,7 @@ This documentation lives in `docs/`. To build the documentation:
 
 ```bash
 # First, we need to install the docs dependencies.
-uv sync --group docs --directory backend/
-
-# Then, we need to install the backend for the source to be importable
-uv pip install -e ./backend
+pip install -r docs/requirements.txt
 
 # Finally we can build the docs
 sphinx-build -b html docs/source docs/_build/html

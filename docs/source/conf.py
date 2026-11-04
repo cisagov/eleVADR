@@ -22,8 +22,6 @@ def _pnpm_patched_run(
 
 subprocess.run = cast(Any, _pnpm_patched_run)
 
-# Point Sphinx to the backend code to enable autodoc functionality
-sys.path.insert(0, os.path.abspath("../../backend"))
 sys.path.insert(0, os.path.abspath("../../frontend"))
 sys.path.insert(0, os.path.abspath("../../frontend/node_modules/.bin"))
 

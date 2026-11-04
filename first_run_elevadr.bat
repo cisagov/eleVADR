@@ -6,12 +6,12 @@ echo ============================================================
 echo eleVADR first-run setup
 echo ============================================================
 
-python -m backend_bryan.integration.deployment_preflight
+python -m backend.integration.deployment_preflight
 if errorlevel 1 exit /b 1
 
 echo.
 echo [1/4] Installing platform Python dependencies...
-python -m pip install -r backend_bryan\requirements-platform.txt
+python -m pip install -r backend\requirements-platform.txt
 if errorlevel 1 exit /b 1
 
 echo.
@@ -29,7 +29,7 @@ if errorlevel 1 exit /b 1
 
 echo.
 echo [4/4] Checking administrator bootstrap...
-python -m backend_bryan.auth.env_runner backend_bryan.auth.has_users
+python -m backend.auth.env_runner backend.auth.has_users
 set "USER_CHECK_RC=%ERRORLEVEL%"
 if "%USER_CHECK_RC%"=="0" goto users_ready
 if not "%USER_CHECK_RC%"=="1" exit /b %USER_CHECK_RC%
@@ -41,10 +41,10 @@ call create_elevadr_user.bat "%ELEVADR_FIRST_ADMIN%" --role admin
 if errorlevel 1 exit /b 1
 
 :users_ready
-python -m backend_bryan.auth.enable_auth
+python -m backend.auth.enable_auth
 if errorlevel 1 exit /b 1
 
-python -m backend_bryan.integration.deployment_preflight --initialized
+python -m backend.integration.deployment_preflight --initialized
 if errorlevel 1 exit /b 1
 
 echo.

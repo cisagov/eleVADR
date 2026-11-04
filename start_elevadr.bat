@@ -12,7 +12,7 @@ echo MongoDB, stored reports, PCAPs, and contexts are preserved.
 echo.
 
 echo [1/6] Stopping existing frontend and backend...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$ports=@(5173,8765); foreach($port in $ports) { $conns=@(Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue); foreach($c in $conns) { $procId=$c.OwningProcess; $p=Get-CimInstance Win32_Process -Filter ('ProcessId = '+$procId) -ErrorAction SilentlyContinue; if(-not $p){continue}; $cmd=[string]$p.CommandLine; $frontend=($port -eq 5173 -and $p.Name -match 'node' -and $cmd -match 'vite'); $backend=($port -eq 8765 -and $cmd -match 'backend_bryan'); if($frontend -or $backend){Write-Host ('Stopping '+$p.Name+' PID '+$procId+' on port '+$port); taskkill /PID $procId /T /F | Out-Null} else {Write-Host ('ERROR: Port '+$port+' is occupied by '+$p.Name+' PID '+$procId); exit 1}}}"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ports=@(5173,8765); foreach($port in $ports) { $conns=@(Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue); foreach($c in $conns) { $procId=$c.OwningProcess; $p=Get-CimInstance Win32_Process -Filter ('ProcessId = '+$procId) -ErrorAction SilentlyContinue; if(-not $p){continue}; $cmd=[string]$p.CommandLine; $frontend=($port -eq 5173 -and $p.Name -match 'node' -and $cmd -match 'vite'); $backend=($port -eq 8765 -and $cmd -match 'backend'); if($frontend -or $backend){Write-Host ('Stopping '+$p.Name+' PID '+$procId+' on port '+$port); taskkill /PID $procId /T /F | Out-Null} else {Write-Host ('ERROR: Port '+$port+' is occupied by '+$p.Name+' PID '+$procId); exit 1}}}"
 if errorlevel 1 goto :fail
 
 echo [2/6] Cleaning up labeled eleVADR Zeek containers...
@@ -51,8 +51,8 @@ if defined ELEVADR_ZEEK_COMMAND (
   )
 )
 
-echo [5/6] Starting backend_bryan...
-start "eleVADR backend_bryan" cmd /k "cd /d ""%ROOT%"" && python -m backend_bryan.auth.env_runner backend_bryan.integration.http_reference_server --host 127.0.0.1 --port 8765"
+echo [5/6] Starting backend...
+start "eleVADR backend" cmd /k "cd /d ""%ROOT%"" && python -m backend.auth.env_runner backend.integration.http_reference_server --host 127.0.0.1 --port 8765"
 
 echo [6/6] Starting frontend...
 start "eleVADR frontend" cmd /k "cd /d ""%ROOT%frontend"" && npm.cmd start -- --host 127.0.0.1 --port 5173 --strictPort"

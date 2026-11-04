@@ -11,7 +11,7 @@
 dependencies:
   - changed-files:
       - any-glob-to-any-file:
-          - "**/uv.lock"
+          - "**/requirements*.txt"
           - "**/pnpm-lock.yaml"
 
 docker:

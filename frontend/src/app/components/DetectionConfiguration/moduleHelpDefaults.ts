@@ -2,7 +2,7 @@
  * Audited defaults for numeric fields exposed by ADVANCED_POLICY_SCHEMA_BY_MODULE.
  *
  * Values in this file are verified against the corresponding detector implementation
- * by backend_bryan/tests/test_module_help_accuracy.py. Keep this map implementation-
+ * by backend/tests/test_module_help_accuracy.py. Keep this map implementation-
  * backed; do not add illustrative or recommended values here.
  */
 export const MODULE_HELP_NUMERIC_DEFAULTS: Record<

@@ -1,7 +1,7 @@
 ---
 name: elevadr-platform
 
-# Local development: MongoDB only. backend_bryan and Vite run on Windows.
+# Local development: MongoDB only. backend and Vite run on Windows.
 # Use: docker compose --env-file .elevadr-platform.env up -d
 
 services:
@@ -42,6 +42,6 @@ networks:
   elevadr-platform-network:
     name: elevadr-platform
 
-# Local development: MongoDB only. backend_bryan and Vite run on Windows.
+# Local development: MongoDB only. backend and Vite run on Windows.
 # Use: docker compose --env-file .elevadr-platform.env up -d-network
     driver: bridge

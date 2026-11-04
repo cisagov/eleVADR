@@ -1,8 +1,8 @@
 """Reconcile saved-analysis service and connection count metadata."""
 import argparse
-from backend_bryan.auth.env_runner import apply_platform_env
-from backend_bryan.auth.config import load_auth_config
-from backend_bryan.auth.report_store import MongoReportStore
+from backend.auth.env_runner import apply_platform_env
+from backend.auth.config import load_auth_config
+from backend.auth.report_store import MongoReportStore
 
 def main():
     parser = argparse.ArgumentParser()

@@ -2,13 +2,10 @@
 
 [![Latest Release](https://img.shields.io/github/v/release/cisagov/eleVADR?include_prereleases&sort=semver)](https://github.com/cisagov/eleVADR/releases)
 ![License: CC0](https://img.shields.io/badge/License-CC0-lightgrey.svg)
-[![Python Version](https://img.shields.io/badge/dynamic/toml?url=https://raw.githubusercontent.com/cisagov/eleVADR/HEAD/backend/pyproject.toml&query=$.project.requires-python&label=Python&color=blue)](https://github.com/cisagov/eleVADR/blob/HEAD/backend/pyproject.toml)
 [![React Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/cisagov/eleVADR/HEAD/frontend/package.json&query=$.dependencies.react&label=React&color=blue)](https://github.com/cisagov/eleVADR/blob/HEAD/frontend/package.json)
-[![Backend Build](https://github.com/cisagov/eleVADR/actions/workflows/build-backend.yml/badge.svg?branch=develop)](https://github.com/cisagov/eleVADR/actions/workflows/build-backend.yml)
 [![Frontend Build](https://github.com/cisagov/eleVADR/actions/workflows/build-frontend.yml/badge.svg?branch=develop)](https://github.com/cisagov/eleVADR/actions/workflows/build-frontend.yml)
 [![CodeQL Status](https://github.com/cisagov/eleVADR/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/cisagov/eleVADR/actions/workflows/codeql-analysis.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/cisagov/eleVADR)
 
 EleVADR is a specialized network security analysis engine developed
 for the Cybersecurity and Infrastructure Security Agency (CISA). It is
@@ -43,9 +40,8 @@ For the current local workflow, use npm commands from the supplied lockfile; old
 The repository is structured as a monorepo containing the following
 primary directories:
 
-- **.devcontainer/**: Configuration files for the VS Code Dev Container.
 - **.github/**: Workflows for CI/CD, binary building, and releases.
-- **backend/**: Python FastAPI backend, Pandas code, and Zeek scripts.
+- **backend/**: Python backend — detector module registry, auth, Detection Context compiler, and Zeek integration.
 - **frontend/**: React dashboard managed with pnpm and built with Vite.
 - **docker-compose.yml**: Local multi-service orchestration file.
 
@@ -53,46 +49,23 @@ primary directories:
 
 ## Running the Complete App ##
 
-To start both the backend API and the frontend dashboard locally, use
-the local container orchestration:
-
-```bash
-docker compose up --build
-```
-
-Once running:
-
-- **Frontend Dashboard:** Accessible at `http://localhost:8080`
-- **Backend API:** Accessible at `http://localhost:8000` (but there
-is no reason to interact directly)
+`docker compose up -d` starts only the local MongoDB service; the backend
+and frontend run directly on the host. See the
+[Local Windows Platform Quickstart](#local-windows-platform-quickstart)
+above for the full local startup sequence (`first_run_elevadr.bat` /
+`start_elevadr.bat`).
 
 ---
 
 ## Development Environment ##
 
-To avoid local dependency drift, all development should happen inside
-containers.
-
-### 1. VS Code Dev Containers (Recommended) ###
-
-- **Step 1:** Open the repository directory in **VS Code**.
-- **Step 2:** Click **Reopen in Container** when prompted.
-- **Step 3:** If the prompt does not appear, press `Ctrl+Shift+P` and
-  choose `Dev Containers: Rebuild and Reopen in Container`.
-
-All necessary tools including `zeek`, `uv`, `pnpm`, and linting utilities
-are pre-configured inside the environment.
-
-### 2. Manual Host Setup (Alternative) ###
-
-If you cannot use Dev Containers, you must manually install Zeek 8.0.5+,
-Node 22+, and Python 3.14+.
+eleVADR is developed directly on the host. You must manually install
+Zeek 8.0.5+, Node 22.22.3+, and Python 3.12+.
 
 - **Backend Setup:**
 
   ```bash
-  cd backend
-  uv sync
+  pip install -r backend/requirements-platform.txt
   ```
 
 - **Frontend Setup:**
@@ -108,8 +81,8 @@ Node 22+, and Python 3.14+.
 
 ### Code Standards ###
 
-Linting, formatting, and security analysis are run automatically on
-commit when developing inside the Dev Container. To run these validation
+Linting and formatting run automatically on commit once you've installed
+the pre-commit hooks (`pre-commit install`). To run these validation
 checks manually:
 
 ```bash
@@ -123,8 +96,7 @@ Test suites are separated by component:
 - **Backend Tests:**
 
   ```bash
-  cd backend
-  uv run pytest
+  python -m pytest backend/tests
   ```
 
 - **Frontend Tests:**
@@ -142,10 +114,7 @@ Build the documentation locally with:
 
 ```bash
 # First, we need to install the docs dependencies. #
-uv sync --group docs --directory backend/
-
-# Then, we need to install the backend for the source to be importable #
-uv pip install -e ./backend
+pip install -r docs/requirements.txt
 
 # Finally we can build the docs #
 sphinx-build -b html docs/source docs/_build/html
@@ -165,7 +134,7 @@ the [CC0 1.0 Universal public domain dedication][cc0-url].
 
 ### Finding provenance ###
 
-Detector findings now include Zeek-record provenance (`log_type`, parsed `record_index`, and supporting field/value pairs). See `backend_bryan/reference/finding_provenance.md`.
+Detector findings now include Zeek-record provenance (`log_type`, parsed `record_index`, and supporting field/value pairs). See `backend/reference/finding_provenance.md`.
 
 ### Dataset 19: multi-hour OT site simulation ###
 
@@ -176,7 +145,7 @@ The regression pack now includes Dataset 19, a deterministic four-hour site-like
 Before running the full regression suite, you can run the fast release invariant check:
 
 ```bash
-python -m backend_bryan.integration.release_preflight
+python -m backend.integration.release_preflight
 ```
 
 The full `run_regression_tests.bat` / `run_regression_tests.sh` gate runs this automatically as stage 1. The local reference backend also exposes `GET http://127.0.0.1:8765/health` for detector/contract/Zeek-runtime diagnostics.

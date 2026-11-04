@@ -25,18 +25,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version-file: backend/pyproject.toml
+          python-version-file: .python-version
 
-      - id: setup-uv
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
-        with:
-          version: 0.11.11
-          enable-cache: false
-
-      - name: Install dependencies
-        run: |
-          uv sync --directory backend/
-          uv sync --group docs --directory backend/
+      - name: Install Sphinx dependencies
+        run: pip install -r docs/requirements.txt
 
       - id: setup-pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093
@@ -55,7 +47,6 @@ jobs:
             # -b html: build target
             # docs/: source directory
             # docs/_build/html: output directory
-            source backend/.venv/bin/activate
             sphinx-build -b html docs/source docs/_build/html
 
       - name: Deploy to GitHub Pages
