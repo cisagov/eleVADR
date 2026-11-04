@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import "./App.css";
 import "./saved-report-interactions.css";
 import "./pcap-icon-actions.css";
@@ -464,11 +470,19 @@ const Icon = ({ name }: { name: IconName }) => {
 function App() {
   const [report, setReport] = useState<ElevadrReport | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [recoveredJobs, setRecoveredJobs] = useState<Array<{
-    jobId: string; phase: string; status: string; message?: string;
-    detail?: string; progress?: number | null;
-  }>>([]);
-  const [dismissedJobIds, setDismissedJobIds] = useState<Set<string>>(new Set());
+  const [recoveredJobs, setRecoveredJobs] = useState<
+    Array<{
+      jobId: string;
+      phase: string;
+      status: string;
+      message?: string;
+      detail?: string;
+      progress?: number | null;
+    }>
+  >([]);
+  const [dismissedJobIds, setDismissedJobIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -1005,13 +1019,21 @@ function App() {
   // Jobs belong to the server, not the login session. Re-query after login
   // and while authenticated so a completed job is still visible after renewal.
   useEffect(() => {
-    if (!authState?.user.authenticated) { setRecoveredJobs([]); setDismissedJobIds(new Set()); return; }
+    if (!authState?.user.authenticated) {
+      setRecoveredJobs([]);
+      setDismissedJobIds(new Set());
+      return;
+    }
     let active = true;
     const check = async () => {
       try {
-        const response = await authenticatedFetch("/api/v1/processing-jobs", { cache: "no-store" });
+        const response = await authenticatedFetch("/api/v1/processing-jobs", {
+          cache: "no-store",
+        });
         if (!response.ok) return;
-        const payload = await response.json() as { jobs?: typeof recoveredJobs };
+        const payload = (await response.json()) as {
+          jobs?: typeof recoveredJobs;
+        };
         const jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
         if (active) {
           setRecoveredJobs(jobs);
@@ -1021,11 +1043,18 @@ function App() {
             return next.size === prev.size ? prev : next;
           });
         }
-      } catch { /* retain last known state during transient network failures */ }
+      } catch {
+        /* retain last known state during transient network failures */
+      }
     };
     void check();
-    const interval = window.setInterval(() => { void check(); }, 5000);
-    return () => { active = false; window.clearInterval(interval); };
+    const interval = window.setInterval(() => {
+      void check();
+    }, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
   }, [authState?.user.authenticated]);
 
   // Background tabs throttle timers; also check on focus and visibility changes.
@@ -1462,7 +1491,7 @@ function App() {
   const reportConnectionRecordCount =
     report?.modules.connection_success_panel.connections.length ?? 0;
 
-  const closeMobileNav = () => setMobileNavOpen(false);
+  const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
 
   const navItems = useMemo(() => {
     const base: {
@@ -1815,19 +1844,22 @@ function App() {
   // Scroll against the document, not a stale section position. Explicitly
   // disable CSS smooth scrolling for the duration of the navigation so a
   // second click is never necessary, even with long lazy-rendered tables.
-  const scrollToSection = (id: string, behavior: ScrollBehavior = "auto") => {
-    const target = document.getElementById(id);
-    if (!target) return;
-    const root = document.documentElement;
-    const previousBehavior = root.style.scrollBehavior;
-    root.style.scrollBehavior = "auto";
-    const targetTop = target.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({
-      top: Math.max(0, targetTop - getStickyHeaderOffset()),
-      behavior: behavior === "smooth" ? "smooth" : "instant",
-    });
-    root.style.scrollBehavior = previousBehavior;
-  };
+  const scrollToSection = useCallback(
+    (id: string, behavior: ScrollBehavior = "auto") => {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const root = document.documentElement;
+      const previousBehavior = root.style.scrollBehavior;
+      root.style.scrollBehavior = "auto";
+      const targetTop = target.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: Math.max(0, targetTop - getStickyHeaderOffset()),
+        behavior: behavior === "smooth" ? "smooth" : "instant",
+      });
+      root.style.scrollBehavior = previousBehavior;
+    },
+    [],
+  );
 
   useEffect(() => {
     const elements = navItems
@@ -1853,23 +1885,26 @@ function App() {
     return () => navScrollTimersRef.current.forEach(window.clearTimeout);
   }, []);
 
-  const goToSection = (id: string) => {
-    // Cancel corrections from an earlier click before navigating elsewhere.
-    navScrollTimersRef.current.forEach(window.clearTimeout);
-    navScrollTimersRef.current = [];
-    navScrollLockRef.current = Date.now() + 1900;
-    setActiveSection(id);
-    closeMobileNav();
-    scrollToSection(id);
-    // Recalculate after React commits and after lazy tables/charts settle.
-    // These are absolute target measurements, not cumulative offsets.
-    window.requestAnimationFrame(() => scrollToSection(id));
-    for (const delay of [100, 300, 700]) {
-      navScrollTimersRef.current.push(
-        window.setTimeout(() => scrollToSection(id), delay),
-      );
-    }
-  };
+  const goToSection = useCallback(
+    (id: string) => {
+      // Cancel corrections from an earlier click before navigating elsewhere.
+      navScrollTimersRef.current.forEach(window.clearTimeout);
+      navScrollTimersRef.current = [];
+      navScrollLockRef.current = Date.now() + 1900;
+      setActiveSection(id);
+      closeMobileNav();
+      scrollToSection(id);
+      // Recalculate after React commits and after lazy tables/charts settle.
+      // These are absolute target measurements, not cumulative offsets.
+      window.requestAnimationFrame(() => scrollToSection(id));
+      for (const delay of [100, 300, 700]) {
+        navScrollTimersRef.current.push(
+          window.setTimeout(() => scrollToSection(id), delay),
+        );
+      }
+    },
+    [closeMobileNav, scrollToSection],
+  );
 
   const applyFilter = (filter: InvestigationFilter) => {
     setFilters((current) => {
@@ -1958,7 +1993,8 @@ function App() {
     // restore the deep-linked section with the same sticky-header clearance used
     // by left-side navigation.
     window.setTimeout(() => {
-      if (Date.now() >= navScrollLockRef.current) scrollToSection(section, "auto");
+      if (Date.now() >= navScrollLockRef.current)
+        scrollToSection(section, "auto");
     }, 120);
   }, [report]);
 
@@ -1975,15 +2011,34 @@ function App() {
             ["running", "queued", "completed"].includes(job.status) &&
             !dismissedJobIds.has(job.jobId),
         );
-        if (!authState?.user.authenticated || visibleJobs.length === 0) return null;
+        if (!authState?.user.authenticated || visibleJobs.length === 0)
+          return null;
         return (
-          <aside role="status" aria-live="polite" style={{ padding: "8px 16px", background: "#eaf4fa", color: "#07334d", borderBottom: "1px solid #a9c6d6", display: "flex", alignItems: "baseline", gap: 8 }}>
+          <aside
+            role="status"
+            aria-live="polite"
+            style={{
+              padding: "8px 16px",
+              background: "#eaf4fa",
+              color: "#07334d",
+              borderBottom: "1px solid #a9c6d6",
+              display: "flex",
+              alignItems: "baseline",
+              gap: 8,
+            }}
+          >
             <strong>Recovered server processing activity: </strong>
             <span style={{ flex: 1 }}>
               {visibleJobs.map((job) => (
                 <span key={job.jobId} style={{ marginRight: 18 }}>
-                  {job.phase === "evidence" ? "Zeek evidence" : "Detection modules"}: {job.status} — {job.message || job.detail}
-                  {typeof job.progress === "number" ? ` (${job.progress}%)` : ""}.
+                  {job.phase === "evidence"
+                    ? "Zeek evidence"
+                    : "Detection modules"}
+                  : {job.status} — {job.message || job.detail}
+                  {typeof job.progress === "number"
+                    ? ` (${job.progress}%)`
+                    : ""}
+                  .
                 </span>
               ))}
             </span>
@@ -1998,7 +2053,15 @@ function App() {
                   return next;
                 })
               }
-              style={{ background: "none", border: "none", color: "#07334d", cursor: "pointer", fontSize: 16, lineHeight: 1, padding: "0 4px" }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#07334d",
+                cursor: "pointer",
+                fontSize: 16,
+                lineHeight: 1,
+                padding: "0 4px",
+              }}
             >
               ×
             </button>
@@ -2114,27 +2177,26 @@ function App() {
               <span>Export</span>
             </button>
           )}
-          {report &&
-            hasSupportedReportVersion && (
-              <button
-                type="button"
-                className="top-action-button"
-                onClick={toggleAllPanels}
-                aria-label={
-                  allPanelsExpanded
-                    ? "Collapse all sections"
-                    : "Expand all sections"
-                }
-                title={
-                  allPanelsExpanded
-                    ? "Collapse all sections"
-                    : "Expand all sections"
-                }
-              >
-                <Icon name="overview" />
-                <span>{allPanelsExpanded ? "Collapse" : "Expand"}</span>
-              </button>
-            )}
+          {report && hasSupportedReportVersion && (
+            <button
+              type="button"
+              className="top-action-button"
+              onClick={toggleAllPanels}
+              aria-label={
+                allPanelsExpanded
+                  ? "Collapse all sections"
+                  : "Expand all sections"
+              }
+              title={
+                allPanelsExpanded
+                  ? "Collapse all sections"
+                  : "Expand all sections"
+              }
+            >
+              <Icon name="overview" />
+              <span>{allPanelsExpanded ? "Collapse" : "Expand"}</span>
+            </button>
+          )}
           {authState?.user.authenticated && (
             <>
               <button
@@ -2308,450 +2370,459 @@ function App() {
             </div>
           )}
 
-          {report &&
-            hasSupportedReportVersion && (
-              <>
-                <div className="report-current-section" aria-live="polite">
-                  <span className="report-current-section-icon">
-                    <Icon
-                      name={
-                        (
-                          REPORT_SECTION_META[
-                            activeSection as ReportSectionId
-                          ] || REPORT_SECTION_META.overview
-                        ).icon
-                      }
+          {report && hasSupportedReportVersion && (
+            <>
+              <div className="report-current-section" aria-live="polite">
+                <span className="report-current-section-icon">
+                  <Icon
+                    name={
+                      (
+                        REPORT_SECTION_META[activeSection as ReportSectionId] ||
+                        REPORT_SECTION_META.overview
+                      ).icon
+                    }
+                  />
+                </span>
+                <span>Current section</span>
+                <strong>{activeSectionLabel}</strong>
+              </div>
+              <div className="panel-grid">
+                {visibleReportSections.has("overview") && (
+                  <section
+                    id="overview"
+                    className="dashboard-section scroll-target"
+                  >
+                    <ReportSectionHeading report={report} section="overview" />
+                    {provenance?.source_type === "pcap" && (
+                      <div
+                        className="analysis-provenance"
+                        aria-label="PCAP analysis provenance"
+                      >
+                        <div>
+                          <span>Source PCAP</span>
+                          <strong>
+                            {String(provenance.source_filename || "Unknown")}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Context</span>
+                          <strong>
+                            {String(
+                              provenance.detection_context_profile_name ||
+                                "Unnamed context",
+                            )}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Zeek runtime</span>
+                          <strong>
+                            {String(provenance.zeek_runtime || "Unknown")}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Detectors</span>
+                          <strong>
+                            {String(provenance.detector_modules_completed ?? 0)}
+                            /
+                            {String(provenance.detector_modules_requested ?? 0)}{" "}
+                            completed
+                          </strong>
+                        </div>
+                      </div>
+                    )}
+                    {reportCompatibility?.migrated === true && (
+                      <div
+                        className="analysis-provenance"
+                        aria-label="Legacy report compatibility"
+                      >
+                        <div>
+                          <span>Loaded report format</span>
+                          <strong>
+                            {String(
+                              reportCompatibility.source_report_version ||
+                                "Legacy",
+                            )}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Viewer format</span>
+                          <strong>
+                            {String(
+                              reportCompatibility.normalized_report_version ||
+                                report.report_version,
+                            )}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Compatibility defaults</span>
+                          <strong>
+                            {compatibilityWarnings.length} applied
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Status</span>
+                          <strong>Loaded in compatibility mode</strong>
+                        </div>
+                      </div>
+                    )}
+                    <SecurityOverview
+                      report={report}
+                      onFilter={applyFilter}
+                      onSelect={setSelectedEntity}
                     />
-                  </span>
-                  <span>Current section</span>
-                  <strong>{activeSectionLabel}</strong>
-                </div>
-                <div className="panel-grid">
-                  {visibleReportSections.has("overview") && (
-                    <section
-                      id="overview"
-                      className="dashboard-section scroll-target"
-                    >
-                      <ReportSectionHeading
+                  </section>
+                )}
+
+                {visibleReportSections.has("findings") && (
+                  <section
+                    id="findings"
+                    className="dashboard-section scroll-target"
+                  >
+                    <ReportSectionHeading report={report} section="findings" />
+                    {reportFindingCount === 0 ? (
+                      <ReportGuidance
+                        title="No findings were generated"
+                        note="A zero-finding result means the selected detector modules did not produce findings from the evidence and policy in this report; it does not prove the environment is risk-free."
+                        actions={[
+                          {
+                            label: "Review Modules",
+                            onClick: () => setDetectionModulesOpen(true),
+                            primary: true,
+                          },
+                          {
+                            label: "Review Context",
+                            onClick: () => setDetectionConfigOpen(true),
+                          },
+                          {
+                            label: "How findings are generated",
+                            onClick: () => setHelpOpen(true),
+                          },
+                        ]}
+                      >
+                        <p>
+                          No selected detection module produced a reportable
+                          condition using the current Analysis Context and
+                          retained evidence.
+                        </p>
+                      </ReportGuidance>
+                    ) : (
+                      <FindingsPanel
                         report={report}
-                        section="overview"
-                      />
-                      {provenance?.source_type === "pcap" && (
-                        <div
-                          className="analysis-provenance"
-                          aria-label="PCAP analysis provenance"
-                        >
-                          <div>
-                            <span>Source PCAP</span>
-                            <strong>
-                              {String(provenance.source_filename || "Unknown")}
-                            </strong>
-                          </div>
-                          <div>
-                            <span>Context</span>
-                            <strong>
-                              {String(
-                                provenance.detection_context_profile_name ||
-                                  "Unnamed context",
-                              )}
-                            </strong>
-                          </div>
-                          <div>
-                            <span>Zeek runtime</span>
-                            <strong>
-                              {String(provenance.zeek_runtime || "Unknown")}
-                            </strong>
-                          </div>
-                          <div>
-                            <span>Detectors</span>
-                            <strong>
-                              {String(
-                                provenance.detector_modules_completed ?? 0,
-                              )}
-                              /
-                              {String(
-                                provenance.detector_modules_requested ?? 0,
-                              )}{" "}
-                              completed
-                            </strong>
-                          </div>
-                        </div>
-                      )}
-                      {reportCompatibility?.migrated === true && (
-                        <div
-                          className="analysis-provenance"
-                          aria-label="Legacy report compatibility"
-                        >
-                          <div>
-                            <span>Loaded report format</span>
-                            <strong>
-                              {String(
-                                reportCompatibility.source_report_version ||
-                                  "Legacy",
-                              )}
-                            </strong>
-                          </div>
-                          <div>
-                            <span>Viewer format</span>
-                            <strong>
-                              {String(
-                                reportCompatibility.normalized_report_version ||
-                                  report.report_version,
-                              )}
-                            </strong>
-                          </div>
-                          <div>
-                            <span>Compatibility defaults</span>
-                            <strong>
-                              {compatibilityWarnings.length} applied
-                            </strong>
-                          </div>
-                          <div>
-                            <span>Status</span>
-                            <strong>Loaded in compatibility mode</strong>
-                          </div>
-                        </div>
-                      )}
-                      <SecurityOverview
-                        report={report}
+                        filters={filters}
                         onFilter={applyFilter}
                         onSelect={setSelectedEntity}
+                        onClearFilters={() => setFilters([])}
                       />
-                    </section>
-                  )}
+                    )}
+                  </section>
+                )}
 
-                  {visibleReportSections.has("findings") && (
-                    <section
-                      id="findings"
-                      className="dashboard-section scroll-target"
-                    >
-                      <ReportSectionHeading
-                        report={report}
-                        section="findings"
-                      />
-                      {reportFindingCount === 0 ? (
-                        <ReportGuidance
-                          title="No findings were generated"
-                          note="A zero-finding result means the selected detector modules did not produce findings from the evidence and policy in this report; it does not prove the environment is risk-free."
-                          actions={[
-                            {
-                              label: "Review Modules",
-                              onClick: () => setDetectionModulesOpen(true),
-                              primary: true,
-                            },
-                            {
-                              label: "Review Context",
-                              onClick: () => setDetectionConfigOpen(true),
-                            },
-                            {
-                              label: "How findings are generated",
-                              onClick: () => setHelpOpen(true),
-                            },
-                          ]}
-                        >
-                          <p>
-                            No selected detection module produced a reportable
-                            condition using the current Analysis Context and
-                            retained evidence.
-                          </p>
-                        </ReportGuidance>
-                      ) : (
-                        <FindingsPanel
+                {visibleReportSections.has("devices") && (
+                  <section
+                    id="devices"
+                    className="dashboard-section scroll-target"
+                  >
+                    <ReportSectionHeading report={report} section="devices" />
+                    {reportDeviceCount === 0 ? (
+                      <ReportGuidance
+                        title="No device inventory is available"
+                        note={
+                          provenance?.source_type === "pcap"
+                            ? "For PCAP analysis, device inventory depends on endpoint traffic visible in the capture. Context can classify or authorize observed assets, but it cannot create traffic that was not captured."
+                            : "For imported JSON reports, the source report may not contain a device inventory."
+                        }
+                        actions={[
+                          {
+                            label: "Review Context",
+                            onClick: () => setDetectionConfigOpen(true),
+                            primary: true,
+                          },
+                          {
+                            label: "Open Help",
+                            onClick: () => setHelpOpen(true),
+                          },
+                        ]}
+                      >
+                        <p>
+                          eleVADR did not receive enough device records to
+                          populate this section. Check capture coverage,
+                          source-report completeness, and the current
+                          asset/context information.
+                        </p>
+                      </ReportGuidance>
+                    ) : (
+                      <>
+                        <DevicePanel
+                          report={report}
+                          onFilter={applyFilter}
+                          footerAction={
+                            <button
+                              type="button"
+                              className="section-action-button"
+                              onClick={exportAssetInventory}
+                            >
+                              <Icon name="download" />
+                              <span>Export Asset Inventory</span>
+                            </button>
+                          }
+                        />
+                        <DevicesPanel
+                          otDevices={report.modules.ot_devices}
+                          itDevices={report.modules.it_devices}
+                          edgeDevices={report.modules.edge_devices}
+                          reportId={report.report_id}
+                          filters={filters}
+                          onFilter={applyFilter}
+                          onSelect={setSelectedEntity}
+                        />
+                      </>
+                    )}
+                  </section>
+                )}
+
+                {visibleReportSections.has("services") && (
+                  <section
+                    id="services"
+                    className="dashboard-section scroll-target"
+                  >
+                    <ReportSectionHeading report={report} section="services" />
+                    {reportServiceCount === 0 ? (
+                      <ReportGuidance
+                        title="No services were identified"
+                        note="Service identification depends on protocol and port evidence present in the report. An empty service inventory is different from a service inventory with zero findings."
+                        actions={[
+                          ...(reportConnectionRecordCount > 0
+                            ? [
+                                {
+                                  label: "Review Connections",
+                                  onClick: () => goToSection("connections"),
+                                  primary: true,
+                                },
+                              ]
+                            : []),
+                          {
+                            label: "Open Help",
+                            onClick: () => setHelpOpen(true),
+                            primary: reportConnectionRecordCount === 0,
+                          },
+                        ]}
+                      >
+                        <p>
+                          No OT, IT, or unclassified service records are
+                          available for this report. Review the connection
+                          evidence or capture scope to confirm whether
+                          application traffic was visible.
+                        </p>
+                      </ReportGuidance>
+                    ) : (
+                      <>
+                        <ServiceInventoryPanel
+                          serviceCount={report.modules.service_count_panel}
+                          otServices={report.modules.ot_services}
+                          implicatedCount={
+                            new Set(
+                              deriveFindings(report)
+                                .map((finding) => finding.service)
+                                .filter(Boolean),
+                            ).size
+                          }
+                          filters={filters}
+                          onFilter={applyFilter}
+                          onSelect={setSelectedEntity}
+                        />
+                        <ServiceRiskBreakdownPanel
+                          data={report.modules.service_risk_breakdown_panel}
+                          reportId={report.report_id}
+                          filters={filters}
+                          onFilter={applyFilter}
+                        />
+                      </>
+                    )}
+                  </section>
+                )}
+
+                {visibleReportSections.has("topology") && (
+                  <section
+                    id="topology"
+                    className="dashboard-section scroll-target"
+                  >
+                    <ReportSectionHeading report={report} section="topology" />
+                    {reportConnectionRecordCount === 0 ? (
+                      <ReportGuidance title="No topology communication records are available">
+                        <p>
+                          This report does not include endpoint communications
+                          from which to construct an observed topology.
+                        </p>
+                      </ReportGuidance>
+                    ) : (
+                      <Panel
+                        id="network-topology"
+                        title={
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <span>Network Topology</span>
+                            <InfoTooltip text="Interactive view of observed devices and the communication paths between them. Select a device or connection to inspect and pivot into related evidence." />
+                          </div>
+                        }
+                        headerAction={
+                          <button
+                            type="button"
+                            className="topology-header-expand-button"
+                            onClick={() =>
+                              setTopologyExpanded((current) => !current)
+                            }
+                            aria-label={
+                              topologyExpanded
+                                ? "Restore topology panel"
+                                : "Expand topology panel"
+                            }
+                            aria-pressed={topologyExpanded}
+                            title={
+                              topologyExpanded
+                                ? "Restore topology panel"
+                                : "Expand topology panel"
+                            }
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              width="18"
+                              height="18"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              {topologyExpanded ? (
+                                <>
+                                  <path d="M9 3v6H3M15 21v-6h6M3 9l6-6M21 15l-6 6" />
+                                </>
+                              ) : (
+                                <>
+                                  <path d="M9 3H3v6M15 21h6v-6M3 3l7 7M21 21l-7-7" />
+                                </>
+                              )}
+                            </svg>
+                          </button>
+                        }
+                      >
+                        <NetworkTopology
+                          expanded={topologyExpanded}
+                          onRestorePanel={() => setTopologyExpanded(false)}
                           report={report}
                           filters={filters}
                           onFilter={applyFilter}
                           onSelect={setSelectedEntity}
-                          onClearFilters={() => setFilters([])}
+                          onStateChange={setGraphViewState}
                         />
-                      )}
-                    </section>
-                  )}
+                      </Panel>
+                    )}
+                  </section>
+                )}
 
-                  {visibleReportSections.has("devices") && (
-                    <section
-                      id="devices"
-                      className="dashboard-section scroll-target"
-                    >
-                      <ReportSectionHeading report={report} section="devices" />
-                      {reportDeviceCount === 0 ? (
-                        <ReportGuidance
-                          title="No device inventory is available"
-                          note={
-                            provenance?.source_type === "pcap"
-                              ? "For PCAP analysis, device inventory depends on endpoint traffic visible in the capture. Context can classify or authorize observed assets, but it cannot create traffic that was not captured."
-                              : "For imported JSON reports, the source report may not contain a device inventory."
+                {visibleReportSections.has("connections") && (
+                  <section
+                    id="connections"
+                    className="dashboard-section scroll-target"
+                  >
+                    <ReportSectionHeading
+                      report={report}
+                      section="connections"
+                    />
+                    {reportConnectionRecordCount === 0 ? (
+                      <ReportGuidance
+                        title="No endpoint connection records are available"
+                        note={
+                          provenance?.source_type === "pcap"
+                            ? "For PCAP analysis, verify that the capture contains endpoint traffic and that the capture scope represents the network you intended to analyze."
+                            : "For imported JSON reports, the source report may not include flow-level connection records."
+                        }
+                        actions={[
+                          {
+                            label: "Review Context",
+                            onClick: () => setDetectionConfigOpen(true),
+                            primary: true,
+                          },
+                          {
+                            label: "Open Help",
+                            onClick: () => setHelpOpen(true),
+                          },
+                        ]}
+                      >
+                        <p>
+                          Without endpoint communication records, eleVADR cannot
+                          build flow tables, topology, activity relationships,
+                          or cross-segment connection views for this report.
+                        </p>
+                      </ReportGuidance>
+                    ) : (
+                      <>
+                        <ConnectionOverviewPanel report={report} />
+                        <SupplementalSubnetPanel
+                          rows={supplementalSubnets}
+                          filters={filters}
+                          onChange={setSupplementalSubnets}
+                          onFilter={applyFilter}
+                        />
+                        <ZeekFlowAnalysis
+                          report={report}
+                          filters={filters}
+                          onFilter={applyFilter}
+                          onSelect={setSelectedEntity}
+                        />
+                        <Panel
+                          id="activity-timeline"
+                          title={
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                              }}
+                            >
+                              <span>Activity Timeline</span>
+                              <InfoTooltip text="Temporal view of timestamped network observations. When time data is available, use this view to identify bursts and suspicious activity over time." />
+                            </div>
                           }
-                          actions={[
-                            {
-                              label: "Review Context",
-                              onClick: () => setDetectionConfigOpen(true),
-                              primary: true,
-                            },
-                            {
-                              label: "Open Help",
-                              onClick: () => setHelpOpen(true),
-                            },
-                          ]}
                         >
-                          <p>
-                            eleVADR did not receive enough device records to
-                            populate this section. Check capture coverage,
-                            source-report completeness, and the current
-                            asset/context information.
-                          </p>
-                        </ReportGuidance>
-                      ) : (
-                        <>
-                          <DevicePanel
-                            report={report}
-                            onFilter={applyFilter}
-                            footerAction={
-                              <button
-                                type="button"
-                                className="section-action-button"
-                                onClick={exportAssetInventory}
-                              >
-                                <Icon name="download" />
-                                <span>Export Asset Inventory</span>
-                              </button>
-                            }
-                          />
-                          <DevicesPanel
-                            otDevices={report.modules.ot_devices}
-                            itDevices={report.modules.it_devices}
-                            edgeDevices={report.modules.edge_devices}
-                            reportId={report.report_id}
-                            filters={filters}
-                            onFilter={applyFilter}
-                            onSelect={setSelectedEntity}
-                          />
-                        </>
-                      )}
-                    </section>
-                  )}
-
-                  {visibleReportSections.has("services") && (
-                    <section
-                      id="services"
-                      className="dashboard-section scroll-target"
-                    >
-                      <ReportSectionHeading
-                        report={report}
-                        section="services"
-                      />
-                      {reportServiceCount === 0 ? (
-                        <ReportGuidance
-                          title="No services were identified"
-                          note="Service identification depends on protocol and port evidence present in the report. An empty service inventory is different from a service inventory with zero findings."
-                          actions={[
-                            ...(reportConnectionRecordCount > 0
-                              ? [
-                                  {
-                                    label: "Review Connections",
-                                    onClick: () => goToSection("connections"),
-                                    primary: true,
-                                  },
-                                ]
-                              : []),
-                            {
-                              label: "Open Help",
-                              onClick: () => setHelpOpen(true),
-                              primary: reportConnectionRecordCount === 0,
-                            },
-                          ]}
-                        >
-                          <p>
-                            No OT, IT, or unclassified service records are
-                            available for this report. Review the connection
-                            evidence or capture scope to confirm whether
-                            application traffic was visible.
-                          </p>
-                        </ReportGuidance>
-                      ) : (
-                        <>
-                          <ServiceInventoryPanel
-                            serviceCount={report.modules.service_count_panel}
-                            otServices={report.modules.ot_services}
-                            implicatedCount={
-                              new Set(
-                                deriveFindings(report)
-                                  .map((finding) => finding.service)
-                                  .filter(Boolean),
-                              ).size
-                            }
-                            filters={filters}
-                            onFilter={applyFilter}
-                            onSelect={setSelectedEntity}
-                          />
-                          <ServiceRiskBreakdownPanel
-                            data={report.modules.service_risk_breakdown_panel}
-                            reportId={report.report_id}
-                            filters={filters}
-                            onFilter={applyFilter}
-                          />
-                        </>
-                      )}
-                    </section>
-                  )}
-
-                  {visibleReportSections.has("topology") && (
-                    <section id="topology" className="dashboard-section scroll-target">
-                      <ReportSectionHeading report={report} section="topology" />
-                      {reportConnectionRecordCount === 0 ? (
-                        <ReportGuidance title="No topology communication records are available">
-                          <p>This report does not include endpoint communications from which to construct an observed topology.</p>
-                        </ReportGuidance>
-                      ) : (
-                          <Panel
-                            id="network-topology"
-                            title={
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "8px",
-                                }}
-                              >
-                                <span>Network Topology</span>
-                                <InfoTooltip text="Interactive view of observed devices and the communication paths between them. Select a device or connection to inspect and pivot into related evidence." />
-                              </div>
-                            }
-                            headerAction={
-                              <button
-                                type="button"
-                                className="topology-header-expand-button"
-                                onClick={() => setTopologyExpanded((current) => !current)}
-                                aria-label={topologyExpanded ? "Restore topology panel" : "Expand topology panel"}
-                                aria-pressed={topologyExpanded}
-                                title={topologyExpanded ? "Restore topology panel" : "Expand topology panel"}
-                              >
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  {topologyExpanded ? (
-                                    <>
-                                      <path d="M9 3v6H3M15 21v-6h6M3 9l6-6M21 15l-6 6" />
-                                    </>
-                                  ) : (
-                                    <>
-                                      <path d="M9 3H3v6M15 21h6v-6M3 3l7 7M21 21l-7-7" />
-                                    </>
-                                  )}
-                                </svg>
-                              </button>
-                            }
-                          >
-                            <NetworkTopology
-                              expanded={topologyExpanded}
-                              onRestorePanel={() => setTopologyExpanded(false)}
-                              report={report}
-                              filters={filters}
-                              onFilter={applyFilter}
-                              onSelect={setSelectedEntity}
-                              onStateChange={setGraphViewState}
-                            />
-                          </Panel>
-                      )}
-                    </section>
-                  )}
-
-                  {visibleReportSections.has("connections") && (
-                    <section
-                      id="connections"
-                      className="dashboard-section scroll-target"
-                    >
-                      <ReportSectionHeading
-                        report={report}
-                        section="connections"
-                      />
-                      {reportConnectionRecordCount === 0 ? (
-                        <ReportGuidance
-                          title="No endpoint connection records are available"
-                          note={
-                            provenance?.source_type === "pcap"
-                              ? "For PCAP analysis, verify that the capture contains endpoint traffic and that the capture scope represents the network you intended to analyze."
-                              : "For imported JSON reports, the source report may not include flow-level connection records."
+                          <ActivityTimeline report={report} />
+                        </Panel>
+                        <OTCrossSegmentPanel
+                          data={report.modules.ot_cross_segment_lines_panel}
+                          reportId={report.report_id}
+                          filters={filters}
+                          onFilter={applyFilter}
+                          onSelect={setSelectedEntity}
+                        />
+                        <ConnectionSuccessPanel
+                          data={report.modules.connection_success_panel}
+                          reportId={report.report_id}
+                          filters={filters}
+                          onFilter={applyFilter}
+                          onSelect={setSelectedEntity}
+                        />
+                        <SuspiciousOutboundConnectionsPanel
+                          data={
+                            report.modules.suspicious_outbound_connections_panel
                           }
-                          actions={[
-                            {
-                              label: "Review Context",
-                              onClick: () => setDetectionConfigOpen(true),
-                              primary: true,
-                            },
-                            {
-                              label: "Open Help",
-                              onClick: () => setHelpOpen(true),
-                            },
-                          ]}
-                        >
-                          <p>
-                            Without endpoint communication records, eleVADR
-                            cannot build flow tables, topology, activity
-                            relationships, or cross-segment connection views for
-                            this report.
-                          </p>
-                        </ReportGuidance>
-                      ) : (
-                        <>
-                          <ConnectionOverviewPanel report={report} />
-                          <SupplementalSubnetPanel
-                            rows={supplementalSubnets}
-                            filters={filters}
-                            onChange={setSupplementalSubnets}
-                            onFilter={applyFilter}
-                          />
-                          <ZeekFlowAnalysis
-                            report={report}
-                            filters={filters}
-                            onFilter={applyFilter}
-                            onSelect={setSelectedEntity}
-                          />
-                          <Panel
-                            id="activity-timeline"
-                            title={
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "8px",
-                                }}
-                              >
-                                <span>Activity Timeline</span>
-                                <InfoTooltip text="Temporal view of timestamped network observations. When time data is available, use this view to identify bursts and suspicious activity over time." />
-                              </div>
-                            }
-                          >
-                            <ActivityTimeline report={report} />
-                          </Panel>
-                          <OTCrossSegmentPanel
-                            data={report.modules.ot_cross_segment_lines_panel}
-                            reportId={report.report_id}
-                            filters={filters}
-                            onFilter={applyFilter}
-                            onSelect={setSelectedEntity}
-                          />
-                          <ConnectionSuccessPanel
-                            data={report.modules.connection_success_panel}
-                            reportId={report.report_id}
-                            filters={filters}
-                            onFilter={applyFilter}
-                            onSelect={setSelectedEntity}
-                          />
-                          <SuspiciousOutboundConnectionsPanel
-                            data={
-                              report.modules
-                                .suspicious_outbound_connections_panel
-                            }
-                            reportId={report.report_id}
-                            filters={filters}
-                            onFilter={applyFilter}
-                            onSelect={setSelectedEntity}
-                          />
-                        </>
-                      )}
-                    </section>
-                  )}
-                </div>
-              </>
-            )}
+                          reportId={report.report_id}
+                          filters={filters}
+                          onFilter={applyFilter}
+                          onSelect={setSelectedEntity}
+                        />
+                      </>
+                    )}
+                  </section>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </main>
 
@@ -2877,10 +2948,28 @@ function App() {
                   </>
                 )}
                 {canWriteAnalysis ? (
-                  <div style={{ display: (!authState?.authEnabled || !authState.user.authenticated || platformView === "open-file") ? undefined : "none" }}>
+                  <div
+                    style={{
+                      display:
+                        !authState?.authEnabled ||
+                        !authState.user.authenticated ||
+                        platformView === "open-file"
+                          ? undefined
+                          : "none",
+                    }}
+                  >
                     <UploadForm
                       onReportLoaded={handleReportLoaded}
-                      recoveryJob={recoveredJobs.find((job) => job.status === "running" || job.status === "queued") || recoveredJobs.find((job) => job.status === "completed") || null}
+                      recoveryJob={
+                        recoveredJobs.find(
+                          (job) =>
+                            job.status === "running" || job.status === "queued",
+                        ) ||
+                        recoveredJobs.find(
+                          (job) => job.status === "completed",
+                        ) ||
+                        null
+                      }
                       report={report}
                       isAnalyzing={isAnalyzing}
                       setIsAnalyzing={setIsAnalyzing}
@@ -2891,17 +2980,28 @@ function App() {
                       onOpenDetectionModules={() =>
                         setDetectionModulesOpen(true)
                       }
-                      nestedDialogOpen={detectionModulesOpen || detectionConfigOpen}
+                      nestedDialogOpen={
+                        detectionModulesOpen || detectionConfigOpen
+                      }
                       profileRevision={detectionProfileRevision}
                       refreshRequestRevision={reportRefreshRequestRevision}
                       onReanalysisStatus={handleReportReanalysisStatus}
                     />
                   </div>
-                ) : (!authState?.authEnabled || !authState.user.authenticated || platformView === "open-file") ? (
-                    <section className="welcome-account-panel read-only-notice" aria-label="Read-only access">
-                      <h2>Read-only access</h2>
-                      <p>You can open saved reports and review retained PCAP metadata. Upload and analysis are unavailable for this account.</p>
-                    </section>
+                ) : !authState?.authEnabled ||
+                  !authState.user.authenticated ||
+                  platformView === "open-file" ? (
+                  <section
+                    className="welcome-account-panel read-only-notice"
+                    aria-label="Read-only access"
+                  >
+                    <h2>Read-only access</h2>
+                    <p>
+                      You can open saved reports and review retained PCAP
+                      metadata. Upload and analysis are unavailable for this
+                      account.
+                    </p>
+                  </section>
                 ) : null}
                 {authState?.authEnabled &&
                   authState.user.authenticated &&
@@ -2939,31 +3039,45 @@ function App() {
                               type="search"
                               placeholder="Analysis or PCAP name…"
                               value={savedReportQuery}
-                              onChange={(event) => setSavedReportQuery(event.target.value)}
+                              onChange={(event) =>
+                                setSavedReportQuery(event.target.value)
+                              }
                             />
                           </label>
                           <label>
                             <span>Sort</span>
                             <select
                               value={savedReportSort}
-                              onChange={(event) => setSavedReportSort(event.target.value)}
+                              onChange={(event) =>
+                                setSavedReportSort(event.target.value)
+                              }
                             >
                               <option value="newest">Newest activity</option>
                               <option value="oldest">Oldest activity</option>
                               <option value="title">PCAP name</option>
-                              <option value="findings-desc">Findings: high to low</option>
-                              <option value="findings-asc">Findings: low to high</option>
+                              <option value="findings-desc">
+                                Findings: high to low
+                              </option>
+                              <option value="findings-asc">
+                                Findings: low to high
+                              </option>
                             </select>
                           </label>
                           <span className="saved-report-count">
-                            {analysisCaptureGroups.length} PCAPs · {savedReports.length} analyses
+                            {analysisCaptureGroups.length} PCAPs ·{" "}
+                            {savedReports.length} analyses
                           </span>
                         </div>
                         {reportComparison ? (
-                          <div className="report-comparison analyses-inline-comparison" aria-live="polite">
+                          <div
+                            className="report-comparison analyses-inline-comparison"
+                            aria-live="polite"
+                          >
                             <div className="comparison-heading">
                               <div>
-                                <span className="comparison-kicker">Analysis comparison</span>
+                                <span className="comparison-kicker">
+                                  Analysis comparison
+                                </span>
                                 <h3>What changed?</h3>
                               </div>
                               <button
@@ -2975,37 +3089,115 @@ function App() {
                               </button>
                             </div>
                             <div className="comparison-grid">
-                              <div><span>Findings</span><strong>+{reportComparison.findings.added} / -{reportComparison.findings.removed} / ~{reportComparison.findings.changed}</strong></div>
-                              <div><span>Assets</span><strong>+{reportComparison.assets.added} / -{reportComparison.assets.removed} / ~{reportComparison.assets.changed}</strong></div>
-                              <div><span>Services</span><strong>+{reportComparison.services.added} / -{reportComparison.services.removed} / ~{reportComparison.services.changed}</strong></div>
-                              <div><span>Context changes</span><strong>{reportComparison.contextDeltas.length}</strong></div>
+                              <div>
+                                <span>Findings</span>
+                                <strong>
+                                  +{reportComparison.findings.added} / -
+                                  {reportComparison.findings.removed} / ~
+                                  {reportComparison.findings.changed}
+                                </strong>
+                              </div>
+                              <div>
+                                <span>Assets</span>
+                                <strong>
+                                  +{reportComparison.assets.added} / -
+                                  {reportComparison.assets.removed} / ~
+                                  {reportComparison.assets.changed}
+                                </strong>
+                              </div>
+                              <div>
+                                <span>Services</span>
+                                <strong>
+                                  +{reportComparison.services.added} / -
+                                  {reportComparison.services.removed} / ~
+                                  {reportComparison.services.changed}
+                                </strong>
+                              </div>
+                              <div>
+                                <span>Context changes</span>
+                                <strong>
+                                  {reportComparison.contextDeltas.length}
+                                </strong>
+                              </div>
                             </div>
                             <details className="comparison-details">
-                              <summary>Finding changes ({reportComparison.findingDeltas.length})</summary>
+                              <summary>
+                                Finding changes (
+                                {reportComparison.findingDeltas.length})
+                              </summary>
                               {reportComparison.findingDeltas.length ? (
-                                <ul>{reportComparison.findingDeltas.map((delta) => (
-                                  <li key={delta.key}>
-                                    <strong>{delta.change}: {delta.title}</strong> ({delta.moduleId})
-                                    <span> Severity: {delta.severityBefore || "Not recorded"} → {delta.severityAfter || "Not recorded"}; Confidence: {delta.confidenceBefore || "Not recorded"} → {delta.confidenceAfter || "Not recorded"}</span>
-                                  </li>
-                                ))}</ul>
-                              ) : <p>No finding changes.</p>}
+                                <ul>
+                                  {reportComparison.findingDeltas.map(
+                                    (delta) => (
+                                      <li key={delta.key}>
+                                        <strong>
+                                          {delta.change}: {delta.title}
+                                        </strong>{" "}
+                                        ({delta.moduleId})
+                                        <span>
+                                          {" "}
+                                          Severity:{" "}
+                                          {delta.severityBefore ||
+                                            "Not recorded"}{" "}
+                                          →{" "}
+                                          {delta.severityAfter ||
+                                            "Not recorded"}
+                                          ; Confidence:{" "}
+                                          {delta.confidenceBefore ||
+                                            "Not recorded"}{" "}
+                                          →{" "}
+                                          {delta.confidenceAfter ||
+                                            "Not recorded"}
+                                        </span>
+                                      </li>
+                                    ),
+                                  )}
+                                </ul>
+                              ) : (
+                                <p>No finding changes.</p>
+                              )}
                             </details>
                             <details className="comparison-details">
-                              <summary>Module configuration changes ({reportComparison.moduleDeltas.length})</summary>
+                              <summary>
+                                Module configuration changes (
+                                {reportComparison.moduleDeltas.length})
+                              </summary>
                               {reportComparison.moduleDeltas.length ? (
-                                <ul>{reportComparison.moduleDeltas.map((delta) => (
-                                  <li key={delta.path}><strong>{delta.path}</strong>: {formatComparisonValue(delta.before)} → {formatComparisonValue(delta.after)}</li>
-                                ))}</ul>
-                              ) : <p>No module configuration changes.</p>}
+                                <ul>
+                                  {reportComparison.moduleDeltas.map(
+                                    (delta) => (
+                                      <li key={delta.path}>
+                                        <strong>{delta.path}</strong>:{" "}
+                                        {formatComparisonValue(delta.before)} →{" "}
+                                        {formatComparisonValue(delta.after)}
+                                      </li>
+                                    ),
+                                  )}
+                                </ul>
+                              ) : (
+                                <p>No module configuration changes.</p>
+                              )}
                             </details>
                             <details className="comparison-details">
-                              <summary>Detection Context changes ({reportComparison.contextDeltas.length})</summary>
+                              <summary>
+                                Detection Context changes (
+                                {reportComparison.contextDeltas.length})
+                              </summary>
                               {reportComparison.contextDeltas.length ? (
-                                <ul>{reportComparison.contextDeltas.map((delta) => (
-                                  <li key={delta.path}><strong>{delta.path}</strong>: {formatComparisonValue(delta.before)} → {formatComparisonValue(delta.after)}</li>
-                                ))}</ul>
-                              ) : <p>No Detection Context changes.</p>}
+                                <ul>
+                                  {reportComparison.contextDeltas.map(
+                                    (delta) => (
+                                      <li key={delta.path}>
+                                        <strong>{delta.path}</strong>:{" "}
+                                        {formatComparisonValue(delta.before)} →{" "}
+                                        {formatComparisonValue(delta.after)}
+                                      </li>
+                                    ),
+                                  )}
+                                </ul>
+                              ) : (
+                                <p>No Detection Context changes.</p>
+                              )}
                             </details>
                           </div>
                         ) : compareReportIds.length === 2 ? (
@@ -3016,7 +3208,9 @@ function App() {
                               disabled={comparisonLoading}
                               onClick={() => void compareSelectedReports()}
                             >
-                              {comparisonLoading ? "Comparing…" : "Compare analyses"}
+                              {comparisonLoading
+                                ? "Comparing…"
+                                : "Compare analyses"}
                             </button>
                           </div>
                         ) : null}
@@ -3043,20 +3237,30 @@ function App() {
                                   tabIndex={0}
                                   aria-expanded={historyOpen}
                                   onClick={() => {
-                                    setHistoryCaptureId(historyOpen ? "" : group.key);
+                                    setHistoryCaptureId(
+                                      historyOpen ? "" : group.key,
+                                    );
                                     setCaptureMenuId("");
                                   }}
                                   onKeyDown={(event) => {
-                                    if (event.key === "Enter" || event.key === " ") {
+                                    if (
+                                      event.key === "Enter" ||
+                                      event.key === " "
+                                    ) {
                                       event.preventDefault();
-                                      setHistoryCaptureId(historyOpen ? "" : group.key);
+                                      setHistoryCaptureId(
+                                        historyOpen ? "" : group.key,
+                                      );
                                       setCaptureMenuId("");
                                     }
                                   }}
                                 >
                                   <div className="analysis-capture-copy">
                                     <div className="analysis-capture-title-row">
-                                      <span className="analysis-tree-chevron" aria-hidden="true">
+                                      <span
+                                        className="analysis-tree-chevron"
+                                        aria-hidden="true"
+                                      >
                                         {historyOpen ? "▾" : "▸"}
                                       </span>
                                       <strong>{group.filename}</strong>
@@ -3064,9 +3268,19 @@ function App() {
                                     {retained ? (
                                       <>
                                         <span>
-                                          Retained {new Date(retained.createdAt).toLocaleString()} ·{" "}
-                                          {(retained.sizeBytes / (1024 * 1024)).toFixed(1)} MB ·{" "}
-                                          {analyses.length} {analyses.length === 1 ? "analysis" : "analyses"}
+                                          Retained{" "}
+                                          {new Date(
+                                            retained.createdAt,
+                                          ).toLocaleString()}{" "}
+                                          ·{" "}
+                                          {(
+                                            retained.sizeBytes /
+                                            (1024 * 1024)
+                                          ).toFixed(1)}{" "}
+                                          MB · {analyses.length}{" "}
+                                          {analyses.length === 1
+                                            ? "analysis"
+                                            : "analyses"}
                                         </span>
                                         <span>
                                           {retained.expiresAt
@@ -3077,7 +3291,9 @@ function App() {
                                     ) : (
                                       <span className="analysis-source-state is-unavailable">
                                         PCAP not retained · {analyses.length}{" "}
-                                        {analyses.length === 1 ? "analysis" : "analyses"}
+                                        {analyses.length === 1
+                                          ? "analysis"
+                                          : "analyses"}
                                       </span>
                                     )}
                                   </div>
@@ -3089,7 +3305,10 @@ function App() {
                                       <button
                                         type="button"
                                         className="welcome-secondary-button"
-                                        disabled={!retained || Boolean(captureAnalyzingId)}
+                                        disabled={
+                                          !retained ||
+                                          Boolean(captureAnalyzingId)
+                                        }
                                         title={
                                           retained
                                             ? undefined
@@ -3097,10 +3316,14 @@ function App() {
                                         }
                                         onClick={() => {
                                           if (retained)
-                                            void reanalyzeRetainedCapture(retained.captureId);
+                                            void reanalyzeRetainedCapture(
+                                              retained.captureId,
+                                            );
                                         }}
                                       >
-                                        {retained && captureAnalyzingId === retained.captureId
+                                        {retained &&
+                                        captureAnalyzingId ===
+                                          retained.captureId
                                           ? "Analyzing…"
                                           : analyses.length
                                             ? "Re-analyze"
@@ -3115,7 +3338,9 @@ function App() {
                                           aria-label={`More actions for ${group.filename}`}
                                           aria-expanded={menuOpen}
                                           onClick={() =>
-                                            setCaptureMenuId(menuOpen ? "" : group.key)
+                                            setCaptureMenuId(
+                                              menuOpen ? "" : group.key,
+                                            )
                                           }
                                         >
                                           ⋯
@@ -3125,36 +3350,59 @@ function App() {
                                             <button
                                               type="button"
                                               disabled={!retained}
-                                              title={retained ? "Download the original retained capture" : "This PCAP is no longer retained."}
+                                              title={
+                                                retained
+                                                  ? "Download the original retained capture"
+                                                  : "This PCAP is no longer retained."
+                                              }
                                               onClick={() => {
                                                 if (!retained) return;
                                                 setCaptureMenuId("");
-                                                void downloadRetainedCapture(retained.captureId, retained.filename).catch((error: unknown) => {
-                                                  setCapturesMessage(error instanceof Error ? error.message : "PCAP download failed.");
+                                                void downloadRetainedCapture(
+                                                  retained.captureId,
+                                                  retained.filename,
+                                                ).catch((error: unknown) => {
+                                                  setCapturesMessage(
+                                                    error instanceof Error
+                                                      ? error.message
+                                                      : "PCAP download failed.",
+                                                  );
                                                 });
                                               }}
                                             >
                                               Download PCAP
                                             </button>
-                                            {retained && deleteConfirmCaptureId === retained.captureId ? (
+                                            {retained &&
+                                            deleteConfirmCaptureId ===
+                                              retained.captureId ? (
                                               <div className="capture-delete-confirmation">
-                                                <strong>Delete retained PCAP?</strong>
+                                                <strong>
+                                                  Delete retained PCAP?
+                                                </strong>
                                                 <span>
-                                                  Saved analyses will remain available, but re-analysis
-                                                  will require uploading the capture again.
+                                                  Saved analyses will remain
+                                                  available, but re-analysis
+                                                  will require uploading the
+                                                  capture again.
                                                 </span>
                                                 <button
                                                   type="button"
                                                   className="is-destructive"
                                                   onClick={() =>
-                                                    void removeRetainedCapture(retained.captureId)
+                                                    void removeRetainedCapture(
+                                                      retained.captureId,
+                                                    )
                                                   }
                                                 >
                                                   Delete PCAP
                                                 </button>
                                                 <button
                                                   type="button"
-                                                  onClick={() => setDeleteConfirmCaptureId("")}
+                                                  onClick={() =>
+                                                    setDeleteConfirmCaptureId(
+                                                      "",
+                                                    )
+                                                  }
                                                 >
                                                   Cancel
                                                 </button>
@@ -3171,7 +3419,9 @@ function App() {
                                                 }
                                                 onClick={() => {
                                                   if (retained)
-                                                    void removeRetainedCapture(retained.captureId);
+                                                    void removeRetainedCapture(
+                                                      retained.captureId,
+                                                    );
                                                 }}
                                               >
                                                 Delete retained PCAP
@@ -3188,67 +3438,110 @@ function App() {
                                   <div className="capture-analysis-history analysis-tree-children">
                                     {analyses.length ? (
                                       analyses.map((analysis, index) => {
-                                        const selected = compareReportIds.includes(
-                                          analysis.reportId,
-                                        );
+                                        const selected =
+                                          compareReportIds.includes(
+                                            analysis.reportId,
+                                          );
                                         return (
                                           <div
                                             className={`capture-history-row analysis-tree-row ${selected ? "is-selected" : ""}`}
                                             key={analysis.reportId}
                                             role="button"
                                             tabIndex={0}
-                                            onClick={() => void openSavedReport(analysis.reportId)}
+                                            onClick={() =>
+                                              void openSavedReport(
+                                                analysis.reportId,
+                                              )
+                                            }
                                             onKeyDown={(event) => {
-                                              if (event.key === "Enter" || event.key === " ") {
+                                              if (
+                                                event.key === "Enter" ||
+                                                event.key === " "
+                                              ) {
                                                 event.preventDefault();
-                                                void openSavedReport(analysis.reportId);
+                                                void openSavedReport(
+                                                  analysis.reportId,
+                                                );
                                               }
                                             }}
                                           >
-                                            <div className="analysis-tree-branch" aria-hidden="true" />
+                                            <div
+                                              className="analysis-tree-branch"
+                                              aria-hidden="true"
+                                            />
                                             <input
                                               type="checkbox"
                                               aria-label={`Select analysis from ${new Date(analysis.createdAt).toLocaleString()} for comparison`}
                                               checked={selected}
-                                              onClick={(event) => event.stopPropagation()}
-                                              onChange={() => toggleCompareReport(analysis.reportId)}
+                                              onClick={(event) =>
+                                                event.stopPropagation()
+                                              }
+                                              onChange={() =>
+                                                toggleCompareReport(
+                                                  analysis.reportId,
+                                                )
+                                              }
                                             />
                                             <div className="capture-history-details">
                                               <div className="capture-history-title">
                                                 <strong>
-                                                  {new Date(analysis.createdAt).toLocaleString()}
+                                                  {new Date(
+                                                    analysis.createdAt,
+                                                  ).toLocaleString()}
                                                 </strong>
                                                 {index === 0 && (
-                                                  <span className="analysis-current-badge">Current</span>
+                                                  <span className="analysis-current-badge">
+                                                    Current
+                                                  </span>
                                                 )}
                                               </div>
                                               <span>
-                                                {analysis.findingCount} findings · {analysis.deviceCount}{" "}
-                                                devices · {analysis.serviceCount ?? "—"} services · {analysis.connectionCount ?? "—"} connections
+                                                {analysis.findingCount} findings
+                                                · {analysis.deviceCount} devices
+                                                · {analysis.serviceCount ?? "—"}{" "}
+                                                services ·{" "}
+                                                {analysis.connectionCount ??
+                                                  "—"}{" "}
+                                                connections
                                               </span>
                                               <span>
                                                 Saved analysis · source evidence{" "}
-                                                {retained ? "retained" : "not retained"}
+                                                {retained
+                                                  ? "retained"
+                                                  : "not retained"}
                                               </span>
                                             </div>
                                             {canWriteAnalysis && (
                                               <div
                                                 className="analysis-row-actions"
-                                                onClick={(event) => event.stopPropagation()}
+                                                onClick={(event) =>
+                                                  event.stopPropagation()
+                                                }
                                               >
-                                                {renamingReportId === analysis.reportId ? (
+                                                {renamingReportId ===
+                                                analysis.reportId ? (
                                                   <div className="analysis-inline-rename">
                                                     <input
                                                       value={renameDraft}
                                                       aria-label="Analysis name"
                                                       onChange={(event) =>
-                                                        setRenameDraft(event.target.value)
+                                                        setRenameDraft(
+                                                          event.target.value,
+                                                        )
                                                       }
                                                       onKeyDown={(event) => {
-                                                        if (event.key === "Enter")
-                                                          void saveReportRename(analysis.reportId);
-                                                        if (event.key === "Escape") {
-                                                          setRenamingReportId("");
+                                                        if (
+                                                          event.key === "Enter"
+                                                        )
+                                                          void saveReportRename(
+                                                            analysis.reportId,
+                                                          );
+                                                        if (
+                                                          event.key === "Escape"
+                                                        ) {
+                                                          setRenamingReportId(
+                                                            "",
+                                                          );
                                                           setRenameDraft("");
                                                         }
                                                       }}
@@ -3258,7 +3551,9 @@ function App() {
                                                       className="saved-report-icon-button"
                                                       aria-label="Save analysis name"
                                                       onClick={() =>
-                                                        void saveReportRename(analysis.reportId)
+                                                        void saveReportRename(
+                                                          analysis.reportId,
+                                                        )
                                                       }
                                                     >
                                                       <Icon name="check" />
@@ -3271,9 +3566,15 @@ function App() {
                                                     aria-label={`Rename ${analysis.title}`}
                                                     title="Rename"
                                                     onClick={() => {
-                                                      setRenamingReportId(analysis.reportId);
-                                                      setRenameDraft(analysis.title);
-                                                      setDeleteConfirmReportId("");
+                                                      setRenamingReportId(
+                                                        analysis.reportId,
+                                                      );
+                                                      setRenameDraft(
+                                                        analysis.title,
+                                                      );
+                                                      setDeleteConfirmReportId(
+                                                        "",
+                                                      );
                                                     }}
                                                   >
                                                     <Icon name="edit" />
@@ -3283,22 +3584,27 @@ function App() {
                                                   type="button"
                                                   className={`saved-report-icon-button saved-report-delete ${deleteConfirmReportId === analysis.reportId ? "is-confirming" : ""}`}
                                                   aria-label={
-                                                    deleteConfirmReportId === analysis.reportId
+                                                    deleteConfirmReportId ===
+                                                    analysis.reportId
                                                       ? `Confirm delete ${analysis.title}`
                                                       : `Delete ${analysis.title}`
                                                   }
                                                   title={
-                                                    deleteConfirmReportId === analysis.reportId
+                                                    deleteConfirmReportId ===
+                                                    analysis.reportId
                                                       ? "Confirm delete"
                                                       : "Delete"
                                                   }
                                                   onClick={() =>
-                                                    void removeSavedReport(analysis.reportId)
+                                                    void removeSavedReport(
+                                                      analysis.reportId,
+                                                    )
                                                   }
                                                 >
                                                   <Icon
                                                     name={
-                                                      deleteConfirmReportId === analysis.reportId
+                                                      deleteConfirmReportId ===
+                                                      analysis.reportId
                                                         ? "check"
                                                         : "trash"
                                                     }
@@ -3311,7 +3617,8 @@ function App() {
                                       })
                                     ) : (
                                       <p className="analysis-tree-empty">
-                                        No saved analyses are linked to this PCAP yet.
+                                        No saved analyses are linked to this
+                                        PCAP yet.
                                       </p>
                                     )}
                                   </div>
@@ -3327,7 +3634,9 @@ function App() {
                       )}
 
                       {(savedReportsMessage || capturesMessage) && (
-                        <p className="welcome-auth-message" role="alert">{savedReportsMessage || capturesMessage}</p>
+                        <p className="welcome-auth-message" role="alert">
+                          {savedReportsMessage || capturesMessage}
+                        </p>
                       )}
                     </section>
                   )}
@@ -3357,7 +3666,11 @@ function App() {
                       {storageSummary ? (
                         <div className="platform-dashboard-summary">
                           <div>
-                            <span>{storageSummary.scope === "all" ? "Capture storage (all users)" : "My capture storage"}</span>
+                            <span>
+                              {storageSummary.scope === "all"
+                                ? "Capture storage (all users)"
+                                : "My capture storage"}
+                            </span>
                             <strong>
                               {(
                                 (storageSummary.captureBytes || 0) /
@@ -3367,7 +3680,11 @@ function App() {
                             </strong>
                           </div>
                           <div>
-                            <span>{storageSummary.scope === "all" ? "Report storage (all users)" : "My report storage"}</span>
+                            <span>
+                              {storageSummary.scope === "all"
+                                ? "Report storage (all users)"
+                                : "My report storage"}
+                            </span>
                             <strong>
                               {(
                                 (storageSummary.reportBytes || 0) /
@@ -3405,7 +3722,15 @@ function App() {
                               Orphan capture files detected:{" "}
                               <strong>{storageSummary.orphanFiles || 0}</strong>
                             </p>
-                            <p className="storage-scope-note">Storage totals above reflect the {storageSummary.scope === "all" ? "administrator-wide" : "current account"} summary returned by the server. The per-user totals below include all storage attributed to each account.</p>
+                            <p className="storage-scope-note">
+                              Storage totals above reflect the{" "}
+                              {storageSummary.scope === "all"
+                                ? "administrator-wide"
+                                : "current account"}{" "}
+                              summary returned by the server. The per-user
+                              totals below include all storage attributed to
+                              each account.
+                            </p>
                             {storageSummary.users?.length ? (
                               <div className="platform-user-list">
                                 {storageSummary.users.map((u) => (
@@ -3434,18 +3759,53 @@ function App() {
                             ) : null}
                             <div className="platform-storage-maintenance">
                               <h3>Storage maintenance</h3>
-                              <p>Expired captures: {storageSummary.retentionDays ? "Check available" : "Retention disabled"} · Orphan files: {storageSummary.orphanFiles ?? 0}</p>
+                              <p>
+                                Expired captures:{" "}
+                                {storageSummary.retentionDays
+                                  ? "Check available"
+                                  : "Retention disabled"}{" "}
+                                · Orphan files:{" "}
+                                {storageSummary.orphanFiles ?? 0}
+                              </p>
                               <div className="saved-report-actions">
-                                <button type="button" className="welcome-secondary-button"
+                                <button
+                                  type="button"
+                                  className="welcome-secondary-button"
                                   disabled={!storageSummary.retentionDays}
-                                  title={!storageSummary.retentionDays ? "PCAP retention is disabled" : "Remove captures past the configured retention period"}
-                                  onClick={() => { if (window.confirm("Delete expired retained PCAPs? Saved analyses will remain available.")) void runStorageCleanup(false); }}>
+                                  title={
+                                    !storageSummary.retentionDays
+                                      ? "PCAP retention is disabled"
+                                      : "Remove captures past the configured retention period"
+                                  }
+                                  onClick={() => {
+                                    if (
+                                      window.confirm(
+                                        "Delete expired retained PCAPs? Saved analyses will remain available.",
+                                      )
+                                    )
+                                      void runStorageCleanup(false);
+                                  }}
+                                >
                                   Delete expired captures
                                 </button>
-                                <button type="button" className="welcome-secondary-button"
+                                <button
+                                  type="button"
+                                  className="welcome-secondary-button"
                                   disabled={!storageSummary.orphanFiles}
-                                  title={!storageSummary.orphanFiles ? "No orphan capture files detected" : "Delete orphan capture files"}
-                                  onClick={() => { if (window.confirm("Delete orphan capture files? This cleanup also processes expired captures. Saved analyses will remain available.")) void runStorageCleanup(true); }}>
+                                  title={
+                                    !storageSummary.orphanFiles
+                                      ? "No orphan capture files detected"
+                                      : "Delete orphan capture files"
+                                  }
+                                  onClick={() => {
+                                    if (
+                                      window.confirm(
+                                        "Delete orphan capture files? This cleanup also processes expired captures. Saved analyses will remain available.",
+                                      )
+                                    )
+                                      void runStorageCleanup(true);
+                                  }}
+                                >
                                   Delete orphaned files
                                 </button>
                               </div>
@@ -3459,17 +3819,38 @@ function App() {
                       )}
                     </section>
                   )}
-                {authState?.authEnabled && authState.user.authenticated &&
-                  authState.user.role === "admin" && platformView === "administration" && (
-                    <nav className="platform-admin-tabs" aria-label="Administration sections">
-                      <button type="button" className={adminTab === "users" ? "is-active" : ""} onClick={() => setAdminTab("users")}>Users</button>
-                      <button type="button" className={adminTab === "audit" ? "is-active" : ""} onClick={() => { setAdminTab("audit"); void refreshAuditEvents(); }}>Audit Log</button>
+                {authState?.authEnabled &&
+                  authState.user.authenticated &&
+                  authState.user.role === "admin" &&
+                  platformView === "administration" && (
+                    <nav
+                      className="platform-admin-tabs"
+                      aria-label="Administration sections"
+                    >
+                      <button
+                        type="button"
+                        className={adminTab === "users" ? "is-active" : ""}
+                        onClick={() => setAdminTab("users")}
+                      >
+                        Users
+                      </button>
+                      <button
+                        type="button"
+                        className={adminTab === "audit" ? "is-active" : ""}
+                        onClick={() => {
+                          setAdminTab("audit");
+                          void refreshAuditEvents();
+                        }}
+                      >
+                        Audit Log
+                      </button>
                     </nav>
                   )}
                 {authState?.authEnabled &&
                   authState.user.authenticated &&
                   platformView === "administration" &&
-                  authState.user.role === "admin" && adminTab === "audit" && (
+                  authState.user.role === "admin" &&
+                  adminTab === "audit" && (
                     <section
                       className="welcome-account-panel platform-activity-panel platform-workspace-view"
                       aria-labelledby="recent-activity-title"
@@ -3547,14 +3928,19 @@ function App() {
                 {authState?.authEnabled &&
                   authState.user.authenticated &&
                   (platformView === "account" ||
-                    (platformView === "administration" && adminTab === "users")) && (
+                    (platformView === "administration" &&
+                      adminTab === "users")) && (
                     <section
                       className="welcome-account-panel platform-account-panel platform-workspace-view"
                       aria-labelledby="account-management-title"
                     >
                       <div className="welcome-account-heading">
                         <div>
-                          <h2 id="account-management-title">{authState.user.role === "admin" ? "Users & Account" : "Account"}</h2>
+                          <h2 id="account-management-title">
+                            {authState.user.role === "admin"
+                              ? "Users & Account"
+                              : "Account"}
+                          </h2>
                           <p>
                             Manage your password
                             {authState.user.role === "admin"

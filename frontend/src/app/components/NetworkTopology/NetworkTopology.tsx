@@ -41,7 +41,12 @@ type GraphQuery = {
   maxHops?: number;
   direction?: "both" | "outbound" | "inbound";
 };
-type SavedGraphQuery = { id: string; name: string; query: GraphQuery; updatedAt: string };
+type SavedGraphQuery = {
+  id: string;
+  name: string;
+  query: GraphQuery;
+  updatedAt: string;
+};
 type Point = { x: number; y: number };
 type Viewport = { x: number; y: number; scale: number };
 type LabelMode = "minimal" | "full" | "off";
@@ -128,7 +133,6 @@ function defaultPosition(
   };
 }
 
-
 interface Props {
   report: ElevadrReport;
   filters: InvestigationFilter[];
@@ -183,8 +187,9 @@ const NetworkTopology: React.FC<Props> = ({
   const [autoRevealClusters, setAutoRevealClusters] = useState(false);
 
   const revealFrameRef = useRef<number | null>(null);
-  const clusterLayoutCacheRef = useRef<{ signature: string; coordinates: Map<string, Point> } | null>(null);
-  const [inspectedClusterEdge, setInspectedClusterEdge] = useState<string | null>(null);
+  const [inspectedClusterEdge, setInspectedClusterEdge] = useState<
+    string | null
+  >(null);
   const [clusterEdgePage, setClusterEdgePage] = useState(0);
   const [preset, setPreset] = useState<"simple" | "risk" | "full">("simple");
   const [positions, setPositions] = useState<Record<string, Point>>({});
@@ -222,11 +227,15 @@ const NetworkTopology: React.FC<Props> = ({
     if (!token) throw new Error("Sign in to manage saved queries.");
     const response = await fetch(authApiUrl(path), {
       method,
-      headers: { Authorization: `Bearer ${token}`, ...(body ? { "Content-Type": "application/json" } : {}) },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(body ? { "Content-Type": "application/json" } : {}),
+      },
       body: body ? JSON.stringify(body) : undefined,
       cache: "no-store",
     });
-    if (!response.ok) throw new Error(`Saved-query service returned HTTP ${response.status}`);
+    if (!response.ok)
+      throw new Error(`Saved-query service returned HTTP ${response.status}`);
     return response.json();
   };
   const refreshSavedQueries = async () => {
@@ -234,27 +243,50 @@ const NetworkTopology: React.FC<Props> = ({
       const result = await queryRequest("GET", "/api/v1/topology-queries");
       setSavedQueries(result.queries || []);
       setQueryError("");
-    } catch (error) { setQueryError(error instanceof Error ? error.message : "Cannot load saved queries"); }
+    } catch (error) {
+      setQueryError(
+        error instanceof Error ? error.message : "Cannot load saved queries",
+      );
+    }
   };
-  useEffect(() => { if (queryOpen) void refreshSavedQueries(); }, [queryOpen]);
+  useEffect(() => {
+    if (queryOpen) void refreshSavedQueries();
+  }, [queryOpen]);
   const saveGraphQuery = async () => {
     setQueryBusy(true);
     try {
-      const result = await queryRequest("POST", "/api/v1/topology-queries", { id: savedQueryId || undefined, name: queryName, query });
+      const result = await queryRequest("POST", "/api/v1/topology-queries", {
+        id: savedQueryId || undefined,
+        name: queryName,
+        query,
+      });
       setSavedQueryId(result.query.id);
       await refreshSavedQueries();
-    } catch (error) { setQueryError(error instanceof Error ? error.message : "Cannot save query"); }
-    finally { setQueryBusy(false); }
+    } catch (error) {
+      setQueryError(
+        error instanceof Error ? error.message : "Cannot save query",
+      );
+    } finally {
+      setQueryBusy(false);
+    }
   };
   const deleteGraphQuery = async () => {
     if (!savedQueryId) return;
     setQueryBusy(true);
     try {
-      await queryRequest("DELETE", `/api/v1/topology-queries/${encodeURIComponent(savedQueryId)}`);
+      await queryRequest(
+        "DELETE",
+        `/api/v1/topology-queries/${encodeURIComponent(savedQueryId)}`,
+      );
       setSavedQueryId(null);
       await refreshSavedQueries();
-    } catch (error) { setQueryError(error instanceof Error ? error.message : "Cannot delete query"); }
-    finally { setQueryBusy(false); }
+    } catch (error) {
+      setQueryError(
+        error instanceof Error ? error.message : "Cannot delete query",
+      );
+    } finally {
+      setQueryBusy(false);
+    }
   };
   const graphStateStorageKey = `elevadr-topology-state:${report.report_id || "report"}`;
 
@@ -480,21 +512,19 @@ const NetworkTopology: React.FC<Props> = ({
         item.count,
       ),
     );
-    report.modules.connection_success_panel.connections
-      .forEach((item) => {
-        if (item["src_endpoint.ip"] && item["dst_endpoint.ip"]) {
-          const service =
-            item["service.name"] ||
-            item["connection_info.protocol_name"] ||
-            (item["dst_endpoint.port"]
-              ? `Port ${item["dst_endpoint.port"]}`
-              : "Connection");
-          add(item["src_endpoint.ip"]!, item["dst_endpoint.ip"]!, service, 1);
-        }
-      });
+    report.modules.connection_success_panel.connections.forEach((item) => {
+      if (item["src_endpoint.ip"] && item["dst_endpoint.ip"]) {
+        const service =
+          item["service.name"] ||
+          item["connection_info.protocol_name"] ||
+          (item["dst_endpoint.port"]
+            ? `Port ${item["dst_endpoint.port"]}`
+            : "Connection");
+        add(item["src_endpoint.ip"]!, item["dst_endpoint.ip"]!, service, 1);
+      }
+    });
 
-    return [...edgeMap.values()]
-      .sort((a, b) => b.count - a.count);
+    return [...edgeMap.values()].sort((a, b) => b.count - a.count);
   }, [report, findingIndex]);
 
   // Keep the rendered graph bounded, but never truncate the query dataset.
@@ -854,9 +884,17 @@ const NetworkTopology: React.FC<Props> = ({
       const key = groupKeyFor(node) || "Unassigned";
       groups.set(key, (groups.get(key) || 0) + 1);
     }
-    return [...groups.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    return [...groups.entries()].sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    );
   }, [baseNodes, layoutMode]);
-  useEffect(() => { setClusterFocus(""); setClusterRenderLimit(24); setAutoRevealClusters(false); setInspectedClusterEdge(null); setClusterEdgePage(0); }, [layoutMode, report.report_id]);
+  useEffect(() => {
+    setClusterFocus("");
+    setClusterRenderLimit(24);
+    setAutoRevealClusters(false);
+    setInspectedClusterEdge(null);
+    setClusterEdgePage(0);
+  }, [layoutMode, report.report_id]);
 
   const nodes = useMemo<Node[]>(() => {
     const query = search.trim().toLowerCase();
@@ -880,7 +918,15 @@ const NetworkTopology: React.FC<Props> = ({
           node.services.some((service) => service.toLowerCase().includes(query))
         );
       });
-  }, [baseNodes, positions, search, neighborsOnly, focusedNeighborIds, clusterFocus, layoutMode]);
+  }, [
+    baseNodes,
+    positions,
+    search,
+    neighborsOnly,
+    focusedNeighborIds,
+    clusterFocus,
+    layoutMode,
+  ]);
 
   useEffect(() => {
     if (focusedNodeId && !baseNodes.some((node) => node.id === focusedNodeId)) {
@@ -1202,7 +1248,10 @@ const NetworkTopology: React.FC<Props> = ({
     }
     setIsInteracting(false);
     if (!moved) dragRef.current = null;
-    else window.setTimeout(() => { dragRef.current = null; }, 0);
+    else
+      window.setTimeout(() => {
+        dragRef.current = null;
+      }, 0);
   };
 
   const fittedViewport = (): Viewport | null => {
@@ -1383,25 +1432,42 @@ const NetworkTopology: React.FC<Props> = ({
     if (!queryActive) return [] as Edge[];
     const matchDevice = (id: string) => {
       const item = deviceIndex.get(id);
-      const subnet = (item?.device?.subnets || item?.device?.ipv4_subnets || [])[0] || "Unknown subnet";
+      const subnet =
+        (item?.device?.subnets || item?.device?.ipv4_subnets || [])[0] ||
+        "Unknown subnet";
       const role = baseNodes.find((n) => n.id === id);
-      return (!query.type || item?.type === query.type) &&
-        (!query.subnet || subnet.toLowerCase().includes(query.subnet.toLowerCase())) &&
-        (!query.purdueLevel || role?.purdueLevel.toLowerCase().includes(query.purdueLevel.toLowerCase())) &&
-        (!query.roleGroup || role?.roleGroup.toLowerCase().includes(query.roleGroup.toLowerCase()));
+      return (
+        (!query.type || item?.type === query.type) &&
+        (!query.subnet ||
+          subnet.toLowerCase().includes(query.subnet.toLowerCase())) &&
+        (!query.purdueLevel ||
+          role?.purdueLevel
+            .toLowerCase()
+            .includes(query.purdueLevel.toLowerCase())) &&
+        (!query.roleGroup ||
+          role?.roleGroup.toLowerCase().includes(query.roleGroup.toLowerCase()))
+      );
     };
-    const eligible = allQueryEdges.filter((edge) =>
-      (!query.service || edge.service.toLowerCase().includes(query.service.toLowerCase())) &&
-      (query.suspicious === undefined || edge.suspicious === query.suspicious) &&
-      (query.findingRelated === undefined || edge.findingRelated === query.findingRelated) &&
-      (!query.minCount || edge.count >= query.minCount)
+    const eligible = allQueryEdges.filter(
+      (edge) =>
+        (!query.service ||
+          edge.service.toLowerCase().includes(query.service.toLowerCase())) &&
+        (query.suspicious === undefined ||
+          edge.suspicious === query.suspicious) &&
+        (query.findingRelated === undefined ||
+          edge.findingRelated === query.findingRelated) &&
+        (!query.minCount || edge.count >= query.minCount),
     );
     // Bounded breadth-first traversal of *observed communications*. This does not
     // imply routing, physical connectivity, or that a packet could traverse the path.
     const seed = (query.startAsset || "").trim();
     const hops = query.maxHops || 1;
     const direction = query.direction || "both";
-    const seeds = seed ? [seed] : [...new Set(eligible.flatMap((edge) => [edge.source, edge.target]))].filter(matchDevice);
+    const seeds = seed
+      ? [seed]
+      : [
+          ...new Set(eligible.flatMap((edge) => [edge.source, edge.target])),
+        ].filter(matchDevice);
     if (!seeds.length) return [] as Edge[];
     const reached = new Set(seeds);
     let frontier = new Set(seeds);
@@ -1413,8 +1479,14 @@ const NetworkTopology: React.FC<Props> = ({
         const reverse = direction !== "outbound" && frontier.has(edge.target);
         if (!forward && !reverse) continue;
         selected.set(edge.id, edge);
-        for (const neighbor of [forward ? edge.target : null, reverse ? edge.source : null]) {
-          if (neighbor && !reached.has(neighbor)) { reached.add(neighbor); next.add(neighbor); }
+        for (const neighbor of [
+          forward ? edge.target : null,
+          reverse ? edge.source : null,
+        ]) {
+          if (neighbor && !reached.has(neighbor)) {
+            reached.add(neighbor);
+            next.add(neighbor);
+          }
         }
       }
       frontier = next;
@@ -1431,76 +1503,131 @@ const NetworkTopology: React.FC<Props> = ({
     for (let hop = 1; hop <= (query.maxHops || 1) && frontier.size; hop++) {
       const next = new Set<string>();
       for (const edge of queryMatchingEdges) {
-        const forward = query.direction !== "inbound" && frontier.has(edge.source);
-        const reverse = query.direction !== "outbound" && frontier.has(edge.target);
+        const forward =
+          query.direction !== "inbound" && frontier.has(edge.source);
+        const reverse =
+          query.direction !== "outbound" && frontier.has(edge.target);
         if (!forward && !reverse) continue;
         if (!depths.has(edge.id)) depths.set(edge.id, hop);
-        for (const neighbor of [forward ? edge.target : null, reverse ? edge.source : null]) {
-          if (neighbor && !visited.has(neighbor)) { visited.add(neighbor); next.add(neighbor); }
+        for (const neighbor of [
+          forward ? edge.target : null,
+          reverse ? edge.source : null,
+        ]) {
+          if (neighbor && !visited.has(neighbor)) {
+            visited.add(neighbor);
+            next.add(neighbor);
+          }
         }
       }
       frontier = next;
     }
     return depths;
   }, [queryActive, query, queryMatchingEdges]);
-  const queryEdgeIds = useMemo(() => new Set(queryMatchingEdges.map((edge) => edge.id)), [queryMatchingEdges]);
-  const queryNodeIds = useMemo(() => new Set(queryMatchingEdges.flatMap((edge) => [edge.source, edge.target])), [queryMatchingEdges]);
-  const queryPageCount = Math.max(1, Math.ceil(queryMatchingEdges.length / QUERY_PAGE_SIZE));
+  const queryEdgeIds = useMemo(
+    () => new Set(queryMatchingEdges.map((edge) => edge.id)),
+    [queryMatchingEdges],
+  );
+  const queryNodeIds = useMemo(
+    () =>
+      new Set(queryMatchingEdges.flatMap((edge) => [edge.source, edge.target])),
+    [queryMatchingEdges],
+  );
+  const queryPageCount = Math.max(
+    1,
+    Math.ceil(queryMatchingEdges.length / QUERY_PAGE_SIZE),
+  );
   const effectiveQueryPage = Math.min(queryResultPage, queryPageCount - 1);
   const pagedQueryEdges = useMemo(
-    () => queryMatchingEdges.slice(effectiveQueryPage * QUERY_PAGE_SIZE, (effectiveQueryPage + 1) * QUERY_PAGE_SIZE),
+    () =>
+      queryMatchingEdges.slice(
+        effectiveQueryPage * QUERY_PAGE_SIZE,
+        (effectiveQueryPage + 1) * QUERY_PAGE_SIZE,
+      ),
     [queryMatchingEdges, effectiveQueryPage],
   );
   // A query can search the full report; graph rendering is intentionally bounded.
   const renderedQueryEdges = useMemo(
-    () => showOnlyQueryMatches && queryActive
-      ? visibleEdges.filter((edge) => queryEdgeIds.has(edge.id))
-      : visibleEdges,
+    () =>
+      showOnlyQueryMatches && queryActive
+        ? visibleEdges.filter((edge) => queryEdgeIds.has(edge.id))
+        : visibleEdges,
     [showOnlyQueryMatches, queryActive, visibleEdges, queryEdgeIds],
   );
 
   // Aggregate only the bounded display graph. Queries retain the full report data.
   const aggregateView = !clusterFocus;
-  const aggregateGraph = useMemo(() => {
-    const grouped = new Map<string, { key: string; members: Node[]; x: number; y: number }>();
+  // Deterministic grid coordinates for unchanged group membership, keyed by a
+  // signature so filtering edges or opening the Query Explorer never triggers
+  // a new layout while cluster membership is stable.
+  const clusterGroupKeys = useMemo(() => {
+    const keys = new Set<string>();
     for (const node of nodes) {
-      const key = layoutMode === "subnet" ? node.subnet : layoutMode === "role" ? node.roleGroup : layoutMode === "purdue" ? node.purdueLevel : node.type;
+      const key =
+        layoutMode === "subnet"
+          ? node.subnet
+          : layoutMode === "role"
+            ? node.roleGroup
+            : layoutMode === "purdue"
+              ? node.purdueLevel
+              : node.type;
+      keys.add(key);
+    }
+    return [...keys].sort((a, b) => a.localeCompare(b));
+  }, [nodes, layoutMode]);
+  const clusterLayoutCoordinates = useMemo(() => {
+    const columns = Math.max(1, Math.ceil(Math.sqrt(clusterGroupKeys.length)));
+    const rows = Math.ceil(clusterGroupKeys.length / columns);
+    const coordinates = new Map<string, Point>();
+    clusterGroupKeys.forEach((key, index) => {
+      coordinates.set(key, {
+        x: (((index % columns) + 1) * WIDTH) / (columns + 1),
+        y: ((Math.floor(index / columns) + 1) * HEIGHT) / (rows + 1),
+      });
+    });
+    return coordinates;
+  }, [clusterGroupKeys]);
+  const aggregateGraph = useMemo(() => {
+    const grouped = new Map<
+      string,
+      { key: string; members: Node[]; x: number; y: number }
+    >();
+    for (const node of nodes) {
+      const key =
+        layoutMode === "subnet"
+          ? node.subnet
+          : layoutMode === "role"
+            ? node.roleGroup
+            : layoutMode === "purdue"
+              ? node.purdueLevel
+              : node.type;
       let group = grouped.get(key);
       if (!group) {
-        group = { key, members: [], x: 0, y: 0 };
+        const point = clusterLayoutCoordinates.get(key);
+        group = { key, members: [], x: point?.x ?? 0, y: point?.y ?? 0 };
         grouped.set(key, group);
       }
       group.members.push(node);
-      group.x += node.x;
-      group.y += node.y;
     }
-    const clusters = [...grouped.values()].sort((a, b) => a.key.localeCompare(b.key));
-    // Cache deterministic cluster coordinates for unchanged group membership.
-    // Filtering edges or opening the Query Explorer must not trigger a new layout.
-    const signature = `${layoutMode}:${clusters.map((group) => group.key).join("\u001f")}`;
-    let cached = clusterLayoutCacheRef.current;
-    if (!cached || cached.signature !== signature) {
-      const columns = Math.max(1, Math.ceil(Math.sqrt(clusters.length)));
-      const rows = Math.ceil(clusters.length / columns);
-      const coordinates = new Map<string, Point>();
-      clusters.forEach((group, index) => {
-        coordinates.set(group.key, {
-          x: (index % columns + 1) * WIDTH / (columns + 1),
-          y: (Math.floor(index / columns) + 1) * HEIGHT / (rows + 1),
-        });
-      });
-      cached = { signature, coordinates };
-      clusterLayoutCacheRef.current = cached;
-    }
-    for (const group of clusters) {
-      const point = cached.coordinates.get(group.key);
-      if (point) { group.x = point.x; group.y = point.y; }
-    }
+    const clusters = [...grouped.values()].sort((a, b) =>
+      a.key.localeCompare(b.key),
+    );
     const memberGroups = new Map<string, string>();
     for (const group of clusters) {
-      for (const member of group.members) memberGroups.set(member.id, group.key);
+      for (const member of group.members)
+        memberGroups.set(member.id, group.key);
     }
-    const aggregated = new Map<string, { source: string; target: string; count: number; relationships: number; services: Set<string>; suspicious: boolean; findingRelated: boolean }>();
+    const aggregated = new Map<
+      string,
+      {
+        source: string;
+        target: string;
+        count: number;
+        relationships: number;
+        services: Set<string>;
+        suspicious: boolean;
+        findingRelated: boolean;
+      }
+    >();
     for (const edge of renderedQueryEdges) {
       const source = memberGroups.get(edge.source);
       const target = memberGroups.get(edge.target);
@@ -1508,7 +1635,15 @@ const NetworkTopology: React.FC<Props> = ({
       const key = JSON.stringify([source, target]);
       let item = aggregated.get(key);
       if (!item) {
-        item = { source, target, count: 0, relationships: 0, services: new Set(), suspicious: false, findingRelated: false };
+        item = {
+          source,
+          target,
+          count: 0,
+          relationships: 0,
+          services: new Set(),
+          suspicious: false,
+          findingRelated: false,
+        };
         aggregated.set(key, item);
       }
       item.count += edge.count;
@@ -1518,35 +1653,73 @@ const NetworkTopology: React.FC<Props> = ({
       item.findingRelated ||= edge.findingRelated;
     }
     return { clusters, edges: [...aggregated.values()] };
-  }, [nodes, renderedQueryEdges, layoutMode]);
+  }, [nodes, renderedQueryEdges, layoutMode, clusterLayoutCoordinates]);
 
   // Progressive aggregate display: bounded SVG complexity without truncating query data.
   // Reveal additional SVG groups in separate animation frames, keeping each
   // React update bounded. Cancel immediately when the view changes/unmounts.
   useEffect(() => {
-    if (!autoRevealClusters || !aggregateView || clusterRenderLimit >= aggregateGraph.clusters.length) {
-      if (autoRevealClusters && clusterRenderLimit >= aggregateGraph.clusters.length) setAutoRevealClusters(false);
+    if (
+      !autoRevealClusters ||
+      !aggregateView ||
+      clusterRenderLimit >= aggregateGraph.clusters.length
+    ) {
+      if (
+        autoRevealClusters &&
+        clusterRenderLimit >= aggregateGraph.clusters.length
+      )
+        setAutoRevealClusters(false);
       return;
     }
     revealFrameRef.current = window.requestAnimationFrame(() => {
       revealFrameRef.current = null;
       // Reveal a bounded batch per frame without changing saved-query results.
       const batch = 24;
-      setClusterRenderLimit((limit) => Math.min(limit + batch, aggregateGraph.clusters.length));
+      setClusterRenderLimit((limit) =>
+        Math.min(limit + batch, aggregateGraph.clusters.length),
+      );
     });
     return () => {
-      if (revealFrameRef.current !== null) window.cancelAnimationFrame(revealFrameRef.current);
+      if (revealFrameRef.current !== null)
+        window.cancelAnimationFrame(revealFrameRef.current);
       revealFrameRef.current = null;
     };
-  }, [autoRevealClusters, aggregateView, clusterRenderLimit, aggregateGraph.clusters.length]);
-  const renderedClusters = useMemo(() => aggregateGraph.clusters.slice(0, clusterRenderLimit), [aggregateGraph.clusters, clusterRenderLimit]);
+  }, [
+    autoRevealClusters,
+    aggregateView,
+    clusterRenderLimit,
+    aggregateGraph.clusters.length,
+  ]);
+  const renderedClusters = useMemo(
+    () => aggregateGraph.clusters.slice(0, clusterRenderLimit),
+    [aggregateGraph.clusters, clusterRenderLimit],
+  );
   // Index cluster positions once rather than searching the cluster array for each SVG edge.
-  const clusterPositions = useMemo(() => new Map(aggregateGraph.clusters.map((cluster) => [cluster.key, cluster] as const)), [aggregateGraph.clusters]);
+  const clusterPositions = useMemo(
+    () =>
+      new Map(
+        aggregateGraph.clusters.map(
+          (cluster) => [cluster.key, cluster] as const,
+        ),
+      ),
+    [aggregateGraph.clusters],
+  );
   // Pre-sort edges by the index of their later endpoint. As clusters are revealed,
   // a binary search selects a prefix instead of filtering every edge each frame.
   const revealOrderedEdges = useMemo(() => {
-    const indices = new Map(aggregateGraph.clusters.map((cluster, index) => [cluster.key, index] as const));
-    return aggregateGraph.edges.map((edge) => ({ edge, revealAt: Math.max(indices.get(edge.source) ?? Infinity, indices.get(edge.target) ?? Infinity) }))
+    const indices = new Map(
+      aggregateGraph.clusters.map(
+        (cluster, index) => [cluster.key, index] as const,
+      ),
+    );
+    return aggregateGraph.edges
+      .map((edge) => ({
+        edge,
+        revealAt: Math.max(
+          indices.get(edge.source) ?? Infinity,
+          indices.get(edge.target) ?? Infinity,
+        ),
+      }))
       .sort((a, b) => a.revealAt - b.revealAt);
   }, [aggregateGraph.clusters, aggregateGraph.edges]);
   const renderedClusterEdges = useMemo(() => {
@@ -1562,16 +1735,27 @@ const NetworkTopology: React.FC<Props> = ({
   const clusterMembership = useMemo(() => {
     const membership = new Map<string, string>();
     for (const cluster of aggregateGraph.clusters) {
-      for (const member of cluster.members) membership.set(member.id, cluster.key);
+      for (const member of cluster.members)
+        membership.set(member.id, cluster.key);
     }
     return membership;
   }, [aggregateGraph.clusters]);
   const inspectedClusterRelationship = useMemo(() => {
     if (!inspectedClusterEdge) return [] as Edge[];
-    const [source, target] = JSON.parse(inspectedClusterEdge) as [string, string];
-    return renderedQueryEdges.filter((edge) => clusterMembership.get(edge.source) === source && clusterMembership.get(edge.target) === target);
+    const [source, target] = JSON.parse(inspectedClusterEdge) as [
+      string,
+      string,
+    ];
+    return renderedQueryEdges.filter(
+      (edge) =>
+        clusterMembership.get(edge.source) === source &&
+        clusterMembership.get(edge.target) === target,
+    );
   }, [inspectedClusterEdge, clusterMembership, renderedQueryEdges]);
-  const inspectedClusterPageEdges = inspectedClusterRelationship.slice(clusterEdgePage * 25, (clusterEdgePage + 1) * 25);
+  const inspectedClusterPageEdges = inspectedClusterRelationship.slice(
+    clusterEdgePage * 25,
+    (clusterEdgePage + 1) * 25,
+  );
 
   const topologyView = (
     <section
@@ -1587,60 +1771,194 @@ const NetworkTopology: React.FC<Props> = ({
           aria-label="Restore topology panel"
           title="Restore topology panel"
         >
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M9 3v6H3M15 21v-6h6M3 9l6-6M21 15l-6 6" />
           </svg>
         </button>
       )}
       <div className="topology-collapsible-card topology-organize-wrapper">
-        <button type="button" className="topology-section-toggle" aria-expanded={organizeOpen} aria-controls="topology-organize-content" onClick={() => setOrganizeOpen((open) => !open)}>
-          <span>1. Organize devices</span><span className="topology-section-chevron" aria-hidden="true">{organizeOpen ? "▾" : "▸"}</span>
+        <button
+          type="button"
+          className="topology-section-toggle"
+          aria-expanded={organizeOpen}
+          aria-controls="topology-organize-content"
+          onClick={() => setOrganizeOpen((open) => !open)}
+        >
+          <span>1. Organize devices</span>
+          <span className="topology-section-chevron" aria-hidden="true">
+            {organizeOpen ? "▾" : "▸"}
+          </span>
         </button>
-        {organizeOpen && <div id="topology-organize-content" className="topology-cluster-controls" aria-label="Topology grouping and cluster drill-down">
-        <label className="topology-cluster-field" htmlFor="topology-cluster-mode">
-          <span>Group by</span>
-          <select id="topology-cluster-mode" value={layoutMode} onChange={(event) => setLayoutMode(event.target.value as LayoutMode)}>
-            <option value="class">Asset class</option>
-            <option value="subnet">Subnet</option>
-            <option value="purdue">Purdue level</option>
-            <option value="role">Role group</option>
-          </select>
-        </label>
-        <label className="topology-cluster-field topology-cluster-focus-field" htmlFor="topology-cluster-focus">
-          <span>Explore a cluster</span>
-          <select id="topology-cluster-focus" value={clusterFocus} onChange={(event) => { setClusterFocus(event.target.value); setViewport(DEFAULT_VIEWPORT); }}>
-            <option value="">Network overview</option>
-            {clusterSummaries.map(([name, count]) => <option key={name} value={name}>{name} ({count} assets)</option>)}
-          </select>
-        </label>
-        <span role="status" className="topology-view-count">{aggregateView ? `${aggregateGraph.clusters.length} clusters · ${nodes.length} devices available` : `${nodes.length} devices shown · ${visibleEdges.length} connections`}</span>
-        {clusterFocus && <button type="button" onClick={() => { setClusterFocus(""); setViewport(DEFAULT_VIEWPORT); }}>Back to overview</button>}
-        <p className="topology-cluster-guidance">{aggregateView
-          ? "Select a cluster to see its devices and observed communications. Lines between clusters summarize traffic, not physical wiring."
-          : "Showing one cluster. Select a device or connection to inspect it; use Back to overview to see all clusters."}</p>
-        </div>}
+        {organizeOpen && (
+          <div
+            id="topology-organize-content"
+            className="topology-cluster-controls"
+            aria-label="Topology grouping and cluster drill-down"
+          >
+            <label
+              className="topology-cluster-field"
+              htmlFor="topology-cluster-mode"
+            >
+              <span>Group by</span>
+              <select
+                id="topology-cluster-mode"
+                value={layoutMode}
+                onChange={(event) =>
+                  setLayoutMode(event.target.value as LayoutMode)
+                }
+              >
+                <option value="class">Asset class</option>
+                <option value="subnet">Subnet</option>
+                <option value="purdue">Purdue level</option>
+                <option value="role">Role group</option>
+              </select>
+            </label>
+            <label
+              className="topology-cluster-field topology-cluster-focus-field"
+              htmlFor="topology-cluster-focus"
+            >
+              <span>Explore a cluster</span>
+              <select
+                id="topology-cluster-focus"
+                value={clusterFocus}
+                onChange={(event) => {
+                  setClusterFocus(event.target.value);
+                  setViewport(DEFAULT_VIEWPORT);
+                }}
+              >
+                <option value="">Network overview</option>
+                {clusterSummaries.map(([name, count]) => (
+                  <option key={name} value={name}>
+                    {name} ({count} assets)
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span role="status" className="topology-view-count">
+              {aggregateView
+                ? `${aggregateGraph.clusters.length} clusters · ${nodes.length} devices available`
+                : `${nodes.length} devices shown · ${visibleEdges.length} connections`}
+            </span>
+            {clusterFocus && (
+              <button
+                type="button"
+                onClick={() => {
+                  setClusterFocus("");
+                  setViewport(DEFAULT_VIEWPORT);
+                }}
+              >
+                Back to overview
+              </button>
+            )}
+            <p className="topology-cluster-guidance">
+              {aggregateView
+                ? "Select a cluster to see its devices and observed communications. Lines between clusters summarize traffic, not physical wiring."
+                : "Showing one cluster. Select a device or connection to inspect it; use Back to overview to see all clusters."}
+            </p>
+          </div>
+        )}
       </div>
       {aggregateView && aggregateGraph.clusters.length > clusterRenderLimit && (
         <div className="topology-cluster-progress" role="status">
-          Showing {renderedClusters.length} of {aggregateGraph.clusters.length} clusters and {renderedClusterEdges.length} of {aggregateGraph.edges.length} aggregated links.
-          <button type="button" onClick={() => { setAutoRevealClusters(false); setClusterRenderLimit((value) => Math.min(value + 24, aggregateGraph.clusters.length)); }}>Show next 24 clusters</button>
-          <button type="button" onClick={() => setAutoRevealClusters((value) => !value)}>{autoRevealClusters ? "Pause progressive display" : "Progressively show all"}</button>
-          <button type="button" onClick={() => { setAutoRevealClusters(false); setClusterRenderLimit(24); }}>Reset cluster display</button>
+          Showing {renderedClusters.length} of {aggregateGraph.clusters.length}{" "}
+          clusters and {renderedClusterEdges.length} of{" "}
+          {aggregateGraph.edges.length} aggregated links.
+          <button
+            type="button"
+            onClick={() => {
+              setAutoRevealClusters(false);
+              setClusterRenderLimit((value) =>
+                Math.min(value + 24, aggregateGraph.clusters.length),
+              );
+            }}
+          >
+            Show next 24 clusters
+          </button>
+          <button
+            type="button"
+            onClick={() => setAutoRevealClusters((value) => !value)}
+          >
+            {autoRevealClusters
+              ? "Pause progressive display"
+              : "Progressively show all"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAutoRevealClusters(false);
+              setClusterRenderLimit(24);
+            }}
+          >
+            Reset cluster display
+          </button>
         </div>
       )}
       {aggregateView && inspectedClusterEdge && (
-        <div className="topology-cluster-inspector" role="region" aria-label="Aggregated communication details">
-          <div className="topology-cluster-inspector-header"><strong>Observed relationships: {inspectedClusterRelationship.length}</strong>
-            <button type="button" onClick={() => { setInspectedClusterEdge(null); setClusterEdgePage(0); }}>Close</button>
+        <div
+          className="topology-cluster-inspector"
+          role="region"
+          aria-label="Aggregated communication details"
+        >
+          <div className="topology-cluster-inspector-header">
+            <strong>
+              Observed relationships: {inspectedClusterRelationship.length}
+            </strong>
+            <button
+              type="button"
+              onClick={() => {
+                setInspectedClusterEdge(null);
+                setClusterEdgePage(0);
+              }}
+            >
+              Close
+            </button>
           </div>
-          <p>These links are observed communications, not proof of routing or physical connectivity.</p>
-          {inspectedClusterPageEdges.map((edge) => <button key={edge.id} type="button" onClick={() => inspectEdge(edge)}>
-            {edge.source} to {edge.target} – {edge.service} ({edge.count} observations)
-          </button>)}
+          <p>
+            These links are observed communications, not proof of routing or
+            physical connectivity.
+          </p>
+          {inspectedClusterPageEdges.map((edge) => (
+            <button
+              key={edge.id}
+              type="button"
+              onClick={() => inspectEdge(edge)}
+            >
+              {edge.source} to {edge.target} – {edge.service} ({edge.count}{" "}
+              observations)
+            </button>
+          ))}
           <div className="topology-cluster-inspector-pages">
-            <button type="button" disabled={clusterEdgePage === 0} onClick={() => setClusterEdgePage((page) => page - 1)}>Previous</button>
-            <span>Page {clusterEdgePage + 1} of {Math.max(1, Math.ceil(inspectedClusterRelationship.length / 25))}</span>
-            <button type="button" disabled={(clusterEdgePage + 1) * 25 >= inspectedClusterRelationship.length} onClick={() => setClusterEdgePage((page) => page + 1)}>Next</button>
+            <button
+              type="button"
+              disabled={clusterEdgePage === 0}
+              onClick={() => setClusterEdgePage((page) => page - 1)}
+            >
+              Previous
+            </button>
+            <span>
+              Page {clusterEdgePage + 1} of{" "}
+              {Math.max(1, Math.ceil(inspectedClusterRelationship.length / 25))}
+            </span>
+            <button
+              type="button"
+              disabled={
+                (clusterEdgePage + 1) * 25 >=
+                inspectedClusterRelationship.length
+              }
+              onClick={() => setClusterEdgePage((page) => page + 1)}
+            >
+              Next
+            </button>
           </div>
         </div>
       )}
@@ -1654,16 +1972,31 @@ const NetworkTopology: React.FC<Props> = ({
 
       <div className="topology-collapsible-card topology-explore-wrapper">
         <div className="topology-collapsible-heading-row">
-          <button type="button" className="topology-section-toggle" aria-expanded={exploreOpen} aria-controls="topology-explore-content" onClick={() => setExploreOpen((open) => !open)}>
-            <span>2. Explore communications</span><span className="topology-section-chevron" aria-hidden="true">{exploreOpen ? "▾" : "▸"}</span>
+          <button
+            type="button"
+            className="topology-section-toggle"
+            aria-expanded={exploreOpen}
+            aria-controls="topology-explore-content"
+            onClick={() => setExploreOpen((open) => !open)}
+          >
+            <span>2. Explore communications</span>
+            <span className="topology-section-chevron" aria-hidden="true">
+              {exploreOpen ? "▾" : "▸"}
+            </span>
           </button>
-            {exploreOpen && (
-            <div className="topology-inline-display" role="group" aria-label="Topology display options">
+          {exploreOpen && (
+            <div
+              className="topology-inline-display"
+              role="group"
+              aria-label="Topology display options"
+            >
               <label className="topology-label-mode">
                 <span>Labels</span>
                 <select
                   value={labelMode}
-                  onChange={(event) => setLabelMode(event.target.value as LabelMode)}
+                  onChange={(event) =>
+                    setLabelMode(event.target.value as LabelMode)
+                  }
                   aria-label="Topology label density"
                 >
                   <option value="minimal">Minimal</option>
@@ -1671,7 +2004,13 @@ const NetworkTopology: React.FC<Props> = ({
                   <option value="off">Off</option>
                 </select>
               </label>
-              <label className={hideIsolated ? "topology-hide-isolated active" : "topology-hide-isolated"}>
+              <label
+                className={
+                  hideIsolated
+                    ? "topology-hide-isolated active"
+                    : "topology-hide-isolated"
+                }
+              >
                 <input
                   type="checkbox"
                   checked={hideIsolated}
@@ -1680,155 +2019,189 @@ const NetworkTopology: React.FC<Props> = ({
                 Hide isolated devices
               </label>
             </div>
-            )}
+          )}
         </div>
-        {exploreOpen && <div id="topology-explore-content" className="topology-explore-content">
-      <div className="topology-toolbar topology-toolbar-option1 topology-explore-card">
-        <div
-          className="topology-toolbar-group topology-filter-group"
-          aria-label="Topology display and filters"
-        >
-          <label className="topology-search">
-            <span>Search devices or services</span>
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="IP address, device name, or service…"
-            />
-          </label>
-          <label>
-            <span>Service</span>
-            <select
-              value={activeService}
-              onChange={(event) => {
-                const value = event.target.value;
-                const current = filters.find(
-                  (filter) => filter.key === "service",
-                );
-                if (value === "all") {
-                  if (current) onFilter(current);
-                } else onFilter({ key: "service", value, label: "Service" });
-              }}
-            >
-              <option value="all">All observed</option>
-              {activeService !== "all" && !services.includes(activeService) && (
-                <option value={activeService}>{activeService}</option>
-              )}
-              {services.map((service) => (
-                <option key={service}>{service}</option>
-              ))}
-            </select>
-          </label>
-          <label className="topology-view-mode">
-            <span>Show</span>
-            <select
-              value={preset === "risk" ? "findings" : "communication"}
-              onChange={(event) => {
-                if (event.target.value === "findings") applyPreset("risk");
-                else applyPreset("simple");
-              }}
-              aria-label="Topology view"
-            >
-              <option value="communication">Communications</option>
-              <option value="findings">Findings</option>
-            </select>
-          </label>
-        </div>
+        {exploreOpen && (
+          <div
+            id="topology-explore-content"
+            className="topology-explore-content"
+          >
+            <div className="topology-toolbar topology-toolbar-option1 topology-explore-card">
+              <div
+                className="topology-toolbar-group topology-filter-group"
+                aria-label="Topology display and filters"
+              >
+                <label className="topology-search">
+                  <span>Search devices or services</span>
+                  <input
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="IP address, device name, or service…"
+                  />
+                </label>
+                <label>
+                  <span>Service</span>
+                  <select
+                    value={activeService}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      const current = filters.find(
+                        (filter) => filter.key === "service",
+                      );
+                      if (value === "all") {
+                        if (current) onFilter(current);
+                      } else
+                        onFilter({ key: "service", value, label: "Service" });
+                    }}
+                  >
+                    <option value="all">All observed</option>
+                    {activeService !== "all" &&
+                      !services.includes(activeService) && (
+                        <option value={activeService}>{activeService}</option>
+                      )}
+                    {services.map((service) => (
+                      <option key={service}>{service}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="topology-view-mode">
+                  <span>Show</span>
+                  <select
+                    value={preset === "risk" ? "findings" : "communication"}
+                    onChange={(event) => {
+                      if (event.target.value === "findings")
+                        applyPreset("risk");
+                      else applyPreset("simple");
+                    }}
+                    aria-label="Topology view"
+                  >
+                    <option value="communication">Communications</option>
+                    <option value="findings">Findings</option>
+                  </select>
+                </label>
+              </div>
 
-        <div className="topology-toolbar-bottom-row">
-          <div className="topology-secondary-controls" aria-label="Additional topology settings">
-            <details className="topology-options-menu">
-              <summary aria-label="More topology filters">More filters{(selectedClass !== "all" || findingOnly || suspiciousOnly || neighborsOnly) ? " (active)" : ""}</summary>
-              <div className="topology-options-content" aria-label="Additional communication filters">
-          <label>
-            <span>Device class filter</span>
-            <select
-              value={selectedClass}
-              onChange={(event) => {
-                const value = event.target.value;
-                const current = filters.find(
-                  (filter) => filter.key === "deviceClass",
-                );
-                if (value === "all") {
-                  if (current) onFilter(current);
-                } else onFilter({ key: "deviceClass", value, label: "Class" });
-              }}
-            >
-              <option value="all">All classes</option>
-              <option>OT</option>
-              <option>IT</option>
-              <option value="Edge">Network</option>
-              <option>Unknown</option>
-            </select>
-          </label>
-                <div className="topology-toolbar-group topology-refinement-group">
-            <label className={findingOnly ? "active" : ""}>
-              <input
-                type="checkbox"
-                checked={findingOnly}
-                onChange={(event) => setFindingOnly(event.target.checked)}
-              />{" "}
-              Finding-related
-            </label>
-            <label className={suspiciousOnly ? "active" : ""}>
-              <input
-                type="checkbox"
-                checked={suspiciousOnly}
-                onChange={(event) => setSuspiciousOnly(event.target.checked)}
-              />{" "}
-              Suspicious
-            </label>
-            <label className={neighborsOnly ? "active" : ""}>
-              <input
-                type="checkbox"
-                checked={neighborsOnly}
-                disabled={!focusedNodeId}
-                onChange={(event) => setNeighborsOnly(event.target.checked)}
-              />{" "}
-              Selected + neighbors
-            </label>
+              <div className="topology-toolbar-bottom-row">
+                <div
+                  className="topology-secondary-controls"
+                  aria-label="Additional topology settings"
+                >
+                  <details className="topology-options-menu">
+                    <summary aria-label="More topology filters">
+                      More filters
+                      {selectedClass !== "all" ||
+                      findingOnly ||
+                      suspiciousOnly ||
+                      neighborsOnly
+                        ? " (active)"
+                        : ""}
+                    </summary>
+                    <div
+                      className="topology-options-content"
+                      aria-label="Additional communication filters"
+                    >
+                      <label>
+                        <span>Device class filter</span>
+                        <select
+                          value={selectedClass}
+                          onChange={(event) => {
+                            const value = event.target.value;
+                            const current = filters.find(
+                              (filter) => filter.key === "deviceClass",
+                            );
+                            if (value === "all") {
+                              if (current) onFilter(current);
+                            } else
+                              onFilter({
+                                key: "deviceClass",
+                                value,
+                                label: "Class",
+                              });
+                          }}
+                        >
+                          <option value="all">All classes</option>
+                          <option>OT</option>
+                          <option>IT</option>
+                          <option value="Edge">Network</option>
+                          <option>Unknown</option>
+                        </select>
+                      </label>
+                      <div className="topology-toolbar-group topology-refinement-group">
+                        <label className={findingOnly ? "active" : ""}>
+                          <input
+                            type="checkbox"
+                            checked={findingOnly}
+                            onChange={(event) =>
+                              setFindingOnly(event.target.checked)
+                            }
+                          />{" "}
+                          Finding-related
+                        </label>
+                        <label className={suspiciousOnly ? "active" : ""}>
+                          <input
+                            type="checkbox"
+                            checked={suspiciousOnly}
+                            onChange={(event) =>
+                              setSuspiciousOnly(event.target.checked)
+                            }
+                          />{" "}
+                          Suspicious
+                        </label>
+                        <label className={neighborsOnly ? "active" : ""}>
+                          <input
+                            type="checkbox"
+                            checked={neighborsOnly}
+                            disabled={!focusedNodeId}
+                            onChange={(event) =>
+                              setNeighborsOnly(event.target.checked)
+                            }
+                          />{" "}
+                          Selected + neighbors
+                        </label>
+                      </div>
+                    </div>
+                  </details>
+                </div>
+
+                <div
+                  className="topology-zoom-controls"
+                  aria-label="Topology actions"
+                >
+                  <button
+                    type="button"
+                    onClick={() => zoomBy(0.85)}
+                    aria-label="Zoom out"
+                    title="Zoom out"
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => zoomBy(1.18)}
+                    aria-label="Zoom in"
+                    title="Zoom in"
+                  >
+                    +
+                  </button>
+                  <button type="button" onClick={fitToView}>
+                    Fit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetGraphView}
+                    aria-label="Reset graph view"
+                    title="Restore default topology display, grouping, and zoom; report-wide filters stay active"
+                  >
+                    Reset
+                  </button>
+                  <button type="button" onClick={exportSvg}>
+                    Export SVG
+                  </button>
                 </div>
               </div>
-            </details>
-
+            </div>
           </div>
-
-          <div className="topology-zoom-controls" aria-label="Topology actions">
-            <button
-              type="button"
-              onClick={() => zoomBy(0.85)}
-              aria-label="Zoom out"
-              title="Zoom out"
-            >
-              −
-            </button>
-            <button
-              type="button"
-              onClick={() => zoomBy(1.18)}
-              aria-label="Zoom in"
-              title="Zoom in"
-            >
-              +
-            </button>
-            <button type="button" onClick={fitToView}>
-              Fit
-            </button>
-            <button
-              type="button"
-              onClick={resetGraphView}
-              aria-label="Reset graph view"
-              title="Restore default topology display, grouping, and zoom; report-wide filters stay active"
-            >
-              Reset
-            </button>
-            <button type="button" onClick={exportSvg}>
-              Export SVG
-            </button>
-          </div>
-        </div>
-      </div>
-
-        </div>}
+        )}
       </div>
       <div className="topology-collapsible-card topology-organize-wrapper topology-advanced-workspaces-card">
         <button
@@ -1839,125 +2212,418 @@ const NetworkTopology: React.FC<Props> = ({
           onClick={() => setQueryOpen((open) => !open)}
         >
           <span>3. Advanced investigation tools</span>
-          <span className="topology-section-chevron" aria-hidden="true">{queryOpen ? "▾" : "▸"}</span>
+          <span className="topology-section-chevron" aria-hidden="true">
+            {queryOpen ? "▾" : "▸"}
+          </span>
         </button>
-        {queryOpen && <div id="topology-advanced-content" className="topology-advanced-workspaces-content">
-      <div className="topology-query-workspace topology-network-explorer">
-        <div className="topology-query-workspace-heading">
-          <strong>Explore network relationships</strong>
-        </div>
-        <div className="topology-query-panel">
-          <div className="topology-explorer-main-row">
-          <div className="topology-explorer-primary">
-            <label>Device IP
-              <input
-                value={query.startAsset || ""}
-                placeholder="Enter a device IP, or select a node"
-                onChange={(event) => setQuery((q) => ({ ...q, startAsset: event.target.value || undefined }))}
-              />
-            </label>
-            {focusedNode && (
-              <button type="button" className="topology-explorer-use-selected" onClick={() => setQuery((q) => ({ ...q, startAsset: focusedNode.id }))}>
-                Use selected device ({focusedNode.id})
-              </button>
-            )}
-          </div>
-          <fieldset className="topology-explorer-choices">
-            <legend>What would you like to see?</legend>
-            <label><input type="radio" name="topology-explorer-kind" checked={query.suspicious !== true && query.findingRelated !== true} onChange={() => setQuery((q) => ({ ...q, suspicious: undefined, findingRelated: undefined }))} /> All connected devices</label>
-            <label><input type="radio" name="topology-explorer-kind" checked={query.suspicious === true} onChange={() => setQuery((q) => ({ ...q, suspicious: true, findingRelated: undefined }))} /> Suspicious communications</label>
-            <label><input type="radio" name="topology-explorer-kind" checked={query.findingRelated === true} onChange={() => setQuery((q) => ({ ...q, suspicious: undefined, findingRelated: true }))} /> Connections associated with findings</label>
-          </fieldset>
-          </div>
-          <details className="topology-explorer-optional">
-            <summary>Additional options</summary>
-            <div className="topology-explorer-options">
-              <label>Connections to include
-                <select value={query.maxHops || 1} onChange={(event) => setQuery((q) => ({ ...q, maxHops: Number(event.target.value) }))}>
-                  <option value={1}>Direct connections</option>
-                  <option value={2}>Up to 2 connections away</option>
-                  <option value={3}>Up to 3 connections away</option>
-                  <option value={4}>Up to 4 connections away</option>
-                </select>
-              </label>
-              <label>Service
-                <input value={query.service || ""} placeholder="All services" onChange={(event) => setQuery((q) => ({ ...q, service: event.target.value || undefined }))} />
-              </label>
-              <label>Device class
-                <select value={query.type || ""} onChange={(event) => setQuery((q) => ({ ...q, type: event.target.value || undefined }))}>
-                  <option value="">All classes</option><option>OT</option><option>IT</option><option>Edge</option><option>Unknown</option>
-                </select>
-              </label>
-              <label>Direction
-                <select value={query.direction || "both"} onChange={(event) => setQuery((q) => ({ ...q, direction: event.target.value as "both" | "outbound" | "inbound" }))}>
-                  <option value="both">Both directions</option><option value="outbound">Outbound</option><option value="inbound">Inbound</option>
-                </select>
-              </label>
-              <label>Subnet contains<input value={query.subnet || ""} onChange={(event) => setQuery((q) => ({ ...q, subnet: event.target.value || undefined }))} /></label>
-              <label>Purdue level contains<input value={query.purdueLevel || ""} onChange={(event) => setQuery((q) => ({ ...q, purdueLevel: event.target.value || undefined }))} /></label>
-              <label>Role group contains<input value={query.roleGroup || ""} onChange={(event) => setQuery((q) => ({ ...q, roleGroup: event.target.value || undefined }))} /></label>
-              <label>Minimum observations<input type="number" min="1" value={query.minCount || ""} onChange={(event) => setQuery((q) => ({ ...q, minCount: event.target.value ? Number(event.target.value) : undefined }))} /></label>
-            </div>
-          </details>
-          <details className="topology-explorer-saved">
-            <summary>Saved searches</summary>
-            <div className="topology-explorer-saved-controls">
-              <label>Open saved search
-                <select value={savedQueryId || ""} onChange={(event) => {
-                  const saved = savedQueries.find((item) => item.id === event.target.value);
-                  setSavedQueryId(saved?.id || null);
-                  if (saved) { setQuery(saved.query); setQueryName(saved.name); setQueryActive(false); }
-                }}>
-                  <option value="">Choose a saved search</option>
-                  {savedQueries.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                </select>
-              </label>
-              <label>Search name<input maxLength={100} value={queryName} onChange={(event) => setQueryName(event.target.value)} placeholder="Name this search" /></label>
-              <div className="topology-explorer-saved-actions">
-                <button type="button" className="topology-explorer-icon-button" aria-label="Save search" title="Save search" disabled={queryBusy || !queryName.trim()} onClick={() => void saveGraphQuery()}>
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
-                </button>
-                <button type="button" className="topology-explorer-icon-button" aria-label="Delete saved search" title="Delete saved search" disabled={queryBusy || !savedQueryId} onClick={() => void deleteGraphQuery()}>
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6M10 10v7M14 10v7"/></svg>
-                </button>
-                <span className="topology-explorer-action-spacer" aria-hidden="true" />
-                <div className="topology-explorer-view-action">
-            <button
-              type="button"
-              aria-pressed={queryActive}
-              onClick={() => {
-                setQueryActive((active) => !active);
-                setShowOnlyQueryMatches(false);
-                setQueryResultPage(0);
-              }}
-            >{queryActive ? "Hide relationships" : "View relationships"}</button>
+        {queryOpen && (
+          <div
+            id="topology-advanced-content"
+            className="topology-advanced-workspaces-content"
+          >
+            <div className="topology-query-workspace topology-network-explorer">
+              <div className="topology-query-workspace-heading">
+                <strong>Explore network relationships</strong>
+              </div>
+              <div className="topology-query-panel">
+                <div className="topology-explorer-main-row">
+                  <div className="topology-explorer-primary">
+                    <label>
+                      Device IP
+                      <input
+                        value={query.startAsset || ""}
+                        placeholder="Enter a device IP, or select a node"
+                        onChange={(event) =>
+                          setQuery((q) => ({
+                            ...q,
+                            startAsset: event.target.value || undefined,
+                          }))
+                        }
+                      />
+                    </label>
+                    {focusedNode && (
+                      <button
+                        type="button"
+                        className="topology-explorer-use-selected"
+                        onClick={() =>
+                          setQuery((q) => ({
+                            ...q,
+                            startAsset: focusedNode.id,
+                          }))
+                        }
+                      >
+                        Use selected device ({focusedNode.id})
+                      </button>
+                    )}
+                  </div>
+                  <fieldset className="topology-explorer-choices">
+                    <legend>What would you like to see?</legend>
+                    <label>
+                      <input
+                        type="radio"
+                        name="topology-explorer-kind"
+                        checked={
+                          query.suspicious !== true &&
+                          query.findingRelated !== true
+                        }
+                        onChange={() =>
+                          setQuery((q) => ({
+                            ...q,
+                            suspicious: undefined,
+                            findingRelated: undefined,
+                          }))
+                        }
+                      />{" "}
+                      All connected devices
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="topology-explorer-kind"
+                        checked={query.suspicious === true}
+                        onChange={() =>
+                          setQuery((q) => ({
+                            ...q,
+                            suspicious: true,
+                            findingRelated: undefined,
+                          }))
+                        }
+                      />{" "}
+                      Suspicious communications
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="topology-explorer-kind"
+                        checked={query.findingRelated === true}
+                        onChange={() =>
+                          setQuery((q) => ({
+                            ...q,
+                            suspicious: undefined,
+                            findingRelated: true,
+                          }))
+                        }
+                      />{" "}
+                      Connections associated with findings
+                    </label>
+                  </fieldset>
                 </div>
+                <details className="topology-explorer-optional">
+                  <summary>Additional options</summary>
+                  <div className="topology-explorer-options">
+                    <label>
+                      Connections to include
+                      <select
+                        value={query.maxHops || 1}
+                        onChange={(event) =>
+                          setQuery((q) => ({
+                            ...q,
+                            maxHops: Number(event.target.value),
+                          }))
+                        }
+                      >
+                        <option value={1}>Direct connections</option>
+                        <option value={2}>Up to 2 connections away</option>
+                        <option value={3}>Up to 3 connections away</option>
+                        <option value={4}>Up to 4 connections away</option>
+                      </select>
+                    </label>
+                    <label>
+                      Service
+                      <input
+                        value={query.service || ""}
+                        placeholder="All services"
+                        onChange={(event) =>
+                          setQuery((q) => ({
+                            ...q,
+                            service: event.target.value || undefined,
+                          }))
+                        }
+                      />
+                    </label>
+                    <label>
+                      Device class
+                      <select
+                        value={query.type || ""}
+                        onChange={(event) =>
+                          setQuery((q) => ({
+                            ...q,
+                            type: event.target.value || undefined,
+                          }))
+                        }
+                      >
+                        <option value="">All classes</option>
+                        <option>OT</option>
+                        <option>IT</option>
+                        <option>Edge</option>
+                        <option>Unknown</option>
+                      </select>
+                    </label>
+                    <label>
+                      Direction
+                      <select
+                        value={query.direction || "both"}
+                        onChange={(event) =>
+                          setQuery((q) => ({
+                            ...q,
+                            direction: event.target.value as
+                              | "both"
+                              | "outbound"
+                              | "inbound",
+                          }))
+                        }
+                      >
+                        <option value="both">Both directions</option>
+                        <option value="outbound">Outbound</option>
+                        <option value="inbound">Inbound</option>
+                      </select>
+                    </label>
+                    <label>
+                      Subnet contains
+                      <input
+                        value={query.subnet || ""}
+                        onChange={(event) =>
+                          setQuery((q) => ({
+                            ...q,
+                            subnet: event.target.value || undefined,
+                          }))
+                        }
+                      />
+                    </label>
+                    <label>
+                      Purdue level contains
+                      <input
+                        value={query.purdueLevel || ""}
+                        onChange={(event) =>
+                          setQuery((q) => ({
+                            ...q,
+                            purdueLevel: event.target.value || undefined,
+                          }))
+                        }
+                      />
+                    </label>
+                    <label>
+                      Role group contains
+                      <input
+                        value={query.roleGroup || ""}
+                        onChange={(event) =>
+                          setQuery((q) => ({
+                            ...q,
+                            roleGroup: event.target.value || undefined,
+                          }))
+                        }
+                      />
+                    </label>
+                    <label>
+                      Minimum observations
+                      <input
+                        type="number"
+                        min="1"
+                        value={query.minCount || ""}
+                        onChange={(event) =>
+                          setQuery((q) => ({
+                            ...q,
+                            minCount: event.target.value
+                              ? Number(event.target.value)
+                              : undefined,
+                          }))
+                        }
+                      />
+                    </label>
+                  </div>
+                </details>
+                <details className="topology-explorer-saved">
+                  <summary>Saved searches</summary>
+                  <div className="topology-explorer-saved-controls">
+                    <label>
+                      Open saved search
+                      <select
+                        value={savedQueryId || ""}
+                        onChange={(event) => {
+                          const saved = savedQueries.find(
+                            (item) => item.id === event.target.value,
+                          );
+                          setSavedQueryId(saved?.id || null);
+                          if (saved) {
+                            setQuery(saved.query);
+                            setQueryName(saved.name);
+                            setQueryActive(false);
+                          }
+                        }}
+                      >
+                        <option value="">Choose a saved search</option>
+                        {savedQueries.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Search name
+                      <input
+                        maxLength={100}
+                        value={queryName}
+                        onChange={(event) => setQueryName(event.target.value)}
+                        placeholder="Name this search"
+                      />
+                    </label>
+                    <div className="topology-explorer-saved-actions">
+                      <button
+                        type="button"
+                        className="topology-explorer-icon-button"
+                        aria-label="Save search"
+                        title="Save search"
+                        disabled={queryBusy || !queryName.trim()}
+                        onClick={() => void saveGraphQuery()}
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+                          <path d="M17 21v-8H7v8M7 3v5h8" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="topology-explorer-icon-button"
+                        aria-label="Delete saved search"
+                        title="Delete saved search"
+                        disabled={queryBusy || !savedQueryId}
+                        onClick={() => void deleteGraphQuery()}
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6M10 10v7M14 10v7" />
+                        </svg>
+                      </button>
+                      <span
+                        className="topology-explorer-action-spacer"
+                        aria-hidden="true"
+                      />
+                      <div className="topology-explorer-view-action">
+                        <button
+                          type="button"
+                          aria-pressed={queryActive}
+                          onClick={() => {
+                            setQueryActive((active) => !active);
+                            setShowOnlyQueryMatches(false);
+                            setQueryResultPage(0);
+                          }}
+                        >
+                          {queryActive
+                            ? "Hide relationships"
+                            : "View relationships"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </details>
+                {queryError && <p role="alert">{queryError}</p>}
+                {queryActive && (
+                  <div className="topology-query-results" aria-live="polite">
+                    <div className="topology-explorer-results-heading">
+                      <strong>
+                        {queryMatchingEdges.length} relationships ·{" "}
+                        {queryNodeIds.size} devices
+                      </strong>
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={showOnlyQueryMatches}
+                          onChange={(event) =>
+                            setShowOnlyQueryMatches(event.target.checked)
+                          }
+                        />{" "}
+                        Show only matches on graph
+                      </label>
+                    </div>
+                    <div
+                      className="topology-query-result-list"
+                      role="region"
+                      aria-label="Matching observed communications"
+                    >
+                      {pagedQueryEdges.map((edge) => (
+                        <button
+                          type="button"
+                          key={edge.id}
+                          onClick={() => inspectEdge(edge)}
+                        >
+                          <span>
+                            {edge.source} → {edge.target}
+                          </span>
+                          <span>
+                            {edge.service} · {edge.count} observations
+                            {queryHopDepths.has(edge.id)
+                              ? ` · hop ${queryHopDepths.get(edge.id)}`
+                              : ""}
+                          </span>
+                        </button>
+                      ))}
+                      {!queryMatchingEdges.length && (
+                        <span>
+                          No matching communications found. Try another device
+                          or search type.
+                        </span>
+                      )}
+                      {queryMatchingEdges.length > QUERY_PAGE_SIZE && (
+                        <div className="topology-query-pagination">
+                          <button
+                            type="button"
+                            disabled={effectiveQueryPage === 0}
+                            onClick={() =>
+                              setQueryResultPage((page) =>
+                                Math.max(0, page - 1),
+                              )
+                            }
+                          >
+                            Previous
+                          </button>
+                          <span>
+                            Page {effectiveQueryPage + 1} of {queryPageCount}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={effectiveQueryPage + 1 >= queryPageCount}
+                            onClick={() =>
+                              setQueryResultPage((page) =>
+                                Math.min(queryPageCount - 1, page + 1),
+                              )
+                            }
+                          >
+                            Next
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <small>
+                  Results are observed communications, not proof of physical
+                  connectivity or authorized access. Searches use the complete
+                  report, including devices not currently drawn.
+                </small>
               </div>
             </div>
-          </details>
-          {queryError && <p role="alert">{queryError}</p>}
-          {queryActive && <div className="topology-query-results" aria-live="polite">
-            <div className="topology-explorer-results-heading">
-              <strong>{queryMatchingEdges.length} relationships · {queryNodeIds.size} devices</strong>
-              <label><input type="checkbox" checked={showOnlyQueryMatches} onChange={(event) => setShowOnlyQueryMatches(event.target.checked)} /> Show only matches on graph</label>
-            </div>
-            <div className="topology-query-result-list" role="region" aria-label="Matching observed communications">
-              {pagedQueryEdges.map((edge) => <button type="button" key={edge.id} onClick={() => inspectEdge(edge)}>
-                <span>{edge.source} → {edge.target}</span>
-                <span>{edge.service} · {edge.count} observations{queryHopDepths.has(edge.id) ? ` · hop ${queryHopDepths.get(edge.id)}` : ""}</span>
-              </button>)}
-              {!queryMatchingEdges.length && <span>No matching communications found. Try another device or search type.</span>}
-              {queryMatchingEdges.length > QUERY_PAGE_SIZE && <div className="topology-query-pagination">
-                <button type="button" disabled={effectiveQueryPage === 0} onClick={() => setQueryResultPage((page) => Math.max(0, page - 1))}>Previous</button>
-                <span>Page {effectiveQueryPage + 1} of {queryPageCount}</span>
-                <button type="button" disabled={effectiveQueryPage + 1 >= queryPageCount} onClick={() => setQueryResultPage((page) => Math.min(queryPageCount - 1, page + 1))}>Next</button>
-              </div>}
-            </div>
-          </div>}
-          <small>Results are observed communications, not proof of physical connectivity or authorized access. Searches use the complete report, including devices not currently drawn.</small>
-        </div>
-      </div>
-        </div>}
+          </div>
+        )}
       </div>
       {(focusedNode || focusedEdge) && (
         <div
@@ -1977,12 +2643,17 @@ const NetworkTopology: React.FC<Props> = ({
                 : `${focusedEdge!.service} · ${focusedEdge!.count.toLocaleString()} observation${focusedEdge!.count === 1 ? "" : "s"}${focusedEdge!.findingRelated || focusedEdge!.suspicious ? " · finding-related" : ""}`}
             </span>
           </div>
-          <div className="topology-selection-actions" aria-label="Selected item actions">
+          <div
+            className="topology-selection-actions"
+            aria-label="Selected item actions"
+          >
             <button
               type="button"
               onClick={() => {
-                if (focusedNode) onSelect({ type: "device", id: focusedNode.id });
-                else if (focusedEdge) onSelect({ type: "connection", id: focusedEdge.id });
+                if (focusedNode)
+                  onSelect({ type: "device", id: focusedNode.id });
+                else if (focusedEdge)
+                  onSelect({ type: "connection", id: focusedEdge.id });
               }}
             >
               Inspect details
@@ -2036,7 +2707,9 @@ const NetworkTopology: React.FC<Props> = ({
 
       {!aggregateView && !focusedNode && !focusedEdge && nodes.length > 0 && (
         <p className="topology-interaction-hint">
-          Click a device to select it, then choose Inspect details to open its information. Drag a device to move it. Double-click to focus its neighbors; press Escape to clear selection.
+          Click a device to select it, then choose Inspect details to open its
+          information. Drag a device to move it. Double-click to focus its
+          neighbors; press Escape to clear selection.
         </p>
       )}
       {nodes.length ? (
@@ -2051,7 +2724,11 @@ const NetworkTopology: React.FC<Props> = ({
             onPointerUp={handleCanvasPointerUp}
             onPointerCancel={handleCanvasPointerUp}
             role="img"
-            aria-label={aggregateView ? `Clustered network topology with ${aggregateGraph.clusters.length} clusters and ${aggregateGraph.edges.length} aggregated communication links` : `Interactive network topology with ${nodes.length} devices and ${visibleEdges.length} communication links`}
+            aria-label={
+              aggregateView
+                ? `Clustered network topology with ${aggregateGraph.clusters.length} clusters and ${aggregateGraph.edges.length} aggregated communication links`
+                : `Interactive network topology with ${nodes.length} devices and ${visibleEdges.length} communication links`
+            }
           >
             <defs>
               <marker
@@ -2122,261 +2799,361 @@ const NetworkTopology: React.FC<Props> = ({
                     const source = clusterPositions.get(edge.source);
                     const target = clusterPositions.get(edge.target);
                     if (!source || !target) return null;
-                    return <g key={JSON.stringify([edge.source, edge.target])} role="button" tabIndex={0}
-                      aria-label={`Inspect ${edge.relationships} observed relationships from ${edge.source} to ${edge.target}`}
-                      onPointerDown={(event) => event.stopPropagation()}
-                      onClick={(event) => { event.stopPropagation(); setInspectedClusterEdge(JSON.stringify([edge.source, edge.target])); setClusterEdgePage(0); }}
-                      onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setInspectedClusterEdge(JSON.stringify([edge.source, edge.target])); setClusterEdgePage(0); } }}>
-                      <line x1={source.x} y1={source.y} x2={target.x} y2={target.y} stroke={edge.suspicious ? "#b65349" : edge.findingRelated ? "#397b9d" : "#8ca8b7"} strokeWidth={Math.min(9, 1.5 + Math.log10(edge.count + 1) * 1.8)} markerEnd="url(#topology-arrow)" />
-                      <title>{`${edge.source} to ${edge.target}: ${edge.count} observations across ${edge.relationships} relationships; protocols: ${[...edge.services].join(", ")}`}</title>
-                    </g>;
+                    return (
+                      <g
+                        key={JSON.stringify([edge.source, edge.target])}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Inspect ${edge.relationships} observed relationships from ${edge.source} to ${edge.target}`}
+                        onPointerDown={(event) => event.stopPropagation()}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setInspectedClusterEdge(
+                            JSON.stringify([edge.source, edge.target]),
+                          );
+                          setClusterEdgePage(0);
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            setInspectedClusterEdge(
+                              JSON.stringify([edge.source, edge.target]),
+                            );
+                            setClusterEdgePage(0);
+                          }
+                        }}
+                      >
+                        <line
+                          x1={source.x}
+                          y1={source.y}
+                          x2={target.x}
+                          y2={target.y}
+                          stroke={
+                            edge.suspicious
+                              ? "#b65349"
+                              : edge.findingRelated
+                                ? "#397b9d"
+                                : "#8ca8b7"
+                          }
+                          strokeWidth={Math.min(
+                            9,
+                            1.5 + Math.log10(edge.count + 1) * 1.8,
+                          )}
+                          markerEnd="url(#topology-arrow)"
+                        />
+                        <title>{`${edge.source} to ${edge.target}: ${edge.count} observations across ${edge.relationships} relationships; protocols: ${[...edge.services].join(", ")}`}</title>
+                      </g>
+                    );
                   })}
                   {renderedClusters.map((cluster) => (
-                    <g key={cluster.key} transform={`translate(${cluster.x} ${cluster.y})`} role="button" tabIndex={0}
+                    <g
+                      key={cluster.key}
+                      transform={`translate(${cluster.x} ${cluster.y})`}
+                      role="button"
+                      tabIndex={0}
                       aria-label={`Expand ${cluster.key}, ${cluster.members.length} assets`}
                       onPointerDown={(event) => event.stopPropagation()}
-                      onClick={(event) => { event.stopPropagation(); setClusterFocus(cluster.key); setViewport(DEFAULT_VIEWPORT); }}
-                      onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setClusterFocus(cluster.key); setViewport(DEFAULT_VIEWPORT); } }}>
-                      <rect x="-78" y="-28" width="156" height="56" rx="12" fill="#e5f0f7" stroke="#397b9d" strokeWidth="2" />
-                      <text textAnchor="middle" y="-4" fontSize="13" fontWeight="600" fill="#153c56">{cluster.key.length > 22 ? `${cluster.key.slice(0, 21)}…` : cluster.key}</text>
-                      <text textAnchor="middle" y="15" fontSize="12" fill="#285775">{cluster.members.length} assets · expand</text>
-                      <title>{cluster.key}: {cluster.members.length} displayed assets. Activate to drill down.</title>
-                    </g>
-                  ))}
-                </g>
-              ) : (<>
-              {layoutMode !== "class" && (
-                <g
-                  className={`topology-group-regions topology-group-${layoutMode}`}
-                  aria-hidden="true"
-                >
-                  {groupRegions.map((region) => (
-                    <g
-                      key={region.key}
-                      className="topology-subnet-region topology-group-region"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setClusterFocus(cluster.key);
+                        setViewport(DEFAULT_VIEWPORT);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setClusterFocus(cluster.key);
+                          setViewport(DEFAULT_VIEWPORT);
+                        }
+                      }}
                     >
                       <rect
-                        x={region.x}
-                        y={region.y}
-                        width={region.width}
-                        height={region.height}
-                        rx="14"
+                        x="-78"
+                        y="-28"
+                        width="156"
+                        height="56"
+                        rx="12"
+                        fill="#e5f0f7"
+                        stroke="#397b9d"
+                        strokeWidth="2"
                       />
-                      {labelMode !== "off" && (
-                        <g
-                          className="topology-subnet-label topology-group-label"
-                          transform={`translate(${region.x + 12} ${region.y + 17})`}
-                        >
-                          <text>{region.label}</text>
-                          <text
-                            className="topology-subnet-count"
-                            x={Math.min(
-                              region.width - 24,
-                              Math.max(76, region.label.length * 6.5 + 12),
-                            )}
-                          >
-                            {region.count} device{region.count === 1 ? "" : "s"}
-                          </text>
-                        </g>
-                      )}
+                      <text
+                        textAnchor="middle"
+                        y="-4"
+                        fontSize="13"
+                        fontWeight="600"
+                        fill="#153c56"
+                      >
+                        {cluster.key.length > 22
+                          ? `${cluster.key.slice(0, 21)}…`
+                          : cluster.key}
+                      </text>
+                      <text
+                        textAnchor="middle"
+                        y="15"
+                        fontSize="12"
+                        fill="#285775"
+                      >
+                        {cluster.members.length} assets · expand
+                      </text>
+                      <title>
+                        {cluster.key}: {cluster.members.length} displayed
+                        assets. Activate to drill down.
+                      </title>
                     </g>
                   ))}
                 </g>
-              )}
-              {renderedQueryEdges.map((edge) => {
-                const source = nodeMap.get(edge.source)!;
-                const target = nodeMap.get(edge.target)!;
-                const midX = (source.x + target.x) / 2;
-                const midY = (source.y + target.y) / 2;
-                const width = Math.min(
-                  4.5,
-                  1 + Math.log10(edge.count + 1) * 1.05,
-                );
-                const crossSubnet = source.subnet !== target.subnet;
-                const crossRole = source.roleGroup !== target.roleGroup;
-                const crossPurdue = source.purdueLevel !== target.purdueLevel;
-                const crossBoundary =
-                  layoutMode === "subnet"
-                    ? crossSubnet
-                    : layoutMode === "role"
-                      ? crossRole
-                      : layoutMode === "purdue"
-                        ? crossPurdue
-                        : false;
-                const marker =
-                  focusedEdgeId === edge.id
-                    ? "url(#topology-arrow-focused)"
-                    : edge.suspicious
-                      ? "url(#topology-arrow-suspicious)"
-                      : edge.findingRelated
-                        ? "url(#topology-arrow-finding)"
-                        : "url(#topology-arrow)";
-                return (
-                  <g
-                    key={edge.id}
-                    className={`topology-edge ${edge.suspicious ? "suspicious" : ""} ${edge.findingRelated ? "finding-related" : ""} ${crossBoundary ? "cross-boundary" : ""} ${focusedEdgeId === edge.id ? "focused" : ""} ${focusedNodeId && edge.source !== focusedNodeId && edge.target !== focusedNodeId ? "dimmed" : ""} ${focusedEdgeId && focusedEdgeId !== edge.id ? "dimmed" : ""} ${queryActive && !queryEdgeIds.has(edge.id) ? "query-dimmed" : ""} ${queryActive && queryEdgeIds.has(edge.id) ? "query-match" : ""}`}
-                    onPointerDown={(event) => event.stopPropagation()}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      inspectEdge(edge);
-                    }}
-                    onMouseEnter={() => setHoveredEdgeId(edge.id)}
-                    onMouseLeave={() =>
-                      setHoveredEdgeId((current) =>
-                        current === edge.id ? null : current,
-                      )
-                    }
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`${edge.source} to ${edge.target}, ${edge.service}, ${edge.count} observations`}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        inspectEdge(edge);
-                      }
-                    }}
-                  >
-                    <line
-                      className="topology-edge-hit"
-                      x1={source.x}
-                      y1={source.y}
-                      x2={target.x}
-                      y2={target.y}
-                      strokeWidth={Math.max(16, width + 12)}
-                    />
-                    <line
-                      className="topology-edge-visible"
-                      x1={source.x}
-                      y1={source.y}
-                      x2={target.x}
-                      y2={target.y}
-                      strokeWidth={width}
-                      markerEnd={marker}
-                    />
-                    {!isInteracting &&
-                      (labelMode === "full" ||
-                        (labelMode === "minimal" &&
-                          (hoveredEdgeId === edge.id ||
-                            focusedEdgeId === edge.id))) && (
+              ) : (
+                <>
+                  {layoutMode !== "class" && (
+                    <g
+                      className={`topology-group-regions topology-group-${layoutMode}`}
+                      aria-hidden="true"
+                    >
+                      {groupRegions.map((region) => (
                         <g
-                          className="topology-edge-label"
-                          transform={`translate(${midX} ${midY})`}
+                          key={region.key}
+                          className="topology-subnet-region topology-group-region"
                         >
                           <rect
-                            x={-Math.min(72, edge.service.length * 3.6 + 10)}
-                            y="-8"
-                            width={Math.min(
-                              144,
-                              edge.service.length * 7.2 + 20,
-                            )}
-                            height="16"
-                            rx="7"
+                            x={region.x}
+                            y={region.y}
+                            width={region.width}
+                            height={region.height}
+                            rx="14"
                           />
-                          <text textAnchor="middle" dominantBaseline="central">
-                            {edge.service.length > 18
-                              ? `${edge.service.slice(0, 17)}…`
-                              : edge.service}
-                          </text>
+                          {labelMode !== "off" && (
+                            <g
+                              className="topology-subnet-label topology-group-label"
+                              transform={`translate(${region.x + 12} ${region.y + 17})`}
+                            >
+                              <text>{region.label}</text>
+                              <text
+                                className="topology-subnet-count"
+                                x={Math.min(
+                                  region.width - 24,
+                                  Math.max(76, region.label.length * 6.5 + 12),
+                                )}
+                              >
+                                {region.count} device
+                                {region.count === 1 ? "" : "s"}
+                              </text>
+                            </g>
+                          )}
                         </g>
-                      )}
-                    <title>
-                      {edge.service} · {edge.count.toLocaleString()}{" "}
-                      observations{edge.suspicious ? " · suspicious" : ""}
-                    </title>
-                  </g>
-                );
-              })}
-              {nodes.map((node) => {
-                const radius =
-                  12 + Math.min(10, (node.degree / maxDegree) * 10);
-                return (
-                  <g
-                    key={node.id}
-                    className={`topology-node node-${node.type.toLowerCase()} ${selectedIp === node.id ? "selected" : ""} ${focusedNodeId === node.id ? "focused" : ""} ${focusedNodeId && !neighborIds.has(node.id) ? "dimmed" : ""} ${focusedEdge && node.id !== focusedEdge.source && node.id !== focusedEdge.target ? "dimmed" : ""} ${node.findingCount ? "finding-related" : ""} ${queryActive && !queryNodeIds.has(node.id) ? "query-dimmed" : ""} ${queryActive && queryNodeIds.has(node.id) ? "query-match" : ""}`}
-                    transform={`translate(${node.x} ${node.y})`}
-                    onPointerDown={(event) => beginNodeDrag(event, node)}
-                    onPointerUp={finishNodeDrag}
-                    onPointerCancel={finishNodeDrag}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      if (dragRef.current?.moved) return;
-                      inspectNode(node);
-                    }}
-                    onDoubleClick={(event) => {
-                      event.stopPropagation();
-                      focusNodeNeighborhood(node);
-                    }}
-                    onMouseEnter={() => setHoveredNodeId(node.id)}
-                    onMouseLeave={() =>
-                      setHoveredNodeId((current) =>
-                        current === node.id ? null : current,
-                      )
-                    }
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`${node.type} device ${node.id}`}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        inspectNode(node);
-                      }
-                    }}
-                  >
-                    <circle className="node-hit" r={radius + 8} />
-                    <circle className="node-halo" r={radius + 5} />
-                    <circle
-                      className="node-ring"
-                      r={radius}
-                      filter="url(#node-shadow)"
-                    />
-                    <circle
-                      className="node-core"
-                      r={Math.max(4.5, radius * 0.36)}
-                    />
-                    <text className="node-type" y="3" textAnchor="middle">
-                      {node.type === "Unknown" ? "?" : node.type.charAt(0)}
-                    </text>
-                    {node.findingCount > 0 && (
+                      ))}
+                    </g>
+                  )}
+                  {renderedQueryEdges.map((edge) => {
+                    const source = nodeMap.get(edge.source)!;
+                    const target = nodeMap.get(edge.target)!;
+                    const midX = (source.x + target.x) / 2;
+                    const midY = (source.y + target.y) / 2;
+                    const width = Math.min(
+                      4.5,
+                      1 + Math.log10(edge.count + 1) * 1.05,
+                    );
+                    const crossSubnet = source.subnet !== target.subnet;
+                    const crossRole = source.roleGroup !== target.roleGroup;
+                    const crossPurdue =
+                      source.purdueLevel !== target.purdueLevel;
+                    const crossBoundary =
+                      layoutMode === "subnet"
+                        ? crossSubnet
+                        : layoutMode === "role"
+                          ? crossRole
+                          : layoutMode === "purdue"
+                            ? crossPurdue
+                            : false;
+                    const marker =
+                      focusedEdgeId === edge.id
+                        ? "url(#topology-arrow-focused)"
+                        : edge.suspicious
+                          ? "url(#topology-arrow-suspicious)"
+                          : edge.findingRelated
+                            ? "url(#topology-arrow-finding)"
+                            : "url(#topology-arrow)";
+                    return (
                       <g
-                        className="topology-finding-marker"
-                        transform={`translate(${radius - 2} ${-radius + 2})`}
-                        aria-hidden="true"
+                        key={edge.id}
+                        className={`topology-edge ${edge.suspicious ? "suspicious" : ""} ${edge.findingRelated ? "finding-related" : ""} ${crossBoundary ? "cross-boundary" : ""} ${focusedEdgeId === edge.id ? "focused" : ""} ${focusedNodeId && edge.source !== focusedNodeId && edge.target !== focusedNodeId ? "dimmed" : ""} ${focusedEdgeId && focusedEdgeId !== edge.id ? "dimmed" : ""} ${queryActive && !queryEdgeIds.has(edge.id) ? "query-dimmed" : ""} ${queryActive && queryEdgeIds.has(edge.id) ? "query-match" : ""}`}
+                        onPointerDown={(event) => event.stopPropagation()}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          inspectEdge(edge);
+                        }}
+                        onMouseEnter={() => setHoveredEdgeId(edge.id)}
+                        onMouseLeave={() =>
+                          setHoveredEdgeId((current) =>
+                            current === edge.id ? null : current,
+                          )
+                        }
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`${edge.source} to ${edge.target}, ${edge.service}, ${edge.count} observations`}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            inspectEdge(edge);
+                          }
+                        }}
                       >
-                        <circle r="6" />
-                        <text y="2.6" textAnchor="middle">
-                          !
-                        </text>
+                        <line
+                          className="topology-edge-hit"
+                          x1={source.x}
+                          y1={source.y}
+                          x2={target.x}
+                          y2={target.y}
+                          strokeWidth={Math.max(16, width + 12)}
+                        />
+                        <line
+                          className="topology-edge-visible"
+                          x1={source.x}
+                          y1={source.y}
+                          x2={target.x}
+                          y2={target.y}
+                          strokeWidth={width}
+                          markerEnd={marker}
+                        />
+                        {!isInteracting &&
+                          (labelMode === "full" ||
+                            (labelMode === "minimal" &&
+                              (hoveredEdgeId === edge.id ||
+                                focusedEdgeId === edge.id))) && (
+                            <g
+                              className="topology-edge-label"
+                              transform={`translate(${midX} ${midY})`}
+                            >
+                              <rect
+                                x={
+                                  -Math.min(72, edge.service.length * 3.6 + 10)
+                                }
+                                y="-8"
+                                width={Math.min(
+                                  144,
+                                  edge.service.length * 7.2 + 20,
+                                )}
+                                height="16"
+                                rx="7"
+                              />
+                              <text
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                              >
+                                {edge.service.length > 18
+                                  ? `${edge.service.slice(0, 17)}…`
+                                  : edge.service}
+                              </text>
+                            </g>
+                          )}
+                        <title>
+                          {edge.service} · {edge.count.toLocaleString()}{" "}
+                          observations{edge.suspicious ? " · suspicious" : ""}
+                        </title>
                       </g>
-                    )}
-                    {!isInteracting &&
-                      (labelMode === "full" ||
-                        (labelMode === "minimal" &&
-                          (hoveredNodeId === node.id ||
-                            focusedNodeId === node.id ||
-                            selectedIp === node.id))) && (
-                        <g
-                          className="topology-node-label"
-                          transform={`translate(0 ${radius + 18})`}
-                        >
-                          <rect x="-48" y="-11" width="96" height="21" rx="8" />
-                          <text textAnchor="middle" dominantBaseline="central">
-                            {node.id}
-                          </text>
-                        </g>
-                      )}
-                    <title>
-                      {node.type} · {node.id}
-                      {node.manufacturer ? ` · ${node.manufacturer}` : ""} · $
-                      {node.subnet} · ${node.roleGroup} · ${node.purdueLevel} ·
-                      ${node.degree.toLocaleString()} observations$
-                      {node.findingCount
-                        ? ` · ${node.findingCount} finding${node.findingCount === 1 ? "" : "s"}`
-                        : ""}
-                    </title>
-                  </g>
-                );
-              })}
-              </>)}
+                    );
+                  })}
+                  {nodes.map((node) => {
+                    const radius =
+                      12 + Math.min(10, (node.degree / maxDegree) * 10);
+                    return (
+                      <g
+                        key={node.id}
+                        className={`topology-node node-${node.type.toLowerCase()} ${selectedIp === node.id ? "selected" : ""} ${focusedNodeId === node.id ? "focused" : ""} ${focusedNodeId && !neighborIds.has(node.id) ? "dimmed" : ""} ${focusedEdge && node.id !== focusedEdge.source && node.id !== focusedEdge.target ? "dimmed" : ""} ${node.findingCount ? "finding-related" : ""} ${queryActive && !queryNodeIds.has(node.id) ? "query-dimmed" : ""} ${queryActive && queryNodeIds.has(node.id) ? "query-match" : ""}`}
+                        transform={`translate(${node.x} ${node.y})`}
+                        onPointerDown={(event) => beginNodeDrag(event, node)}
+                        onPointerUp={finishNodeDrag}
+                        onPointerCancel={finishNodeDrag}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (dragRef.current?.moved) return;
+                          inspectNode(node);
+                        }}
+                        onDoubleClick={(event) => {
+                          event.stopPropagation();
+                          focusNodeNeighborhood(node);
+                        }}
+                        onMouseEnter={() => setHoveredNodeId(node.id)}
+                        onMouseLeave={() =>
+                          setHoveredNodeId((current) =>
+                            current === node.id ? null : current,
+                          )
+                        }
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`${node.type} device ${node.id}`}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            inspectNode(node);
+                          }
+                        }}
+                      >
+                        <circle className="node-hit" r={radius + 8} />
+                        <circle className="node-halo" r={radius + 5} />
+                        <circle
+                          className="node-ring"
+                          r={radius}
+                          filter="url(#node-shadow)"
+                        />
+                        <circle
+                          className="node-core"
+                          r={Math.max(4.5, radius * 0.36)}
+                        />
+                        <text className="node-type" y="3" textAnchor="middle">
+                          {node.type === "Unknown" ? "?" : node.type.charAt(0)}
+                        </text>
+                        {node.findingCount > 0 && (
+                          <g
+                            className="topology-finding-marker"
+                            transform={`translate(${radius - 2} ${-radius + 2})`}
+                            aria-hidden="true"
+                          >
+                            <circle r="6" />
+                            <text y="2.6" textAnchor="middle">
+                              !
+                            </text>
+                          </g>
+                        )}
+                        {!isInteracting &&
+                          (labelMode === "full" ||
+                            (labelMode === "minimal" &&
+                              (hoveredNodeId === node.id ||
+                                focusedNodeId === node.id ||
+                                selectedIp === node.id))) && (
+                            <g
+                              className="topology-node-label"
+                              transform={`translate(0 ${radius + 18})`}
+                            >
+                              <rect
+                                x="-48"
+                                y="-11"
+                                width="96"
+                                height="21"
+                                rx="8"
+                              />
+                              <text
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                              >
+                                {node.id}
+                              </text>
+                            </g>
+                          )}
+                        <title>
+                          {node.type} · {node.id}
+                          {node.manufacturer ? ` · ${node.manufacturer}` : ""} ·
+                          ${node.subnet} · ${node.roleGroup} · $
+                          {node.purdueLevel} · ${node.degree.toLocaleString()}{" "}
+                          observations$
+                          {node.findingCount
+                            ? ` · ${node.findingCount} finding${node.findingCount === 1 ? "" : "s"}`
+                            : ""}
+                        </title>
+                      </g>
+                    );
+                  })}
+                </>
+              )}
             </g>
           </svg>
 
@@ -2394,7 +3171,9 @@ const NetworkTopology: React.FC<Props> = ({
             </button>
             {legendOpen && (
               <div className="topology-legend-items">
-                <strong className="topology-legend-category">Device types</strong>
+                <strong className="topology-legend-category">
+                  Device types
+                </strong>
                 <span>
                   <i className="legend-role legend-ot" />
                   OT
@@ -2411,7 +3190,9 @@ const NetworkTopology: React.FC<Props> = ({
                   <i className="legend-role legend-unknown" />
                   Unknown
                 </span>
-                <strong className="topology-legend-category">Connection highlights</strong>
+                <strong className="topology-legend-category">
+                  Connection highlights
+                </strong>
                 <span>
                   <i className="legend-finding" />
                   Finding-related
@@ -2432,8 +3213,9 @@ const NetworkTopology: React.FC<Props> = ({
                   </span>
                 )}
                 <span className="legend-hint">
-                  Click to select · drag to move · use Inspect details for the drawer · double-click to focus neighbors ·
-                  drag the background to pan · Ctrl/⌘ + wheel to zoom · Esc to clear selection
+                  Click to select · drag to move · use Inspect details for the
+                  drawer · double-click to focus neighbors · drag the background
+                  to pan · Ctrl/⌘ + wheel to zoom · Esc to clear selection
                 </span>
               </div>
             )}
@@ -2472,7 +3254,9 @@ const NetworkTopology: React.FC<Props> = ({
 
   // Render the expanded workspace outside the report Panel clipping/stacking
   // context. Keep the component itself mounted so graph state is preserved.
-  return isFullScreen ? createPortal(topologyView, document.body) : topologyView;
+  return isFullScreen
+    ? createPortal(topologyView, document.body)
+    : topologyView;
 };
 
 export default NetworkTopology;

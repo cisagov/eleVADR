@@ -1,3 +1,4 @@
+---
 ci:
   # Do not commit changes from running pre-commit for pull requests.
   autofix_prs: false
