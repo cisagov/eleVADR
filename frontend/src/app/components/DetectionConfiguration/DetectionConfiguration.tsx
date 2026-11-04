@@ -93,9 +93,12 @@ interface Props {
 const tabs: { id: TabId; label: string }[] = [
   { id: "captureScope", label: "Capture Scope" },
   { id: "segments", label: "Network Segments" },
-  { id: "assets", label: "Assets" },
+  { id: "assets", label: "Asset Inventory" },
   { id: "infrastructure", label: "Trusted Infrastructure" },
-  { id: "communications", label: "Communications & Exceptions" },
+  { id: "communications", label: "Observed Communications" },
+  { id: "segmentPairs", label: "Segment Exceptions" },
+  { id: "externalDestinations", label: "Approved External Destinations" },
+  { id: "ignoredHosts", label: "Global Suppressions" },
   { id: "controlActions", label: "Control Authorization" },
 ];
 
@@ -469,11 +472,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
     segments: profile.segments.length,
     assets: profile.assets.length,
     infrastructure: profile.infrastructure.length,
-    communications:
-      profile.communicationPairs.length +
-      profile.allowedSegmentPairs.length +
-      profile.allowedHosts.length +
-      profile.approvedExternalDestinations.length,
+    communications: profile.communicationPairs.length,
     segmentPairs: profile.allowedSegmentPairs.length,
     controlActions: profile.authorizedControlActions.length,
     ignoredHosts: profile.allowedHosts.length,
@@ -2123,7 +2122,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                 <div className="config-section-heading">
                   <div>
                     <div className="context-heading-row">
-                      <h2>Communications</h2>
+                      <h2>Observed Communications</h2>
                       <ContextHelp label="Observed Communications">
                         This table records communication seen in the capture and
                         supports baselining. It does not authorize control
@@ -2308,7 +2307,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
               </>
             )}
 
-            {tab === "communications" && (
+            {tab === "segmentPairs" && (
               <>
                 <div className="config-section-heading">
                   <div>
@@ -2672,13 +2671,13 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
               </>
             )}
 
-            {tab === "communications" && (
+            {tab === "ignoredHosts" && (
               <>
                 <div className="config-section-heading">
                   <div>
                     <div className="context-heading-row">
-                      <h2>Ignored Hosts</h2>
-                      <ContextHelp label="Ignored Hosts">
+                      <h2>Global Suppressions</h2>
+                      <ContextHelp label="Global Suppressions">
                         Ignored hosts can suppress findings in detectors that
                         honor this policy. Prefer a narrow detector-specific
                         exception when possible instead of broadly ignoring a
@@ -2799,7 +2798,7 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
               </>
             )}
 
-            {tab === "communications" && (
+            {tab === "externalDestinations" && (
               <>
                 <div className="config-section-heading">
                   <div>
@@ -3572,10 +3571,10 @@ const DetectionConfiguration: React.FC<Props> = ({ open, onClose }) => {
                       assets: "Asset Inventory",
                       infrastructure: "Trusted Infrastructure",
                       captureScope: "Capture Scope",
-                      communications: "Communications",
+                      communications: "Observed Communications",
                       segmentPairs: "Segment Exceptions",
-                      controlActions: "Authorized Control Actions",
-                      ignoredHosts: "Hosts Ignored by Detectors",
+                      controlActions: "Control Authorization",
+                      ignoredHosts: "Global Suppressions",
                       externalDestinations: "Approved External Destinations",
                     }).map(([key, label]) => (
                       <label key={key}>
