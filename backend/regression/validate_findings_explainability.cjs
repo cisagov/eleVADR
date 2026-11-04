@@ -37,7 +37,9 @@ function read(file) {
 }
 
 function requireText(source, needle, label) {
-  if (!(needle instanceof RegExp ? needle.test(source) : source.includes(needle)))
+  if (
+    !(needle instanceof RegExp ? needle.test(source) : source.includes(needle))
+  )
     throw new Error(
       `Findings explainability contract missing ${label}: ${needle}`,
     );

@@ -114,9 +114,16 @@ export function tokenExpiresWithin(seconds: number): boolean {
   const token = getAccessToken();
   if (!token) return false;
   try {
-    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))) as { exp?: number };
-    return typeof payload.exp === "number" && payload.exp - Date.now() / 1000 < seconds;
-  } catch { return false; }
+    const payload = JSON.parse(
+      atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
+    ) as { exp?: number };
+    return (
+      typeof payload.exp === "number" &&
+      payload.exp - Date.now() / 1000 < seconds
+    );
+  } catch {
+    return false;
+  }
 }
 
 /** Renewal is allowed only for an active server-side PCAP workflow. */
@@ -127,7 +134,9 @@ export function renewProcessingSession(): Promise<boolean> {
     if (!token) return false;
     try {
       const response = await fetch(authApiUrl("/auth/renew"), {
-        method: "POST", headers: { Authorization: `Bearer ${token}` }, cache: "no-store",
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
       });
       if (!response.ok) return false;
       const payload = (await response.json()) as LoginResponse;
@@ -135,9 +144,13 @@ export function renewProcessingSession(): Promise<boolean> {
         storeAccessToken(payload.access_token);
         return true;
       }
-    } catch { /* transient connection errors must not sign the user out */ }
+    } catch {
+      /* transient connection errors must not sign the user out */
+    }
     return false;
-  })().finally(() => { renewalInFlight = null; });
+  })().finally(() => {
+    renewalInFlight = null;
+  });
   return renewalInFlight;
 }
 

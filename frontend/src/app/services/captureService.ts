@@ -30,7 +30,10 @@ function api(path = ""): string {
 }
 async function msg(r: Response) {
   try {
-    const p = (await r.clone().json()) as { message?: unknown; error?: unknown };
+    const p = (await r.clone().json()) as {
+      message?: unknown;
+      error?: unknown;
+    };
     if (typeof p.message === "string") return p.message;
     if (typeof p.error === "string") return p.error;
   } catch {}
@@ -44,10 +47,16 @@ export async function listRetainedCaptures(): Promise<
   const p = (await r.json()) as { captures?: RetainedCaptureSummary[] };
   return Array.isArray(p.captures) ? p.captures : [];
 }
-export async function downloadRetainedCapture(id: string, filename: string): Promise<void> {
-  const response = await authenticatedFetch(api(`/${encodeURIComponent(id)}/download`), {
-    cache: "no-store",
-  });
+export async function downloadRetainedCapture(
+  id: string,
+  filename: string,
+): Promise<void> {
+  const response = await authenticatedFetch(
+    api(`/${encodeURIComponent(id)}/download`),
+    {
+      cache: "no-store",
+    },
+  );
   if (!response.ok) throw new Error(await msg(response));
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);

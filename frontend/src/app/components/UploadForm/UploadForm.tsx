@@ -105,17 +105,20 @@ const UploadForm: React.FC<UploadFormProps> = ({
   // The expanded popup is non-modal. Any interaction outside it collapses
   // progress to the title bar without blocking the underlying action.
   useEffect(() => {
-    const progressVisible = isAnalyzing || (notice === "evidence" && !!pendingPcap);
+    const progressVisible =
+      isAnalyzing || (notice === "evidence" && !!pendingPcap);
     if (!progressVisible || progressMinimized) return;
     const handleOutsidePointer = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Node)) return;
       // Preserve clicks inside the popup; outside clicks still reach their targets.
-      if (document.querySelector(".analysis-slide-down")?.contains(target)) return;
+      if (document.querySelector(".analysis-slide-down")?.contains(target))
+        return;
       setProgressMinimized(true);
     };
     document.addEventListener("pointerdown", handleOutsidePointer, true);
-    return () => document.removeEventListener("pointerdown", handleOutsidePointer, true);
+    return () =>
+      document.removeEventListener("pointerdown", handleOutsidePointer, true);
   }, [isAnalyzing, progressMinimized, notice, pendingPcap]);
 
   const [phase, setPhase] = useState<"evidence" | "modules">("evidence");
@@ -156,7 +159,12 @@ const UploadForm: React.FC<UploadFormProps> = ({
   const recoveryHandledRef = useRef<string | null>(null);
   // Reattach to server-owned jobs after authentication. Never upload or rerun Zeek.
   useEffect(() => {
-    if (!recoveryJob || activeJobUrlRef.current || recoveryHandledRef.current === recoveryJob.jobId) return;
+    if (
+      !recoveryJob ||
+      activeJobUrlRef.current ||
+      recoveryHandledRef.current === recoveryJob.jobId
+    )
+      return;
     if (isAnalyzing && !activeJobUrlRef.current) return;
     recoveryHandledRef.current = recoveryJob.jobId;
     let canceled = false;
@@ -171,15 +179,27 @@ const UploadForm: React.FC<UploadFormProps> = ({
       try {
         for (;;) {
           const response = await authenticatedFetch(url, { cache: "no-store" });
-          if (!response.ok) throw new Error(`Unable to reconnect to processing job (${response.status}).`);
-          const job = await response.json() as {
-            status: string; stage?: string; progress?: number | null;
-            message?: string; detail?: string; elapsedSeconds?: number; result?: unknown;
+          if (!response.ok)
+            throw new Error(
+              `Unable to reconnect to processing job (${response.status}).`,
+            );
+          const job = (await response.json()) as {
+            status: string;
+            stage?: string;
+            progress?: number | null;
+            message?: string;
+            detail?: string;
+            elapsedSeconds?: number;
+            result?: unknown;
           };
           if (canceled) return;
-          setProgress({ stage: job.stage || "processing", progress: job.progress ?? null,
-            message: job.message || "Processing capture…", detail: job.detail,
-            elapsedSeconds: job.elapsedSeconds });
+          setProgress({
+            stage: job.stage || "processing",
+            progress: job.progress ?? null,
+            message: job.message || "Processing capture…",
+            detail: job.detail,
+            elapsedSeconds: job.elapsedSeconds,
+          });
           if (job.status === "completed") {
             if (recoveryJob.phase === "modules") {
               const { report: normalized } = normalizeElevadrReport(job.result);
@@ -187,13 +207,21 @@ const UploadForm: React.FC<UploadFormProps> = ({
               setProgress(null);
             } else {
               const result = job.result as ZeekScanResult & {
-                evidenceToken?: string; sourceFilename?: string; evidence?: { pcapSha256?: string }; captureId?: string;
+                evidenceToken?: string;
+                sourceFilename?: string;
+                evidence?: { pcapSha256?: string };
+                captureId?: string;
               };
               if (!result?.evidenceToken || !result.evidence?.pcapSha256)
-                throw new Error("Recovered evidence is missing its reusable token. Collect evidence again.");
-              const filename = result.sourceFilename || recoveryJob.sourceFilename;
+                throw new Error(
+                  "Recovered evidence is missing its reusable token. Collect evidence again.",
+                );
+              const filename =
+                result.sourceFilename || recoveryJob.sourceFilename;
               if (!filename || !/\.pcap(?:ng)?$/i.test(filename))
-                throw new Error("Recovered job does not include the original PCAP filename. Cannot safely reuse Zeek evidence.");
+                throw new Error(
+                  "Recovered job does not include the original PCAP filename. Cannot safely reuse Zeek evidence.",
+                );
               setPendingPcap(new File([], filename));
               setSelectedFileName(filename);
               setSelectedFileKind("pcap");
@@ -212,7 +240,8 @@ const UploadForm: React.FC<UploadFormProps> = ({
           if (canceled) return;
         }
       } catch (err) {
-        if (!canceled) setError(err instanceof Error ? err.message : "Job recovery failed.");
+        if (!canceled)
+          setError(err instanceof Error ? err.message : "Job recovery failed.");
       } finally {
         if (!canceled) {
           activeJobUrlRef.current = null;
@@ -221,7 +250,9 @@ const UploadForm: React.FC<UploadFormProps> = ({
       }
     };
     void resume();
-    return () => { canceled = true; };
+    return () => {
+      canceled = true;
+    };
   }, [recoveryJob?.jobId]);
 
   const profiles = useMemo(
@@ -546,7 +577,6 @@ const UploadForm: React.FC<UploadFormProps> = ({
             : "Failed to analyze PCAP";
       if (!(err instanceof AnalysisCanceledError)) {
         setError(message);
-
       }
       return message;
     } finally {
@@ -559,13 +589,14 @@ const UploadForm: React.FC<UploadFormProps> = ({
   const processFile = async (file: File): Promise<void> => {
     const kind = getFileKind(file);
     if (kind === "pcap" && (isAnalyzing || contextDialogOpen)) {
-      setError("A packet capture is already being processed or awaiting Detection Context. Finish or cancel it before opening another PCAP.");
+      setError(
+        "A packet capture is already being processed or awaiting Detection Context. Finish or cancel it before opening another PCAP.",
+      );
       return;
     }
     if (isAnalyzing && kind !== "json") return;
     setError(null);
     if (!isAnalyzing) {
-
       setProgress(null);
     }
     if (!kind) {
@@ -781,10 +812,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
         aria-label="Open a PCAP, PCAPNG, or JSON report"
         onClick={openFilePicker}
         onKeyDown={(event) => {
-          if (
-            (event.key === "Enter" || event.key === " ") &&
-            true
-          ) {
+          if ((event.key === "Enter" || event.key === " ") && true) {
             event.preventDefault();
             openFilePicker();
           }
@@ -795,8 +823,16 @@ const UploadForm: React.FC<UploadFormProps> = ({
           id={inputId}
           className="file-picker-input"
           type="file"
-          accept={isAnalyzing || contextDialogOpen ? ".json,application/json" : ".pcap,.pcapng,.json,application/json"}
-          aria-label={isAnalyzing || contextDialogOpen ? "Open JSON report" : "Open PCAP or JSON report"}
+          accept={
+            isAnalyzing || contextDialogOpen
+              ? ".json,application/json"
+              : ".pcap,.pcapng,.json,application/json"
+          }
+          aria-label={
+            isAnalyzing || contextDialogOpen
+              ? "Open JSON report"
+              : "Open PCAP or JSON report"
+          }
           onChange={handleFileInput}
         />
         <div className="file-picker-icon" aria-hidden="true">
@@ -823,7 +859,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
             <span>JSON</span>
           </div>
         </div>
-        {(
+        {
           <button
             type="button"
             className="file-picker-button"
@@ -834,7 +870,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
           >
             Choose file
           </button>
-        )}
+        }
       </div>
 
       {selectedFileName && (
@@ -862,75 +898,146 @@ const UploadForm: React.FC<UploadFormProps> = ({
         </div>
       )}
 
-      {(isAnalyzing || (notice === "evidence" && !!pendingPcap)) && progressMinimized && createPortal(
-        <button type="button" className="analysis-titlebar-status" onClick={() => setProgressMinimized(false)} aria-label={notice === "evidence" && !isAnalyzing ? "Show evidence ready actions" : "Expand processing progress"} title={notice === "evidence" && !isAnalyzing ? "Evidence ready: choose context" : "Expand processing progress"}>
-          <span className="analysis-status-pulse" aria-hidden="true" />
-          {notice === "evidence" && !isAnalyzing ? "Evidence ready · Choose Context" : phase === "evidence" ? "Zeek collecting evidence" : "Detection modules running"}
-          {notice === "evidence" && !isAnalyzing ? "" : progress?.progress != null ? ` · ${progress.progress}%` : " · Working"}
-          <span aria-hidden="true"> ▾</span>
-        </button>,
-        document.querySelector(".titlebar-center") ?? document.body,
-      )}
-
-      {(isAnalyzing || (notice === "evidence" && !!pendingPcap)) && !progressMinimized && createPortal(
-        <div className="upload-status analysis-slide-down" aria-live="polite">
-          <div className="processing-heading">
-            <strong>{notice === "evidence" && !isAnalyzing ? "Stage 1 complete: Evidence ready" : phase === "evidence" ? "Stage 1 of 2: Zeek evidence collection" : "Stage 2 of 2: Detection modules"}</strong>
-            <button type="button" onClick={() => setProgressMinimized((v) => !v)} aria-label="Minimize processing status to title bar" title="Minimize to title bar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14" /></svg></button>
-          </div>
-          {notice === "evidence" && !isAnalyzing ? (
-            <div className="analysis-ready-actions"><p>Zeek evidence is ready. Select a Detection Context to continue analysis.</p><button type="button" onClick={() => { setProgressMinimized(true); setContextDialogOpen(true); }}>Choose Context</button></div>
-          ) : <p className="processing-advisory">Large captures may take some time. Keep this page open while processing; you can review other reports when available.</p>}
-          {isAnalyzing && <>
-          <div className="upload-progress-row">
-            <div className="upload-progress-copy">
-              <p className="loading-text">
-                {progress?.message ?? "Starting analysis…"}
-              </p>
-              {progress?.detail && (
-                <p className="progress-detail">{progress.detail}</p>
-              )}
-            </div>
-            <p className="progress-percent">
-              {progress?.progress !== null && progress?.progress !== undefined
-                ? `${progress.progress}%`
-                : progress?.elapsedSeconds !== undefined
-                  ? `${Math.floor(progress.elapsedSeconds / 60)}:${String(Math.floor(progress.elapsedSeconds % 60)).padStart(2, "0")}`
-                  : "Working"}
-            </p>
-          </div>
-          <div
-            className={`progress-bar-track ${progress?.progress == null ? "is-indeterminate" : ""}`}
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            {...(progress?.progress == null
-              ? {}
-              : { "aria-valuenow": progress.progress })}
+      {(isAnalyzing || (notice === "evidence" && !!pendingPcap)) &&
+        progressMinimized &&
+        createPortal(
+          <button
+            type="button"
+            className="analysis-titlebar-status"
+            onClick={() => setProgressMinimized(false)}
+            aria-label={
+              notice === "evidence" && !isAnalyzing
+                ? "Show evidence ready actions"
+                : "Expand processing progress"
+            }
+            title={
+              notice === "evidence" && !isAnalyzing
+                ? "Evidence ready: choose context"
+                : "Expand processing progress"
+            }
           >
-            <div
-              className="progress-bar-fill"
-              style={
-                progress?.progress == null
-                  ? undefined
-                  : { width: `${progress.progress}%` }
-              }
-            />
-          </div>
-          <div className="analysis-running-actions">
-            <button
-              type="button"
-              className="analysis-module-cancel"
-              onClick={() => void cancelActiveAnalysis()}
-              disabled={cancelRequestedRef.current}
-            >
-              Cancel analysis
-            </button>
-          </div>
-          </>}
-        </div>,
-        document.body,
-      )}
+            <span className="analysis-status-pulse" aria-hidden="true" />
+            {notice === "evidence" && !isAnalyzing
+              ? "Evidence ready · Choose Context"
+              : phase === "evidence"
+                ? "Zeek collecting evidence"
+                : "Detection modules running"}
+            {notice === "evidence" && !isAnalyzing
+              ? ""
+              : progress?.progress != null
+                ? ` · ${progress.progress}%`
+                : " · Working"}
+            <span aria-hidden="true"> ▾</span>
+          </button>,
+          document.querySelector(".titlebar-center") ?? document.body,
+        )}
+
+      {(isAnalyzing || (notice === "evidence" && !!pendingPcap)) &&
+        !progressMinimized &&
+        createPortal(
+          <div className="upload-status analysis-slide-down" aria-live="polite">
+            <div className="processing-heading">
+              <strong>
+                {notice === "evidence" && !isAnalyzing
+                  ? "Stage 1 complete: Evidence ready"
+                  : phase === "evidence"
+                    ? "Stage 1 of 2: Zeek evidence collection"
+                    : "Stage 2 of 2: Detection modules"}
+              </strong>
+              <button
+                type="button"
+                onClick={() => setProgressMinimized((v) => !v)}
+                aria-label="Minimize processing status to title bar"
+                title="Minimize to title bar"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14" />
+                </svg>
+              </button>
+            </div>
+            {notice === "evidence" && !isAnalyzing ? (
+              <div className="analysis-ready-actions">
+                <p>
+                  Zeek evidence is ready. Select a Detection Context to continue
+                  analysis.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProgressMinimized(true);
+                    setContextDialogOpen(true);
+                  }}
+                >
+                  Choose Context
+                </button>
+              </div>
+            ) : (
+              <p className="processing-advisory">
+                Large captures may take some time. Keep this page open while
+                processing; you can review other reports when available.
+              </p>
+            )}
+            {isAnalyzing && (
+              <>
+                <div className="upload-progress-row">
+                  <div className="upload-progress-copy">
+                    <p className="loading-text">
+                      {progress?.message ?? "Starting analysis…"}
+                    </p>
+                    {progress?.detail && (
+                      <p className="progress-detail">{progress.detail}</p>
+                    )}
+                  </div>
+                  <p className="progress-percent">
+                    {progress?.progress !== null &&
+                    progress?.progress !== undefined
+                      ? `${progress.progress}%`
+                      : progress?.elapsedSeconds !== undefined
+                        ? `${Math.floor(progress.elapsedSeconds / 60)}:${String(Math.floor(progress.elapsedSeconds % 60)).padStart(2, "0")}`
+                        : "Working"}
+                  </p>
+                </div>
+                <div
+                  className={`progress-bar-track ${progress?.progress == null ? "is-indeterminate" : ""}`}
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  {...(progress?.progress == null
+                    ? {}
+                    : { "aria-valuenow": progress.progress })}
+                >
+                  <div
+                    className="progress-bar-fill"
+                    style={
+                      progress?.progress == null
+                        ? undefined
+                        : { width: `${progress.progress}%` }
+                    }
+                  />
+                </div>
+                <div className="analysis-running-actions">
+                  <button
+                    type="button"
+                    className="analysis-module-cancel"
+                    onClick={() => void cancelActiveAnalysis()}
+                    disabled={cancelRequestedRef.current}
+                  >
+                    Cancel analysis
+                  </button>
+                </div>
+              </>
+            )}
+          </div>,
+          document.body,
+        )}
 
       {error && (
         <div className="error-container" role="alert">
@@ -939,174 +1046,179 @@ const UploadForm: React.FC<UploadFormProps> = ({
         </div>
       )}
 
-      {contextDialogOpen && pendingPcap && !nestedDialogOpen && createPortal(
-        <div className="analysis-module-backdrop" role="presentation">
-          <div
-            className="analysis-module-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="pcap-context-title"
-          >
-            <div className="analysis-module-header">
-              <div>
-                <span className="analysis-module-eyebrow">
-                  Packet Capture Analysis
-                </span>
-                <h2 id="pcap-context-title">Choose Context</h2>
-                <p>
-                  Zeek evidence has been extracted once from{" "}
-                  <strong>{pendingPcap.name}</strong>. Choose a Context;
-                  observed assets, segments, infrastructure, and communications
-                  will prepopulate it, and the same retained Zeek evidence will
-                  be reused for detector analysis.
-                </p>
-              </div>
-              <button
-                type="button"
-                className="analysis-module-close"
-                onClick={closeContextDialog}
-                aria-label="Cancel PCAP analysis"
-              >
-                ×
-              </button>
-            </div>
-            {effectiveProfile && (
-              <section
-                className="analysis-module-selection-summary"
-                aria-label="Detection module selection summary"
-              >
-                <div className="analysis-module-section-heading">
-                  <span className="analysis-module-section-title">
-                    Module Selection
-                  </span>
-                  {onOpenDetectionModules && (
-                    <button
-                      type="button"
-                      className="analysis-section-edit"
-                      onClick={onOpenDetectionModules}
-                      aria-label="Edit Modules"
-                      title="Edit Modules"
-                    >
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M4 20h4l11-11-4-4L4 16v4Z" />
-                        <path d="m13.5 6.5 4 4" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
+      {contextDialogOpen &&
+        pendingPcap &&
+        !nestedDialogOpen &&
+        createPortal(
+          <div className="analysis-module-backdrop" role="presentation">
+            <div
+              className="analysis-module-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="pcap-context-title"
+            >
+              <div className="analysis-module-header">
                 <div>
-                  <strong>
-                    {effectiveProfile.selectedModules.length} of{" "}
-                    {ALL_DETECTION_MODULES.length}
-                  </strong>
-                  <span>detection modules selected for this context</span>
-                </div>
-              </section>
-            )}
-            <div className="analysis-module-toolbar">
-              <div className="context-profile-picker">
-                <div className="analysis-module-section-heading">
-                  <span className="analysis-module-section-title">
-                    Context Profile
+                  <span className="analysis-module-eyebrow">
+                    Packet Capture Analysis
                   </span>
-                  {onOpenDetectionContext && (
-                    <button
-                      type="button"
-                      className="analysis-section-edit"
-                      onClick={editSelectedDetectionContext}
-                      aria-label={
-                        effectiveProfile ? "Edit Context" : "Create Context"
-                      }
-                      title={
-                        effectiveProfile ? "Edit Context" : "Create Context"
-                      }
-                    >
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M4 20h4l11-11-4-4L4 16v4Z" />
-                        <path d="m13.5 6.5 4 4" />
-                      </svg>
-                    </button>
-                  )}
+                  <h2 id="pcap-context-title">Choose Context</h2>
+                  <p>
+                    Zeek evidence has been extracted once from{" "}
+                    <strong>{pendingPcap.name}</strong>. Choose a Context;
+                    observed assets, segments, infrastructure, and
+                    communications will prepopulate it, and the same retained
+                    Zeek evidence will be reused for detector analysis.
+                  </p>
                 </div>
-                <div className="context-profile-select-row">
-                  <select
-                    value={selectedProfile?.id || ""}
-                    onChange={(e) => {
-                      if (e.target.value === "__new__") {
-                        createNewDetectionContext();
-                        return;
-                      }
-                      setSelectedProfileId(e.target.value);
-                      activateProfile(e.target.value);
-                    }}
-                  >
-                    {!profiles.length && (
-                      <option value="" disabled>
-                        Select or create a Context
-                      </option>
+                <button
+                  type="button"
+                  className="analysis-module-close"
+                  onClick={closeContextDialog}
+                  aria-label="Cancel PCAP analysis"
+                >
+                  ×
+                </button>
+              </div>
+              {effectiveProfile && (
+                <section
+                  className="analysis-module-selection-summary"
+                  aria-label="Detection module selection summary"
+                >
+                  <div className="analysis-module-section-heading">
+                    <span className="analysis-module-section-title">
+                      Module Selection
+                    </span>
+                    {onOpenDetectionModules && (
+                      <button
+                        type="button"
+                        className="analysis-section-edit"
+                        onClick={onOpenDetectionModules}
+                        aria-label="Edit Modules"
+                        title="Edit Modules"
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M4 20h4l11-11-4-4L4 16v4Z" />
+                          <path d="m13.5 6.5 4 4" />
+                        </svg>
+                      </button>
                     )}
-                    {profiles.map((profile) => (
-                      <option key={profile.id} value={profile.id}>
-                        {profile.name}
-                      </option>
-                    ))}
-                    <option value="__new__">+ New Context</option>
-                  </select>
-                  {selectedProfile && (
-                    <button
-                      type="button"
-                      className="context-profile-delete"
-                      onClick={deleteSelectedDetectionContext}
-                      aria-label={`Delete ${selectedProfile.name}`}
-                      title={`Delete ${selectedProfile.name}`}
+                  </div>
+                  <div>
+                    <strong>
+                      {effectiveProfile.selectedModules.length} of{" "}
+                      {ALL_DETECTION_MODULES.length}
+                    </strong>
+                    <span>detection modules selected for this context</span>
+                  </div>
+                </section>
+              )}
+              <div className="analysis-module-toolbar">
+                <div className="context-profile-picker">
+                  <div className="analysis-module-section-heading">
+                    <span className="analysis-module-section-title">
+                      Context Profile
+                    </span>
+                    {onOpenDetectionContext && (
+                      <button
+                        type="button"
+                        className="analysis-section-edit"
+                        onClick={editSelectedDetectionContext}
+                        aria-label={
+                          effectiveProfile ? "Edit Context" : "Create Context"
+                        }
+                        title={
+                          effectiveProfile ? "Edit Context" : "Create Context"
+                        }
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M4 20h4l11-11-4-4L4 16v4Z" />
+                          <path d="m13.5 6.5 4 4" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                  <div className="context-profile-select-row">
+                    <select
+                      value={selectedProfile?.id || ""}
+                      onChange={(e) => {
+                        if (e.target.value === "__new__") {
+                          createNewDetectionContext();
+                          return;
+                        }
+                        setSelectedProfileId(e.target.value);
+                        activateProfile(e.target.value);
+                      }}
                     >
-                      ×
-                    </button>
-                  )}
+                      {!profiles.length && (
+                        <option value="" disabled>
+                          Select or create a Context
+                        </option>
+                      )}
+                      {profiles.map((profile) => (
+                        <option key={profile.id} value={profile.id}>
+                          {profile.name}
+                        </option>
+                      ))}
+                      <option value="__new__">+ New Context</option>
+                    </select>
+                    {selectedProfile && (
+                      <button
+                        type="button"
+                        className="context-profile-delete"
+                        onClick={deleteSelectedDetectionContext}
+                        aria-label={`Delete ${selectedProfile.name}`}
+                        title={`Delete ${selectedProfile.name}`}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-            {effectiveProfile ? (
-              <div className="analysis-module-note">
-                <strong>{effectiveProfile.name}</strong> ·{" "}
-                {effectiveProfile.assets.length} assets ·{" "}
-                {effectiveProfile.segments.length} segments ·{" "}
-                {effectiveProfile.communicationPairs.length} observed pairs.
-                Observed facts from the retained Zeek evidence have been
-                applied; policy choices remain yours. Analyze PCAP will reuse
-                the same evidence without running Zeek again.
+              {effectiveProfile ? (
+                <div className="analysis-module-note">
+                  <strong>{effectiveProfile.name}</strong> ·{" "}
+                  {effectiveProfile.assets.length} assets ·{" "}
+                  {effectiveProfile.segments.length} segments ·{" "}
+                  {effectiveProfile.communicationPairs.length} observed pairs.
+                  Observed facts from the retained Zeek evidence have been
+                  applied; policy choices remain yours. Analyze PCAP will reuse
+                  the same evidence without running Zeek again.
+                </div>
+              ) : (
+                <div className="analysis-module-note">
+                  <strong>No saved Context.</strong> Choose{" "}
+                  <em>+ New Context</em> to create one prepopulated with
+                  observations from this PCAP.
+                </div>
+              )}
+              <div className="analysis-module-actions">
+                <button
+                  type="button"
+                  className="analysis-module-cancel"
+                  onClick={closeContextDialog}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="analysis-module-run"
+                  onClick={startAnalysis}
+                  disabled={!effectiveProfile}
+                  title={
+                    !effectiveProfile
+                      ? "Create or select a Context before analyzing this PCAP."
+                      : "Analyze this PCAP using the selected Context and detection modules."
+                  }
+                >
+                  Analyze PCAP
+                </button>
               </div>
-            ) : (
-              <div className="analysis-module-note">
-                <strong>No saved Context.</strong> Choose <em>+ New Context</em>{" "}
-                to create one prepopulated with observations from this PCAP.
-              </div>
-            )}
-            <div className="analysis-module-actions">
-              <button
-                type="button"
-                className="analysis-module-cancel"
-                onClick={closeContextDialog}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="analysis-module-run"
-                onClick={startAnalysis}
-                disabled={!effectiveProfile}
-                title={
-                  !effectiveProfile
-                    ? "Create or select a Context before analyzing this PCAP."
-                    : "Analyze this PCAP using the selected Context and detection modules."
-                }
-              >
-                Analyze PCAP
-              </button>
             </div>
-          </div>
-        </div>
-        , document.body)}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

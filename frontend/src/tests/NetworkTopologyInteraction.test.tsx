@@ -112,7 +112,9 @@ describe("NetworkTopology interaction regression", () => {
     const node = firstDeviceButton();
     fireEvent.click(node);
     expect(onSelect).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "Inspect details" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Inspect details" }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /Filter device/i }),
     ).toBeInTheDocument();
@@ -124,14 +126,26 @@ describe("NetworkTopology interaction regression", () => {
     expect(onSelect).not.toHaveBeenCalled();
     const inspect = screen.getByRole("button", { name: "Inspect details" });
     fireEvent.click(inspect);
-    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ type: "device" }));
-    fireEvent.click(screen.getByRole("button", { name: "Show connected devices" }));
-    expect(screen.getByRole("button", { name: "Show all devices" })).toHaveAttribute("aria-pressed", "true");
+    expect(onSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "device" }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Show connected devices" }),
+    );
+    expect(
+      screen.getByRole("button", { name: "Show all devices" }),
+    ).toHaveAttribute("aria-pressed", "true");
     fireEvent.click(screen.getByRole("button", { name: "Show all devices" }));
-    expect(screen.getByRole("button", { name: "Show connected devices" })).toHaveAttribute("aria-pressed", "false");
+    expect(
+      screen.getByRole("button", { name: "Show connected devices" }),
+    ).toHaveAttribute("aria-pressed", "false");
     fireEvent.click(screen.getByRole("button", { name: "Clear selection" }));
-    expect(screen.queryByRole("button", { name: "Inspect details" })).not.toBeInTheDocument();
-    expect(screen.getByText(/Select a device or connection to inspect it/)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Inspect details" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/Select a device or connection to inspect it/),
+    ).toBeInTheDocument();
   });
 
   it("opens connection details through the widened invisible edge hit target", () => {
@@ -237,7 +251,9 @@ describe("NetworkTopology interaction regression", () => {
       fireEvent.change(grouping, { target: { value: mode } });
       expect(grouping.value).toBe(mode);
     }
-    const labels = screen.getByLabelText("Topology label density") as HTMLSelectElement;
+    const labels = screen.getByLabelText(
+      "Topology label density",
+    ) as HTMLSelectElement;
     for (const mode of ["minimal", "full", "off"]) {
       fireEvent.change(labels, { target: { value: mode } });
       expect(labels.value).toBe(mode);
@@ -249,9 +265,13 @@ describe("NetworkTopology interaction regression", () => {
     const cluster = screen.getByRole("button", { name: /^Expand OT, /i });
     expect(cluster).toHaveAttribute("tabindex", "0");
     fireEvent.keyDown(cluster, { key: "Enter" });
-    expect(screen.getByRole("button", { name: "Back to overview" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Back to overview" }),
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Back to overview" }));
-    expect(screen.getByRole("button", { name: /^Expand OT, /i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^Expand OT, /i }),
+    ).toBeInTheDocument();
   });
 
   it("keeps display options visible and secondary filters collapsible", () => {
@@ -259,18 +279,30 @@ describe("NetworkTopology interaction regression", () => {
     const filters = screen.getByText(/^More filters/).closest("summary");
     expect(filters).toHaveAttribute("aria-label", "More topology filters");
     expect(filters?.parentElement?.tagName).toBe("DETAILS");
-    expect(screen.getByRole("group", { name: "Topology display options" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("group", { name: "Topology display options" }),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText("Topology label density")).toBeVisible();
     expect(screen.getByLabelText("Hide isolated devices")).toBeVisible();
   });
 
   it("renders aggregate clusters, then retains dense device and edge drill-down", () => {
     const { container } = renderTopology([], false);
-    expect(container.querySelectorAll(".topology-aggregate-view [aria-label^='Expand ']").length).toBeGreaterThan(0);
+    expect(
+      container.querySelectorAll(
+        ".topology-aggregate-view [aria-label^='Expand ']",
+      ).length,
+    ).toBeGreaterThan(0);
     expect(container.querySelectorAll(".topology-node").length).toBe(0);
     fireEvent.click(screen.getByRole("button", { name: /^Expand OT, /i }));
-    expect(container.querySelectorAll(".topology-node").length).toBeGreaterThan(10);
-    expect(container.querySelectorAll(".topology-edge").length).toBeGreaterThan(0);
-    expect(screen.getByRole("img", { name: /Interactive network topology/i })).toBeInTheDocument();
+    expect(container.querySelectorAll(".topology-node").length).toBeGreaterThan(
+      10,
+    );
+    expect(container.querySelectorAll(".topology-edge").length).toBeGreaterThan(
+      0,
+    );
+    expect(
+      screen.getByRole("img", { name: /Interactive network topology/i }),
+    ).toBeInTheDocument();
   });
 });
