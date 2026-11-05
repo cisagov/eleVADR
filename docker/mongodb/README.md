@@ -98,6 +98,9 @@ README in that folder).
 | `ELEVADR_MONGO_PORT` | mongodb | Host loopback port. Default 27017. |
 | `ELEVADR_MONGODB_DATABASE` | backend | Database name. Default `elevadr`. |
 | `ELEVADR_JWT_SECRET` | backend | JWT signing secret, 32 or more characters. Required. |
+| `ELEVADR_BOOTSTRAP_ADMIN_USERNAME` | backend | Name of the first admin. Default `admin`. |
+| `ELEVADR_BOOTSTRAP_ADMIN_PASSWORD` | backend | Creates the first admin when the `users` collection is empty. 12 or more characters. |
+| `ELEVADR_BOOTSTRAP_ADMIN_SYNC` | backend | Optional. Set to `true` to update that admin's password to match `ELEVADR_BOOTSTRAP_ADMIN_PASSWORD` on each start when it differs. Changes made in the app are overwritten on the next restart. |
 
 The root user is only created when `/data/db` is empty. Changing the credentials in the env file
 later does not change an existing user. To reset, remove the volume (this deletes all data):
