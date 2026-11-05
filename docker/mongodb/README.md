@@ -64,7 +64,8 @@ Requires Docker with Compose v2.
    ELEVADR_BOOTSTRAP_ADMIN_PASSWORD=<12 or more characters>
    ```
 
-   The bootstrap only runs when the `users` collection is empty. Remove the password after the first start.
+   The bootstrap only creates the admin when the `users` collection is empty. Remove the password after the first
+   start, unless `ELEVADR_BOOTSTRAP_ADMIN_SYNC=true` is set to keep the admin password in sync with it.
 
 3. Start the database only:
 
@@ -102,9 +103,15 @@ README in that folder).
 | `ELEVADR_BOOTSTRAP_ADMIN_PASSWORD` | backend | Creates the first admin when the `users` collection is empty. 12 or more characters. |
 | `ELEVADR_BOOTSTRAP_ADMIN_SYNC` | backend | Optional. Set to `true` to update that admin's password to match `ELEVADR_BOOTSTRAP_ADMIN_PASSWORD` on each start when it differs. Changes made in the app are overwritten on the next restart. |
 
-The root user is only created when `/data/db` is empty. Changing the credentials in the env file
-later does not change an existing user. To reset, remove the volume (this deletes all data):
-`docker compose down -v`.
+There are two separate accounts:
+
+- The MongoDB root user (`ELEVADR_MONGO_ROOT_USERNAME` and `ELEVADR_MONGO_ROOT_PASSWORD`) is only
+  created when `/data/db` is empty. Changing these later does not change the existing root user.
+  To reset, remove the volume (this deletes all data): `docker compose down -v`.
+- The app admin (`ELEVADR_BOOTSTRAP_ADMIN_*`) lives in the `users` collection. It is created only
+  when that collection is empty. With `ELEVADR_BOOTSTRAP_ADMIN_SYNC=true` the backend also updates
+  its password on start when it differs from `ELEVADR_BOOTSTRAP_ADMIN_PASSWORD`, so no volume
+  reset is needed to change it.
 
 ## Maintenance: dump and restore
 
