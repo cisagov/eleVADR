@@ -1,0 +1,229 @@
+{
+  "allowedHosts": [
+    "10.50.0.10",
+    " 10.50.0.10 ",
+    "10.50.0.11"
+  ],
+  "allowedSegmentPairs": [
+    {
+      "description": "approved path",
+      "destinationSegment": "Control",
+      "id": "x1",
+      "sourceSegment": "Enterprise"
+    }
+  ],
+  "approvedExternalDestinations": [
+    "198.51.100.0/24",
+    " 198.51.100.0/24 ",
+    "203.0.113.8"
+  ],
+  "assets": [
+    {
+      "assetType": "PLC",
+      "confidence": "high",
+      "hostname": "PLC-1",
+      "id": "a1",
+      "ip": "10.10.1.20",
+      "macAddresses": [
+        "00:11:22:33:44:55"
+      ],
+      "ports": [
+        102
+      ],
+      "role": "OT",
+      "segment": "Observed Control",
+      "services": [
+        "s7comm"
+      ],
+      "source": "zeek"
+    },
+    {
+      "assetType": "Workstation",
+      "confidence": "medium",
+      "id": "a2",
+      "ip": "10.70.1.5",
+      "macAddresses": [],
+      "ports": [
+        443
+      ],
+      "purdueLevel": "Level 4",
+      "role": "IT",
+      "segment": "Enterprise",
+      "services": [
+        "https"
+      ],
+      "source": "user"
+    }
+  ],
+  "authorizedControlActions": [
+    {
+      "allowedFunctionCodes": [
+        5,
+        6,
+        16
+      ],
+      "allowedOperations": [
+        "write"
+      ],
+      "description": "HMI writes",
+      "destination": "10.60.0.20",
+      "id": "m",
+      "protocol": "modbus",
+      "source": "10.60.0.10"
+    },
+    {
+      "allowedFunctionCodes": [
+        "DIRECT_OPERATE"
+      ],
+      "allowedOperations": [
+        "operate"
+      ],
+      "description": "DNP3 operate",
+      "destination": "10.60.0.21",
+      "id": "d",
+      "protocol": "dnp3",
+      "source": "10.60.0.11"
+    },
+    {
+      "allowedFunctionCodes": [
+        "0x05"
+      ],
+      "allowedOperations": [
+        "write",
+        "stop"
+      ],
+      "description": "engineering station",
+      "destination": "10.60.0.22",
+      "id": "s",
+      "protocol": "s7comm",
+      "source": "10.60.0.12"
+    },
+    {
+      "allowedFunctionCodes": [
+        16,
+        76
+      ],
+      "allowedOperations": [
+        "write"
+      ],
+      "description": "CIP writes",
+      "destination": "10.60.0.23",
+      "id": "e",
+      "protocol": "enip",
+      "source": "10.60.0.13"
+    }
+  ],
+  "captureScope": {
+    "dedicatedOtSensor": false,
+    "internalIcsOnlyExpected": true,
+    "ipv4OnlyExpected": true
+  },
+  "communicationPairs": [
+    {
+      "confidence": "high",
+      "description": "observed only",
+      "destinationIp": "10.10.1.20",
+      "destinationPort": 102,
+      "id": "cp-1",
+      "protocol": "s7comm",
+      "service": "s7comm",
+      "source": "zeek",
+      "sourceIp": "10.10.1.10"
+    }
+  ],
+  "description": "",
+  "id": "contract-comprehensive",
+  "infrastructure": [
+    {
+      "confidence": "high",
+      "id": "d1",
+      "kind": "dns",
+      "label": "Primary DNS",
+      "source": "user",
+      "value": "10.0.0.53"
+    },
+    {
+      "confidence": "high",
+      "id": "d2",
+      "kind": "dns",
+      "source": "user",
+      "value": " 10.0.0.53 "
+    },
+    {
+      "confidence": "high",
+      "id": "n1",
+      "kind": "ntp",
+      "source": "user",
+      "value": "10.0.0.123"
+    },
+    {
+      "confidence": "high",
+      "id": "h1",
+      "kind": "dhcp",
+      "source": "user",
+      "value": "10.0.0.5"
+    },
+    {
+      "confidence": "high",
+      "id": "m1",
+      "kind": "management",
+      "source": "user",
+      "value": "10.0.0.20"
+    }
+  ],
+  "modulePolicies": {
+    "beaconing_c2_communication": {
+      "unsupported_probe": true
+    },
+    "control_system_enterprise_non_dmz": {
+      "require_observed_communication": false
+    },
+    "public_to_public_traffic": {
+      "internal_ics_only_expected": false,
+      "min_flows": 3
+    },
+    "rogue_dhcp_static_ot": {
+      "offer_window_seconds": 45
+    }
+  },
+  "name": "Comprehensive Parity Profile",
+  "scan": {
+    "dhcpAssignmentsObserved": 8,
+    "filesScanned": 4,
+    "ipv6AddressesObserved": 2,
+    "logTypes": {
+      "conn": 1000,
+      "dhcp": 50,
+      "s7comm": 200
+    },
+    "recordsParsed": 1250,
+    "warnings": []
+  },
+  "schemaVersion": 3,
+  "segments": [
+    {
+      "addressing": "static",
+      "cidr": "10.40.0.0/24",
+      "confidence": "high",
+      "id": "s1",
+      "name": "Static OT",
+      "role": "ot",
+      "source": "user"
+    },
+    {
+      "addressing": "dhcp",
+      "cidr": "10.70.0.0/16",
+      "confidence": "high",
+      "dhcpAllowed": true,
+      "id": "s2",
+      "ipv6Allowed": true,
+      "name": "Enterprise",
+      "purdueLevel": "Level 4",
+      "role": "it",
+      "source": "user",
+      "vlanId": 470
+    }
+  ],
+  "selectedModules": [],
+  "updatedAt": "2026-09-21T00:00:00.000Z"
+}

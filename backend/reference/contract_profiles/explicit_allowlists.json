@@ -1,0 +1,43 @@
+{
+  "allowedHosts": [
+    "10.50.0.10",
+    " 10.50.0.10 ",
+    "10.50.0.11"
+  ],
+  "allowedSegmentPairs": [
+    {
+      "description": "approved path",
+      "destinationSegment": "Control",
+      "id": "x1",
+      "sourceSegment": "Enterprise"
+    }
+  ],
+  "approvedExternalDestinations": [
+    "198.51.100.0/24",
+    " 198.51.100.0/24 ",
+    "203.0.113.8"
+  ],
+  "assets": [],
+  "authorizedControlActions": [],
+  "captureScope": {
+    "dedicatedOtSensor": false,
+    "internalIcsOnlyExpected": false,
+    "ipv4OnlyExpected": false
+  },
+  "communicationPairs": [],
+  "description": "",
+  "id": "contract-explicit_allowlists",
+  "infrastructure": [],
+  "modulePolicies": {},
+  "name": "Explicit Allowlists",
+  "scan": {
+    "filesScanned": 0,
+    "logTypes": {},
+    "recordsParsed": 0,
+    "warnings": []
+  },
+  "schemaVersion": 3,
+  "segments": [],
+  "selectedModules": [],
+  "updatedAt": "2026-09-21T00:00:00.000Z"
+}

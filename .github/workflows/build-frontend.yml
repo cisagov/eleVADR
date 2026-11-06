@@ -1,0 +1,52 @@
+---
+name: build-frontend
+
+on: # yamllint disable-line rule:truthy
+  merge_group:
+    types:
+      - checks_requested
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - frontend/**
+      - .github/workflows/build-frontend.yml
+      - .github/workflows/_build.yml
+      - .github/workflows/_repo-metadata.yml
+  push:
+    branches:
+      - develop
+    paths:
+      - frontend/**
+      - .github/workflows/build-frontend.yml
+      - .github/workflows/_build.yml
+      - .github/workflows/_repo-metadata.yml
+  repository_dispatch:
+    # Respond to rebuild requests. See: https://github.com/cisagov/action-apb/
+    types:
+      - apb
+  schedule:
+    - cron: 0 10 * * *
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        default: dispatch
+        description: Tag to apply to pushed images
+        required: true
+      remote-shell:
+        default: "false"
+        description: Debug with remote shell
+        required: true
+
+jobs:
+  build:
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/_build.yml
+    with:
+      component: frontend
+      runtime: node
+      image-tag: ${{ github.event.inputs.image-tag || 'dispatch' }}
+      remote-shell: ${{ github.event.inputs.remote-shell || 'false' }}
+    secrets: inherit

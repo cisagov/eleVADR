@@ -1,0 +1,32 @@
+{
+  "executive_summary": {
+    "summary": "Legacy v1 compatibility fixture"
+  },
+  "modules": {
+    "connection_success_panel": {
+      "connections": [],
+      "summary": {
+        "by_state": {
+          "SF": 1
+        },
+        "successful_count": 1,
+        "unsuccessful_count": 0
+      }
+    },
+    "device_panel": {
+      "edge_hosts": 0,
+      "hosts": 2,
+      "it_hosts": 1,
+      "ot_cross_segment": 0,
+      "ot_hosts": 1
+    },
+    "service_panel": {
+      "num_known_services": 3,
+      "num_ot_services": 1,
+      "num_risky_services": 1,
+      "num_unknown_services": 0
+    }
+  },
+  "report_id": "legacy-v1-minimal",
+  "report_version": "1.4.2"
+}

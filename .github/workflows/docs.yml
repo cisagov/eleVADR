@@ -1,0 +1,56 @@
+---
+name: Deploy Sphinx Docs
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: write
+
+env:
+  UV_CACHE_DIR: /home/runner/.cache/uv
+  PNPM_CACHE_DIR: /home/runner/.cache/pnpm
+  NODE_VERSION: "22"
+  PNPM_VERSION: "11"
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+
+      - name: Install Sphinx dependencies
+        run: pip install -r docs/requirements.txt
+
+      - id: setup-pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - id: setup-node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Node dependencies
+        run: pnpm install --frozen-lockfile -C frontend/
+
+      - name: Build HTML
+        run: |
+            # -b html: build target
+            # docs/: source directory
+            # docs/_build/html: output directory
+            sphinx-build -b html docs/source docs/_build/html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_build/html

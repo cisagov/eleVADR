@@ -1,0 +1,129 @@
+.service-inventory-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.service-inventory-summary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border: 1px solid #c9d7e5;
+  margin-bottom: 18px;
+  background: #f7f9fb;
+}
+
+.service-inventory-summary > div {
+  padding: 11px 14px;
+  border-right: 1px solid #c9d7e5;
+}
+
+.service-inventory-summary > div:last-child {
+  border-right: 0;
+}
+
+.service-inventory-summary span,
+.service-inventory-summary strong {
+  display: block;
+}
+
+.service-inventory-summary span {
+  color: #4a5b6d;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.service-inventory-summary strong {
+  color: #003e73;
+  font-size: var(--text-xl);
+  margin-top: 2px;
+}
+
+.service-inventory-summary-warning {
+  border-color: #d83933;
+}
+
+.service-inventory-summary-warning strong {
+  color: #b50909;
+}
+
+.service-inventory-groups {
+  display: grid;
+  gap: 20px;
+}
+
+.service-inventory-group {
+  border-top: 1px solid #dfe1e2;
+  padding-top: 10px;
+}
+
+.service-inventory-group-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 9px;
+}
+
+.service-inventory-group-heading h3 {
+  margin: 0;
+  color: #003e73;
+  font-size: var(--text-base);
+}
+
+.service-inventory-group-heading p {
+  margin: 3px 0 0;
+  color: #53677a;
+  font-size: var(--text-sm);
+}
+
+.service-inventory-group-heading > span {
+  min-width: 28px;
+  height: 24px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #9ebbd3;
+  color: #003e73;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  background: #f3f8fc;
+}
+
+@media (max-width: 760px) {
+  .service-inventory-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .service-inventory-summary > div {
+    border-bottom: 1px solid #c9d7e5;
+  }
+
+  .service-inventory-summary > div:nth-child(even) {
+    border-right: 0;
+  }
+
+  .service-inventory-summary > div:last-child {
+    grid-column: 1 / -1;
+    border-right: 0;
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 460px) {
+  .service-inventory-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .service-inventory-summary > div {
+    border-right: 0;
+    border-bottom: 1px solid #c9d7e5;
+  }
+
+  .service-inventory-summary > div:last-child {
+    border-bottom: 0;
+  }
+}
+
+/* Typography/alignment for summary metrics is centralized in report-consistency.css. */

@@ -1,0 +1,61 @@
+{
+  "contractVersion": "elevadr.detection-context.analysis.v1",
+  "logs": {
+    "connections": [
+      {
+        "id.orig_h": "10.0.0.99",
+        "id.resp_h": "8.8.8.8",
+        "id.resp_p": "443",
+        "proto": "tcp",
+        "service": "ssl",
+        "ts": "1",
+        "uid": "C1"
+      }
+    ]
+  },
+  "profile": {
+    "allowedHosts": [],
+    "allowedSegmentPairs": [],
+    "approvedExternalDestinations": [],
+    "assets": [
+      {
+        "assetType": "Workstation",
+        "confidence": "high",
+        "hostname": "Known",
+        "id": "known",
+        "ip": "10.0.0.10",
+        "macAddresses": [],
+        "ports": [],
+        "role": "IT",
+        "services": [],
+        "source": "user"
+      }
+    ],
+    "authorizedControlActions": [],
+    "captureScope": {
+      "dedicatedOtSensor": true,
+      "internalIcsOnlyExpected": false,
+      "ipv4OnlyExpected": false
+    },
+    "communicationPairs": [],
+    "description": "Known finding fixture",
+    "id": "e2e-rogue",
+    "infrastructure": [],
+    "modulePolicies": {},
+    "name": "E2E rogue fixture",
+    "scan": {
+      "filesScanned": 1,
+      "logTypes": {
+        "conn": 1
+      },
+      "recordsParsed": 1,
+      "warnings": []
+    },
+    "schemaVersion": 3,
+    "segments": [],
+    "selectedModules": [
+      "unknown_rogue_devices"
+    ],
+    "updatedAt": "2026-09-21T00:00:00Z"
+  }
+}

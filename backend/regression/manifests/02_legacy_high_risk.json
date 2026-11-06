@@ -1,0 +1,61 @@
+{
+  "context": "02_legacy_high_risk_context.json",
+  "expected": {
+    "assertions": [],
+    "detectorModulesCompleted": 60,
+    "detectorModulesFailed": 0,
+    "detectorModulesRequested": 60,
+    "devicePanel": {
+      "edge_hosts": 0,
+      "hosts": 10,
+      "it_hosts": 2,
+      "ot_cross_segment": 8,
+      "ot_hosts": 8
+    },
+    "findingCount": 19,
+    "moduleMetrics": {
+      "brute_force_authentication": {
+        "affected_destinations": 1,
+        "affected_sources": 1,
+        "brute_force_findings": 1
+      },
+      "new_ot_conversation_pair": {
+        "baseline_directed_pairs": 8,
+        "ot_involving_connections": 16
+      },
+      "ot_asset_gone_silent": {
+        "baseline_conversations": 9,
+        "ot_hosts_observed": 8,
+        "ot_observations": 16
+      },
+      "unknown_rogue_devices": {
+        "inventory_ip_addresses": 9,
+        "observed_local_ip_addresses": 10,
+        "unknown_ip_addresses": 1,
+        "unknown_or_rogue_devices": 1
+      }
+    },
+    "modulesWithFindings": {
+      "brute_force_authentication": 1,
+      "cleartext_credentials": 1,
+      "control_system_enterprise_non_dmz": 7,
+      "cross_purdue_level_traffic": 1,
+      "database_service_exposed": 1,
+      "deprecated_insecure_services_protocols": 2,
+      "deprecated_vpn_protocol": 1,
+      "irc_traffic_detected": 1,
+      "netbios_smbv1_exposure": 1,
+      "protocol_unexpected_high_risk_port": 1,
+      "remote_access_tool_exposure": 1,
+      "unknown_rogue_devices": 1
+    },
+    "modulesWithoutFindings": [
+      "new_ot_conversation_pair",
+      "ot_asset_gone_silent"
+    ]
+  },
+  "id": "02_legacy_high_risk",
+  "name": "Legacy services, brute force, and rogue inventory",
+  "pcap": "02_legacy_high_risk.pcap",
+  "referenceReport": "02_legacy_high_risk.json"
+}

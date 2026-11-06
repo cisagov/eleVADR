@@ -1,0 +1,85 @@
+{
+  "allowedHosts": [],
+  "allowedSegmentPairs": [],
+  "approvedExternalDestinations": [],
+  "assets": [],
+  "authorizedControlActions": [
+    {
+      "allowedFunctionCodes": [
+        5,
+        6,
+        16
+      ],
+      "allowedOperations": [
+        "write"
+      ],
+      "description": "HMI writes",
+      "destination": "10.60.0.20",
+      "id": "m",
+      "protocol": "modbus",
+      "source": "10.60.0.10"
+    },
+    {
+      "allowedFunctionCodes": [
+        "DIRECT_OPERATE"
+      ],
+      "allowedOperations": [
+        "operate"
+      ],
+      "description": "DNP3 operate",
+      "destination": "10.60.0.21",
+      "id": "d",
+      "protocol": "dnp3",
+      "source": "10.60.0.11"
+    },
+    {
+      "allowedFunctionCodes": [
+        "0x05"
+      ],
+      "allowedOperations": [
+        "write",
+        "stop"
+      ],
+      "description": "engineering station",
+      "destination": "10.60.0.22",
+      "id": "s",
+      "protocol": "s7comm",
+      "source": "10.60.0.12"
+    },
+    {
+      "allowedFunctionCodes": [
+        16,
+        76
+      ],
+      "allowedOperations": [
+        "write"
+      ],
+      "description": "CIP writes",
+      "destination": "10.60.0.23",
+      "id": "e",
+      "protocol": "enip",
+      "source": "10.60.0.13"
+    }
+  ],
+  "captureScope": {
+    "dedicatedOtSensor": false,
+    "internalIcsOnlyExpected": false,
+    "ipv4OnlyExpected": false
+  },
+  "communicationPairs": [],
+  "description": "",
+  "id": "parity-authorized_controls_all_protocols",
+  "infrastructure": [],
+  "modulePolicies": {},
+  "name": "Authorized Controls All Protocols",
+  "scan": {
+    "filesScanned": 0,
+    "logTypes": {},
+    "recordsParsed": 0,
+    "warnings": []
+  },
+  "schemaVersion": 3,
+  "segments": [],
+  "selectedModules": [],
+  "updatedAt": "2026-09-21T00:00:00.000Z"
+}

@@ -1,0 +1,44 @@
+{
+  "allowedHosts": [],
+  "allowedSegmentPairs": [],
+  "approvedExternalDestinations": [],
+  "assets": [],
+  "authorizedControlActions": [],
+  "captureScope": {
+    "dedicatedOtSensor": false,
+    "internalIcsOnlyExpected": false,
+    "ipv4OnlyExpected": false
+  },
+  "communicationPairs": [],
+  "description": "",
+  "id": "parity-ipv6_allowed_and_unknown_purdue",
+  "infrastructure": [],
+  "modulePolicies": {},
+  "name": "Ipv6 Allowed And Unknown Purdue",
+  "scan": {
+    "filesScanned": 0,
+    "logTypes": {},
+    "recordsParsed": 0,
+    "warnings": []
+  },
+  "schemaVersion": 3,
+  "segments": [
+    {
+      "addressing": "mixed",
+      "cidr": "10.30.0.0/16",
+      "confidence": "high",
+      "dhcpAllowed": true,
+      "id": "s1",
+      "ipv6Allowed": true,
+      "name": "Control",
+      "observedOtProtocols": [
+        "modbus"
+      ],
+      "purdueLevel": "Unknown",
+      "role": "ot",
+      "source": "user"
+    }
+  ],
+  "selectedModules": [],
+  "updatedAt": "2026-09-21T00:00:00.000Z"
+}

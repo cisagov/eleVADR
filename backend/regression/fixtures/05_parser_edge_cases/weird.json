@@ -1,0 +1,6 @@
+{"ts":1760100000.1,"uid":"C1","name":"bad_TCP_checksum","id.orig_h":"10.50.0.10","id.resp_h":"10.60.0.20","id.resp_p":502,"proto":"tcp"}
+{"ts":1760100000.2,"uid":"C1","name":"malformed_header","id.orig_h":"10.50.0.10","id.resp_h":"10.60.0.20","id.resp_p":502,"proto":"tcp"}
+THIS IS NOT JSON
+{"ts":1760100000.3,"name":"truncated_packet","source":"ETHERNET"}
+["not","an","object"]
+{"ts":1760100000.4,"name":"illegal_protocol_state"}

@@ -1,0 +1,40 @@
+---
+name: release-please
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend-released: ${{ steps.release.outputs.elevadr-frontend--release_created }}
+      frontend-version: ${{ steps.release.outputs.elevadr-frontend--version }}
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
+        id: release
+        with:
+          manifest-file: .release-please-manifest.json
+          config-file: release-please-config.json
+
+  publish-frontend:
+    needs: release-please
+    if: needs.release-please.outputs.frontend-released == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/_publish.yml
+    with:
+      component: frontend
+      version: ${{ needs.release-please.outputs.frontend-version }}
+    secrets: inherit

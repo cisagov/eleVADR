@@ -1,0 +1,256 @@
+{
+  "allowedHosts": [],
+  "allowedSegmentPairs": [],
+  "approvedExternalDestinations": [],
+  "assets": [
+    {
+      "assetType": "engineering workstation",
+      "confidence": "high",
+      "hostname": "ot-ops-01",
+      "id": "a03-ops4",
+      "ip": "10.50.0.25",
+      "macAddresses": [
+        "02:00:00:00:50:25"
+      ],
+      "ports": [
+        80,
+        443
+      ],
+      "purdueLevel": "Level 3",
+      "reason": "Known asset in companion regression-test context.",
+      "role": "ot engineering",
+      "segment": "OT Operations IPv4",
+      "services": [
+        "http",
+        "quic",
+        "icmp"
+      ],
+      "source": "imported"
+    },
+    {
+      "assetType": "engineering workstation",
+      "confidence": "high",
+      "hostname": "ot-ops-01-v6",
+      "id": "a03-ops6",
+      "ip": "fd00:50::25",
+      "macAddresses": [
+        "02:00:00:00:50:25"
+      ],
+      "ports": [
+        502
+      ],
+      "purdueLevel": "Level 3",
+      "reason": "Known asset in companion regression-test context.",
+      "role": "ot engineering",
+      "segment": "Unexpected OT IPv6 Source",
+      "services": [
+        "modbus"
+      ],
+      "source": "imported"
+    },
+    {
+      "assetType": "PLC",
+      "confidence": "high",
+      "hostname": "plc-v6-01",
+      "id": "a03-plc6",
+      "ip": "fd00:60::20",
+      "macAddresses": [
+        "02:00:00:00:60:20"
+      ],
+      "ports": [
+        502
+      ],
+      "purdueLevel": "Level 1",
+      "reason": "Known asset in companion regression-test context.",
+      "role": "ot controller",
+      "segment": "Unexpected PLC IPv6",
+      "services": [
+        "modbus"
+      ],
+      "source": "imported"
+    }
+  ],
+  "authorizedControlActions": [],
+  "captureScope": {
+    "dedicatedOtSensor": true,
+    "internalIcsOnlyExpected": true,
+    "ipv4OnlyExpected": true
+  },
+  "communicationPairs": [
+    {
+      "confidence": "high",
+      "description": "Observed 12 MiB outbound HTTP POST to an unapproved public destination.",
+      "destinationIp": "1.1.1.1",
+      "destinationPort": 80,
+      "id": "p03-http",
+      "protocol": "tcp",
+      "service": "http",
+      "source": "imported",
+      "sourceIp": "10.50.0.25"
+    },
+    {
+      "confidence": "high",
+      "description": "Observed QUIC from OT to an unapproved public destination.",
+      "destinationIp": "8.8.8.8",
+      "destinationPort": 443,
+      "id": "p03-quic",
+      "protocol": "udp",
+      "service": "quic",
+      "source": "imported",
+      "sourceIp": "10.50.0.25"
+    },
+    {
+      "confidence": "high",
+      "description": "Observed independently timed periodic ICMP echo traffic to an unapproved public destination.",
+      "destinationIp": "8.8.8.8",
+      "id": "p03-icmp",
+      "protocol": "icmp",
+      "service": "icmp",
+      "source": "imported",
+      "sourceIp": "10.50.0.25"
+    },
+    {
+      "confidence": "high",
+      "description": "Observed IPv6 Modbus despite explicit IPv4-only site policy.",
+      "destinationIp": "fd00:60::20",
+      "destinationPort": 502,
+      "id": "p03-ipv6-modbus",
+      "protocol": "tcp",
+      "service": "modbus",
+      "source": "imported",
+      "sourceIp": "fd00:50::25"
+    }
+  ],
+  "description": "Companion Detection Context for 03_outbound_ipv6_quic_icmp.pcap. Treats the sensor as internal OT and IPv4-only by policy while retaining observed IPv6/Modbus communication, a 12 MiB outbound HTTP upload, independently timed periodic ICMP, and leaving public destinations unapproved.",
+  "id": "regression-context-03-outbound-ipv6-quic-icmp",
+  "infrastructure": [],
+  "modulePolicies": {},
+  "name": "Regression 03 - Outbound IPv6 QUIC ICMP",
+  "scan": {
+    "fileNames": [
+      "03_outbound_ipv6_quic_icmp.pcap"
+    ],
+    "filesScanned": 0,
+    "logTypes": {},
+    "recordsParsed": 0,
+    "selectedFileCount": 1,
+    "sourceLabel": "Companion context for 03_outbound_ipv6_quic_icmp.pcap",
+    "warnings": [
+      "Synthetic regression companion profile; PCAP Context Discovery may add observed facts when loaded."
+    ]
+  },
+  "schemaVersion": 3,
+  "segments": [
+    {
+      "addressing": "static",
+      "cidr": "10.50.0.0/24",
+      "confidence": "high",
+      "dhcpAllowed": false,
+      "id": "seg-03-ot4",
+      "ipv6Allowed": false,
+      "name": "OT Operations IPv4",
+      "purdueLevel": "Level 3",
+      "reason": "Companion regression-test context.",
+      "role": "ot",
+      "source": "imported",
+      "vlanId": 50
+    },
+    {
+      "addressing": "static",
+      "cidr": "fd00:50::/64",
+      "confidence": "high",
+      "dhcpAllowed": false,
+      "id": "seg-03-ot6",
+      "ipv6Allowed": false,
+      "name": "Unexpected OT IPv6 Source",
+      "observedOtProtocols": [
+        "modbus"
+      ],
+      "purdueLevel": "Level 3",
+      "reason": "Companion regression-test context.",
+      "role": "ot",
+      "source": "imported",
+      "vlanId": 50
+    },
+    {
+      "addressing": "static",
+      "cidr": "fd00:60::/64",
+      "confidence": "high",
+      "dhcpAllowed": false,
+      "id": "seg-03-plc6",
+      "ipv6Allowed": false,
+      "name": "Unexpected PLC IPv6",
+      "observedOtProtocols": [
+        "modbus"
+      ],
+      "purdueLevel": "Level 1",
+      "reason": "Companion regression-test context.",
+      "role": "ot",
+      "source": "imported",
+      "vlanId": 60
+    }
+  ],
+  "selectedModules": [
+    "bacnet_discovery_anomalies",
+    "beaconing_c2_communication",
+    "brute_force_authentication",
+    "cleartext_credentials",
+    "codesys_runtime_exposure",
+    "control_system_enterprise_non_dmz",
+    "cross_purdue_level_traffic",
+    "database_service_exposed",
+    "deprecated_insecure_services_protocols",
+    "deprecated_vpn_protocol",
+    "dns_tunneling_exfiltration",
+    "engineering_tools_cleartext",
+    "enip_cip_write_session_abuses",
+    "excessive_broadcast_multicast_ot",
+    "file_extraction_sensitive_types",
+    "high_fan_in_out",
+    "http_user_agent_anomalies",
+    "iccp_tase2_detected",
+    "icmp_data_channel",
+    "ics_protocol_error_spike",
+    "ics_write_operations",
+    "internet_exposed_ics",
+    "ipv6_traffic_ot",
+    "irc_traffic_detected",
+    "ja3_fingerprint_outliers",
+    "kerberos_asrep_roastable_accounts",
+    "large_outbound_http_uploads",
+    "ldap_cleartext_anonymous_cross_segment",
+    "llmnr_nbtns_mdns_poisoning_signals",
+    "netbios_smbv1_exposure",
+    "new_ot_conversation_pair",
+    "new_service_emergence_ot",
+    "niagara_fox_detected",
+    "ntp_internet_multi_dest_ot",
+    "ot_asset_gone_silent",
+    "ot_external_dns_resolver",
+    "ot_management_certificate_risk",
+    "ot_outbound_internet_any_protocol",
+    "ot_protocol_exposure",
+    "plc_program_logic_firmware_update",
+    "port_host_scanning",
+    "protocol_unexpected_high_risk_port",
+    "public_to_public_traffic",
+    "quic_ot_segments",
+    "rdp_nla_disabled",
+    "remote_access_tool_exposure",
+    "rogue_dhcp_static_ot",
+    "s7comm_unauthorized_write_stop",
+    "smb_admin_share_access",
+    "smb_signing_disabled_ntlmv1",
+    "snmp_write_ot_devices",
+    "socks_open_proxy_behavior",
+    "tls_certificate_anomalies",
+    "tls_sni_certificate_reuse",
+    "unknown_rogue_devices",
+    "unusual_outbound_data_volume",
+    "upnp_ssdp_igd_port_mapping",
+    "vlan_tag_mismatch_double_tag",
+    "weak_broken_tls_ssl",
+    "weird_protocol_violations"
+  ],
+  "updatedAt": "2026-09-29T04:30:00.000Z"
+}

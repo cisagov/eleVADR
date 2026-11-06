@@ -1,0 +1,81 @@
+.info-tooltip-container {
+  position: relative;
+  display: inline-block;
+  margin-left: 0.5rem;
+}
+
+.info-tooltip-button {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  background: transparent;
+  color: #005ea2;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.info-tooltip-glyph {
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  border: 1.25px solid currentColor;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.info-tooltip-button:hover,
+.info-tooltip-button:focus,
+.info-tooltip-button:focus-visible {
+  border: 0;
+  background: transparent;
+  color: #005ea2;
+  outline: none;
+  box-shadow: none;
+}
+
+.info-tooltip-content {
+  position: fixed;
+  left: 50%;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: 0.75rem 1rem;
+  background: #1b1b1b;
+  color: white;
+  border-radius: 4px;
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  white-space: normal;
+  z-index: 10000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  width: min(400px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  pointer-events: none;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .info-tooltip-content {
+    bottom: max(16px, env(safe-area-inset-bottom));
+    width: min(320px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+  }
+}
+
+.info-tooltip-button[aria-expanded="true"] .info-tooltip-glyph {
+  background: #e7f6f8;
+}

@@ -1,0 +1,42 @@
+{
+  "allowedHosts": [],
+  "allowedSegmentPairs": [],
+  "approvedExternalDestinations": [],
+  "assets": [],
+  "authorizedControlActions": [],
+  "captureScope": {
+    "dedicatedOtSensor": false,
+    "internalIcsOnlyExpected": true,
+    "ipv4OnlyExpected": false
+  },
+  "communicationPairs": [],
+  "description": "",
+  "id": "contract-advanced_overrides",
+  "infrastructure": [],
+  "modulePolicies": {
+    "beaconing_c2_communication": {
+      "unsupported_probe": true
+    },
+    "control_system_enterprise_non_dmz": {
+      "require_observed_communication": false
+    },
+    "public_to_public_traffic": {
+      "internal_ics_only_expected": false,
+      "min_flows": 3
+    },
+    "rogue_dhcp_static_ot": {
+      "offer_window_seconds": 45
+    }
+  },
+  "name": "Advanced Overrides",
+  "scan": {
+    "filesScanned": 0,
+    "logTypes": {},
+    "recordsParsed": 0,
+    "warnings": []
+  },
+  "schemaVersion": 3,
+  "segments": [],
+  "selectedModules": [],
+  "updatedAt": "2026-09-21T00:00:00.000Z"
+}

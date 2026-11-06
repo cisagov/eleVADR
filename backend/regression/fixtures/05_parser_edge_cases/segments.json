@@ -1,0 +1,40 @@
+{
+  "control_system_subnets": [
+    "10.50.0.0/24",
+    "10.60.0.0/24"
+  ],
+  "ics_write_policy": {
+    "allowed_paths": []
+  },
+  "segments": [
+    {
+      "cidr": "10.50.0.0/24",
+      "id": "ot-a",
+      "name": "OT-A",
+      "purdue_level": "Level 2",
+      "role": "ot",
+      "vlan_id": 10
+    },
+    {
+      "cidr": "10.60.0.0/24",
+      "id": "ot-b",
+      "name": "OT-B",
+      "purdue_level": "Level 1",
+      "role": "ot",
+      "vlan_id": 20
+    }
+  ],
+  "vlan_policy": {
+    "allowed_double_tag_pairs": [
+      {
+        "inner": 10,
+        "outer": 100
+      }
+    ],
+    "allowed_vlan_ids": [
+      10,
+      20,
+      100
+    ]
+  }
+}

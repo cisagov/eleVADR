@@ -1,0 +1,37 @@
+{
+  "$id": "urn:elevadr:detection-context:analysis:v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contractVersion": {
+      "const": "elevadr.detection-context.analysis.v1"
+    },
+    "logs": {
+      "additionalProperties": {
+        "items": {
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "description": "Optional normalized Zeek rows. Analysis evidence only; never authorization policy.",
+      "type": "object"
+    },
+    "profile": {
+      "properties": {
+        "schemaVersion": {
+          "const": 3
+        }
+      },
+      "required": [
+        "schemaVersion"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "contractVersion",
+    "profile"
+  ],
+  "title": "DetectionAnalysisRequest v1",
+  "type": "object"
+}

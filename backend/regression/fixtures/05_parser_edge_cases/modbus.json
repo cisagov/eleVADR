@@ -1,0 +1,3 @@
+{"ts":1760100000.5,"uid":"C1","id.orig_h":"10.50.0.10","id.resp_h":"10.60.0.20","id.resp_p":502,"function_code":16,"function_name":"write_multiple_registers"}
+{"ts":1760100000.6,"uid":"C2","id.orig_h":"10.50.0.11"}
+{"ts":"not-a-time","uid":"C3","id.orig_h":null,"id.resp_h":"10.60.0.22","function_code":"not-a-code"}
