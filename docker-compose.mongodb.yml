@@ -3,7 +3,7 @@ name: elevadr-platform
 
 services:
   mongodb:
-    image: mongodb/mongodb-community-server:8.0.32-ubi9-slim
+    image: mongodb/mongodb-community-server:9.0.2-ubi9-slim
     container_name: elevadr-mongodb
     restart: unless-stopped
     environment:
