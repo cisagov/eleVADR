@@ -25,6 +25,11 @@ COPY src/index.html ./
 COPY src/public/ ./public
 COPY src/app ./src
 
+# The bundle is served behind a proxy or Ingress that routes API paths to the
+# backend, so call the origin that served it. Local dev falls back to
+# http://localhost:8000.
+ENV VITE_DRILLDOWN_BASE_URL=same-origin
+
 # Build production distribution bundle
 RUN --mount=type=secret,id=ssl_cert,required=false \
     pnpm run build

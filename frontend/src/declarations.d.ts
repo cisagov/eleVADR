@@ -9,6 +9,7 @@ declare namespace React {
 
 interface ImportMetaEnv {
   readonly VITE_DETECTION_ANALYSIS_URL?: string;
+  readonly VITE_DRILLDOWN_BASE_URL?: string;
 }
 
 interface ImportMeta {
