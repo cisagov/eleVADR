@@ -28,11 +28,12 @@ ENV UV_PYTHON=3.13 \
     VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:${PATH}"
 
+# Optional corporate CA: put corp-ca.crt in docker/backend/certs/ (see docker/README.md).
+COPY --chown=appuser:appgroup docker/backend/certs/ /tmp/certs/
 COPY --chown=appuser:appgroup backend/requirements-platform.txt /tmp/requirements-platform.txt
-RUN --mount=type=secret,id=ssl_cert,required=false,uid=1000,gid=1000 \
-    uv venv /app/.venv && \
-    if [ -f /run/secrets/ssl_cert ]; then \
-        SSL_CERT_FILE=/run/secrets/ssl_cert uv pip install --no-cache -r /tmp/requirements-platform.txt; \
+RUN uv venv /app/.venv && \
+    if [ -f /tmp/certs/corp-ca.crt ]; then \
+        SSL_CERT_FILE=/tmp/certs/corp-ca.crt uv pip install --no-cache -r /tmp/requirements-platform.txt; \
     else \
         uv pip install --no-cache -r /tmp/requirements-platform.txt; \
     fi

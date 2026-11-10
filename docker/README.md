@@ -13,7 +13,10 @@ image is built from `frontend/Dockerfile`.
 
 The Kubernetes manifests and pipelines for AKS are in the separate `elevadr-devops` repository.
 There the same settings come from `kubernetes/deployment.yml` and an Azure DevOps variable group
-instead of `.elevadr-platform.env`.
+instead of `.elevadr-platform.env`. Its build pipeline clones this repository and builds the
+backend (`docker/backend/Dockerfile`), frontend (`frontend/Dockerfile`) and MongoDB
+(`docker/mongodb/Dockerfile`) images from the Dockerfiles here, so changes to them reach AKS on the
+next build. Keep them free of `RUN --mount` and other BuildKit-only syntax.
 
 ## Set up on a fresh clone
 
@@ -59,9 +62,11 @@ Requires Docker with Compose v2.
    ```
 
 A corporate CA certificate for image builds is optional. If your network needs one, put the PEM file
-at `.devcontainer/certs/corp-ca.crt` (create the folders if they are missing; the file is gitignored).
-`docker-compose.yml` passes it to the backend and frontend builds as the `ssl_cert` secret. The
-`.devcontainer/` folder no longer holds a dev container.
+at `docker/backend/certs/corp-ca.crt` for the backend image and `frontend/certs/corp-ca.crt` for the
+frontend image. The files are gitignored. The Dockerfiles copy each `certs/` folder into the build and
+use the certificate for `uv` and `pnpm` installs only when it exists. They do not use `RUN --mount`, so
+the same Dockerfiles also build on ACR Tasks' classic builder, which the AKS pipeline in `elevadr-devops`
+relies on.
 
 The Windows helper scripts (`first_run_elevadr.bat` and the others) run only the `mongodb` service and
 start the backend and frontend on the host. Do not run that workflow and the full stack at the same

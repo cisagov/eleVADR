@@ -72,8 +72,6 @@ services:
     build:
       context: .
       dockerfile: docker/backend/Dockerfile
-      secrets:
-        - ssl_cert
     container_name: elevadr-backend
     restart: unless-stopped
     cap_drop:
@@ -118,8 +116,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      secrets:
-        - ssl_cert
     cap_drop:
       - ALL
     container_name: elevadr-frontend
@@ -167,7 +163,3 @@ volumes:
 networks:
   elevadr-network:
     driver: bridge
-
-secrets:
-  ssl_cert:
-    file: ./.devcontainer/certs/corp-ca.crt
