@@ -58,8 +58,14 @@ Requires Docker with Compose v2.
    docker compose --env-file .elevadr-platform.env ps
    ```
 
-The corporate CA certificate for image builds comes from `.devcontainer/certs/corp-ca.crt` (see the
-README in that folder).
+A corporate CA certificate for image builds is optional. If your network needs one, put the PEM file
+at `.devcontainer/certs/corp-ca.crt` (create the folders if they are missing; the file is gitignored).
+`docker-compose.yml` passes it to the backend and frontend builds as the `ssl_cert` secret. The
+`.devcontainer/` folder no longer holds a dev container.
+
+The Windows helper scripts (`first_run_elevadr.bat` and the others) run only the `mongodb` service and
+start the backend and frontend on the host. Do not run that workflow and the full stack at the same
+time, because both use port 8765 and the `elevadr-mongodb` container.
 
 ## Settings reference
 
@@ -342,6 +348,6 @@ The comparison stores report ids only, never report contents. Indexes: `owner_id
 
 ### Changing the image
 
-Edit `mongod.conf` or the `Dockerfile` and rebuild with `docker compose build mongodb`. Changing
-the base image tag requires a matching change to `docker/mongodb.Dockerfile` in the eleVADR-DevOps
-repository if that repository mirrors this image.
+Edit `mongod.conf` or the `Dockerfile` and rebuild with `docker compose build mongodb`. The
+`elevadr-devops` pipeline (`pipelines/build.yml`) builds this same `docker/mongodb/Dockerfile` from
+the app repository checkout, so there is no second copy to update.
