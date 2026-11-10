@@ -37,6 +37,26 @@ describe("drilldownService", () => {
     );
   });
 
+  it("uses the same origin when VITE_DRILLDOWN_BASE_URL is same-origin", async () => {
+    vi.stubEnv("VITE_DRILLDOWN_BASE_URL", "same-origin");
+    vi.resetModules();
+    const { fetchServiceDrilldown: sameOriginFetch } =
+      await import("../app/services/drilldownService");
+
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({}),
+    } as Response);
+
+    await sameOriginFetch("report-123", "modbus tcp", 25);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/reports/report-123/drilldown/service/modbus%20tcp?limit=25",
+      expect.anything(),
+    );
+    vi.unstubAllEnvs();
+  });
+
   it("omits empty filter values when building filtered connection queries", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,

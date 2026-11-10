@@ -215,11 +215,17 @@ volume.
 
 ## Docker Compose ##
 
-`docker-compose.yml` defines only the local MongoDB service, bound to
-`127.0.0.1`. The helper scripts start MongoDB with
-`docker-compose.mongodb.yml` and `--env-file .elevadr-platform.env`, so
-use the scripts rather than calling `docker compose` directly. The
-backend and frontend are not containerized in this workflow.
+`docker-compose.yml` defines `mongodb`, `backend`, `elevadr-ui` and an
+optional `mongo-tools` helper. All ports are bound to `127.0.0.1`. The
+helper scripts start only the `mongodb` service, with
+`--env-file .elevadr-platform.env`, so use the scripts rather than
+calling `docker compose` directly. In this workflow the backend and
+frontend run on the host, not in containers.
+
+To run the whole stack in containers instead (UI on port 8080), stop
+`start_elevadr.bat` first, because the container backend also uses port
+8765. See `docker/README.md` in the repository for that workflow and for
+every setting.
 
 ---
 

@@ -8,13 +8,13 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
+# Optional corporate CA: put corp-ca.crt in frontend/certs/ (see docker/README.md).
+COPY certs/ /tmp/certs/
 COPY package.json pnpm-lock.yaml* ./
 
-# Install workspace dependencies using BuildKit cache mounts
-RUN --mount=type=secret,id=ssl_cert,required=false \
-    --mount=type=cache,target=/pnpm/store \
-    if [ -f /run/secrets/ssl_cert ]; then \
-        pnpm config set cafile /run/secrets/ssl_cert; \
+RUN if [ -f /tmp/certs/corp-ca.crt ]; then \
+        export NODE_EXTRA_CA_CERTS=/tmp/certs/corp-ca.crt; \
+        pnpm config set cafile /tmp/certs/corp-ca.crt; \
     fi && \
     pnpm install --frozen-lockfile
 
@@ -24,9 +24,13 @@ COPY src/index.html ./
 COPY src/public/ ./public
 COPY src/app ./src
 
+# The bundle is served behind a proxy or Ingress that routes API paths to the
+# backend, so call the origin that served it. Local dev falls back to
+# http://localhost:8000.
+ENV VITE_DRILLDOWN_BASE_URL=same-origin
+
 # Build production distribution bundle
-RUN --mount=type=secret,id=ssl_cert,required=false \
-    pnpm run build
+RUN pnpm run build
 
 # Production runtime stage
 FROM docker.io/nginxinc/nginx-unprivileged:alpine

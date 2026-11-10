@@ -196,8 +196,13 @@ zeeks/
 # AI
 claude.md
 
+# Optional corporate CA certificates for image builds. The .devcontainer rule
+# covers certs left over from the old dev container.
 .devcontainer/certs/*
-!.devcontainer/certs/.gitkeep
+docker/backend/certs/*
+!docker/backend/certs/.gitkeep
+frontend/certs/*
+!frontend/certs/.gitkeep
 
 **/node_modules
 
@@ -209,3 +214,6 @@ claude.md
 
 # eleVADR persisted user reports
 storage/
+
+# MongoDB dumps
+backups/

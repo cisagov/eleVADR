@@ -1,3 +1,24 @@
+# Secrets and local data. The classic builder reads only this file, not
+# docker/backend/Dockerfile.dockerignore, so these must be listed here.
+.elevadr-platform.env
+.env
+.env.*
+!.env.example
+!.elevadr-platform.env.example
+storage/
+backups/
+.devcontainer/certs/
+frontend/certs/
+docker/backend/certs/*
+!docker/backend/certs/.gitkeep
+!docker/backend/certs/corp-ca.crt
+
+# Not needed in the images
+frontend/node_modules/
+node_modules/
+backend/regression/
+backend/examples/
+
 # Python
 __pycache__/
 *.py[cod]

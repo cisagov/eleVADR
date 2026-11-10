@@ -9,7 +9,14 @@ import {
   SuspiciousOutboundDrilldownResponse,
 } from "../types/Report";
 
-const BACKEND_HTTP = "http://localhost:8000";
+// Container builds set VITE_DRILLDOWN_BASE_URL=same-origin so the bundle calls the
+// origin that served it. An empty value is treated as unset, so use the keyword
+// there. Any other value is used as the base URL.
+const configuredBase = import.meta.env.VITE_DRILLDOWN_BASE_URL?.trim();
+const BACKEND_HTTP =
+  configuredBase === "same-origin"
+    ? ""
+    : configuredBase || "http://localhost:8000";
 
 async function parseError(response: Response): Promise<string> {
   const text = await response.text();

@@ -3,6 +3,18 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from urllib.parse import quote_plus
+
+
+def _mongodb_uri_from_env() -> str:
+    """Use ELEVADR_MONGO_HOST plus the root credentials when set, so special characters are encoded."""
+    host = os.environ.get("ELEVADR_MONGO_HOST", "").strip()
+    if not host:
+        return os.environ.get("ELEVADR_MONGODB_URI", "mongodb://127.0.0.1:27017")
+    username = os.environ.get("ELEVADR_MONGO_ROOT_USERNAME", "")
+    password = os.environ.get("ELEVADR_MONGO_ROOT_PASSWORD", "")
+    port = os.environ.get("ELEVADR_MONGO_HOST_PORT", "27017").strip()
+    return f"mongodb://{quote_plus(username)}:{quote_plus(password)}@{host}:{port}/?authSource=admin"
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -65,7 +77,7 @@ def load_auth_config() -> AuthConfig:
         raise ValueError("PCAP retention/storage settings must be numeric") from exc
     config = AuthConfig(
         enabled=_env_bool("ELEVADR_AUTH_ENABLED", False),
-        mongodb_uri=os.environ.get("ELEVADR_MONGODB_URI", "mongodb://127.0.0.1:27017"),
+        mongodb_uri=_mongodb_uri_from_env(),
         mongodb_database=os.environ.get("ELEVADR_MONGODB_DATABASE", "elevadr"),
         jwt_secret=os.environ.get("ELEVADR_JWT_SECRET", ""),
         jwt_algorithm=os.environ.get("ELEVADR_JWT_ALGORITHM", "HS256"),

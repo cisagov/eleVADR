@@ -14,6 +14,7 @@ from backend.auth.permissions import can_write
 import argparse
 import atexit
 import hashlib
+import ipaddress
 import json
 import os
 import shutil
@@ -63,6 +64,34 @@ _LOGIN_RATE_LOCK = threading.Lock()
 _LOGIN_FAILURES: dict[str, list[float]] = {}
 LOGIN_WINDOW_SECONDS = 300
 LOGIN_MAX_FAILURES = 8
+
+def _trusted_proxy_networks() -> list[ipaddress.IPv4Network | ipaddress.IPv6Network]:
+    networks = []
+    for item in os.environ.get("ELEVADR_TRUSTED_PROXIES", "").split(","):
+        item = item.strip()
+        if not item:
+            continue
+        try:
+            networks.append(ipaddress.ip_network(item, strict=False))
+        except ValueError:
+            continue
+    return networks
+
+def _client_ip_for_throttling(peer: str, forwarded_for: str | None) -> str:
+    """Use the last X-Forwarded-For hop only when the peer is a configured trusted proxy."""
+    if not forwarded_for:
+        return peer
+    try:
+        peer_addr = ipaddress.ip_address(peer)
+    except ValueError:
+        return peer
+    if not any(peer_addr in network for network in _trusted_proxy_networks()):
+        return peer
+    last_hop = forwarded_for.split(",")[-1].strip()
+    try:
+        return str(ipaddress.ip_address(last_hop))
+    except ValueError:
+        return peer
 
 def _login_rate_key(ip: str, username: str) -> tuple[str, str]:
     return (f"ip:{ip}", f"user:{username.strip().lower()}")
@@ -1133,7 +1162,8 @@ class Handler(BaseHTTPRequestHandler):
                 if len(username) > 128 or len(password) > 1024:
                     raise ValueError("Username or password exceeds the allowed length")
                 client_address = getattr(self, "client_address", None)
-                client_ip = client_address[0] if client_address else "unknown"
+                peer_ip = client_address[0] if client_address else "unknown"
+                client_ip = _client_ip_for_throttling(peer_ip, self.headers.get("X-Forwarded-For"))
                 retry_after = _login_retry_after(client_ip, username)
                 if retry_after:
                     self.send_response(429)

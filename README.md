@@ -110,19 +110,31 @@ primary directories:
 - **frontend/**: React dashboard built with Vite.
 - **docs/**: Sphinx documentation source.
 - **sample_data/**: Sample eleVADR reports and Detection Context files (JSON).
-- **docker-compose.yml** and **docker-compose.mongodb.yml**: Local MongoDB service definitions used by the helper scripts.
+- **docker/**: Dockerfiles for the backend and MongoDB images, plus [docker/README.md](docker/README.md) with every setting and the MongoDB schema.
+- **docker-compose.yml**: Defines `mongodb`, `backend`, `elevadr-ui` and an optional `mongo-tools` helper. The Windows helper scripts start only the `mongodb` service.
 - **\*.bat**: Windows helper scripts for setup, start/stop, backup/restore, and validation.
 
 ---
 
 ## Running the Complete App ##
 
-`docker compose up -d` starts only the local MongoDB service; the backend
-and frontend run directly on the host. Use the helper scripts rather than
-calling `docker compose` yourself (they pass the generated
-`.elevadr-platform.env`). See the
-[Local Windows Platform Quickstart](#local-windows-platform-quickstart)
-above for the full startup sequence.
+There are two ways to run eleVADR, and they should not run at the same
+time because both use port 8765 and the same MongoDB container.
+
+- **Local Windows platform (supported workflow):** the backend and
+  frontend run on the host and only MongoDB runs in Docker. Use the
+  helper scripts rather than calling `docker compose` yourself (they pass
+  the generated `.elevadr-platform.env`). See the
+  [Local Windows Platform Quickstart](#local-windows-platform-quickstart)
+  above.
+- **Full container stack:** MongoDB, the backend and the frontend all run
+  in containers, with the UI on `http://127.0.0.1:8080`. See
+  [docker/README.md](docker/README.md).
+
+  ```bash
+  python -m backend.auth.local_runtime init
+  docker compose --env-file .elevadr-platform.env up -d --build --wait
+  ```
 
 ---
 

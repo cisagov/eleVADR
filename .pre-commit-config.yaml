@@ -126,7 +126,7 @@ repos:
       - id: codespell
         args:
           - --skip=*.json,*.csv,*lock*,*.min*
-          - --ignore-words-list=OT,ot,covert,contextA,localY,mot,THA,doubleClick
+          - --ignore-words-list=OT,ot,covert,contextA,localY,mot,THA,doubleClick,AKS
 
   - repo: local
     hooks:
