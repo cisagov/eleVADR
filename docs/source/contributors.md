@@ -13,12 +13,18 @@ Python 3.12+ installed locally.
    pip install -r backend/requirements-platform.txt
    ```
 
-3. Install frontend dependencies:
+3. Install frontend dependencies. To run the local platform, use
+   `first_run_elevadr.bat` (see [Install](install.md)), which installs
+   from `package-lock.json` with npm:
 
    ```bash
    cd frontend
-   pnpm install
+   npm ci
    ```
+
+   CI and the documentation build use pnpm and `pnpm-lock.yaml`. If you
+   need to match them, run `pnpm install` instead. Do not mix the two
+   installers in the same `node_modules` folder.
 
 4. Install the pre-commit hook framework:
 
@@ -72,7 +78,7 @@ environment (`jsdom`). To execute tests:
 
 ```bash
 cd frontend
-pnpm run test
+npm run test
 ```
 
 ### 3. Building Documentation ###
