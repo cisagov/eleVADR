@@ -11,6 +11,11 @@ image is built from `frontend/Dockerfile`.
 | `elevadr-ui` | `frontend/Dockerfile` | 8080 | React frontend served by nginx |
 | `mongo-tools` | `docker.io/mongo:8.0` | none | Optional `mongodump` and `mongorestore` helper (profile `tools`) |
 
+Known limitation: the frontend's drilldown panels call `/reports/<id>/drilldown/...`, `/reports/<id>/connections`,
+`/devices` and `/services`. The platform backend does not serve these routes, so the `elevadr-ui` nginx answers
+`/reports/` with a 404 and the message "Drilldown data is not available from this backend yet." The panels show that
+message. Implementing the routes in `backend/` would remove the limitation, after which the nginx rule should go.
+
 The Kubernetes manifests and pipelines for AKS are in the separate `elevadr-devops` repository.
 There the same settings come from `kubernetes/deployment.yml` and an Azure DevOps variable group
 instead of `.elevadr-platform.env`. Its build pipeline clones this repository and builds the
