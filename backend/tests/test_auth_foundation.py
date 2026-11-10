@@ -41,6 +41,24 @@ def test_auth_is_disabled_by_default() -> None:
     assert AuthenticationService(config).current_principal(None) == ANONYMOUS_PRINCIPAL
 
 
+def test_mongodb_uri_is_built_from_host_and_encodes_credentials() -> None:
+    env = {
+        "ELEVADR_MONGO_HOST": "mongodb",
+        "ELEVADR_MONGO_ROOT_USERNAME": "root user",
+        "ELEVADR_MONGO_ROOT_PASSWORD": "p@ss:w/rd?#",
+    }
+    with patch.dict(os.environ, env, clear=True):
+        config = load_auth_config()
+    assert config.mongodb_uri == "mongodb://root+user:p%40ss%3Aw%2Frd%3F%23@mongodb:27017/?authSource=admin"
+
+
+def test_explicit_mongodb_uri_is_used_when_no_host_is_set() -> None:
+    env = {"ELEVADR_MONGODB_URI": "mongodb://u:p@db:27017/", "ELEVADR_MONGO_ROOT_PASSWORD": "ignored"}
+    with patch.dict(os.environ, env, clear=True):
+        config = load_auth_config()
+    assert config.mongodb_uri == "mongodb://u:p@db:27017/"
+
+
 def test_enabled_auth_requires_strong_jwt_secret() -> None:
     with pytest.raises(ValueError, match="at least 32 characters"):
         AuthConfig(enabled=True, jwt_secret="short").validate_for_enabled_mode()
