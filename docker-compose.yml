@@ -15,8 +15,10 @@ services:
     security_opt:
       - no-new-privileges:true
     environment:
-      MONGODB_INITDB_ROOT_USERNAME: ${ELEVADR_MONGO_ROOT_USERNAME:?set ELEVADR_MONGO_ROOT_USERNAME in .elevadr-platform.env}
-      MONGODB_INITDB_ROOT_PASSWORD: ${ELEVADR_MONGO_ROOT_PASSWORD:?set ELEVADR_MONGO_ROOT_PASSWORD in .elevadr-platform.env}
+      MONGODB_INITDB_ROOT_USERNAME: >-
+        ${ELEVADR_MONGO_ROOT_USERNAME:?set ELEVADR_MONGO_ROOT_USERNAME in .elevadr-platform.env}
+      MONGODB_INITDB_ROOT_PASSWORD: >-
+        ${ELEVADR_MONGO_ROOT_PASSWORD:?set ELEVADR_MONGO_ROOT_PASSWORD in .elevadr-platform.env}
     volumes:
       - elevadr-mongodb-data:/data/db
       - type: tmpfs

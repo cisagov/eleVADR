@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-if ! command -v zeek >/dev/null 2>&1; then
+if ! command -v zeek > /dev/null 2>&1; then
   echo "Zeek is not installed or not on PATH" >&2
   exit 1
 fi
