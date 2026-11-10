@@ -60,7 +60,9 @@ services:
     security_opt:
       - no-new-privileges:true
     environment:
-      MONGODB_URI: mongodb://${ELEVADR_MONGO_ROOT_USERNAME}:${ELEVADR_MONGO_ROOT_PASSWORD}@mongodb:27017/?authSource=admin
+      MONGO_HOST: mongodb
+      MONGO_USERNAME: ${ELEVADR_MONGO_ROOT_USERNAME}
+      MONGO_PASSWORD: ${ELEVADR_MONGO_ROOT_PASSWORD}
     volumes:
       - ./backups/mongodb:/backups
     networks:

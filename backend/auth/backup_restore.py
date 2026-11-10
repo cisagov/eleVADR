@@ -122,6 +122,18 @@ def _copy_storage(source: Path, dest: Path) -> dict[str, Any]:
     return files
 
 
+def _replace_storage_contents(root: Path, source: Path) -> None:
+    """Replace what is inside root without removing root, which may be a mounted volume."""
+    root.mkdir(parents=True, exist_ok=True)
+    for child in root.iterdir():
+        if child.is_dir() and not child.is_symlink():
+            shutil.rmtree(child)
+        else:
+            child.unlink()
+    if source.exists():
+        shutil.copytree(source, root, dirs_exist_ok=True)
+
+
 def create_backup(destination: Path | None = None) -> Path:
     client, cfg = _connect()
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
@@ -246,16 +258,10 @@ def restore_backup(archive: Path, *, yes: bool = False) -> None:
         try:
             if STORAGE_ROOT.exists():
                 shutil.copytree(STORAGE_ROOT, storage_old)
-            shutil.rmtree(STORAGE_ROOT, ignore_errors=True)
-            if new_storage.exists():
-                shutil.copytree(new_storage, STORAGE_ROOT)
-            else:
-                STORAGE_ROOT.mkdir(parents=True, exist_ok=True)
+            _replace_storage_contents(STORAGE_ROOT, new_storage)
             _restore_database(client[cfg.mongodb_database], stage, manifest)
         except Exception:
-            shutil.rmtree(STORAGE_ROOT, ignore_errors=True)
-            if storage_old.exists():
-                shutil.copytree(storage_old, STORAGE_ROOT)
+            _replace_storage_contents(STORAGE_ROOT, storage_old)
             _restore_database(client[cfg.mongodb_database], rollback, rollback_manifest)
             raise
     client.close()

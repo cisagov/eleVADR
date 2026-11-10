@@ -181,11 +181,13 @@ in the `elevadr-storage` volume (`/app/storage`), so a database dump alone does 
 #### mongodump and mongorestore
 
 The `mongo-tools` service runs the tools on the compose network. Dumps are written to
-`backups/mongodb/` (gitignored).
+`backups/mongodb/` (gitignored). The commands pass the credentials as separate flags, so
+passwords with characters such as `@`, `:` or `/` work without encoding. The password is visible
+in the helper container's process list while the command runs.
 
 ```bash
 docker compose --env-file .elevadr-platform.env --profile tools run --rm mongo-tools \
-  sh -c 'mongodump --uri="$MONGODB_URI" --db=elevadr --gzip --archive=/backups/elevadr-$(date +%Y%m%d-%H%M%S).archive.gz'
+  sh -c 'mongodump --host="$MONGO_HOST" --username="$MONGO_USERNAME" --password="$MONGO_PASSWORD" --authenticationDatabase=admin --db=elevadr --gzip --archive=/backups/elevadr-$(date +%Y%m%d-%H%M%S).archive.gz'
 ```
 
 Restore into the same database (existing documents with the same `_id` are skipped; add `--drop` to
@@ -193,7 +195,7 @@ replace collections first):
 
 ```bash
 docker compose --env-file .elevadr-platform.env --profile tools run --rm mongo-tools \
-  sh -c 'mongorestore --uri="$MONGODB_URI" --gzip --archive=/backups/<file>.archive.gz --nsInclude="elevadr.*"'
+  sh -c 'mongorestore --host="$MONGO_HOST" --username="$MONGO_USERNAME" --password="$MONGO_PASSWORD" --authenticationDatabase=admin --gzip --archive=/backups/<file>.archive.gz --nsInclude="elevadr.*"'
 ```
 
 To restore into a scratch database for inspection, add `--nsFrom='elevadr.*' --nsTo='elevadr_scratch.*'`.
