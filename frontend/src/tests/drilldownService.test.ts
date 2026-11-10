@@ -40,9 +40,8 @@ describe("drilldownService", () => {
   it("uses the same origin when VITE_DRILLDOWN_BASE_URL is same-origin", async () => {
     vi.stubEnv("VITE_DRILLDOWN_BASE_URL", "same-origin");
     vi.resetModules();
-    const { fetchServiceDrilldown: sameOriginFetch } = await import(
-      "../app/services/drilldownService"
-    );
+    const { fetchServiceDrilldown: sameOriginFetch } =
+      await import("../app/services/drilldownService");
 
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,

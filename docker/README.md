@@ -24,7 +24,7 @@ Requires Docker with Compose v2.
 
 1. Create the environment file. The helper generates random credentials:
 
-   ```
+   ```bash
    python -m backend.auth.local_runtime init
    ```
 
@@ -33,7 +33,7 @@ Requires Docker with Compose v2.
 
 2. To have the first administrator created automatically, add these to `.elevadr-platform.env`:
 
-   ```
+   ```text
    ELEVADR_BOOTSTRAP_ADMIN_USERNAME=admin
    ELEVADR_BOOTSTRAP_ADMIN_PASSWORD=<12 or more characters>
    ```
@@ -43,21 +43,21 @@ Requires Docker with Compose v2.
 
 3. Start the database only:
 
-   ```
+   ```bash
    docker compose --env-file .elevadr-platform.env up -d --build --wait mongodb
    ```
 
    Or the whole stack (database, `backend` and `elevadr-ui`):
 
-   ```
+   ```bash
    docker compose --env-file .elevadr-platform.env up -d --build --wait
    ```
 
-   The UI is on http://127.0.0.1:8080, `backend` on http://127.0.0.1:8765 and Mongo on `127.0.0.1:27017`.
+   The UI is on <http://127.0.0.1:8080>, `backend` on <http://127.0.0.1:8765> and Mongo on `127.0.0.1:27017`.
 
 4. Check it:
 
-   ```
+   ```bash
    docker compose --env-file .elevadr-platform.env ps
    ```
 
@@ -85,7 +85,10 @@ variable is passed through `docker-compose.yml`, so the last column says where e
 | `ELEVADR_MONGO_ROOT_PASSWORD` | none, required | mongodb, backend | MongoDB root password. Hex or base64url only on AKS, because it goes into a `mongodb://` URI. | Env file, Compose, AKS |
 | `ELEVADR_MONGO_PORT` | `27017` | mongodb | Host loopback port Compose publishes. Used by Compose only, not passed into containers. | Env file |
 | `ELEVADR_AUTH_ENABLED` | `false` | backend | Turns on login and MongoDB persistence. When false the backend never connects to MongoDB. | Env file, Compose, AKS |
-| `ELEVADR_MONGODB_URI` | `mongodb://127.0.0.1:27017` | backend | Connection string. Compose and AKS build their own from the root credentials. | Env file, Compose, AKS |
+| `ELEVADR_MONGODB_URI` | `mongodb://127.0.0.1:27017` | backend | Connection string. Ignored when `ELEVADR_MONGO_HOST` is set. AKS builds its own from the root credentials. | Env file, AKS |
+| `ELEVADR_MONGO_HOST` | none | backend | When set, the backend builds the connection string from this host, the root credentials and `ELEVADR_MONGO_HOST_PORT`, percent-encoding the credentials so special characters are safe. Compose sets it to `mongodb`. | Compose |
+| `ELEVADR_MONGO_HOST_PORT` | `27017` | backend | Port used with `ELEVADR_MONGO_HOST`. | Compose |
+| `ELEVADR_TRUSTED_PROXIES` | none | backend | Comma-separated CIDR ranges of proxies allowed to set `X-Forwarded-For`. The last forwarded hop is then used as the client address for login throttling. Without it, all clients behind a proxy share the proxy's address. Compose defaults to the private ranges `172.16.0.0/12`, `10.0.0.0/8` and `192.168.0.0/16`. Use the narrowest range that covers your proxy. | Env file, Compose |
 | `ELEVADR_MONGODB_DATABASE` | `elevadr` | backend | Database name. | Env file, Compose, AKS |
 | `ELEVADR_JWT_SECRET` | none, required when auth is on | backend | JWT signing secret, 32 or more characters. Changing it signs everyone out. | Env file, Compose, AKS |
 | `ELEVADR_JWT_ALGORITHM` | `HS256` | backend | JWT algorithm. Only `HS256` is accepted. | Env file |
@@ -175,7 +178,7 @@ in the `elevadr-storage` volume (`/app/storage`), so a database dump alone does 
 The `mongo-tools` service runs the tools on the compose network. Dumps are written to
 `backups/mongodb/` (gitignored).
 
-```
+```bash
 docker compose --env-file .elevadr-platform.env --profile tools run --rm mongo-tools \
   sh -c 'mongodump --uri="$MONGODB_URI" --db=elevadr --gzip --archive=/backups/elevadr-$(date +%Y%m%d-%H%M%S).archive.gz'
 ```
@@ -183,7 +186,7 @@ docker compose --env-file .elevadr-platform.env --profile tools run --rm mongo-t
 Restore into the same database (existing documents with the same `_id` are skipped; add `--drop` to
 replace collections first):
 
-```
+```bash
 docker compose --env-file .elevadr-platform.env --profile tools run --rm mongo-tools \
   sh -c 'mongorestore --uri="$MONGODB_URI" --gzip --archive=/backups/<file>.archive.gz --nsInclude="elevadr.*"'
 ```
@@ -205,7 +208,7 @@ Known limitation: the tool uses `<repo>/storage` as the storage root and ignores
 also the mounted volume, so it works there. The argument is the output file, and the archive stays
 inside the container until you copy it out:
 
-```
+```bash
 docker compose --env-file .elevadr-platform.env exec backend \
   python -m backend.auth.backup_restore backup /tmp/elevadr-backup.zip
 docker compose --env-file .elevadr-platform.env cp backend:/tmp/elevadr-backup.zip backups/
