@@ -9,6 +9,11 @@ set "NODE_PATH=%ROOT%frontend\node_modules;%NODE_PATH%"
 echo ============================================================
 echo eleVADR regression gate
 echo ============================================================
+if "%ELEVADR_ALLOW_MISSING_FROZEN%"=="1" echo NOTE: ELEVADR_ALLOW_MISSING_FROZEN=1, missing frozen captures will be waived.
+echo.
+
+echo [0/26] Ensuring generated regression fixtures exist
+python -m backend.regression.ensure_fixtures
 echo.
 
 echo [1/26] Release-readiness preflight
@@ -142,9 +147,18 @@ echo [26/26] Findings explainability UX contract
 node backend\regression\validate_findings_explainability.cjs
 if errorlevel 1 goto :fail
 
+set "WAIVER="
+if "%ELEVADR_ALLOW_MISSING_FROZEN%"=="1" python -m backend.regression.ensure_fixtures --frozen-status
+if "%ELEVADR_ALLOW_MISSING_FROZEN%"=="1" if errorlevel 1 set "WAIVER=1"
+
 echo.
 echo ============================================================
-echo PASS: eleVADR regression gate completed successfully.
+if defined WAIVER (
+    echo PASS WITH WAIVER: all checks passed except frozen captures that were missing.
+    echo Restore them and rerun without ELEVADR_ALLOW_MISSING_FROZEN for a full pass.
+) else (
+    echo PASS: eleVADR regression gate completed successfully.
+)
 echo ============================================================
 exit /b 0
 

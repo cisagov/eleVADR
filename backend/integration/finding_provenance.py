@@ -9,7 +9,6 @@ modules to duplicate source-tracking code.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import fields as dataclass_fields
 from typing import Any
 
 

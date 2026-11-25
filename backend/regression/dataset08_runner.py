@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import Callable
 
 from backend.adapters.detection_context_adapter import compile_detection_context_metadata

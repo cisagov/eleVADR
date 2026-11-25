@@ -182,6 +182,8 @@ dump.rdb
 # Data Stuff
 *.pcap
 *.log
+!backend/regression/fixtures/**/*.pcap
+!backend/regression/fixtures/**/*.log
 uploads/
 zeeks/
 

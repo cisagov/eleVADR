@@ -3,7 +3,7 @@ from __future__ import annotations
 import struct
 from pathlib import Path
 
-from backend.regression.dataset15_fixture_builder import _ethernet, _tcp_frame
+from backend.regression.dataset15_fixture_builder import _tcp_frame
 
 ROOT = Path(__file__).resolve().parent
 FIXTURE = ROOT / "fixtures" / "17_wave3_raw_pcap.pcap"

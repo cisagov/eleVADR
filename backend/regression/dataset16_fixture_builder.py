@@ -6,7 +6,6 @@ from pathlib import Path
 from backend.regression.dataset15_fixture_builder import (
     _ethernet,
     _ip,
-    _ipv4,
     _mac,
     _tcp_frame,
     _udp,

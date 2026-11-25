@@ -6,7 +6,7 @@ from pathlib import Path
 
 from backend.integration.detector_runtime import ensure_detector_package
 from backend.regression.dataset15_fixture_builder import (
-    _arp_reply, _dhcp_payload, _ethernet, _modbus_adu, _tcp_frame, _tcp_session, _udp,
+    _arp_reply, _dhcp_payload, _ethernet, _modbus_adu, _tcp_session, _udp,
 )
 from backend.regression.dataset16_fixture_builder import (
     _dns_query, _dns_response, _ntp_packet, _udp_pair,

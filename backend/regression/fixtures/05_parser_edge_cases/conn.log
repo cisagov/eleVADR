@@ -1,0 +1,12 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	conn
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	vlan	inner_vlan	service	orig_bytes	resp_bytes	conn_state
+#types	time	string	addr	port	addr	port	enum	int	int	string	count	count	string
+1760100000.0	C1	10.50.0.10	49152	10.60.0.20	502	tcp	10	-	modbus	120	80	SF
+1760100001.0	C2	10.50.0.11	49153	10.60.0.21	502	tcp	30
+1760100002.0	C3	10.50.0.12	49154	10.60.0.22	502	tcp	100	10	modbus	64	64	SF	UNEXPECTED-EXTRA
+1760100003.0	C4	10.50.0.13	49155	10.60.0.23	502	tcp	200	10	modbus
+1760100004.0	C5	10.50.0.14	49156	10.60.0.24	502	tcp	-	-	modbus	not-a-number	32	SF

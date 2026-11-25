@@ -1,6 +1,6 @@
 # eleVADR backend
 
-This directory is the **production backend** implementing the Detection Context architecture: Detection Context v3 compilation, the 75-module detector registry, Zeek evidence extraction, auth, and the local reference HTTP API the frontend talks to.
+This directory is the backend for the local eleVADR platform, implementing the Detection Context architecture: Detection Context v3 compilation, the 75-module detector registry, Zeek evidence extraction, auth, and the local reference HTTP API the frontend talks to.
 
 ## Ownership boundary
 

@@ -128,13 +128,6 @@ def _empty_context(A: type):
     return A(metadata=_segments_metadata())
 
 
-def _compare(module: Any, left: Any, right: Any, label: str, failures: list[str]) -> None:
-    a = _serialized(module.analyze(left))
-    b = _serialized(module.analyze(right))
-    if a != b:
-        failures.append(f"{label}: result changed when logically equivalent input ordering/state was used")
-
-
 def run_cases(verbose: bool = True) -> list[str]:
     AnalysisContext, modules, _module_file = ensure_detector_package()
     failures: list[str] = []

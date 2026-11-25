@@ -128,28 +128,6 @@ def describe_zeek_runtime() -> str:
     return runtime.label
 
 
-def _run_checked(command: list[str], *, cwd: Path | None = None) -> None:
-    try:
-        completed = subprocess.run(
-            command,
-            cwd=cwd,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-    except FileNotFoundError as exc:
-        raise RuntimeError(f"Zeek runtime command could not be started: {command[0]}") from exc
-    except subprocess.CalledProcessError as exc:
-        stderr = (exc.stderr or "").strip()
-        stdout = (exc.stdout or "").strip()
-        detail = stderr or stdout or f"exit code {exc.returncode}"
-        raise RuntimeError(f"Zeek execution failed: {detail}") from exc
-    if completed.returncode != 0:
-        raise RuntimeError(f"Zeek execution failed with exit code {completed.returncode}")
-
-
-
 def _run_zeek_with_activity(
     command: list[str], *, output_path: Path, progress: ProgressCallback | None,
     cwd: Path | None = None, runtime_label: str = "Zeek",

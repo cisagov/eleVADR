@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 from backend.integration.pcap_analysis import analyze_pcap_to_report
+from backend.regression.frozen_policy import ENV_VAR, allow_missing_frozen
 
 ROOT = Path(__file__).resolve().parent
 MANIFEST_DIR = ROOT / "manifests"
@@ -164,9 +165,16 @@ def _progress(dataset: str):
     return emit
 
 
+def _waived(manifest: Mapping[str, Any], mode: str) -> bool:
+    """True when a live run is waived because the frozen PCAP is absent (opt-in only)."""
+    return mode == "live" and allow_missing_frozen() and not (FIXTURE_DIR / str(manifest["pcap"])).exists()
+
+
 def run_manifest(manifest: Mapping[str, Any], mode: str) -> tuple[Mapping[str, Any], float]:
     started = time.perf_counter()
     dataset = str(manifest["id"])
+    if _waived(manifest, mode):
+        mode = "fixture"
     if mode == "fixture":
         report_path = REFERENCE_REPORT_DIR / str(manifest["referenceReport"])
         report = _load_json(report_path)
@@ -189,7 +197,9 @@ def _print_summary(rows: Iterable[tuple[str, str, float, int]]) -> None:
     print("\nRegression summary")
     print("------------------")
     for dataset, status, seconds, finding_count in rows:
-        print(f"{status:4}  {dataset:28} {finding_count:3} finding(s)  {seconds:6.2f}s")
+        print(f"{status:5} {dataset:28} {finding_count:3} finding(s)  {seconds:6.2f}s")
+    if any(status == "PASS*" for _d, status, _s, _c in rows):
+        print("* reference report only: the frozen PCAP was missing, so Zeek was not run for this dataset.")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -216,12 +226,19 @@ def main(argv: list[str] | None = None) -> int:
     for manifest in manifests:
         dataset = str(manifest["id"])
         print(f"\n=== {dataset}: {manifest.get('name', dataset)} ===", flush=True)
+        waived = _waived(manifest, args.mode)
+        if waived:
+            print(
+                f"  WAIVED: frozen PCAP {manifest['pcap']} is missing and {ENV_VAR}=1; "
+                "validating the saved reference report only (Zeek was NOT run).",
+                flush=True,
+            )
         try:
             report, elapsed = run_manifest(manifest, args.mode)
             current_failures = validate_report(manifest, report)
             failures.extend(current_failures)
             finding_count = len(report.get("arch_insights", {}).get("detector_findings", []))
-            status = "PASS" if not current_failures else "FAIL"
+            status = ("PASS*" if waived else "PASS") if not current_failures else "FAIL"
             summary.append((dataset, status, elapsed, finding_count))
             if current_failures:
                 for failure in current_failures:

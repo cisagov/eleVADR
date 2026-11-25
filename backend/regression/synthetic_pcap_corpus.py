@@ -15,6 +15,7 @@ from backend.regression.dataset15_fixture_builder import build_fixture as build_
 from backend.regression.dataset16_fixture_builder import build_fixture as build_dataset16
 from backend.regression.dataset17_fixture_builder import build_fixture as build_dataset17
 from backend.regression.dataset19_fixture_builder import build_fixture as build_dataset19
+from backend.regression.frozen_policy import ENV_VAR, allow_missing_frozen
 
 ROOT = Path(__file__).resolve().parent
 FIXTURES = ROOT / "fixtures"
@@ -144,6 +145,7 @@ def _pcap_stats(path: Path) -> tuple[int, float]:
 
 def verify_corpus(*, check_rebuilds: bool = True, verbose: bool = True) -> list[str]:
     failures: list[str] = []
+    skipped = 0
     if verbose:
         print("eleVADR synthetic/raw-PCAP corpus integrity check")
         print("=" * 60)
@@ -154,6 +156,11 @@ def verify_corpus(*, check_rebuilds: bool = True, verbose: bool = True) -> list[
         prefix = f"Dataset {entry.dataset:02d}"
 
         if not pcap.is_file():
+            if entry.builder is None and allow_missing_frozen():
+                skipped += 1
+                if verbose:
+                    print(f"{prefix}: {entry.name} | SKIPPED: frozen capture missing ({ENV_VAR}=1)")
+                continue
             failures.append(f"{prefix}: missing {pcap}")
             continue
         if not context.is_file():
@@ -206,7 +213,9 @@ def verify_corpus(*, check_rebuilds: bool = True, verbose: bool = True) -> list[
         if failures:
             print(f"FAIL: corpus integrity check found {len(failures)} issue(s).")
         else:
-            print(f"PASS: {len(CORPUS)} raw-PCAP fixtures and contexts verified.")
+            verified = len(CORPUS) - skipped
+            suffix = f" ({skipped} frozen capture(s) skipped via {ENV_VAR}=1)" if skipped else ""
+            print(f"PASS: {verified} of {len(CORPUS)} raw-PCAP fixtures and contexts verified{suffix}.")
     return failures
 
 
